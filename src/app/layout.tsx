@@ -1,13 +1,15 @@
+// import "@ui5/webcomponents-react/styles.css";
+import "./globals.css";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
 import ThemeProvider from "../components/ThemeProvider";
 import AppLayout from "../components/AppLayout";
 
-// Import SAPUI5 styles
+// Import SAPUI5 styles and icons
 import "@ui5/webcomponents/dist/Assets.js";
 import "@ui5/webcomponents-fiori/dist/Assets.js";
 import "@ui5/webcomponents-react/dist/Assets.js";
+import "@ui5/webcomponents-icons/dist/AllIcons.js";
 import "@ui5/webcomponents-icons/dist/Assets.js";
 
 const geistSans = Geist({

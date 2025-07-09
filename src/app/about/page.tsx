@@ -340,7 +340,7 @@ export default function About() {
         {/* Navigation */}
         <FlexBox
           justifyContent={FlexBoxJustifyContent.Center}
-          style={{ marginTop: "2rem" }}
+          style={{ marginTop: "2rem", marginBottom: "2rem" }}
         >
           <Button
             design="Emphasized"

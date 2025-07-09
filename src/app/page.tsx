@@ -120,7 +120,7 @@ export default function Home() {
         {/* Navigation Section */}
         <FlexBox
           justifyContent={FlexBoxJustifyContent.Center}
-          style={{ marginTop: "2rem" }}
+          style={{ marginTop: "2rem", marginBottom: "2rem" }}
         >
           <Button
             design="Emphasized"

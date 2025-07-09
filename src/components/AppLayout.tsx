@@ -75,17 +75,17 @@ export default function AppLayout({ children }: AppLayoutProps) {
           >
             <SideNavigationItem
               text="Home"
-              icon="home"
+              icon="information"
               selected={pathname === "/"}
               data-path="/"
             />
             <SideNavigationItem
               text="About"
-              icon="info"
+              icon="information"
               selected={pathname === "/about"}
               data-path="/about"
             />
-            <SideNavigationItem text="More" icon="navigation-down-arrow">
+            <SideNavigationItem text="More" icon="information">
               <SideNavigationSubItem text="Documentation" />
               <SideNavigationSubItem text="Settings" />
             </SideNavigationItem>

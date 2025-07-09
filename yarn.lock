@@ -1468,14 +1468,14 @@
     "@ui5/webcomponents-theming" "2.12.0"
     "@zxing/library" "^0.21.3"
 
-"@ui5/webcomponents-icons-business-suite@2.12.0":
+"@ui5/webcomponents-icons-business-suite@2.12.0", "@ui5/webcomponents-icons-business-suite@^2.12.0":
   version "2.12.0"
   resolved "https://registry.yarnpkg.com/@ui5/webcomponents-icons-business-suite/-/webcomponents-icons-business-suite-2.12.0.tgz#be674a9dfec4a1069e1160ce0acc2f15316d1b04"
   integrity sha512-gO8LSmqHMiyJGR+JbS6X+6f54lS68rXjLt242y+Rviz28FKn8P47gkZX+xq7TeLMlmNSpXkHpjNvJ+IzsY9i9Q==
   dependencies:
     "@ui5/webcomponents-base" "2.12.0"
 
-"@ui5/webcomponents-icons-tnt@2.12.0":
+"@ui5/webcomponents-icons-tnt@2.12.0", "@ui5/webcomponents-icons-tnt@^2.12.0":
   version "2.12.0"
   resolved "https://registry.yarnpkg.com/@ui5/webcomponents-icons-tnt/-/webcomponents-icons-tnt-2.12.0.tgz#98444f36f19f1327885ff02edb7db8d1923af479"
   integrity sha512-lqkY3ClfUFwgiPbvvrCXvUpw9F8MnLD6MiKcNwN2WudKcxw2Gmb89/Feb1J7nFtOo64ro5F2u4HZRuWpVnPUog==
@@ -1497,7 +1497,7 @@
     "@types/openui5" "^1.113.0"
     "@ui5/webcomponents-base" "2.12.0"
 
-"@ui5/webcomponents-react-base@~2.12.0":
+"@ui5/webcomponents-react-base@^2.12.0", "@ui5/webcomponents-react-base@~2.12.0":
   version "2.12.0"
   resolved "https://registry.yarnpkg.com/@ui5/webcomponents-react-base/-/webcomponents-react-base-2.12.0.tgz#214c12b2368a620139ba2a59301d7e2e7423bc19"
   integrity sha512-jAz13L+iOeGUwtljWGV82bcl1jbcKMzftwKgZg7AwQLMO54zHSondIirwSnBLJoLLZaLKA4zuLU18sOym08Fvw==
