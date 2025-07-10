@@ -18,7 +18,7 @@ interface AppLayoutProps {
   children: React.ReactNode;
 }
 
-export default function AppLayout({ children }: AppLayoutProps) {
+export default function AppLayout({ children }: Readonly<AppLayoutProps>) {
   const router = useRouter();
   const pathname = usePathname();
   const [sideNavCollapsed, setSideNavCollapsed] = useState(false);
