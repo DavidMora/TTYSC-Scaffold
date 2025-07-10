@@ -33,7 +33,10 @@ export default function AppLayout({ children }: AppLayoutProps) {
   };
 
   return (
-    <FlexBox direction={FlexBoxDirection.Column} style={{ height: "100vh" }}>
+    <FlexBox
+      direction={FlexBoxDirection.Column}
+      style={{ minHeight: "100vh", width: "100vw" }}
+    >
       {/* Shell Bar */}
       <ShellBar
         primaryTitle="SAPUI5 Next.js App"

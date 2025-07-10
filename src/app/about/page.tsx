@@ -337,7 +337,7 @@ export default function About() {
           </div>
         </Card>
 
-        {/* Navigation */}
+        {/* Back to Home */}
         <FlexBox
           justifyContent={FlexBoxJustifyContent.Center}
           style={{ marginTop: "2rem", marginBottom: "2rem" }}
@@ -345,7 +345,8 @@ export default function About() {
           <Button
             design="Emphasized"
             onClick={handleBackToHome}
-            icon="nav-back"
+            icon="home"
+            data-testid="back-to-home-button"
           >
             Back to Home
           </Button>

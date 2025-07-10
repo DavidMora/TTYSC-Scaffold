@@ -7,9 +7,32 @@ const createJestConfig = nextJest({
 
 // Add any custom config to be passed to Jest
 const customJestConfig = {
-  setupFilesAfterEnv: ["<rootDir>/jest.setup.js"],
-  testEnvironment: "jsdom",
+  setupFilesAfterEnv: ["<rootDir>/jest.setup.ts"],
+  testEnvironment: "jest-environment-jsdom",
+  moduleNameMapper: {
+    "^@ui5/webcomponents-react-base":
+      "<rootDir>/__mocks__/@ui5/webcomponents-react-base.ts",
+    // Handle module aliases
+    "^@/(.*)$": "<rootDir>/src/$1",
+  },
+  collectCoverageFrom: [
+    "src/**/*.{js,jsx,ts,tsx}",
+    "!src/**/*.d.ts",
+    "!src/**/*.stories.{js,jsx,ts,tsx}",
+    "!src/**/*.test.{js,jsx,ts,tsx}",
+  ],
+  coverageReporters: ["text", "lcov", "html"],
+  coverageDirectory: "coverage",
 };
 
 // createJestConfig is exported this way to ensure that next/jest can load the Next.js config which is async
-export default createJestConfig(customJestConfig);
+// export default createJestConfig(customJestConfig);
+
+export default async () => {
+  const config = await createJestConfig(customJestConfig)();
+  config.transformIgnorePatterns = [
+    "node_modules/(?!(@ui5|lit|lit-html|@zxing/library)/)",
+    "^.+\\.module\\.(css|sass|scss)$",
+  ];
+  return config;
+};
