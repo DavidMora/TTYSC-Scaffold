@@ -1,5 +1,5 @@
 import { render, screen } from "@testing-library/react";
-import RootLayout from "@/app/layout";
+import RootLayout, { metadata } from "@/app/layout";
 import "@testing-library/jest-dom";
 import React from "react";
 
@@ -18,6 +18,16 @@ jest.mock("@/components/ThemeProvider", () => {
   MockThemeProvider.displayName = "MockThemeProvider";
   return MockThemeProvider;
 });
+
+// Mock Google Fonts
+jest.mock("next/font/google", () => ({
+  Geist: jest.fn(() => ({
+    variable: "--font-geist-sans",
+  })),
+  Geist_Mono: jest.fn(() => ({
+    variable: "--font-geist-mono",
+  })),
+}));
 
 describe("RootLayout", () => {
   it("renders children", () => {
@@ -45,5 +55,24 @@ describe("RootLayout", () => {
     }
 
     consoleError.mockRestore();
+  });
+
+  it("renders with correct structure", () => {
+    const { container } = render(
+      <RootLayout>
+        <div>Test content</div>
+      </RootLayout>
+    );
+
+    // Test that the component renders without errors
+    expect(container).toBeInTheDocument();
+    expect(screen.getByText("Test content")).toBeInTheDocument();
+  });
+
+  it("exports correct metadata", () => {
+    expect(metadata).toEqual({
+      title: "SAPUI5 Next.js App",
+      description: "A Next.js application with SAPUI5 React components",
+    });
   });
 });
