@@ -139,8 +139,8 @@ describe("AppLayout", () => {
       </AppLayout>
     );
 
-    const profileImage = screen.getByAltText("Profile");
-    fireEvent.click(profileImage.parentElement!.parentElement!);
+    const profileButton = screen.getByTestId("profile-avatar");
+    fireEvent.click(profileButton);
 
     expect(consoleLog).toHaveBeenCalledWith("Profile clicked");
     consoleLog.mockRestore();
