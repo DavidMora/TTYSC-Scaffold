@@ -26,9 +26,9 @@ jest.mock("@ui5/webcomponents-react", () => {
     ShellBar: ({ children, primaryTitle, profile, onProfileClick }: any) => (
       <div>
         <h1>{primaryTitle}</h1>
-        <div onClick={onProfileClick} data-testid="profile-avatar">
+        <button onClick={onProfileClick} data-testid="profile-avatar">
           {profile}
-        </div>
+        </button>
         {children}
       </div>
     ),
