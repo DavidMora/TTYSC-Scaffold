@@ -16,7 +16,7 @@ describe("theme-setup", () => {
 
   it("calls setTheme with sap_horizon", async () => {
     // Import theme-setup module which should trigger setTheme call
-    await import("@/app/theme-setup");
+    await import("@/lib/utils/theme-setup");
 
     expect(setTheme).toHaveBeenCalledWith("sap_horizon");
     expect(setTheme).toHaveBeenCalledTimes(1);

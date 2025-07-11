@@ -3,7 +3,7 @@ import RootLayout, { metadata } from "@/app/layout";
 import "@testing-library/jest-dom";
 import React from "react";
 
-jest.mock("@/components/AppLayout", () => {
+jest.mock("@/components/AppLayout/AppLayout", () => {
   const MockAppLayout = ({ children }: { children: React.ReactNode }) => {
     return <div data-testid="mock-app-layout">{children}</div>;
   };
@@ -11,7 +11,7 @@ jest.mock("@/components/AppLayout", () => {
   return MockAppLayout;
 });
 
-jest.mock("@/components/ThemeProvider", () => {
+jest.mock("@/providers/ThemeProvider", () => {
   const MockThemeProvider = ({ children }: { children: React.ReactNode }) => {
     return <div data-testid="mock-theme-provider">{children}</div>;
   };
