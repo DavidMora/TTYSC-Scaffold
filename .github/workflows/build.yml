@@ -205,7 +205,18 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: coverage-reports
-          path: ./
+          path: coverage/
+
+      - name: Verify coverage file exists
+        run: |
+          ls -la coverage/
+          if [ -f "coverage/lcov.info" ]; then
+            echo "✅ Coverage file found"
+            head -10 coverage/lcov.info
+          else
+            echo "❌ Coverage file not found"
+            exit 1
+          fi
 
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
