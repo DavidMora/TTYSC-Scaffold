@@ -73,19 +73,17 @@ const AnalysisFilter: React.FC<{
       </Text>
 
       <FlexBox wrap={FlexBoxWrap.Wrap} style={{ gap: "1rem" }}>
-        {FILTER_CONFIGS.map(
-          ({ key: filterKey, label }: { key: FilterKey; label: string }) => (
-            <FilterSelect
-              key={filterKey}
-              filterKey={filterKey}
-              label={label}
-              value={filters[filterKey]}
-              options={availableOptions[filterKey]}
-              disabled={isDisabled(filterKey)}
-              onChange={handleFilterChange}
-            />
-          )
-        )}
+        {FILTER_CONFIGS.map(({ key, label }) => (
+          <FilterSelect
+            key={key}
+            filterKey={key}
+            label={label}
+            value={filters[key]}
+            options={availableOptions[key]}
+            disabled={isDisabled(key)}
+            onChange={handleFilterChange}
+          />
+        ))}
       </FlexBox>
     </div>
   );
