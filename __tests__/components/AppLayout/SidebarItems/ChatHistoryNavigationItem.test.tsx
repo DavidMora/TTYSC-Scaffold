@@ -7,12 +7,12 @@ jest.mock("@ui5/webcomponents-react", () => {
   const originalModule = jest.requireActual("@ui5/webcomponents-react");
   return {
     ...originalModule,
-    Panel: ({ 
-      headerText, 
-      children, 
-      collapsed, 
-      onToggle, 
-      ...props 
+    Panel: ({
+      headerText,
+      children,
+      collapsed,
+      onToggle,
+      ...props
     }: {
       headerText: string;
       children: React.ReactNode;
@@ -27,7 +27,13 @@ jest.mock("@ui5/webcomponents-react", () => {
         data-collapsed={collapsed ? "true" : "false"}
         onClick={onToggle}
         {...props}
-        style={{ border: 'none', background: 'none', padding: 0, width: '100%', textAlign: 'left' }}
+        style={{
+          border: "none",
+          background: "none",
+          padding: 0,
+          width: "100%",
+          textAlign: "left",
+        }}
       >
         {children}
       </button>
@@ -67,7 +73,9 @@ describe("ChatHistoryNavigationItem", () => {
     it("should render with default props", () => {
       render(<ChatHistoryNavigationItem />);
 
-      expect(screen.getByTestId("ui5-side-navigation-item")).toBeInTheDocument();
+      expect(
+        screen.getByTestId("ui5-side-navigation-item")
+      ).toBeInTheDocument();
       expect(screen.getByTestId("ui5-side-navigation-item")).toHaveAttribute(
         "data-text",
         "Chat History"
@@ -129,7 +137,9 @@ describe("ChatHistoryNavigationItem", () => {
       render(<ChatHistoryNavigationItem chatHistory={customChatHistory} />);
 
       // FlexBox is rendered as a div with flex styles
-      const flexBoxElement = screen.getByTestId("ui5-side-navigation-item").firstChild;
+      const flexBoxElement = screen.getByTestId(
+        "ui5-side-navigation-item"
+      ).firstChild;
       expect(flexBoxElement).toHaveClass("gap-2", "py-2");
       expect(flexBoxElement).toHaveStyle("flex-direction: column");
     });
@@ -168,7 +178,7 @@ describe("ChatHistoryNavigationItem", () => {
       );
 
       const panels = screen.getAllByTestId("ui5-panel");
-      
+
       // Simulate panel click since the mock maps onToggle to onClick
       fireEvent.click(panels[0]);
 
@@ -184,7 +194,7 @@ describe("ChatHistoryNavigationItem", () => {
       );
 
       const panels = screen.getAllByTestId("ui5-panel");
-      
+
       fireEvent.click(panels[1]);
 
       expect(mockOnChatSelect).toHaveBeenCalledWith(2);
@@ -304,7 +314,9 @@ describe("ChatHistoryNavigationItem", () => {
     });
 
     it("should handle onChatItemSelect with default chat history", () => {
-      render(<ChatHistoryNavigationItem onChatItemSelect={mockOnChatItemSelect} />);
+      render(
+        <ChatHistoryNavigationItem onChatItemSelect={mockOnChatItemSelect} />
+      );
 
       // Get all "Chat 2" items and click the first one (should be from chat id: 1, item id: 2)
       const chat2Items = screen.getAllByText("Chat 2");
@@ -318,8 +330,10 @@ describe("ChatHistoryNavigationItem", () => {
     it("should handle empty chat history", () => {
       render(<ChatHistoryNavigationItem chatHistory={[]} />);
 
-      expect(screen.getByTestId("ui5-side-navigation-item")).toBeInTheDocument();
-      
+      expect(
+        screen.getByTestId("ui5-side-navigation-item")
+      ).toBeInTheDocument();
+
       // Should not render any panels
       const panels = screen.queryAllByTestId("ui5-panel");
       expect(panels).toHaveLength(0);
