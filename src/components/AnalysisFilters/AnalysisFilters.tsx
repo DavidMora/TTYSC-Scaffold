@@ -74,14 +74,14 @@ const AnalysisFilter: React.FC<{
 
       <FlexBox wrap={FlexBoxWrap.Wrap} style={{ gap: "1rem" }}>
         {FILTER_CONFIGS.map(
-          ({ key, label }: { key: FilterKey; label: string }) => (
+          ({ key: filterKey, label }: { key: FilterKey; label: string }) => (
             <FilterSelect
-              key={key}
-              filterKey={key}
+              key={filterKey}
+              filterKey={filterKey}
               label={label}
-              value={filters[key]}
-              options={availableOptions[key]}
-              disabled={isDisabled(key)}
+              value={filters[filterKey]}
+              options={availableOptions[filterKey]}
+              disabled={isDisabled(filterKey)}
               onChange={handleFilterChange}
             />
           )

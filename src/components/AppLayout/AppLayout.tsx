@@ -1,4 +1,3 @@
-
 "use client";
 
 import {
@@ -14,7 +13,7 @@ import SideBarMenu from "@/components/AppLayout/SideBar";
 import { sideBarItems } from "@/lib/constants/UI/SideBarItems";
 import HeaderBar from "@/components/AppLayout/HeaderBar";
 import { HEADER_BAR_CONFIG } from "@/lib/constants/UI/HeaderBar";
-import AnalysisFilter from "../AnalysisFilters/AnalysisFilter";
+import AnalysisFilter from "@/components/AnalysisFilters/AnalysisFilters";
 import { useAnalysisFilters } from "@/hooks/useAnalysisFilters";
 
 interface AppLayoutProps {

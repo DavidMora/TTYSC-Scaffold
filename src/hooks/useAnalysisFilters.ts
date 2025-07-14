@@ -39,47 +39,87 @@ const DEPENDENCY_CHAIN: Record<FilterKey, FilterKey | null> = {
 export const useAnalysisFilters = () => {
   const [filters, setFilters] = useState<FilterState>(INITIAL_FILTERS);
 
-  const availableOptions = useMemo((): FilterOptions => {
-    const options: FilterOptions = {
-      analysis: [FILTER_ALL_VALUE, ...Object.keys(FILTER_DATA)],
-      organization: [FILTER_ALL_VALUE],
-      cmSiteName: [FILTER_ALL_VALUE],
-      sku: [FILTER_ALL_VALUE],
-      nvpn: [FILTER_ALL_VALUE],
-    };
+  const getOrganizationOptions = useCallback((analysis: string): string[] => {
+    if (analysis === FILTER_ALL_VALUE) return [FILTER_ALL_VALUE];
+    const analysisData = FILTER_DATA[analysis];
+    return analysisData
+      ? [FILTER_ALL_VALUE, ...Object.keys(analysisData)]
+      : [FILTER_ALL_VALUE];
+  }, []);
 
+  const getSiteOptions = useCallback(
+    (analysis: string, organization: string): string[] => {
+      if (analysis === FILTER_ALL_VALUE || organization === FILTER_ALL_VALUE)
+        return [FILTER_ALL_VALUE];
+      const analysisData = FILTER_DATA[analysis];
+      const orgData = analysisData?.[organization];
+      return orgData
+        ? [FILTER_ALL_VALUE, ...Object.keys(orgData)]
+        : [FILTER_ALL_VALUE];
+    },
+    []
+  );
+
+  const getSkuOptions = useCallback(
+    (analysis: string, organization: string, cmSiteName: string): string[] => {
+      if (
+        analysis === FILTER_ALL_VALUE ||
+        organization === FILTER_ALL_VALUE ||
+        cmSiteName === FILTER_ALL_VALUE
+      ) {
+        return [FILTER_ALL_VALUE];
+      }
+      const analysisData = FILTER_DATA[analysis];
+      const orgData = analysisData?.[organization];
+      const siteData = orgData?.[cmSiteName];
+      return siteData
+        ? [FILTER_ALL_VALUE, ...Object.keys(siteData)]
+        : [FILTER_ALL_VALUE];
+    },
+    []
+  );
+
+  const getNvpnOptions = useCallback(
+    (
+      analysis: string,
+      organization: string,
+      cmSiteName: string,
+      sku: string
+    ): string[] => {
+      if (
+        analysis === FILTER_ALL_VALUE ||
+        organization === FILTER_ALL_VALUE ||
+        cmSiteName === FILTER_ALL_VALUE ||
+        sku === FILTER_ALL_VALUE
+      ) {
+        return [FILTER_ALL_VALUE];
+      }
+      const analysisData = FILTER_DATA[analysis];
+      const orgData = analysisData?.[organization];
+      const siteData = orgData?.[cmSiteName];
+      const nvpnData = siteData?.[sku];
+      return nvpnData ? [FILTER_ALL_VALUE, ...nvpnData] : [FILTER_ALL_VALUE];
+    },
+    []
+  );
+
+  const availableOptions = useMemo((): FilterOptions => {
     const { analysis, organization, cmSiteName, sku } = filters;
 
-    if (analysis !== FILTER_ALL_VALUE) {
-      const analysisData = FILTER_DATA[analysis];
-      if (analysisData) {
-        options.organization = [FILTER_ALL_VALUE, ...Object.keys(analysisData)];
-
-        if (organization !== FILTER_ALL_VALUE) {
-          const orgData = analysisData[organization];
-          if (orgData) {
-            options.cmSiteName = [FILTER_ALL_VALUE, ...Object.keys(orgData)];
-
-            if (cmSiteName !== FILTER_ALL_VALUE) {
-              const siteData = orgData[cmSiteName];
-              if (siteData) {
-                options.sku = [FILTER_ALL_VALUE, ...Object.keys(siteData)];
-
-                if (sku !== FILTER_ALL_VALUE) {
-                  const nvpnData = siteData[sku];
-                  if (nvpnData) {
-                    options.nvpn = [FILTER_ALL_VALUE, ...nvpnData];
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-
-    return options;
-  }, [filters]);
+    return {
+      analysis: [FILTER_ALL_VALUE, ...Object.keys(FILTER_DATA)],
+      organization: getOrganizationOptions(analysis),
+      cmSiteName: getSiteOptions(analysis, organization),
+      sku: getSkuOptions(analysis, organization, cmSiteName),
+      nvpn: getNvpnOptions(analysis, organization, cmSiteName, sku),
+    };
+  }, [
+    filters,
+    getOrganizationOptions,
+    getSiteOptions,
+    getSkuOptions,
+    getNvpnOptions,
+  ]);
 
   const resetDependentFilters = useCallback(
     (filterKey: FilterKey): Partial<FilterState> => {

@@ -1,7 +1,7 @@
 import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
 import "@testing-library/jest-dom";
-import AnalysisFilter from "@/components/AnalysisFilters/AnalysisFilter";
+import AnalysisFilter from "@/components/AnalysisFilters/AnalysisFilters";
 import { FILTER_CONFIGS, FilterKeys } from "@/lib/constants/UI/analysisFilters";
 import type { FilterState, FilterOptions } from "@/lib/types/analysisFilters";
 
