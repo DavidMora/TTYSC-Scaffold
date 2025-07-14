@@ -21,7 +21,7 @@ jest.mock("@ui5/webcomponents-icons/dist/AllIcons.js", () => ({}));
 jest.mock("@ui5/webcomponents-icons/dist/Assets.js", () => ({}));
 
 // Import ThemeProvider after mocks are set up
-import ThemeProvider from "@/components/ThemeProvider";
+import ThemeProvider from "@/providers/ThemeProvider";
 
 describe("ThemeProvider", () => {
   it("renders children correctly", () => {

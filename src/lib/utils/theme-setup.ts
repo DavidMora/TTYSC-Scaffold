@@ -24,19 +24,19 @@
 /**
  * Theme setter function from UI5 Web Components base library.
  */
-import { setTheme } from '@ui5/webcomponents-base/dist/config/Theme.js';
+import { setTheme } from "@ui5/webcomponents-base/dist/config/Theme.js";
 
 /**
  * Core UI5 Web Components assets (icons, fonts, base styles).
  */
-import '@ui5/webcomponents/dist/Assets.js';
-import '@ui5/webcomponents-icons/dist/AllIcons.js';
+import "@ui5/webcomponents/dist/Assets.js";
+import "@ui5/webcomponents-icons/dist/AllIcons.js";
 
 /**
  * Fallback/direct CSS import for the custom theme (optional).
  * This ensures the theme is available during build and SSR.
  */
-import '../styles/nv-base-theme.css';
+import "@/styles/nv-base-theme.css";
 
 // -----------------------------------------------------------------------------
 // THEME ACTIVATION
@@ -45,4 +45,4 @@ import '../styles/nv-base-theme.css';
 /**
  * Activates the custom theme globally for all UI5 Web Components.
  */
-setTheme('sap_horizon');
+setTheme("sap_horizon"); // Replace with "nv_base_theme" if using a custom theme

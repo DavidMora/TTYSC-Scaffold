@@ -1,7 +1,5 @@
 "use client";
 
-import { ThemeProvider as UI5ThemeProvider } from "@ui5/webcomponents-react";
-
 // Import SAPUI5 styles and icons
 import "@ui5/webcomponents/dist/Assets.js";
 import "@ui5/webcomponents-fiori/dist/Assets.js";
@@ -10,8 +8,10 @@ import "@ui5/webcomponents-icons/dist/AllIcons.js";
 import "@ui5/webcomponents-icons/dist/Assets.js";
 
 // @styles
-import "../app/globals.css";
-import "../app/theme-setup";
+import "@/app/globals.css";
+import "@/lib/utils/theme-setup";
+
+import { ThemeProvider as UI5ThemeProvider } from "@ui5/webcomponents-react";
 
 interface ThemeProviderProps {
   children: React.ReactNode;

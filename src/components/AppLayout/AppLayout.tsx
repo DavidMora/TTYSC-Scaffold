@@ -4,28 +4,20 @@ import {
   ShellBar,
   ShellBarItem,
   Avatar,
-  SideNavigation,
-  SideNavigationItem,
-  SideNavigationSubItem,
   FlexBox,
   FlexBoxDirection,
 } from "@ui5/webcomponents-react";
 import Image from "next/image";
 import { useState } from "react";
-import { useRouter, usePathname } from "next/navigation";
+import SideBarMenu from "./SideBar";
+import { sideBarItems } from "@/lib/constants/UI/SideBarItems";
 
 interface AppLayoutProps {
   children: React.ReactNode;
 }
 
 export default function AppLayout({ children }: Readonly<AppLayoutProps>) {
-  const router = useRouter();
-  const pathname = usePathname();
   const [sideNavCollapsed, setSideNavCollapsed] = useState(false);
-
-  const handleNavigation = (path: string) => {
-    router.push(path);
-  };
 
   const handleProfileClick = () => {
     // Handle profile click
@@ -66,33 +58,10 @@ export default function AppLayout({ children }: Readonly<AppLayoutProps>) {
             backgroundColor: "var(--sapGroup_ContentBackground)",
           }}
         >
-          <SideNavigation
-            collapsed={sideNavCollapsed}
-            onSelectionChange={(event) => {
-              const selectedItem = event.detail.item;
-              const path = selectedItem.dataset.path;
-              if (path) {
-                handleNavigation(path);
-              }
-            }}
-          >
-            <SideNavigationItem
-              text="Home"
-              icon="information"
-              selected={pathname === "/"}
-              data-path="/"
-            />
-            <SideNavigationItem
-              text="About"
-              icon="information"
-              selected={pathname === "/about"}
-              data-path="/about"
-            />
-            <SideNavigationItem text="More" icon="information">
-              <SideNavigationSubItem text="Documentation" />
-              <SideNavigationSubItem text="Settings" />
-            </SideNavigationItem>
-          </SideNavigation>
+          <SideBarMenu
+            sideNavCollapsed={sideNavCollapsed}
+            navItems={sideBarItems}
+          />
         </div>
 
         {/* Main Content */}
