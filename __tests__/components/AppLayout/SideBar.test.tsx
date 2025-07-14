@@ -13,12 +13,16 @@ jest.mock("next/navigation", () => ({
   usePathname: () => "/",
 }));
 
+// Mock specific behavior for SideNavigation components in tests
 jest.mock("@ui5/webcomponents-react", () => {
+  const actualModule = jest.requireActual("@ui5/webcomponents-react");
   return {
+    ...actualModule,
     SideNavigation: ({
       children,
       onSelectionChange,
       collapsed = false,
+      ...props
     }: {
       children: React.ReactNode;
       onSelectionChange: (event: {
@@ -26,7 +30,7 @@ jest.mock("@ui5/webcomponents-react", () => {
       }) => void;
       collapsed?: boolean;
     }) => (
-      <div data-testid="side-navigation" data-collapsed={collapsed}>
+      <div data-testid="side-navigation" data-collapsed={collapsed} {...props}>
         {React.Children.map(children, (child: React.ReactNode) => {
           if (React.isValidElement(child)) {
             return React.cloneElement(
@@ -48,6 +52,7 @@ jest.mock("@ui5/webcomponents-react", () => {
       children,
       selected,
       __onSelectionChange,
+      ...props
     }: {
       "data-path"?: string;
       text: string;
@@ -57,7 +62,7 @@ jest.mock("@ui5/webcomponents-react", () => {
         detail: { item: { dataset: { path: string } } };
       }) => void;
     }) => (
-      <div>
+      <div {...props}>
         <button
           data-testid={`nav-item-${text.toLowerCase().replace(/\s+/g, "-")}`}
           data-selected={selected}
@@ -75,6 +80,7 @@ jest.mock("@ui5/webcomponents-react", () => {
     SideNavigationSubItem: ({
       text,
       selected,
+      ...props
     }: {
       text: string;
       selected?: boolean;
@@ -82,6 +88,7 @@ jest.mock("@ui5/webcomponents-react", () => {
       <li
         data-testid={`sub-item-${text.toLowerCase().replace(/\s+/g, "-")}`}
         data-selected={selected}
+        {...props}
       >
         {text}
       </li>
@@ -104,11 +111,6 @@ const mockNavItems: NavBarItem[] = [
     text: "Profile",
     path: "/profile",
     icon: "user-settings",
-  },
-  {
-    text: "Settings",
-    path: "/settings",
-    icon: "settings",
   },
   {
     text: "More",
@@ -137,7 +139,7 @@ describe("SideBarMenu", () => {
     expect(screen.getByTestId("nav-item-home")).toBeInTheDocument();
     expect(screen.getByTestId("nav-item-about")).toBeInTheDocument();
     expect(screen.getByTestId("nav-item-profile")).toBeInTheDocument();
-    expect(screen.getByTestId("nav-item-settings")).toBeInTheDocument();
+    expect(screen.getByTestId("nav-item-settings")).toBeInTheDocument(); // This comes from SettingsNavigationItem
     expect(screen.getByTestId("nav-item-more")).toBeInTheDocument();
   });
 
@@ -211,7 +213,19 @@ describe("SideBarMenu", () => {
 
     const sideNav = screen.getByTestId("side-navigation");
     expect(sideNav).toBeInTheDocument();
-    expect(sideNav.children).toHaveLength(0);
+
+    // Even with empty navItems, custom components should still be present
+    expect(screen.getByTestId("nav-item-settings")).toBeInTheDocument();
+    expect(screen.getByTestId("nav-item-definitions")).toBeInTheDocument();
+    expect(screen.getByTestId("nav-item-feedback")).toBeInTheDocument();
+    expect(screen.getByTestId("nav-item-raw-data")).toBeInTheDocument();
+    expect(screen.getByTestId("nav-item-chat-history")).toBeInTheDocument();
+
+    // But none of the mockNavItems should be present
+    expect(screen.queryByTestId("nav-item-home")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("nav-item-about")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("nav-item-profile")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("nav-item-more")).not.toBeInTheDocument();
   });
 
   it("handles navigation items without sub items", () => {

@@ -27,7 +27,7 @@ export default function AppLayout({ children }: Readonly<AppLayoutProps>) {
   return (
     <FlexBox
       direction={FlexBoxDirection.Column}
-      style={{ minHeight: "100vh", width: "100vw" }}
+      style={{ height: "100vh", width: "100vw" }}
     >
       {/* Shell Bar */}
       <ShellBar
