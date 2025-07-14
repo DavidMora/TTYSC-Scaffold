@@ -9,9 +9,9 @@ import {
 } from "@ui5/webcomponents-react";
 import Image from "next/image";
 import { useState } from "react";
-import SideBarMenu from "./SideBar";
+import SideBarMenu from "@/components/AppLayout/SideBar";
 import { sideBarItems } from "@/lib/constants/UI/SideBarItems";
-import HeaderBar from "./HeaderBar";
+import HeaderBar from "@/components/AppLayout/HeaderBar";
 import { HEADER_BAR_CONFIG } from "@/lib/constants/UI/HeaderBar";
 
 interface AppLayoutProps {

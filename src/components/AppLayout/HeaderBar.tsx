@@ -29,7 +29,7 @@ export default function HeaderBar({
   subtitle,
   actions = [],
   overrides = {},
-}: HeaderBarProps) {
+}: Readonly<HeaderBarProps>) {
   const router = useRouter();
   const iconRef = useRef<ButtonDomRef>(null);
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
