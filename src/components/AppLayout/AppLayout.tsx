@@ -9,8 +9,10 @@ import {
 } from "@ui5/webcomponents-react";
 import Image from "next/image";
 import { useState } from "react";
-import SideBarMenu from "./SideBar";
+import SideBarMenu from "@/components/AppLayout/SideBar";
 import { sideBarItems } from "@/lib/constants/UI/SideBarItems";
+import HeaderBar from "@/components/AppLayout/HeaderBar";
+import { HEADER_BAR_CONFIG } from "@/lib/constants/UI/HeaderBar";
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -73,6 +75,7 @@ export default function AppLayout({ children }: Readonly<AppLayoutProps>) {
             backgroundColor: "var(--sapBackgroundColor)",
           }}
         >
+          <HeaderBar {...HEADER_BAR_CONFIG.supplyChain} />
           {children}
         </div>
       </FlexBox>

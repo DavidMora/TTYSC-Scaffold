@@ -53,10 +53,119 @@ jest.mock("@ui5/webcomponents-react", () => {
     Avatar: ({ children }: { children: React.ReactNode }) => (
       <div>{children}</div>
     ),
-    FlexBox: ({ children }: { children: React.ReactNode }) => (
-      <div>{children}</div>
+    FlexBox: ({
+      children,
+      justifyContent,
+      alignItems,
+      style,
+      ...props
+    }: {
+      children: React.ReactNode;
+      justifyContent?: string;
+      alignItems?: string;
+      style?: React.CSSProperties;
+      [key: string]: unknown;
+    }) => (
+      <div
+        style={{
+          display: "flex",
+          justifyContent: justifyContent,
+          alignItems: alignItems,
+          ...style,
+        }}
+        {...props}
+      >
+        {children}
+      </div>
     ),
     FlexBoxDirection: { Column: "column", Row: "row" },
+    FlexBoxJustifyContent: {
+      SpaceBetween: "space-between",
+      Center: "center",
+      Start: "start",
+      End: "end",
+    },
+    FlexBoxAlignItems: {
+      Center: "center",
+      Start: "start",
+      End: "end",
+      Stretch: "stretch",
+    },
+    Title: ({
+      children,
+      ...props
+    }: {
+      children: React.ReactNode;
+      [key: string]: unknown;
+    }) => <h1 {...props}>{children}</h1>,
+    Text: ({
+      children,
+      ...props
+    }: {
+      children: React.ReactNode;
+      [key: string]: unknown;
+    }) => <span {...props}>{children}</span>,
+    Icon: ({ name, ...props }: { name: string; [key: string]: unknown }) => (
+      <span {...props} data-testid={`icon-${name}`}>
+        {name}
+      </span>
+    ),
+    Popover: ({
+      children,
+      open,
+      ...props
+    }: {
+      children: React.ReactNode;
+      open: boolean;
+      [key: string]: unknown;
+    }) =>
+      open ? (
+        <div {...props} data-testid="popover">
+          {children}
+        </div>
+      ) : null,
+    List: ({
+      children,
+      ...props
+    }: {
+      children: React.ReactNode;
+      [key: string]: unknown;
+    }) => <ul {...props}>{children}</ul>,
+    Label: ({
+      children,
+      ...props
+    }: {
+      children: React.ReactNode;
+      [key: string]: unknown;
+    }) => <label {...props}>{children}</label>,
+    ListItemCustom: ({
+      children,
+      onClick,
+      ...props
+    }: {
+      children: React.ReactNode;
+      onClick: () => void;
+      [key: string]: unknown;
+    }) => (
+      <li {...props} onClick={onClick}>
+        {children}
+      </li>
+    ),
+    Button: ({
+      children,
+      onClick,
+      style,
+      className,
+    }: {
+      children: React.ReactNode;
+      onClick?: () => void;
+      style?: React.CSSProperties;
+      className?: string;
+    }) => (
+      <button onClick={onClick} style={style} className={className}>
+        {children}
+      </button>
+    ),
   };
 });
 

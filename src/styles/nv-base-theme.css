@@ -131,7 +131,7 @@
   --sapContent_DragAndDropActiveColor: #79b900;
   --sapContent_Selected_TextColor: #79b900;
   --sapContent_Selected_Background: #fff;
-  --sapContent_Selected_Hover_Background: #e3f0ff;
+  --sapContent_Selected_Hover_Background: #EAF5CF;
   --sapContent_Selected_ForegroundColor: #79b900;
   --sapContent_ForcedColorAdjust: none;
   --sapContent_Lite_Shadow: None;
@@ -457,8 +457,8 @@
   --sapButton_Lite_Hover_TextColor: #79b900;
   --sapButton_Lite_Active_Background: #fff;
   --sapButton_Lite_Active_BorderColor: #79b900;
-  --sapButton_Selected_Background: #edf6ff;
-  --sapButton_Selected_BorderColor: #79b900;
+  --sapButton_Selected_Background: #EAF5CF;
+  --sapButton_Selected_BorderColor: #9ED24D;
   --sapButton_Selected_TextColor: #79b900;
   --sapButton_Selected_Hover_Background: #d9ecff;
   --sapButton_Selected_Hover_BorderColor: #79b900;
