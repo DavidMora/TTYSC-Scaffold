@@ -136,11 +136,11 @@ export default function RawDataNavigationItem({
         <Select
           className="w-full"
           value={selectedRawData.id.toString()}
-          onChange={(event) =>
-            handleRawDataChange(
-              parseInt(event.detail.selectedOption.value ?? "")
-            )
-          }
+          onChange={(event) => {
+            const value = event.detail.selectedOption.value;
+            const id = parseInt(value ?? "");
+            handleRawDataChange(id);
+          }}
         >
           {rawDataItems.map((item) => (
             <Option key={item.id} value={item.id.toString()}>

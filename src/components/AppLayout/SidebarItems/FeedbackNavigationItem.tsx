@@ -19,7 +19,9 @@ export default function FeedbackNavigationItem({
 
   const handleSubmit = () => {
     if (feedbackText.trim()) {
-      onSubmitFeedback?.(feedbackText);
+      if (onSubmitFeedback) {
+        onSubmitFeedback(feedbackText);
+      }
       setFeedbackText(""); // Clear after submission
     }
   };

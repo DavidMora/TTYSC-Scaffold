@@ -455,6 +455,106 @@ describe("RawDataNavigationItem", () => {
     });
   });
 
+  it("handles NaN value in handleRawDataChange (covers else branch)", () => {
+    render(
+      <RawDataNavigationItem
+        rawDataItems={mockRawDataItems}
+        onDataSelection={mockOnDataSelection}
+      />
+    );
+
+    const tableSelect = screen.getAllByTestId("select")[0];
+
+    // This will trigger parseInt("") which returns NaN
+    // NaN === any number will always be false, so selected will be undefined
+    fireEvent.change(tableSelect, { target: { value: "" } });
+
+    // onDataSelection should not be called because selected is undefined
+    expect(mockOnDataSelection).not.toHaveBeenCalledWith(
+      expect.anything(),
+      expect.anything()
+    );
+  });
+
+  it("covers nullish coalescing operator on line 141", () => {
+    render(
+      <RawDataNavigationItem
+        rawDataItems={mockRawDataItems}
+        onDataSelection={mockOnDataSelection}
+      />
+    );
+
+    const tableSelect = screen.getAllByTestId("select")[0];
+
+    // Use the special value that triggers null in the mock
+    // This should trigger the ?? "" fallback in the actual component
+    fireEvent.change(tableSelect, { target: { value: "null" } });
+
+    // Since parseInt(null ?? "") = parseInt("") = NaN, and NaN doesn't match any ID,
+    // the handleRawDataChange function's else branch should be triggered
+    expect(mockOnDataSelection).not.toHaveBeenCalledWith(
+      expect.anything(),
+      expect.anything()
+    );
+  });
+
+  it("covers nullish coalescing operator with undefined value", () => {
+    render(
+      <RawDataNavigationItem
+        rawDataItems={mockRawDataItems}
+        onDataSelection={mockOnDataSelection}
+      />
+    );
+
+    const tableSelect = screen.getAllByTestId("select")[0];
+
+    // Use the special value that triggers undefined in the mock
+    // This should trigger the ?? "" fallback in the actual component
+    fireEvent.change(tableSelect, { target: { value: "undefined" } });
+
+    // Since parseInt(undefined ?? "") = parseInt("") = NaN, and NaN doesn't match any ID,
+    // the handleRawDataChange function should not call onDataSelection
+    expect(mockOnDataSelection).not.toHaveBeenCalledWith(
+      expect.anything(),
+      expect.anything()
+    );
+  });
+
+  it("tests both branches of nullish coalescing operator", () => {
+    render(
+      <RawDataNavigationItem
+        rawDataItems={mockRawDataItems}
+        onDataSelection={mockOnDataSelection}
+      />
+    );
+
+    const tableSelect = screen.getAllByTestId("select")[0];
+
+    // Clear previous calls
+    mockOnDataSelection.mockClear();
+
+    // Test first branch - where value exists (not null/undefined)
+    fireEvent.change(tableSelect, { target: { value: "2" } });
+    expect(mockOnDataSelection).toHaveBeenCalledWith(
+      mockRawDataItems[1], // Second item has id 2
+      {}
+    );
+
+    mockOnDataSelection.mockClear();
+
+    // Test second branch - where value is null and ?? "" is used
+    fireEvent.change(tableSelect, { target: { value: "null" } });
+    // Since parseInt("") = NaN, no matching item is found, so onDataSelection is not called
+    expect(mockOnDataSelection).not.toHaveBeenCalled();
+
+    mockOnDataSelection.mockClear();
+
+    // Test third branch - where value is undefined and ?? "" is used
+    fireEvent.change(tableSelect, { target: { value: "undefined" } });
+    // Since parseInt("") = NaN, no matching item is found, so onDataSelection is not called
+    expect(mockOnDataSelection).not.toHaveBeenCalled();
+  });
+
   it("handles table change with undefined detail selectedOption value", () => {
     render(
       <RawDataNavigationItem

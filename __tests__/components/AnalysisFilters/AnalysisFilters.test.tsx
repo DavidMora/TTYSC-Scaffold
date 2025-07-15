@@ -108,7 +108,13 @@ describe("AnalysisFilter", () => {
       const selects = screen.getAllByTestId("select");
       const firstSelect = selects[0];
       mockHandleFilterChange.mockClear();
+
+      // Trigger a change event with a falsy value (empty string)
       fireEvent.change(firstSelect, { target: { value: "" } });
+      expect(mockHandleFilterChange).not.toHaveBeenCalled();
+
+      // Also test with null value
+      fireEvent.change(firstSelect, { target: { value: null } });
       expect(mockHandleFilterChange).not.toHaveBeenCalled();
     });
   });
