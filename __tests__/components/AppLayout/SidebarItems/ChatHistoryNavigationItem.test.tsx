@@ -2,45 +2,6 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import ChatHistoryNavigationItem from "@/components/AppLayout/SidebarItems/ChatHistoryNavigationItem";
 import "@testing-library/jest-dom";
 
-// Mock Panel component to handle onToggle properly
-jest.mock("@ui5/webcomponents-react", () => {
-  const originalModule = jest.requireActual("@ui5/webcomponents-react");
-  return {
-    ...originalModule,
-    Panel: ({
-      headerText,
-      children,
-      collapsed,
-      onToggle,
-      ...props
-    }: {
-      headerText: string;
-      children: React.ReactNode;
-      collapsed: boolean;
-      onToggle: () => void;
-      [key: string]: unknown;
-    }) => (
-      <button
-        type="button"
-        data-testid="ui5-panel"
-        data-header-text={headerText}
-        data-collapsed={collapsed ? "true" : "false"}
-        onClick={onToggle}
-        {...props}
-        style={{
-          border: "none",
-          background: "none",
-          padding: 0,
-          width: "100%",
-          textAlign: "left",
-        }}
-      >
-        {children}
-      </button>
-    ),
-  };
-});
-
 describe("ChatHistoryNavigationItem", () => {
   const mockOnChatSelect = jest.fn();
   const mockOnChatItemSelect = jest.fn();

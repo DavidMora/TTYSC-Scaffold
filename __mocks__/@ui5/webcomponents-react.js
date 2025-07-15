@@ -1,5 +1,5 @@
-const React = require("react");
-const { AnalyticalTable } = require("./AnalyticalTable");
+import React from "react";
+import { AnalyticalTable } from "./AnalyticalTable";
 
 const Button = React.forwardRef(
   (
@@ -590,7 +590,6 @@ TextArea.displayName = "TextArea";
 
 module.exports = {
   AnalyticalTable,
-  Avatar,
   BusyIndicator: () => <div data-testid="ui5-busy-indicator" />,
   Button,
   Card,
@@ -699,7 +698,14 @@ module.exports = {
       },
       children
     ),
-  SideNavigationItem: ({ text, icon, selected, children, ...props }) =>
+  SideNavigationItem: ({
+    text,
+    icon,
+    selected,
+    children,
+    unselectable,
+    ...props
+  }) =>
     React.createElement(
       "div",
       {
@@ -717,13 +723,29 @@ module.exports = {
       "data-text": text,
       ...props,
     }),
-  Panel: ({ headerText, children, collapsed, ...props }) =>
+  Panel: ({
+    headerText,
+    children,
+    collapsed,
+    onToggle,
+    noAnimation,
+    ...props
+  }) =>
     React.createElement(
-      "div",
+      "button",
       {
+        type: "button",
         "data-testid": "ui5-panel",
         "data-header-text": headerText,
         "data-collapsed": collapsed ? "true" : "false",
+        onClick: onToggle ? () => onToggle() : undefined,
+        style: {
+          border: "none",
+          background: "none",
+          padding: 0,
+          width: "100%",
+          textAlign: "left",
+        },
         ...props,
       },
       children

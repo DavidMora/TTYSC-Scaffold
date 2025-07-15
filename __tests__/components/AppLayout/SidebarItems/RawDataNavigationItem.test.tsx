@@ -25,7 +25,9 @@ interface SelectProps {
   children?: React.ReactNode;
   className?: string;
   value?: string;
-  onChange?: (event: { detail: { selectedOption: { value: string } } }) => void;
+  onChange?: (event: {
+    detail: { selectedOption: { value: string | null | undefined } };
+  }) => void;
 }
 
 interface OptionProps {
@@ -88,7 +90,7 @@ jest.mock("@ui5/webcomponents-react", () => ({
         const event = {
           detail: {
             selectedOption: {
-              value: eventValue as string,
+              value: eventValue,
             },
           },
         };
@@ -587,13 +589,8 @@ describe("RawDataNavigationItem", () => {
     if (filterSelects.length > 0) {
       const filterSelect = filterSelects[0];
 
-      // Add special option to trigger undefined case
-      const nullOption = document.createElement("option");
-      nullOption.value = "undefined";
-      nullOption.textContent = "Undefined Test";
-      filterSelect.appendChild(nullOption);
-
-      // Test the ?? "all" fallback by selecting the undefined option
+      // The mock already handles "undefined" string conversion to undefined
+      // Simply trigger the change event with "undefined" value
       fireEvent.change(filterSelect, { target: { value: "undefined" } });
 
       expect(mockOnDataSelection).toHaveBeenCalled();

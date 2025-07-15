@@ -9,7 +9,9 @@ import NvidiaLogo from "@/components/Icons/NvidiaLogo";
 import SettingsNavigationItem from "./SidebarItems/SettingsNavigationItem";
 import DefinitionsNavigationItem from "./SidebarItems/DefinitionsNavigationItem";
 import FeedbackNavigationItem from "./SidebarItems/FeedbackNavigationItem";
-import RawDataNavigationItem from "./SidebarItems/RawDataNavigationItem";
+import RawDataNavigationItem, {
+  type RawDataItem,
+} from "./SidebarItems/RawDataNavigationItem";
 import ChatHistoryNavigationItem from "./SidebarItems/ChatHistoryNavigationItem";
 
 interface SideBarProps {
@@ -30,7 +32,7 @@ export default function SideBarMenu({
   };
 
   const handleRawDataSelection = (
-    selectedData: unknown,
+    selectedData: RawDataItem,
     filters: Record<number, string>
   ) => {
     console.log("Raw data selected:", selectedData, filters);
