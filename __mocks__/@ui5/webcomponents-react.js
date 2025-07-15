@@ -96,7 +96,8 @@ const FlexBox = React.forwardRef(
       className={className}
       style={{
         display: "flex",
-        flexDirection: direction === "Column" ? "column" : "row",
+        flexDirection:
+          direction === "Column" || direction === "column" ? "column" : "row",
         alignItems:
           alignItems === "Center"
             ? "center"
@@ -115,6 +116,8 @@ const FlexBox = React.forwardRef(
             : undefined,
         ...props.style,
       }}
+      data-testid="flex-box"
+      data-direction={direction}
       {...props}
     >
       {children}
@@ -253,14 +256,22 @@ Tag.displayName = "Tag";
 
 const Grid = ({ children }) => <div data-testid="ui5-grid">{children}</div>;
 
-export const Select = ({ children, value, onChange, valueState }) => {
+export const Select = ({ children, value, onChange, valueState, ...props }) => {
   const handleChange = (event) => {
     const selectedValue = event.target.value;
-    const selectedOption = React.Children.toArray(children).find(
-      (child) => child.props.value === selectedValue
-    );
-    if (onChange) {
-      onChange({ detail: { selectedOption } });
+    if (onChange && selectedValue) {
+      const selectedOption = React.Children.toArray(children).find(
+        (child) => child.props && child.props.value === selectedValue
+      );
+      // The component expects selectedOption.value, so we create a plain object
+      const selectedOptionValue = selectedOption
+        ? {
+            value: selectedOption.props.value,
+            text: selectedOption.props.children,
+          }
+        : { value: selectedValue };
+
+      onChange({ detail: { selectedOption: selectedOptionValue } });
     }
   };
 
@@ -270,6 +281,7 @@ export const Select = ({ children, value, onChange, valueState }) => {
       value={value}
       onChange={handleChange}
       data-state={valueState}
+      {...props}
     >
       {children}
     </select>
@@ -616,11 +628,14 @@ module.exports = {
       },
       children
     ),
-  ShellBar: ({ primaryTitle, secondaryTitle, profile, children, ...props }) => {
-    const childArray = React.Children.toArray([profile, children]).filter(
-      Boolean
-    );
-
+  ShellBar: ({
+    children,
+    primaryTitle,
+    secondaryTitle,
+    profile,
+    onProfileClick,
+    ...props
+  }) => {
     return React.createElement(
       "div",
       {
@@ -629,19 +644,31 @@ module.exports = {
         "data-secondary-title": secondaryTitle,
         ...props,
       },
-      ...childArray
+      React.createElement("h1", {}, primaryTitle),
+      onProfileClick
+        ? React.createElement(
+            "button",
+            {
+              onClick: onProfileClick,
+              "data-testid": "profile-avatar",
+            },
+            profile
+          )
+        : profile,
+      children
     );
   },
-  ShellBarItem: ({ icon, children, text, ...props }) => {
+  ShellBarItem: ({ onClick, text, icon, children, ...props }) => {
     return React.createElement(
-      "div",
+      "button",
       {
+        onClick: onClick,
         "data-testid": "ui5-shellbar-item",
         "data-icon": icon,
         "data-text": text,
         ...props,
       },
-      children
+      text || children
     );
   },
   Avatar: ({ children, ...props }) =>
@@ -731,14 +758,24 @@ module.exports = {
   CardHeader,
   Grid,
   FlexBoxDirection: {
-    Column: "Column",
-    Row: "Row",
+    Column: "column",
+    Row: "row",
   },
   FlexBoxJustifyContent: {
-    Center: "Center",
+    SpaceBetween: "space-between",
+    Center: "center",
+    Start: "start",
+    End: "end",
     SpaceAround: "SpaceAround",
   },
   FlexBoxAlignItems: {
-    Center: "Center",
+    Center: "center",
+    Start: "start",
+    End: "end",
+    Stretch: "stretch",
+  },
+  FlexBoxWrap: {
+    Wrap: "wrap",
+    NoWrap: "nowrap",
   },
 };

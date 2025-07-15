@@ -58,7 +58,7 @@ describe("AnalysisFilter", () => {
 
     it("renders all filter selects based on FILTER_CONFIGS", () => {
       renderComponent();
-      const selects = screen.getAllByTestId("ui5-select");
+      const selects = screen.getAllByTestId("select");
       expect(selects).toHaveLength(FILTER_CONFIGS.length);
     });
 
@@ -71,7 +71,7 @@ describe("AnalysisFilter", () => {
 
     it("displays correct values for each filter", () => {
       renderComponent();
-      const selects = screen.getAllByTestId("ui5-select");
+      const selects = screen.getAllByTestId("select");
 
       FILTER_CONFIGS.forEach(({ key }, index) => {
         expect(selects[index]).toHaveValue(mockFilters[key]);
@@ -92,7 +92,7 @@ describe("AnalysisFilter", () => {
   describe("Functionality", () => {
     it("calls handleFilterChange when a filter value changes", () => {
       renderComponent();
-      const selects = screen.getAllByTestId("ui5-select");
+      const selects = screen.getAllByTestId("select");
       const firstSelect = selects[0];
 
       fireEvent.change(firstSelect, { target: { value: "Demand Forecast" } });
@@ -105,7 +105,7 @@ describe("AnalysisFilter", () => {
 
     it("does not call handleFilterChange when selectedValue is falsy (line 41 coverage)", () => {
       renderComponent();
-      const selects = screen.getAllByTestId("ui5-select");
+      const selects = screen.getAllByTestId("select");
       const firstSelect = selects[0];
       mockHandleFilterChange.mockClear();
       fireEvent.change(firstSelect, { target: { value: "" } });
@@ -125,7 +125,7 @@ describe("AnalysisFilter", () => {
 
       renderComponent({ availableOptions: emptyOptions });
 
-      expect(screen.getAllByTestId("ui5-select")).toHaveLength(
+      expect(screen.getAllByTestId("select")).toHaveLength(
         FILTER_CONFIGS.length
       );
     });
