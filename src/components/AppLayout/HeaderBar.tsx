@@ -51,16 +51,11 @@ export default function HeaderBar({
     setIsPopoverOpen(false);
     actionsMap[key]?.();
   };
-
   return (
     <>
       <FlexBox
         justifyContent={FlexBoxJustifyContent.SpaceBetween}
         alignItems={FlexBoxAlignItems.Center}
-        style={{
-          padding: "1rem",
-          backgroundColor: "var(--sapGroup_TitleBackground)",
-        }}
       >
         <div>
           <Title

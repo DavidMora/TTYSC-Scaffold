@@ -13,6 +13,8 @@ import SideBarMenu from "@/components/AppLayout/SideBar";
 import { sideBarItems } from "@/lib/constants/UI/SideBarItems";
 import HeaderBar from "@/components/AppLayout/HeaderBar";
 import { HEADER_BAR_CONFIG } from "@/lib/constants/UI/HeaderBar";
+import AnalysisFilter from "@/components/AnalysisFilters/AnalysisFilters";
+import { useAnalysisFilters } from "@/hooks/useAnalysisFilters";
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -26,6 +28,8 @@ export default function AppLayout({ children }: Readonly<AppLayoutProps>) {
     console.log("Profile clicked");
   };
 
+  const { filters, availableOptions, isDisabled, handleFilterChange } =
+    useAnalysisFilters();
   return (
     <FlexBox
       direction={FlexBoxDirection.Column}
@@ -70,12 +74,33 @@ export default function AppLayout({ children }: Readonly<AppLayoutProps>) {
         <div
           style={{
             flex: 1,
-            padding: "0rem",
+            padding: "1rem",
             overflow: "auto",
-            backgroundColor: "var(--sapBackgroundColor)",
+            backgroundColor: "var(--sapGroup_ContentBackground)",
+            display: "flex",
+            flexDirection: "column",
+            gap: "1rem",
           }}
         >
           <HeaderBar {...HEADER_BAR_CONFIG.supplyChain} />
+          <hr
+            style={{
+              height: "2px",
+              backgroundColor: "var(--sapToolbar_SeparatorColor)",
+            }}
+          />
+          <AnalysisFilter
+            filters={filters}
+            availableOptions={availableOptions}
+            isDisabled={isDisabled}
+            handleFilterChange={handleFilterChange}
+          />
+          <hr
+            style={{
+              height: "2px",
+              backgroundColor: "var(--sapToolbar_SeparatorColor)",
+            }}
+          />
           {children}
         </div>
       </FlexBox>
