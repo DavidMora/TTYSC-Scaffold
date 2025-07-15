@@ -6,7 +6,6 @@ import {
   Select,
   Option,
   Label,
-  Icon,
 } from "@ui5/webcomponents-react";
 import { useState } from "react";
 
@@ -186,7 +185,6 @@ export default function RawDataNavigationItem({
                   {value.text}
                 </Option>
               ))}
-              <Icon name="slim-arrow-down" slot="icon" />
             </Select>
           </FlexBox>
         ))}
