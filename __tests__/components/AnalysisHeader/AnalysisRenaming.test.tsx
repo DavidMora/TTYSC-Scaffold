@@ -11,7 +11,6 @@ jest.mock("@/components/Modal/ConfirmationModal", () => ({
     actions,
   }: {
     isOpen: boolean;
-    onClose: () => void;
     title: string;
     message: string;
     actions: Array<{ label: string; design?: string; onClick: () => void }>;
@@ -24,7 +23,7 @@ jest.mock("@/components/Modal/ConfirmationModal", () => ({
         <div data-testid="modal-actions">
           {actions.map((action, index) => (
             <button
-              key={index}
+              key={`${action.label}-${index}`}
               data-testid={`modal-action-${action.label.toLowerCase()}`}
               data-design={action.design}
               onClick={action.onClick}

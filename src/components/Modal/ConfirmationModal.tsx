@@ -44,9 +44,15 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
     <Dialog
       open={isOpen}
       onClose={onClose}
+      aria-labelledby="confirmation-modal-title"
+      aria-describedby="confirmation-modal-description"
       style={{ width }}
       header={
-        <Title level="H3" style={{ marginBlock: "0.5rem", width: "100%" }}>
+        <Title
+          id="modal-title"
+          level="H3"
+          style={{ marginBlock: "0.5rem", width: "100%" }}
+        >
           {title}
         </Title>
       }
@@ -59,9 +65,9 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
             width: "100%",
           }}
         >
-          {actions.map((action) => (
+          {actions.map((action, index) => (
             <Button
-              key={action.label}
+              key={`${action.label}-${index}`}
               design={action.design || "Default"}
               onClick={action.onClick}
             >
@@ -102,15 +108,17 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
             {message}
           </Text>
         </FlexBox>
-        <Text
-          style={{
-            color: "var(--sapContent_LabelColor)",
-            fontSize: "var(--sapFontSize)",
-            paddingInlineStart: "1.5rem",
-          }}
-        >
-          {description}
-        </Text>
+        {description && (
+          <Text
+            style={{
+              color: "var(--sapContent_LabelColor)",
+              fontSize: "var(--sapFontSize)",
+              paddingInlineStart: "1.5rem",
+            }}
+          >
+            {description}
+          </Text>
+        )}
       </FlexBox>
     </Dialog>
   );
