@@ -8,6 +8,7 @@ import {
   Dialog,
   Button,
   Title,
+  FlexBoxDirection,
 } from "@ui5/webcomponents-react";
 
 interface ModalAction {
@@ -25,6 +26,7 @@ interface ConfirmationModalProps {
   iconColor?: string;
   width?: string;
   actions: ModalAction[];
+  description?: string;
 }
 
 export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
@@ -36,6 +38,7 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   iconColor = "var(--sapCriticalElementColor)",
   width = "400px",
   actions,
+  description,
 }) => {
   return (
     <Dialog
@@ -69,27 +72,44 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
       }
     >
       <FlexBox
-        alignItems={FlexBoxAlignItems.Center}
+        direction={FlexBoxDirection.Column}
         style={{
-          gap: "0.5rem",
-          marginTop: "1rem",
-          marginBottom: "1rem",
+          gap: "1rem",
+          marginTop: "0.5rem",
+          marginBottom: "0.5rem",
+          paddingInlineEnd: "1rem",
         }}
       >
-        <Icon
-          name={iconName}
+        <FlexBox
+          alignItems={FlexBoxAlignItems.Center}
           style={{
-            fontSize: "1rem",
-            color: iconColor,
+            gap: "0.5rem",
           }}
-        />
+        >
+          <Icon
+            name={iconName}
+            style={{
+              fontSize: "1rem",
+              color: iconColor,
+            }}
+          />
+          <Text
+            style={{
+              color: "var(--sapContent_LabelColor)",
+              fontSize: "var(--sapFontSize)",
+            }}
+          >
+            {message}
+          </Text>
+        </FlexBox>
         <Text
           style={{
             color: "var(--sapContent_LabelColor)",
             fontSize: "var(--sapFontSize)",
+            paddingInlineStart: "1.5rem",
           }}
         >
-          {message}
+          {description}
         </Text>
       </FlexBox>
     </Dialog>

@@ -51,14 +51,13 @@ export const useSequentialNaming = ({
   );
 
   const generateNextName = useCallback(() => {
-    setCounter((prevCounter) => {
-      const nextCounter = prevCounter + 1;
-      const newName = generateAnalysisName(nextCounter, prefix);
+    const nextCounter = counter + 1;
+    const newName = generateAnalysisName(nextCounter, prefix);
+    setCounter(() => {
       setCurrentName(newName);
       return nextCounter;
     });
-
-    return generateAnalysisName(counter + 1, prefix);
+    return newName;
   }, [counter, prefix]);
 
   const resetCounter = useCallback(

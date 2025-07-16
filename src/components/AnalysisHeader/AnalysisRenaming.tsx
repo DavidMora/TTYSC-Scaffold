@@ -45,7 +45,7 @@ export const AnalysisRenaming: React.FC<AnalysisRenamingProps> = ({
   const handleSaveEdit = () => {
     const trimmedValue = editingValue.trim();
 
-    if (!trimmedValue) {
+    if (!trimmedValue || trimmedValue.length > MAX_NAME_LENGTH) {
       setShowValidationModal(true);
       return;
     }
@@ -110,6 +110,9 @@ export const AnalysisRenaming: React.FC<AnalysisRenamingProps> = ({
             <Icon
               onClick={handleStartEditing}
               name="write-new"
+              role="button"
+              tabIndex={0}
+              aria-label="Edit analysis name"
               style={{
                 color: "var(--sapHighlightColor)",
                 cursor: "pointer",
@@ -124,6 +127,7 @@ export const AnalysisRenaming: React.FC<AnalysisRenamingProps> = ({
         onClose={handleCloseValidationModal}
         title="Naming Analysis"
         message="Please provide information before leaving this field."
+        description="Please fill in this field with the necessary information before proceeding."
         actions={[
           {
             label: "OK",
