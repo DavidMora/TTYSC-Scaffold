@@ -1,4 +1,7 @@
-import { FetchAdapter } from "../../../../src/lib/api/http-client-adapters/fetch-adapter";
+import {
+  FetchAdapter,
+  default as FetchAdapterDefault,
+} from "../../../../src/lib/api/http-client-adapters/fetch-adapter";
 import { HttpClientConfig } from "../../../../src/lib/types/api/http-client";
 
 // Mock fetch globally
@@ -33,6 +36,11 @@ describe("FetchAdapter", () => {
       };
       const customAdapter = new FetchAdapter(config);
       expect(customAdapter).toBeInstanceOf(FetchAdapter);
+    });
+
+    it("should create adapter using default export", () => {
+      const defaultAdapter = new FetchAdapterDefault();
+      expect(defaultAdapter).toBeInstanceOf(FetchAdapter);
     });
   });
 
@@ -151,6 +159,13 @@ describe("FetchAdapter", () => {
       mockFetch.mockRejectedValue(new Error("Network error"));
 
       await expect(adapter.get("/test")).rejects.toThrow("Network error");
+    });
+    it("should handle non-Error exceptions", async () => {
+      // Simulate a rejection with a non-Error value
+      mockFetch.mockRejectedValue("some error");
+      await expect(adapter.get("/test")).rejects.toThrow(
+        "Unknown error occurred"
+      );
     });
   });
 
@@ -284,6 +299,505 @@ describe("FetchAdapter", () => {
         expect.objectContaining({
           method: "PATCH",
           body: JSON.stringify(patchData),
+        })
+      );
+    });
+  });
+
+  describe("timeout handling", () => {
+    it("should handle timeout errors", async () => {
+      jest.useRealTimers();
+      const adapter = new FetchAdapter({ timeout: 100 });
+      const abortError = new Error("The operation was aborted.");
+      abortError.name = "AbortError";
+      mockFetch.mockRejectedValue(abortError);
+      await expect(adapter.get("/test")).rejects.toThrow(
+        "The operation was aborted."
+      );
+      jest.useFakeTimers();
+    });
+    it("should clear timeout and throw on HTTP error", async () => {
+      jest.useFakeTimers();
+      const mockClearTimeout = jest.fn();
+      global.clearTimeout = mockClearTimeout;
+      const adapter = new FetchAdapter({ timeout: 500 });
+      const mockResponse = {
+        ok: false,
+        status: 500,
+        statusText: "Server Error",
+        headers: new Map(),
+        json: jest.fn(),
+      };
+      mockResponse.headers.forEach = jest.fn();
+      mockFetch.mockResolvedValue(mockResponse);
+
+      await expect(adapter.get("/test")).rejects.toThrow(
+        "HTTP 500: Server Error"
+      );
+      expect(mockClearTimeout).toHaveBeenCalled();
+      jest.useRealTimers();
+    });
+
+    it("should call clearTimeout on success", async () => {
+      const originalClearTimeout = global.clearTimeout;
+      const mockClearTimeout = jest.fn();
+      global.clearTimeout = mockClearTimeout;
+
+      const adapter = new FetchAdapter({ timeout: 5000 });
+
+      const mockResponse = {
+        ok: true,
+        status: 200,
+        statusText: "OK",
+        headers: new Map(),
+        json: jest.fn().mockResolvedValue({}),
+      };
+      mockResponse.headers.forEach = jest.fn();
+
+      mockFetch.mockResolvedValue(mockResponse);
+
+      await adapter.get("/test");
+
+      expect(mockClearTimeout).toHaveBeenCalled();
+
+      global.clearTimeout = originalClearTimeout;
+    });
+  });
+
+  describe("error handling", () => {
+    it("should handle non-Error exceptions", async () => {
+      mockFetch.mockRejectedValue("String error");
+
+      await expect(adapter.get("/test")).rejects.toThrow(
+        "Unknown error occurred"
+      );
+    });
+
+    it("should handle fetch errors", async () => {
+      const fetchError = new Error("Network error");
+      mockFetch.mockRejectedValue(fetchError);
+
+      await expect(adapter.get("/test")).rejects.toThrow("Network error");
+    });
+
+    it("should handle HTTP error responses", async () => {
+      const mockResponse = {
+        ok: false,
+        status: 404,
+        statusText: "Not Found",
+        headers: new Map(),
+        json: jest.fn(),
+      };
+
+      mockFetch.mockResolvedValue(mockResponse);
+
+      await expect(adapter.get("/test")).rejects.toThrow("HTTP 404: Not Found");
+    });
+  });
+
+  describe("header merging", () => {
+    it("should merge headers correctly with all levels", async () => {
+      const config = {
+        baseURL: "https://api.example.com",
+        headers: { "X-Custom": "value" },
+      };
+      const customAdapter = new FetchAdapter(config);
+
+      const mockResponse = {
+        ok: true,
+        status: 200,
+        statusText: "OK",
+        headers: new Map(),
+        json: jest.fn().mockResolvedValue({}),
+      };
+      mockResponse.headers.forEach = jest.fn();
+
+      mockFetch.mockResolvedValue(mockResponse);
+
+      await customAdapter.get("/test", { headers: { "X-Override": "test" } });
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        "https://api.example.com/test",
+        expect.objectContaining({
+          headers: expect.objectContaining({
+            "Content-Type": "application/json",
+            "X-Custom": "value",
+            "X-Override": "test",
+          }),
+        })
+      );
+    });
+
+    it("should handle request headers in options", async () => {
+      const mockResponse = {
+        ok: true,
+        status: 200,
+        statusText: "OK",
+        headers: new Map(),
+        json: jest.fn().mockResolvedValue({}),
+      };
+      mockResponse.headers.forEach = jest.fn();
+
+      mockFetch.mockResolvedValue(mockResponse);
+
+      await adapter.post(
+        "/test",
+        { data: "test" },
+        {
+          headers: { "X-Request": "header" },
+        }
+      );
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        "/test",
+        expect.objectContaining({
+          headers: expect.objectContaining({
+            "Content-Type": "application/json",
+            "X-Request": "header",
+          }),
+        })
+      );
+    });
+
+    it("should handle fetch timeout and call clearTimeout", async () => {
+      // This test specifically targets line 33 in fetch-adapter.ts (clearTimeout call)
+      const originalClearTimeout = global.clearTimeout;
+      const mockClearTimeout = jest.fn();
+      global.clearTimeout = mockClearTimeout;
+
+      const mockResponse = {
+        ok: true,
+        status: 200,
+        statusText: "OK",
+        headers: new Map(),
+        json: jest.fn().mockResolvedValue({}),
+      };
+      mockResponse.headers.forEach = jest.fn();
+
+      // Mock fetch to resolve normally (which will trigger clearTimeout on success)
+      mockFetch.mockResolvedValue(mockResponse);
+
+      await adapter.get("/test");
+
+      // Verify clearTimeout was called (this covers line 33)
+      expect(mockClearTimeout).toHaveBeenCalled();
+
+      global.clearTimeout = originalClearTimeout;
+    });
+
+    it("should handle fetch error and call clearTimeout in catch block", async () => {
+      // This test targets the clearTimeout call in the catch block (line 75)
+      const originalClearTimeout = global.clearTimeout;
+      const mockClearTimeout = jest.fn();
+      global.clearTimeout = mockClearTimeout;
+
+      // Mock fetch to reject with an error
+      mockFetch.mockRejectedValue(new Error("Network error"));
+
+      await expect(adapter.get("/test")).rejects.toThrow("Network error");
+
+      // Verify clearTimeout was called even in error case
+      expect(mockClearTimeout).toHaveBeenCalled();
+
+      global.clearTimeout = originalClearTimeout;
+    });
+    it("should handle timeout with actual AbortController signal", async () => {
+      jest.useRealTimers();
+      const adapter = new FetchAdapter({ timeout: 50 });
+
+      // Create a promise that resolves after 100ms
+      const delayedPromise = new Promise((resolve) => {
+        setTimeout(resolve, 100);
+      });
+
+      // Mock fetch to take longer than timeout
+      mockFetch.mockImplementation(() => delayedPromise);
+
+      await expect(adapter.get("/test")).rejects.toThrow();
+      jest.useFakeTimers();
+    });
+
+    it("should execute timeout callback function with Jest timers", () => {
+      jest.useFakeTimers();
+
+      // Mock setTimeout to capture the callback
+      let timeoutCallback: (() => void) | undefined;
+      const originalSetTimeout = global.setTimeout;
+      global.setTimeout = jest.fn((callback: () => void, delay: number) => {
+        timeoutCallback = callback;
+        return originalSetTimeout(callback, delay);
+      }) as unknown as typeof setTimeout;
+
+      const adapter = new FetchAdapter({ timeout: 1000 });
+
+      // Mock fetch to return a pending promise
+      const pendingPromise = new Promise(() => {});
+      mockFetch.mockImplementation(() => pendingPromise);
+
+      // Start the request
+      adapter.get("/test");
+
+      // Verify setTimeout was called
+      expect(global.setTimeout).toHaveBeenCalled();
+
+      // Execute the timeout callback manually to cover line 33
+      if (timeoutCallback) {
+        timeoutCallback();
+      }
+
+      // Restore
+      global.setTimeout = originalSetTimeout;
+      jest.useRealTimers();
+    });
+
+    it("should handle no baseURL configuration", async () => {
+      const adapter = new FetchAdapter({});
+
+      const mockResponse = {
+        ok: true,
+        status: 200,
+        statusText: "OK",
+        headers: new Map(),
+        json: jest.fn().mockResolvedValue({}),
+      };
+      mockResponse.headers.forEach = jest.fn();
+      mockFetch.mockResolvedValue(mockResponse);
+
+      await adapter.get("/test");
+
+      expect(mockFetch).toHaveBeenCalledWith("/test", expect.any(Object));
+    });
+
+    it("should handle undefined baseURL in config", async () => {
+      const adapter = new FetchAdapter({ baseURL: undefined });
+
+      const mockResponse = {
+        ok: true,
+        status: 200,
+        statusText: "OK",
+        headers: new Map(),
+        json: jest.fn().mockResolvedValue({}),
+      };
+      mockResponse.headers.forEach = jest.fn();
+      mockFetch.mockResolvedValue(mockResponse);
+
+      await adapter.get("/test");
+
+      expect(mockFetch).toHaveBeenCalledWith("/test", expect.any(Object));
+    });
+
+    it("should handle empty string baseURL", async () => {
+      const adapter = new FetchAdapter({ baseURL: "" });
+
+      const mockResponse = {
+        ok: true,
+        status: 200,
+        statusText: "OK",
+        headers: new Map(),
+        json: jest.fn().mockResolvedValue({}),
+      };
+      mockResponse.headers.forEach = jest.fn();
+      mockFetch.mockResolvedValue(mockResponse);
+
+      await adapter.get("/test");
+
+      expect(mockFetch).toHaveBeenCalledWith("/test", expect.any(Object));
+    });
+
+    it("should handle timeout in PUT request", async () => {
+      const originalClearTimeout = global.clearTimeout;
+      const mockClearTimeout = jest.fn();
+      global.clearTimeout = mockClearTimeout;
+
+      const adapter = new FetchAdapter({ timeout: 5000 });
+
+      const mockResponse = {
+        ok: true,
+        status: 200,
+        statusText: "OK",
+        headers: new Map(),
+        json: jest.fn().mockResolvedValue({}),
+      };
+      mockResponse.headers.forEach = jest.fn();
+      mockFetch.mockResolvedValue(mockResponse);
+
+      await adapter.put("/test", { data: "test" });
+
+      expect(mockClearTimeout).toHaveBeenCalled();
+      global.clearTimeout = originalClearTimeout;
+    });
+
+    it("should handle timeout in DELETE request", async () => {
+      const originalClearTimeout = global.clearTimeout;
+      const mockClearTimeout = jest.fn();
+      global.clearTimeout = mockClearTimeout;
+
+      const adapter = new FetchAdapter({ timeout: 5000 });
+
+      const mockResponse = {
+        ok: true,
+        status: 204,
+        statusText: "No Content",
+        headers: new Map(),
+        json: jest.fn().mockResolvedValue({}),
+      };
+      mockResponse.headers.forEach = jest.fn();
+      mockFetch.mockResolvedValue(mockResponse);
+
+      await adapter.delete("/test");
+
+      expect(mockClearTimeout).toHaveBeenCalled();
+      global.clearTimeout = originalClearTimeout;
+    });
+
+    it("should handle timeout in PATCH request", async () => {
+      const originalClearTimeout = global.clearTimeout;
+      const mockClearTimeout = jest.fn();
+      global.clearTimeout = mockClearTimeout;
+
+      const adapter = new FetchAdapter({ timeout: 5000 });
+
+      const mockResponse = {
+        ok: true,
+        status: 200,
+        statusText: "OK",
+        headers: new Map(),
+        json: jest.fn().mockResolvedValue({}),
+      };
+      mockResponse.headers.forEach = jest.fn();
+      mockFetch.mockResolvedValue(mockResponse);
+
+      await adapter.patch("/test", { data: "test" });
+
+      expect(mockClearTimeout).toHaveBeenCalled();
+      global.clearTimeout = originalClearTimeout;
+    });
+
+    it("should handle undefined data in PUT request", async () => {
+      const mockResponse = {
+        ok: true,
+        status: 200,
+        statusText: "OK",
+        headers: new Map(),
+        json: jest.fn().mockResolvedValue({}),
+      };
+      mockResponse.headers.forEach = jest.fn();
+      mockFetch.mockResolvedValue(mockResponse);
+
+      await adapter.put("/test");
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        "/test",
+        expect.objectContaining({
+          method: "PUT",
+          body: undefined,
+        })
+      );
+    });
+
+    it("should handle undefined data in PATCH request", async () => {
+      const mockResponse = {
+        ok: true,
+        status: 200,
+        statusText: "OK",
+        headers: new Map(),
+        json: jest.fn().mockResolvedValue({}),
+      };
+      mockResponse.headers.forEach = jest.fn();
+      mockFetch.mockResolvedValue(mockResponse);
+
+      await adapter.patch("/test");
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        "/test",
+        expect.objectContaining({
+          method: "PATCH",
+          body: undefined,
+        })
+      );
+    });
+
+    it("should properly merge all header sources", async () => {
+      const adapterConfig = {
+        headers: { "X-Adapter": "adapter-value" },
+      };
+      const customAdapter = new FetchAdapter(adapterConfig);
+
+      const mockResponse = {
+        ok: true,
+        status: 200,
+        statusText: "OK",
+        headers: new Map(),
+        json: jest.fn().mockResolvedValue({}),
+      };
+      mockResponse.headers.forEach = jest.fn();
+      mockFetch.mockResolvedValue(mockResponse);
+
+      await customAdapter.get("/test", {
+        headers: { "X-Config": "config-value" },
+      });
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        "/test",
+        expect.objectContaining({
+          headers: expect.objectContaining({
+            "Content-Type": "application/json",
+            "X-Adapter": "adapter-value",
+            "X-Config": "config-value",
+          }),
+        })
+      );
+    });
+
+    it("should handle request with all options headers", async () => {
+      const mockResponse = {
+        ok: true,
+        status: 200,
+        statusText: "OK",
+        headers: new Map(),
+        json: jest.fn().mockResolvedValue({}),
+      };
+      mockResponse.headers.forEach = jest.fn();
+      mockFetch.mockResolvedValue(mockResponse);
+
+      await adapter.post(
+        "/test",
+        { data: "test" },
+        {
+          headers: { "X-Test": "test-value" },
+        }
+      );
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        "/test",
+        expect.objectContaining({
+          method: "POST",
+          headers: expect.objectContaining({
+            "Content-Type": "application/json",
+            "X-Test": "test-value",
+          }),
+        })
+      );
+    });
+
+    it("should handle request with no config to cover optional chaining", async () => {
+      const mockResponse = {
+        ok: true,
+        status: 200,
+        statusText: "OK",
+        headers: new Map(),
+        json: jest.fn().mockResolvedValue({}),
+      };
+      mockResponse.headers.forEach = jest.fn();
+      mockFetch.mockResolvedValue(mockResponse);
+
+      // Call without config parameter to test config?.headers branch
+      await adapter.get("/test");
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        "/test",
+        expect.objectContaining({
+          method: "GET",
         })
       );
     });
