@@ -10,8 +10,10 @@ const customJestConfig = {
   setupFilesAfterEnv: ["<rootDir>/jest.setup.ts"],
   testEnvironment: "jest-environment-jsdom",
   moduleNameMapper: {
+    "^@ui5/webcomponents-react$":
+      "<rootDir>/__mocks__/@ui5/webcomponents-react.js",
     "^@ui5/webcomponents-react-base":
-      "<rootDir>/__mocks__/@ui5/webcomponents-react-base.ts",
+      "<rootDir>/__mocks__/@ui5/webcomponents-react-base.js",
     // Handle module aliases
     "^@/(.*)$": "<rootDir>/src/$1",
   },

@@ -13,12 +13,16 @@ jest.mock("next/navigation", () => ({
   usePathname: () => "/",
 }));
 
+// Mock specific behavior for SideNavigation components in tests
 jest.mock("@ui5/webcomponents-react", () => {
+  const actualModule = jest.requireActual("@ui5/webcomponents-react");
   return {
+    ...actualModule,
     SideNavigation: ({
       children,
       onSelectionChange,
       collapsed = false,
+      ...props
     }: {
       children: React.ReactNode;
       onSelectionChange: (event: {
@@ -26,7 +30,7 @@ jest.mock("@ui5/webcomponents-react", () => {
       }) => void;
       collapsed?: boolean;
     }) => (
-      <div data-testid="side-navigation" data-collapsed={collapsed}>
+      <div data-testid="side-navigation" data-collapsed={collapsed} {...props}>
         {React.Children.map(children, (child: React.ReactNode) => {
           if (React.isValidElement(child)) {
             return React.cloneElement(
@@ -48,6 +52,7 @@ jest.mock("@ui5/webcomponents-react", () => {
       children,
       selected,
       __onSelectionChange,
+      ...props
     }: {
       "data-path"?: string;
       text: string;
@@ -57,7 +62,7 @@ jest.mock("@ui5/webcomponents-react", () => {
         detail: { item: { dataset: { path: string } } };
       }) => void;
     }) => (
-      <div>
+      <div {...props}>
         <button
           data-testid={`nav-item-${text.toLowerCase().replace(/\s+/g, "-")}`}
           data-selected={selected}
@@ -75,6 +80,7 @@ jest.mock("@ui5/webcomponents-react", () => {
     SideNavigationSubItem: ({
       text,
       selected,
+      ...props
     }: {
       text: string;
       selected?: boolean;
@@ -82,12 +88,99 @@ jest.mock("@ui5/webcomponents-react", () => {
       <li
         data-testid={`sub-item-${text.toLowerCase().replace(/\s+/g, "-")}`}
         data-selected={selected}
+        {...props}
       >
         {text}
       </li>
     ),
   };
 });
+
+// Mock the custom navigation item components to make them testable
+jest.mock("@/components/AppLayout/SidebarItems/SettingsNavigationItem", () => {
+  return function MockSettingsNavigationItem() {
+    return <div data-testid="nav-item-settings">Settings</div>;
+  };
+});
+
+jest.mock(
+  "@/components/AppLayout/SidebarItems/DefinitionsNavigationItem",
+  () => {
+    return function MockDefinitionsNavigationItem() {
+      return <div data-testid="nav-item-definitions">Definitions</div>;
+    };
+  }
+);
+
+jest.mock("@/components/AppLayout/SidebarItems/FeedbackNavigationItem", () => {
+  return function MockFeedbackNavigationItem({
+    onSubmitFeedback,
+  }: {
+    onSubmitFeedback?: (feedback: string) => void;
+  }) {
+    return (
+      <div data-testid="nav-item-feedback">
+        <button
+          data-testid="feedback-submit-button"
+          onClick={() => onSubmitFeedback?.("Test feedback")}
+        >
+          Submit Feedback
+        </button>
+      </div>
+    );
+  };
+});
+
+jest.mock("@/components/AppLayout/SidebarItems/RawDataNavigationItem", () => {
+  return function MockRawDataNavigationItem({
+    onDataSelection,
+  }: {
+    onDataSelection?: (data: unknown, filters: Record<number, string>) => void;
+  }) {
+    return (
+      <div data-testid="nav-item-raw-data">
+        <button
+          data-testid="raw-data-select-button"
+          onClick={() =>
+            onDataSelection?.({ id: 1, name: "test data" }, { 1: "filter1" })
+          }
+        >
+          Select Raw Data
+        </button>
+      </div>
+    );
+  };
+});
+
+jest.mock(
+  "@/components/AppLayout/SidebarItems/ChatHistoryNavigationItem",
+  () => {
+    return function MockChatHistoryNavigationItem({
+      onChatSelect,
+      onChatItemSelect,
+    }: {
+      onChatSelect?: (chatId: number) => void;
+      onChatItemSelect?: (chatId: number, itemId: number) => void;
+    }) {
+      return (
+        <div data-testid="nav-item-chat-history">
+          <button
+            data-testid="chat-select-button"
+            onClick={() => onChatSelect?.(123)}
+          >
+            Select Chat
+          </button>
+          <button
+            data-testid="chat-item-select-button"
+            onClick={() => onChatItemSelect?.(123, 456)}
+          >
+            Select Chat Item
+          </button>
+        </div>
+      );
+    };
+  }
+);
 
 const mockNavItems: NavBarItem[] = [
   {
@@ -104,11 +197,6 @@ const mockNavItems: NavBarItem[] = [
     text: "Profile",
     path: "/profile",
     icon: "user-settings",
-  },
-  {
-    text: "Settings",
-    path: "/settings",
-    icon: "settings",
   },
   {
     text: "More",
@@ -137,7 +225,7 @@ describe("SideBarMenu", () => {
     expect(screen.getByTestId("nav-item-home")).toBeInTheDocument();
     expect(screen.getByTestId("nav-item-about")).toBeInTheDocument();
     expect(screen.getByTestId("nav-item-profile")).toBeInTheDocument();
-    expect(screen.getByTestId("nav-item-settings")).toBeInTheDocument();
+    expect(screen.getByTestId("nav-item-settings")).toBeInTheDocument(); // This comes from SettingsNavigationItem
     expect(screen.getByTestId("nav-item-more")).toBeInTheDocument();
   });
 
@@ -211,7 +299,19 @@ describe("SideBarMenu", () => {
 
     const sideNav = screen.getByTestId("side-navigation");
     expect(sideNav).toBeInTheDocument();
-    expect(sideNav.children).toHaveLength(0);
+
+    // Even with empty navItems, custom components should still be present
+    expect(screen.getByTestId("nav-item-settings")).toBeInTheDocument();
+    expect(screen.getByTestId("nav-item-definitions")).toBeInTheDocument();
+    expect(screen.getByTestId("nav-item-feedback")).toBeInTheDocument();
+    expect(screen.getByTestId("nav-item-raw-data")).toBeInTheDocument();
+    expect(screen.getByTestId("nav-item-chat-history")).toBeInTheDocument();
+
+    // But none of the mockNavItems should be present
+    expect(screen.queryByTestId("nav-item-home")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("nav-item-about")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("nav-item-profile")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("nav-item-more")).not.toBeInTheDocument();
   });
 
   it("handles navigation items without sub items", () => {
@@ -227,5 +327,60 @@ describe("SideBarMenu", () => {
 
     expect(screen.getByTestId("nav-item-simple")).toBeInTheDocument();
     expect(screen.queryByTestId("sub-item-sub-item-1")).not.toBeInTheDocument();
+  });
+
+  it("calls handleFeedbackSubmit when feedback is submitted", () => {
+    const consoleSpy = jest.spyOn(console, "log").mockImplementation();
+    render(<SideBarMenu navItems={mockNavItems} />);
+
+    // Click the feedback submit button to trigger the handler
+    const feedbackButton = screen.getByTestId("feedback-submit-button");
+    fireEvent.click(feedbackButton);
+
+    expect(consoleSpy).toHaveBeenCalledWith(
+      "Feedback submitted:",
+      "Test feedback"
+    );
+    consoleSpy.mockRestore();
+  });
+
+  it("calls handleRawDataSelection when raw data is selected", () => {
+    const consoleSpy = jest.spyOn(console, "log").mockImplementation();
+    render(<SideBarMenu navItems={mockNavItems} />);
+
+    // Click the raw data select button to trigger the handler
+    const rawDataButton = screen.getByTestId("raw-data-select-button");
+    fireEvent.click(rawDataButton);
+
+    expect(consoleSpy).toHaveBeenCalledWith(
+      "Raw data selected:",
+      { id: 1, name: "test data" },
+      { 1: "filter1" }
+    );
+    consoleSpy.mockRestore();
+  });
+
+  it("calls handleChatSelect when chat is selected", () => {
+    const consoleSpy = jest.spyOn(console, "log").mockImplementation();
+    render(<SideBarMenu navItems={mockNavItems} />);
+
+    // Click the chat select button to trigger the handler
+    const chatButton = screen.getByTestId("chat-select-button");
+    fireEvent.click(chatButton);
+
+    expect(consoleSpy).toHaveBeenCalledWith("Chat selected:", 123);
+    consoleSpy.mockRestore();
+  });
+
+  it("calls handleChatItemSelect when chat item is selected", () => {
+    const consoleSpy = jest.spyOn(console, "log").mockImplementation();
+    render(<SideBarMenu navItems={mockNavItems} />);
+
+    // Click the chat item select button to trigger the handler
+    const chatItemButton = screen.getByTestId("chat-item-select-button");
+    fireEvent.click(chatItemButton);
+
+    expect(consoleSpy).toHaveBeenCalledWith("Chat item selected:", 123, 456);
+    consoleSpy.mockRestore();
   });
 });
