@@ -56,9 +56,9 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
             width: "100%",
           }}
         >
-          {actions.map((action, index) => (
+          {actions.map((action) => (
             <Button
-              key={index}
+              key={action.label}
               design={action.design || "Default"}
               onClick={action.onClick}
             >
