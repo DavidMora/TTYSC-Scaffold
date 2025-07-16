@@ -37,6 +37,33 @@ jest.mock("@/components/AppLayout/SideBar", () => {
   };
 });
 
+// Mock the AnalysisFilter component
+jest.mock("@/components/AnalysisFilters/AnalysisFilters", () => {
+  return function MockAnalysisFilter() {
+    return <div data-testid="analysis-filter">Mock Analysis Filter</div>;
+  };
+});
+
+// Mock the AnalysisHeader component
+jest.mock("@/components/AnalysisHeader/AnalysisHeader", () => {
+  return function MockAnalysisHeader() {
+    return (
+      <div data-testid="analysis-header">Mock Analysis Header</div>
+    );
+  };
+});
+
+// Mock the useAnalysisFilters hook
+jest.mock("@/hooks/useAnalysisFilters", () => ({
+  useAnalysisFilters: () => ({
+    filters: {},
+    availableOptions: {},
+    isDisabled: false,
+    handleFilterChange: jest.fn(),
+    resetFilters: jest.fn(),
+  }),
+}));
+
 describe("AppLayout", () => {
   beforeEach(() => {
     mockPush.mockClear();

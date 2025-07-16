@@ -8,6 +8,7 @@ import HeaderBar from "@/components/AppLayout/HeaderBar";
 import { HEADER_BAR_CONFIG } from "@/lib/constants/UI/HeaderBar";
 import AnalysisFilter from "@/components/AnalysisFilters/AnalysisFilters";
 import { useAnalysisFilters } from "@/hooks/useAnalysisFilters";
+import AnalysisHeader from "../AnalysisHeader/AnalysisHeader";
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -16,8 +17,14 @@ interface AppLayoutProps {
 export default function AppLayout({ children }: Readonly<AppLayoutProps>) {
   const [sideNavCollapsed] = useState(false);
 
-  const { filters, availableOptions, isDisabled, handleFilterChange } =
-    useAnalysisFilters();
+  const {
+    filters,
+    availableOptions,
+    isDisabled,
+    handleFilterChange,
+    resetFilters,
+  } = useAnalysisFilters();
+
   return (
     <FlexBox
       direction={FlexBoxDirection.Column}
@@ -70,6 +77,7 @@ export default function AppLayout({ children }: Readonly<AppLayoutProps>) {
               backgroundColor: "var(--sapToolbar_SeparatorColor)",
             }}
           />
+          <AnalysisHeader onFiltersReset={resetFilters} />
           {children}
         </div>
       </FlexBox>

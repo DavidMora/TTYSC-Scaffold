@@ -88,6 +88,11 @@ const Dialog = React.forwardRef(
 );
 Dialog.displayName = "Dialog";
 
+const Label = ({ children, className }) => (
+  <label className={className} data-testid="ui5-label">{children}</label>
+);
+Label.displayName = "Label";
+
 const FlexBox = React.forwardRef(
   (
     {
@@ -96,7 +101,6 @@ const FlexBox = React.forwardRef(
       direction,
       alignItems,
       justifyContent,
-      fitContainer: _fitContainer,
       ...props
     },
     ref
@@ -126,7 +130,7 @@ const FlexBox = React.forwardRef(
             : undefined,
         ...props.style,
       }}
-      data-testid="flex-box"
+      data-testid={"ui5-flexbox"}
       data-direction={direction}
       {...props}
     >
@@ -143,10 +147,11 @@ const Form = React.forwardRef(({ children, className }, ref) => (
 ));
 Form.displayName = "Form";
 
-const Input = React.forwardRef(({ placeholder, ...props }, ref) => (
+const Input = React.forwardRef(({ placeholder, maxlength, ...props }, ref) => (
   <input
     ref={ref}
     placeholder={placeholder}
+    maxLength={maxlength}
     data-testid="ui5-input"
     {...props}
   />
@@ -159,6 +164,11 @@ const List = ({ children, className }) => (
   </ul>
 );
 List.displayName = "List";
+
+const ListItem = ({ children, onClick, ...props }) => (
+  <li onClick={onClick} data-testid="ui5-list-item" {...props}>{children}</li>
+);
+ListItem.displayName = "ListItem";
 
 const ListItemCustom = ({ children, className, onClick }) => (
   <li
@@ -519,7 +529,7 @@ const TabContainer = ({ children, className, onTabSelect }) => {
 TabContainer.displayName = "TabContainer";
 
 // Title Component with improved level handling
-const Title = ({ children, level, className, size, ...props }) => {
+const Title = ({ children, level, className, ...props }) => {
   const Component =
     level === "H1"
       ? "h1"
@@ -764,8 +774,8 @@ module.exports = {
   Tab,
   TabContainer,
   Tag,
-  Text: ({ children, className, style }) => (
-    <span className={className} style={style}>
+  Text: ({ children, className, style, ...props }) => (
+    <span className={className} style={style} {...props} data-testid="ui5-text">
       {children}
     </span>
   ),
