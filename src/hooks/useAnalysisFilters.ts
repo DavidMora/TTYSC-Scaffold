@@ -152,10 +152,15 @@ export const useAnalysisFilters = () => {
     [resetDependentFilters]
   );
 
+  const resetFilters = useCallback(() => {
+    setFilters(INITIAL_FILTERS);
+  }, []);
+
   return {
     filters,
     availableOptions,
     isDisabled,
     handleFilterChange,
+    resetFilters,
   };
 };

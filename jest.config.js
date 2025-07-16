@@ -20,6 +20,7 @@ const customJestConfig = {
     "!src/**/*.d.ts",
     "!src/**/*.stories.{js,jsx,ts,tsx}",
     "!src/**/*.test.{js,jsx,ts,tsx}",
+    "!src/lib/constants/**",
   ],
   coverageReporters: ["text", "lcov", "html", "json-summary"],
   coverageDirectory: "coverage",

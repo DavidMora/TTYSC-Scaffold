@@ -3,6 +3,7 @@ import { useAnalysisFilters } from "@/hooks/useAnalysisFilters";
 import {
   FilterKeys,
   FILTER_ALL_VALUE,
+  INITIAL_FILTERS,
 } from "@/lib/constants/UI/analysisFilters";
 
 jest.mock("@/lib/constants/UI/analysisFilters", () => ({
@@ -259,6 +260,50 @@ describe("useAnalysisFilters", () => {
       expect(result.current.availableOptions[FilterKeys.NVPN]).toEqual([
         FILTER_ALL_VALUE,
       ]);
+    });
+  });
+
+  describe("resetFilters", () => {
+    it("should reset all filters to initial state", () => {
+      const { result } = renderHook(() => useAnalysisFilters());
+
+      act(() => {
+        result.current.handleFilterChange(
+          FilterKeys.ANALYSIS,
+          "Supply Gap Analysis"
+        );
+      });
+
+      act(() => {
+        result.current.handleFilterChange(
+          FilterKeys.ORGANIZATION,
+          "Example Organization"
+        );
+      });
+
+      expect(result.current.filters[FilterKeys.ANALYSIS]).toBe(
+        "Supply Gap Analysis"
+      );
+      expect(result.current.filters[FilterKeys.ORGANIZATION]).toBe(
+        "Example Organization"
+      );
+
+      act(() => {
+        result.current.resetFilters();
+      });
+
+      expect(result.current.filters).toEqual(INITIAL_FILTERS);
+      expect(result.current.filters[FilterKeys.ANALYSIS]).toBe(
+        FILTER_ALL_VALUE
+      );
+      expect(result.current.filters[FilterKeys.ORGANIZATION]).toBe(
+        FILTER_ALL_VALUE
+      );
+      expect(result.current.filters[FilterKeys.CM_SITE_NAME]).toBe(
+        FILTER_ALL_VALUE
+      );
+      expect(result.current.filters[FilterKeys.SKU]).toBe(FILTER_ALL_VALUE);
+      expect(result.current.filters[FilterKeys.NVPN]).toBe(FILTER_ALL_VALUE);
     });
   });
 });

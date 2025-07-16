@@ -38,12 +38,15 @@ jest.mock("@ui5/webcomponents-react", () => ({
     justifyContent,
     alignItems,
     style,
+    onClick,
+    onMouseEnter,
+    onMouseLeave,
     ...props
   }: any) =>
     React.createElement(
       "div",
       {
-        "data-testid": "ui5-flexbox",
+        "data-testid": "flexbox",
         "data-direction": direction,
         "data-wrap": wrap,
         "data-justify": justifyContent,
@@ -54,17 +57,20 @@ jest.mock("@ui5/webcomponents-react", () => ({
           alignItems: alignItems,
           ...style,
         },
+        onClick,
+        onMouseEnter,
+        onMouseLeave,
         ...props,
       },
       children
     ),
   
   // Typography
-  Title: ({ children, level, ...props }: any) =>
-    React.createElement("h1", { "data-testid": "ui5-title", "data-level": level, ...props }, children),
+  Title: ({ children, level, style, ...props }: any) =>
+    React.createElement("h3", { "data-testid": "title", "data-level": level, style, ...props }, children),
   
   Text: ({ children, style, ...props }: any) =>
-    React.createElement("span", { "data-testid": "ui-5text", style, ...props }, children),
+    React.createElement("span", { "data-testid": "text", style, ...props }, children),
   
   Label: ({ children, ...props }: any) =>
     React.createElement("label", { "data-testid": "ui5-label", ...props }, children),
@@ -74,7 +80,7 @@ jest.mock("@ui5/webcomponents-react", () => ({
     React.createElement(
       "button",
       {
-        "data-testid": "ui5-button",
+        "data-testid": "button",
         "data-design": design,
         "data-icon": icon,
         onClick,
@@ -84,6 +90,34 @@ jest.mock("@ui5/webcomponents-react", () => ({
       },
       children
     ),
+  
+  Input: React.forwardRef<
+    HTMLInputElement,
+    {
+      value?: string;
+      onKeyDown?: (e: React.KeyboardEvent) => void;
+      onInput?: (e: { target: { value: string } }) => void;
+      onBlur?: () => void;
+      maxlength?: number;
+      style?: React.CSSProperties;
+      [key: string]: any;
+    }
+  >(function MockInput(
+    { value, onKeyDown, onInput, onBlur, maxlength, style, ...props },
+    ref
+  ) {
+    return React.createElement("input", {
+      ref,
+      "data-testid": "input",
+      value,
+      onKeyDown,
+      onChange: (e: any) => onInput?.({ target: { value: e.target.value } }),
+      onBlur,
+      maxLength: maxlength,
+      style,
+      ...props,
+    });
+  }),
   
   Select: ({
     value,
@@ -111,6 +145,26 @@ jest.mock("@ui5/webcomponents-react", () => ({
   
   Option: ({ value, children, ...props }: any) =>
     React.createElement("option", { value, ...props }, children),
+
+  Dialog: ({
+    open,
+    onClose,
+    header,
+    footer,
+    children,
+    style,
+    ...props
+  }: any) => {
+    if (!open) return null;
+    return React.createElement(
+      "div",
+      { "data-testid": "dialog", style, ...props },
+      React.createElement("div", { "data-testid": "dialog-header" }, header),
+      React.createElement("div", { "data-testid": "dialog-content" }, children),
+      React.createElement("div", { "data-testid": "dialog-footer" }, footer),
+      React.createElement("button", { "data-testid": "dialog-close", onClick: onClose }, "Close")
+    );
+  },
   
   // Navigation
   ShellBar: ({
@@ -197,8 +251,8 @@ jest.mock("@ui5/webcomponents-react", () => ({
   Avatar: ({ children, ...props }: any) =>
     React.createElement("div", { "data-testid": "ui5-avatar", ...props }, children),
   
-  Icon: ({ name, ...props }: any) =>
-    React.createElement("span", { "data-testid": `icon-${name}`, ...props }, name),
+  Icon: ({ name, style, onClick, ...props }: any) =>
+    React.createElement("i", { "data-testid": "icon", "data-name": name, style, onClick, ...props }, name),
   
   Link: ({ href, children, ...props }: any) =>
     React.createElement("a", { "data-testid": "ui5-link", href, ...props }, children),
@@ -228,6 +282,8 @@ jest.mock("@ui5/webcomponents-react", () => ({
     End: "End",
     Stretch: "Stretch",
   },
+  
+  InputDomRef: {} as React.RefObject<HTMLInputElement>,
 }));
 /* eslint-enable @typescript-eslint/no-explicit-any */
 
