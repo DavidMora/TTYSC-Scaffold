@@ -1,13 +1,6 @@
 "use client";
 
-import {
-  ShellBar,
-  ShellBarItem,
-  Avatar,
-  FlexBox,
-  FlexBoxDirection,
-} from "@ui5/webcomponents-react";
-import Image from "next/image";
+import { FlexBox, FlexBoxDirection } from "@ui5/webcomponents-react";
 import { useState } from "react";
 import SideBarMenu from "@/components/AppLayout/SideBar";
 import { sideBarItems } from "@/lib/constants/UI/SideBarItems";
@@ -21,39 +14,15 @@ interface AppLayoutProps {
 }
 
 export default function AppLayout({ children }: Readonly<AppLayoutProps>) {
-  const [sideNavCollapsed, setSideNavCollapsed] = useState(false);
-
-  const handleProfileClick = () => {
-    // Handle profile click
-    console.log("Profile clicked");
-  };
+  const [sideNavCollapsed] = useState(false);
 
   const { filters, availableOptions, isDisabled, handleFilterChange } =
     useAnalysisFilters();
   return (
     <FlexBox
       direction={FlexBoxDirection.Column}
-      style={{ minHeight: "100vh", width: "100vw" }}
+      style={{ height: "100vh", width: "100vw" }}
     >
-      {/* Shell Bar */}
-      <ShellBar
-        primaryTitle="SAPUI5 Next.js App"
-        secondaryTitle="CodeBranch Demo Application"
-        // logo={<Image src="/next.svg" alt="Logo" width={120} height={32} />}
-        profile={
-          <Avatar>
-            <Image src="/vercel.svg" alt="Profile" width={32} height={32} />
-          </Avatar>
-        }
-        onProfileClick={handleProfileClick}
-      >
-        <ShellBarItem
-          icon="menu2"
-          text="Menu"
-          onClick={() => setSideNavCollapsed(!sideNavCollapsed)}
-        />
-      </ShellBar>
-
       <FlexBox style={{ flex: 1, overflow: "hidden" }}>
         {/* Side Navigation */}
         <div

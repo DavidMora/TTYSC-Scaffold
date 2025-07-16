@@ -4,7 +4,15 @@ import {
   SideNavigationItem,
   SideNavigationSubItem,
 } from "@ui5/webcomponents-react";
-import { useRouter, usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import NvidiaLogo from "@/components/Icons/NvidiaLogo";
+import SettingsNavigationItem from "./SidebarItems/SettingsNavigationItem";
+import DefinitionsNavigationItem from "./SidebarItems/DefinitionsNavigationItem";
+import FeedbackNavigationItem from "./SidebarItems/FeedbackNavigationItem";
+import RawDataNavigationItem, {
+  type RawDataItem,
+} from "./SidebarItems/RawDataNavigationItem";
+import ChatHistoryNavigationItem from "./SidebarItems/ChatHistoryNavigationItem";
 
 interface SideBarProps {
   sideNavCollapsed?: boolean;
@@ -15,29 +23,74 @@ export default function SideBarMenu({
   sideNavCollapsed,
   navItems,
 }: Readonly<SideBarProps>) {
-  const router = useRouter();
   const pathname = usePathname();
+  const router = useRouter();
 
-  const handleNavigation = (path: string) => {
-    router.push(path);
+  const handleFeedbackSubmit = (feedback: string) => {
+    console.log("Feedback submitted:", feedback);
+    // Implement feedback submission logic here
+  };
+
+  const handleRawDataSelection = (
+    selectedData: RawDataItem,
+    filters: Record<number, string>
+  ) => {
+    console.log("Raw data selected:", selectedData, filters);
+    // Implement data selection logic here
+  };
+
+  const handleChatSelect = (chatId: number) => {
+    console.log("Chat selected:", chatId);
+    // Implement chat selection logic here
+  };
+
+  const handleChatItemSelect = (chatId: number, itemId: number) => {
+    console.log("Chat item selected:", chatId, itemId);
+    // Implement chat item selection logic here
+  };
+
+  const handleNavSelection = (event: {
+    detail?: { item?: { dataset?: { path?: string } } };
+  }) => {
+    const path = event.detail?.item?.dataset?.path;
+    if (path) {
+      router.push(path);
+    }
   };
 
   return (
     <SideNavigation
       collapsed={sideNavCollapsed}
-      onSelectionChange={(event) => {
-        const selectedItem = event.detail.item;
-        const path = selectedItem.dataset.path;
-        if (path) {
-          handleNavigation(path);
-        }
-      }}
+      onSelectionChange={handleNavSelection}
+      header={
+        <div style={{ display: "flex", alignItems: "center", padding: "2rem" }}>
+          <NvidiaLogo style={{ width: "100%" }} />
+        </div>
+      }
+      fixedItems={
+        <>
+          <SideNavigationItem icon="restart" text="Restart Session" />
+          <SideNavigationItem icon="journey-arrive" text="Log Out" />
+        </>
+      }
     >
+      {/* Custom Navigation Items */}
+      <SettingsNavigationItem />
+      <DefinitionsNavigationItem />
+      <FeedbackNavigationItem onSubmitFeedback={handleFeedbackSubmit} />
+      <RawDataNavigationItem onDataSelection={handleRawDataSelection} />
+      <ChatHistoryNavigationItem
+        onChatSelect={handleChatSelect}
+        onChatItemSelect={handleChatItemSelect}
+      />
+
+      {/* Navigation Items */}
       {navItems.map((item) => (
         <SideNavigationItem
           key={item.path || item.text}
           text={item.text}
           icon={item.icon}
+          unselectable={item.subItems?.length !== 0}
           selected={item.path ? pathname === item.path : false}
           data-path={item.path || undefined}
         >
