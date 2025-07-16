@@ -44,8 +44,8 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
     <Dialog
       open={isOpen}
       onClose={onClose}
-      aria-labelledby="confirmation-modal-title"
-      aria-describedby="confirmation-modal-description"
+      aria-labelledby="modal-title"
+      aria-describedby="modal-message"
       style={{ width }}
       header={
         <Title
@@ -65,6 +65,11 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
             width: "100%",
           }}
         >
+          {actions?.length === 0 && (
+            <Button design="Emphasized" onClick={onClose}>
+              Close
+            </Button>
+          )}
           {actions.map((action, index) => (
             <Button
               key={`${action.label}-${index}`}
