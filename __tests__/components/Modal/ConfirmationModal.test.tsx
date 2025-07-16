@@ -40,7 +40,7 @@ describe("ConfirmationModal", () => {
 
     render(<ConfirmationModal {...props} />);
 
-    const buttons = screen.getAllByTestId("button");
+    const buttons = screen.getAllByTestId("ui5-button");
 
     fireEvent.click(buttons[0]);
     expect(cancelAction).toHaveBeenCalledTimes(1);

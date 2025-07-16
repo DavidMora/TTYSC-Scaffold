@@ -64,38 +64,38 @@ describe("AnalysisRenaming", () => {
   it("should save changes and call onNameChange when Enter is pressed", () => {
     render(<AnalysisRenaming {...defaultProps} />);
 
-    fireEvent.click(screen.getByTestId("icon"));
-    const input = screen.getByTestId("input");
+    fireEvent.click(screen.getByTestId("ui5-icon"));
+    const input = screen.getByTestId("ui5-input");
 
-    fireEvent.change(input, { target: { value: "New Analysis Name" } });
+    fireEvent.input(input, { target: { value: "New Analysis Name" } });
     fireEvent.keyDown(input, { key: "Enter", code: "Enter" });
 
     expect(defaultProps.onNameChange).toHaveBeenCalledWith("New Analysis Name");
-    expect(screen.queryByTestId("input")).not.toBeInTheDocument();
-    expect(screen.getByTestId("text")).toBeInTheDocument();
+    expect(screen.queryByTestId("ui5-input")).not.toBeInTheDocument();
+    expect(screen.getByTestId("ui5-text")).toBeInTheDocument();
   });
 
   it("should cancel editing when Escape is pressed", () => {
     render(<AnalysisRenaming {...defaultProps} />);
 
-    fireEvent.click(screen.getByTestId("icon"));
-    const input = screen.getByTestId("input");
+    fireEvent.click(screen.getByTestId("ui5-icon"));
+    const input = screen.getByTestId("ui5-input");
 
-    fireEvent.change(input, { target: { value: "New Analysis Name" } });
+    fireEvent.input(input, { target: { value: "New Analysis Name" } });
     fireEvent.keyDown(input, { key: "Escape", code: "Escape" });
 
     expect(defaultProps.onNameChange).not.toHaveBeenCalled();
-    expect(screen.queryByTestId("input")).not.toBeInTheDocument();
-    expect(screen.getByTestId("text")).toHaveTextContent("Test Analysis");
+    expect(screen.queryByTestId("ui5-input")).not.toBeInTheDocument();
+    expect(screen.getByTestId("ui5-text")).toHaveTextContent("Test Analysis");
   });
 
   it("should close validation modal when OK is clicked", () => {
     render(<AnalysisRenaming {...defaultProps} />);
 
-    fireEvent.click(screen.getByTestId("icon"));
-    const input = screen.getByTestId("input");
+    fireEvent.click(screen.getByTestId("ui5-icon"));
+    const input = screen.getByTestId("ui5-input");
 
-    fireEvent.change(input, { target: { value: "" } });
+    fireEvent.input(input, { target: { value: "" } });
     fireEvent.keyDown(input, { key: "Enter", code: "Enter" });
 
     expect(screen.getByTestId("validation-modal")).toBeInTheDocument();
@@ -108,13 +108,13 @@ describe("AnalysisRenaming", () => {
   it("should handle key events that are not Enter or Escape", () => {
     render(<AnalysisRenaming {...defaultProps} />);
 
-    fireEvent.click(screen.getByTestId("icon"));
-    const input = screen.getByTestId("input");
+    fireEvent.click(screen.getByTestId("ui5-icon"));
+    const input = screen.getByTestId("ui5-input");
 
-    fireEvent.change(input, { target: { value: "New Name" } });
+    fireEvent.input(input, { target: { value: "New Name" } });
     fireEvent.keyDown(input, { key: "Tab", code: "Tab" });
 
-    expect(screen.getByTestId("input")).toBeInTheDocument();
+    expect(screen.getByTestId("ui5-input")).toBeInTheDocument();
     expect(defaultProps.onNameChange).not.toHaveBeenCalled();
   });
 });

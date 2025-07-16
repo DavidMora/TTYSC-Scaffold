@@ -27,48 +27,46 @@ const AnalysisHeader: React.FC<AnalysisHeaderProps> = ({ onFiltersReset }) => {
   }, [generateNextName, onFiltersReset]);
 
   return (
-    <>
+    <FlexBox
+      justifyContent={FlexBoxJustifyContent.SpaceBetween}
+      alignItems={FlexBoxAlignItems.Center}
+      style={{ paddingInline: "0.5rem" }}
+    >
+      <FlexBox style={{ gap: "1.5rem" }}>
+        <AnalysisRenaming
+          analysisName={currentName}
+          onNameChange={setCustomName}
+          inputRef={inputRef}
+        />
+
+        <CreateAnalysis onCreateAnalysis={handleCreateAnalysis} />
+      </FlexBox>
+
       <FlexBox
-        justifyContent={FlexBoxJustifyContent.SpaceBetween}
         alignItems={FlexBoxAlignItems.Center}
-        style={{ paddingInline: "0.5rem" }}
+        style={{
+          gap: "0.5rem",
+          color: "var(--sapHighlightColor)",
+        }}
       >
-        <FlexBox style={{ gap: "1.5rem" }}>
-          <AnalysisRenaming
-            analysisName={currentName}
-            onNameChange={setCustomName}
-            inputRef={inputRef}
-          />
-
-          <CreateAnalysis onCreateAnalysis={handleCreateAnalysis} />
-        </FlexBox>
-
-        <FlexBox
-          alignItems={FlexBoxAlignItems.Center}
+        <Text
           style={{
-            gap: "0.5rem",
+            fontSize: "var(--sapFontSize)",
             color: "var(--sapHighlightColor)",
+            fontWeight: "400",
           }}
         >
-          <Text
-            style={{
-              fontSize: "var(--sapFontSize)",
-              color: "var(--sapHighlightColor)",
-              fontWeight: "400",
-            }}
-          >
-            Analysis Auto-Saved
-          </Text>
-          <Icon
-            name="accept"
-            style={{
-              fontSize: "1rem",
-              color: "var(--sapHighlightColor)",
-            }}
-          />
-        </FlexBox>
+          Analysis Auto-Saved
+        </Text>
+        <Icon
+          name="accept"
+          style={{
+            fontSize: "1rem",
+            color: "var(--sapHighlightColor)",
+          }}
+        />
       </FlexBox>
-    </>
+    </FlexBox>
   );
 };
 

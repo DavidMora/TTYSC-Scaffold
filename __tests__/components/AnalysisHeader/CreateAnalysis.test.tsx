@@ -56,7 +56,7 @@ describe("CreateAnalysis", () => {
   it("should close modal when close button is clicked", () => {
     render(<CreateAnalysis onCreateAnalysis={mockOnCreateAnalysis} />);
 
-    fireEvent.click(screen.getByTestId("flexbox"));
+    fireEvent.click(screen.getByTestId("ui5-flexbox"));
     expect(screen.getByTestId("app-modal")).toBeInTheDocument();
 
     fireEvent.click(screen.getByTestId("modal-close"));
@@ -66,7 +66,7 @@ describe("CreateAnalysis", () => {
   it("should call onCreateAnalysis and close modal when start new is clicked", () => {
     render(<CreateAnalysis onCreateAnalysis={mockOnCreateAnalysis} />);
 
-    fireEvent.click(screen.getByTestId("flexbox"));
+    fireEvent.click(screen.getByTestId("ui5-flexbox"));
 
     fireEvent.click(screen.getByTestId("modal-action-start-new"));
 
@@ -77,7 +77,7 @@ describe("CreateAnalysis", () => {
   it("should handle mouse enter and leave events for hover effect", () => {
     render(<CreateAnalysis onCreateAnalysis={mockOnCreateAnalysis} />);
 
-    const flexbox = screen.getByTestId("flexbox");
+    const flexbox = screen.getByTestId("ui5-flexbox");
 
     fireEvent.mouseEnter(flexbox);
     fireEvent.mouseLeave(flexbox);
