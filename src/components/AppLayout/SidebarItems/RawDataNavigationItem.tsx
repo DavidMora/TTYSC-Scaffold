@@ -6,22 +6,21 @@ import {
   Select,
   Option,
   Label,
-  Icon,
 } from "@ui5/webcomponents-react";
 import { useState } from "react";
 
-interface FilterValue {
+export interface FilterValue {
   id: number;
   text: string;
 }
 
-interface TableFilter {
+export interface TableFilter {
   id: number;
   text: string;
   values: FilterValue[];
 }
 
-interface RawDataItem {
+export interface RawDataItem {
   id: number;
   tableName: string;
   tableFilters: TableFilter[];
@@ -106,7 +105,9 @@ export default function RawDataNavigationItem({
   rawDataItems = defaultRawDataItems,
   onDataSelection,
 }: Readonly<RawDataNavigationItemProps>) {
-  const [selectedRawData, setSelectedRawData] = useState(rawDataItems[0]);
+  const [selectedRawData, setSelectedRawData] = useState<RawDataItem | null>(
+    rawDataItems.length > 0 ? rawDataItems[0] : null
+  );
   const [filterSelections, setFilterSelections] = useState<
     Record<number, string>
   >({});
@@ -121,10 +122,20 @@ export default function RawDataNavigationItem({
   };
 
   const handleFilterChange = (filterId: number, value: string) => {
+    if (!selectedRawData) return;
+
     const newFilterSelections = { ...filterSelections, [filterId]: value };
     setFilterSelections(newFilterSelections);
     onDataSelection?.(selectedRawData, newFilterSelections);
   };
+
+  if (!selectedRawData) {
+    return (
+      <SideNavigationItem text="Raw Data" icon="it-host" unselectable>
+        <Text>No data available</Text>
+      </SideNavigationItem>
+    );
+  }
 
   return (
     <SideNavigationItem text="Raw Data" icon="it-host" unselectable>
@@ -174,7 +185,6 @@ export default function RawDataNavigationItem({
                   {value.text}
                 </Option>
               ))}
-              <Icon name="slim-arrow-down" slot="icon" />
             </Select>
           </FlexBox>
         ))}

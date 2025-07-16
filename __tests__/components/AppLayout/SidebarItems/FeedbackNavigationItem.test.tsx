@@ -239,15 +239,10 @@ describe("FeedbackNavigationItem", () => {
     // Type only whitespace
     fireEvent.change(textarea, { target: { value: "   \n  \t  " } });
 
-    // The button should be disabled, but we can access the onClick handler
-    // by getting it from the button props and calling it directly
-    const buttonElement = button as HTMLButtonElement;
-
-    // Temporarily enable button to allow click
-    buttonElement.disabled = false;
-    fireEvent.click(button);
-
+    // Verify button remains disabled with whitespace-only input
+    expect(button).toBeDisabled();
     expect(mockOnSubmitFeedback).not.toHaveBeenCalled();
+
     // Text should remain the same since the condition was false
     expect(textarea).toHaveValue("   \n  \t  ");
   });
