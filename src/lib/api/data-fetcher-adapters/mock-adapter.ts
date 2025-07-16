@@ -13,11 +13,18 @@ export class MockAdapter implements DataFetcherAdapter {
   fetchData<T = unknown>(
     key: string,
     fetcher: () => Promise<HttpClientResponse<T>>,
-    _options: DataFetcherOptions = {}
+    options: DataFetcherOptions = {}
   ): DataFetcherResponse<T> {
     // Simple mock implementation that returns loading state
     // This is not a real data fetching solution but allows tests to run
-    // Note: key, fetcher, and _options are unused in this mock implementation
+    // Parameters are intentionally unused but kept for interface compliance
+    console.debug(
+      "MockAdapter.fetchData called with key:",
+      key,
+      "options:",
+      options
+    );
+
     return {
       data: undefined,
       error: undefined,
