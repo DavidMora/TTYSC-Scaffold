@@ -107,17 +107,25 @@ export const AnalysisRenaming: React.FC<AnalysisRenamingProps> = ({
             >
               {analysisName}
             </Text>
-            <Icon
+            <button
               onClick={handleStartEditing}
-              name="write-new"
-              role="button"
-              tabIndex={0}
               aria-label="Edit analysis name"
               style={{
-                color: "var(--sapHighlightColor)",
+                background: "none",
+                border: "none",
+                padding: "0",
                 cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
               }}
-            />
+            >
+              <Icon
+                name="write-new"
+                style={{
+                  color: "var(--sapHighlightColor)",
+                }}
+              />
+            </button>
           </>
         )}
       </FlexBox>
