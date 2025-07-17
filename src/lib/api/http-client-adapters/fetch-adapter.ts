@@ -2,7 +2,7 @@ import {
   HttpClientAdapter,
   HttpClientConfig,
   HttpClientResponse,
-} from "../../types/api/http-client";
+} from "@/lib/types/api/http-client";
 
 export class FetchAdapter implements HttpClientAdapter {
   private readonly defaultConfig: HttpClientConfig;

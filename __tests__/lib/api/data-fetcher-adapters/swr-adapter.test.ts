@@ -1,6 +1,9 @@
 import { SWRAdapter } from "../../../../src/lib/api/data-fetcher-adapters/swr-adapter";
 import { HttpClientResponse } from "../../../../src/lib/types/api/http-client";
 
+// Mock SWR
+jest.mock("swr");
+
 describe("SWRAdapter", () => {
   let adapter: SWRAdapter;
 
@@ -12,42 +15,18 @@ describe("SWRAdapter", () => {
     it("should create adapter instance", () => {
       expect(adapter).toBeInstanceOf(SWRAdapter);
     });
+
+    it("should create adapter instance without parameters using default SWR", () => {
+      const defaultAdapter = new SWRAdapter();
+      expect(defaultAdapter).toBeInstanceOf(SWRAdapter);
+    });
   });
 
   describe("fetchData", () => {
-    it("should throw error when SWR is not installed", () => {
-      const mockFetcher = jest.fn();
-
-      expect(() => {
-        adapter.fetchData("test-key", mockFetcher);
-      }).toThrow("SWRAdapter requires SWR to be installed. Run: yarn add swr");
-    });
-
-    it("should accept all required parameters", () => {
-      const mockFetcher = jest.fn();
-      const options = {
-        enabled: true,
-        retry: 3,
-        refreshInterval: 1000,
-      };
-
-      expect(() => {
-        adapter.fetchData("test-key", mockFetcher, options);
-      }).toThrow(); // Should throw the SWR not installed error
-    });
-
     it("should test the adapter with mocked SWR", () => {
-      // Create a mock SWR adapter that doesn't throw
+      // Create a mock SWR hook
       const mockUseSWR = jest.fn();
-      const swrAdapter = new (class extends SWRAdapter {
-        constructor() {
-          super();
-          // Override the useSWR property for testing
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (this as any).useSWR = mockUseSWR;
-        }
-      })();
+      const swrAdapter = new SWRAdapter(mockUseSWR);
 
       const mockResponse: HttpClientResponse<unknown> = {
         data: { test: "data" },
@@ -101,13 +80,7 @@ describe("SWRAdapter", () => {
 
     it("should handle different retry configurations", () => {
       const mockUseSWR = jest.fn();
-      const swrAdapter = new (class extends SWRAdapter {
-        constructor() {
-          super();
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (this as any).useSWR = mockUseSWR;
-        }
-      })();
+      const swrAdapter = new SWRAdapter(mockUseSWR);
 
       const mockFetcher = jest.fn();
 
@@ -152,13 +125,7 @@ describe("SWRAdapter", () => {
 
     it("should handle isPaused function", () => {
       const mockUseSWR = jest.fn();
-      const swrAdapter = new (class extends SWRAdapter {
-        constructor() {
-          super();
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (this as any).useSWR = mockUseSWR;
-        }
-      })();
+      const swrAdapter = new SWRAdapter(mockUseSWR);
 
       const mockFetcher = jest.fn();
 
@@ -182,13 +149,7 @@ describe("SWRAdapter", () => {
 
     it("should transform fetcher correctly", async () => {
       const mockUseSWR = jest.fn();
-      const swrAdapter = new (class extends SWRAdapter {
-        constructor() {
-          super();
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (this as any).useSWR = mockUseSWR;
-        }
-      })();
+      const swrAdapter = new SWRAdapter(mockUseSWR);
 
       const mockResponse: HttpClientResponse<{ id: number }> = {
         data: { id: 123 },

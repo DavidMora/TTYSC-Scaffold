@@ -1,12 +1,10 @@
-import { HttpClientResponse } from "../../types/api/http-client";
+import { HttpClientResponse } from "@/lib/types/api/http-client";
 import {
   DataFetcherAdapter,
   DataFetcherOptions,
   DataFetcherResponse,
-} from "../data-fetcher";
-
-// Note: This adapter requires @tanstack/react-query to be installed
-// yarn add @tanstack/react-query
+} from "@/lib/types/api/data-fetcher";
+import { useQuery } from "@tanstack/react-query";
 
 interface TanStackQueryResult<T> {
   data: T | undefined;
@@ -29,14 +27,7 @@ export class TanStackQueryAdapter implements DataFetcherAdapter {
   private readonly useQuery: UseQueryHook;
 
   constructor() {
-    // This would be the actual implementation with TanStack Query:
-    // import { useQuery } from '@tanstack/react-query';
-    // this.useQuery = useQuery;
-
-    // For now, throwing an error since TanStack Query is not installed
-    throw new Error(
-      "TanStackQueryAdapter requires @tanstack/react-query to be installed. Run: yarn add @tanstack/react-query"
-    );
+    this.useQuery = useQuery;
   }
 
   fetchData<T = unknown>(

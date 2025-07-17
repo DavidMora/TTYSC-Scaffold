@@ -6,7 +6,6 @@
 import {
   httpClient,
   HttpClient,
-  dataFetcher,
   DataFetcher,
   FetchAdapter,
   MockAdapter,
@@ -45,10 +44,11 @@ describe("API Module Integration Tests", () => {
       // Create a fetcher function that uses httpClient
       const fetchPosts = () => httpClient.get("/posts");
 
-      // Use dataFetcher with the httpClient fetcher
-      const result = dataFetcher.fetchData("posts", fetchPosts);
+      // Create a data fetcher with MockAdapter for predictable testing
+      const testDataFetcher = new DataFetcher(new MockAdapter());
+      const result = testDataFetcher.fetchData("posts", fetchPosts);
 
-      // Verify the structure is correct
+      // Verify the structure is correct (MockAdapter behavior)
       expect(result).toEqual({
         data: undefined,
         error: undefined,
@@ -91,9 +91,10 @@ describe("API Module Integration Tests", () => {
 
       const customHttpClient = new HttpClient(new FetchAdapter());
 
-      // This should work with MockAdapter (which doesn't actually call the fetcher)
+      // Create a data fetcher with MockAdapter for predictable testing
+      const testDataFetcher = new DataFetcher(new MockAdapter());
       const fetchData = () => customHttpClient.get("/error");
-      const result = dataFetcher.fetchData("error-data", fetchData);
+      const result = testDataFetcher.fetchData("error-data", fetchData);
 
       // MockAdapter always returns loading state regardless of fetcher behavior
       expect(result.isLoading).toBe(true);
@@ -107,9 +108,14 @@ describe("API Module Integration Tests", () => {
       const fetchPosts = () => httpClient.get("/posts");
       const fetchComments = () => httpClient.get("/comments");
 
-      const usersResult = dataFetcher.fetchData("users", fetchUsers);
-      const postsResult = dataFetcher.fetchData("posts", fetchPosts);
-      const commentsResult = dataFetcher.fetchData("comments", fetchComments);
+      // Create a data fetcher with MockAdapter for predictable testing
+      const testDataFetcher = new DataFetcher(new MockAdapter());
+      const usersResult = testDataFetcher.fetchData("users", fetchUsers);
+      const postsResult = testDataFetcher.fetchData("posts", fetchPosts);
+      const commentsResult = testDataFetcher.fetchData(
+        "comments",
+        fetchComments
+      );
 
       // All should have the same structure from MockAdapter
       [usersResult, postsResult, commentsResult].forEach((result) => {
@@ -168,8 +174,16 @@ describe("API Module Integration Tests", () => {
       const fetchUsers = () => httpClient.get<User[]>("/users");
       const fetchPosts = () => httpClient.get<Post[]>("/posts");
 
-      const usersResult = dataFetcher.fetchData<User[]>("users", fetchUsers);
-      const postsResult = dataFetcher.fetchData<Post[]>("posts", fetchPosts);
+      // Create a data fetcher with MockAdapter for predictable testing
+      const testDataFetcher = new DataFetcher(new MockAdapter());
+      const usersResult = testDataFetcher.fetchData<User[]>(
+        "users",
+        fetchUsers
+      );
+      const postsResult = testDataFetcher.fetchData<Post[]>(
+        "posts",
+        fetchPosts
+      );
 
       // Type checking should work correctly
       expect(usersResult.data).toBeUndefined(); // MockAdapter returns undefined

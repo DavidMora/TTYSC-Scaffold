@@ -1,10 +1,10 @@
 import { useState, useEffect, useCallback } from "react";
-import { HttpClientResponse } from "../../types/api/http-client";
+import { HttpClientResponse } from "@/lib/types/api/http-client";
 import {
   DataFetcherAdapter,
   DataFetcherOptions,
   DataFetcherResponse,
-} from "../data-fetcher";
+} from "@/lib/types/api/data-fetcher";
 
 export class ReactAdapter implements DataFetcherAdapter {
   fetchData<T = unknown>(

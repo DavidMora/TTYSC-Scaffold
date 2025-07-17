@@ -1,9 +1,10 @@
-import { HttpClientResponse } from "../../types/api/http-client";
+import { HttpClientResponse } from "@/lib/types/api/http-client";
 import {
   DataFetcherAdapter,
   DataFetcherOptions,
   DataFetcherResponse,
-} from "../data-fetcher";
+} from "@/lib/types/api/data-fetcher";
+import useSWR from "swr";
 
 // Note: This adapter requires SWR to be installed
 // yarn add swr
@@ -23,15 +24,11 @@ type SWRHook = <T>(
 ) => SWRResponse<T>;
 
 export class SWRAdapter implements DataFetcherAdapter {
-  private readonly useSWR: SWRHook | null;
+  private readonly useSWR: SWRHook;
 
-  constructor() {
-    // This would be the actual implementation with SWR:
-    // import useSWR from 'swr';
-    // this.useSWR = useSWR;
-
-    // For now, setting to null since SWR is not installed
-    this.useSWR = null;
+  constructor(swrHook?: SWRHook) {
+    // Allow injection of SWR hook for testing purposes
+    this.useSWR = swrHook || useSWR;
   }
 
   fetchData<T = unknown>(
@@ -39,13 +36,6 @@ export class SWRAdapter implements DataFetcherAdapter {
     fetcher: () => Promise<HttpClientResponse<T>>,
     options: DataFetcherOptions = {}
   ): DataFetcherResponse<T> {
-    // Check if SWR is available
-    if (!this.useSWR) {
-      throw new Error(
-        "SWRAdapter requires SWR to be installed. Run: yarn add swr"
-      );
-    }
-
     // Transform the fetcher to extract data from HttpClientResponse
     const swrFetcher = async () => {
       const response = await fetcher();

@@ -1,13 +1,38 @@
 import { AxiosAdapter } from "../../../../src/lib/api/http-client-adapters/axios-adapter";
+import axios from "axios";
+
+// Mock axios
+jest.mock("axios");
+
+const mockedAxios = axios as jest.Mocked<typeof axios>;
 
 describe("AxiosAdapter", () => {
-  it("should throw error when axios is not installed", () => {
-    expect(() => {
-      const adapter = new AxiosAdapter();
-      return adapter;
-    }).toThrow(
-      "AxiosAdapter requires axios to be installed. Run: yarn add axios @types/axios"
-    );
+  let adapter: AxiosAdapter;
+  let mockAxiosInstance: jest.Mocked<{
+    get: jest.Mock;
+    post: jest.Mock;
+    put: jest.Mock;
+    delete: jest.Mock;
+    patch: jest.Mock;
+  }>;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockAxiosInstance = {
+      get: jest.fn(),
+      post: jest.fn(),
+      put: jest.fn(),
+      delete: jest.fn(),
+      patch: jest.fn(),
+    };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    mockedAxios.create.mockReturnValue(mockAxiosInstance as any);
+    adapter = new AxiosAdapter();
+  });
+
+  it("should create an instance successfully", () => {
+    expect(adapter).toBeInstanceOf(AxiosAdapter);
+    expect(mockedAxios.create).toHaveBeenCalled();
   });
 
   it("should be exportable for conditional usage", () => {
@@ -15,22 +40,7 @@ describe("AxiosAdapter", () => {
     expect(typeof AxiosAdapter).toBe("function");
   });
 
-  it("should test the adapter with mocked Axios", () => {
-    // Create mock axios instance
-    const mockAxiosInstance = {
-      get: jest.fn(),
-      post: jest.fn(),
-      put: jest.fn(),
-      delete: jest.fn(),
-      patch: jest.fn(),
-    };
-
-    // Create adapter that bypasses constructor
-    const axiosAdapter = Object.create(AxiosAdapter.prototype);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (axiosAdapter as any).axiosInstance = mockAxiosInstance;
-
+  it("should test the adapter with mocked Axios", async () => {
     const mockResponse = {
       data: { test: "data" },
       status: 200,
@@ -40,9 +50,9 @@ describe("AxiosAdapter", () => {
 
     mockAxiosInstance.get.mockResolvedValue(mockResponse);
 
-    const result = axiosAdapter.get("/test");
+    const result = await adapter.get("/test");
 
-    expect(result).resolves.toEqual({
+    expect(result).toEqual({
       data: { test: "data" },
       status: 200,
       statusText: "OK",
@@ -53,19 +63,6 @@ describe("AxiosAdapter", () => {
   });
 
   it("should handle GET requests", async () => {
-    const mockAxiosInstance = {
-      get: jest.fn(),
-      post: jest.fn(),
-      put: jest.fn(),
-      delete: jest.fn(),
-      patch: jest.fn(),
-    };
-
-    const axiosAdapter = Object.create(AxiosAdapter.prototype);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (axiosAdapter as any).axiosInstance = mockAxiosInstance;
-
     const mockResponse = {
       data: { id: 1 },
       status: 200,
@@ -75,7 +72,7 @@ describe("AxiosAdapter", () => {
 
     mockAxiosInstance.get.mockResolvedValue(mockResponse);
 
-    const result = await axiosAdapter.get("/test", { timeout: 5000 });
+    const result = await adapter.get("/test", { timeout: 5000 });
 
     expect(mockAxiosInstance.get).toHaveBeenCalledWith("/test", {
       timeout: 5000,
@@ -89,19 +86,6 @@ describe("AxiosAdapter", () => {
   });
 
   it("should handle POST requests", async () => {
-    const mockAxiosInstance = {
-      get: jest.fn(),
-      post: jest.fn(),
-      put: jest.fn(),
-      delete: jest.fn(),
-      patch: jest.fn(),
-    };
-
-    const axiosAdapter = Object.create(AxiosAdapter.prototype);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (axiosAdapter as any).axiosInstance = mockAxiosInstance;
-
     const mockResponse = {
       data: { id: 1, name: "Created" },
       status: 201,
@@ -112,7 +96,7 @@ describe("AxiosAdapter", () => {
     mockAxiosInstance.post.mockResolvedValue(mockResponse);
 
     const testData = { name: "Test" };
-    const result = await axiosAdapter.post("/test", testData, {
+    const result = await adapter.post("/test", testData, {
       timeout: 3000,
     });
 
@@ -128,19 +112,6 @@ describe("AxiosAdapter", () => {
   });
 
   it("should handle PUT requests", async () => {
-    const mockAxiosInstance = {
-      get: jest.fn(),
-      post: jest.fn(),
-      put: jest.fn(),
-      delete: jest.fn(),
-      patch: jest.fn(),
-    };
-
-    const axiosAdapter = Object.create(AxiosAdapter.prototype);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (axiosAdapter as any).axiosInstance = mockAxiosInstance;
-
     const mockResponse = {
       data: { id: 1, name: "Updated" },
       status: 200,
@@ -151,7 +122,7 @@ describe("AxiosAdapter", () => {
     mockAxiosInstance.put.mockResolvedValue(mockResponse);
 
     const testData = { name: "Updated Test" };
-    const result = await axiosAdapter.put("/test/1", testData);
+    const result = await adapter.put("/test/1", testData);
 
     expect(mockAxiosInstance.put).toHaveBeenCalledWith(
       "/test/1",
@@ -167,19 +138,6 @@ describe("AxiosAdapter", () => {
   });
 
   it("should handle DELETE requests", async () => {
-    const mockAxiosInstance = {
-      get: jest.fn(),
-      post: jest.fn(),
-      put: jest.fn(),
-      delete: jest.fn(),
-      patch: jest.fn(),
-    };
-
-    const axiosAdapter = Object.create(AxiosAdapter.prototype);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (axiosAdapter as any).axiosInstance = mockAxiosInstance;
-
     const mockResponse = {
       data: {},
       status: 204,
@@ -189,7 +147,7 @@ describe("AxiosAdapter", () => {
 
     mockAxiosInstance.delete.mockResolvedValue(mockResponse);
 
-    const result = await axiosAdapter.delete("/test/1");
+    const result = await adapter.delete("/test/1");
 
     expect(mockAxiosInstance.delete).toHaveBeenCalledWith("/test/1", undefined);
     expect(result).toEqual({
@@ -201,19 +159,6 @@ describe("AxiosAdapter", () => {
   });
 
   it("should handle PATCH requests", async () => {
-    const mockAxiosInstance = {
-      get: jest.fn(),
-      post: jest.fn(),
-      put: jest.fn(),
-      delete: jest.fn(),
-      patch: jest.fn(),
-    };
-
-    const axiosAdapter = Object.create(AxiosAdapter.prototype);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (axiosAdapter as any).axiosInstance = mockAxiosInstance;
-
     const mockResponse = {
       data: { id: 1, name: "Patched" },
       status: 200,
@@ -224,7 +169,7 @@ describe("AxiosAdapter", () => {
     mockAxiosInstance.patch.mockResolvedValue(mockResponse);
 
     const testData = { name: "Patched Test" };
-    const result = await axiosAdapter.patch("/test/1", testData, {
+    const result = await adapter.patch("/test/1", testData, {
       headers: { custom: "header" },
     });
 

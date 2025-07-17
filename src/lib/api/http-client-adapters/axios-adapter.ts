@@ -2,10 +2,8 @@ import {
   HttpClientAdapter,
   HttpClientConfig,
   HttpClientResponse,
-} from "../../types/api/http-client";
-
-// Note: This adapter requires axios to be installed
-// yarn add axios @types/axios
+} from "@/lib/types/api/http-client";
+import axios from "axios";
 
 interface AxiosInstance {
   get<T = unknown>(
@@ -61,19 +59,12 @@ interface AxiosInstance {
 export class AxiosAdapter implements HttpClientAdapter {
   private readonly axiosInstance: AxiosInstance;
 
-  constructor(/* config: HttpClientConfig = {} */) {
-    // This would be the actual implementation with axios:
-    // import axios from 'axios';
-    // this.axiosInstance = axios.create({
-    //   baseURL: config.baseURL,
-    //   timeout: config.timeout || 30000,
-    //   headers: config.headers || { 'Content-Type': 'application/json' },
-    // });
-
-    // For now, throwing an error since axios is not installed
-    throw new Error(
-      "AxiosAdapter requires axios to be installed. Run: yarn add axios @types/axios"
-    );
+  constructor(config: HttpClientConfig = {}) {
+    this.axiosInstance = axios.create({
+      baseURL: config.baseURL,
+      timeout: config.timeout || 30000,
+      headers: config.headers || { "Content-Type": "application/json" },
+    });
   }
 
   async get<T = unknown>(

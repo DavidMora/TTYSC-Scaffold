@@ -1,9 +1,9 @@
-import { HttpClientResponse } from "../../types/api/http-client";
+import { HttpClientResponse } from "@/lib/types/api/http-client";
 import {
   DataFetcherAdapter,
   DataFetcherOptions,
   DataFetcherResponse,
-} from "../data-fetcher";
+} from "@/lib/types/api/data-fetcher";
 
 /**
  * MockAdapter provides a simple implementation of DataFetcherAdapter

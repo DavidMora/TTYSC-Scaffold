@@ -1,14 +1,22 @@
 import { TanStackQueryAdapter } from "../../../../src/lib/api/data-fetcher-adapters/tanstack-query-adapter";
 import { HttpClientResponse } from "../../../../src/lib/types/api/http-client";
+import { useQuery } from "@tanstack/react-query";
+
+// Mock @tanstack/react-query
+jest.mock("@tanstack/react-query");
+
+const mockUseQuery = useQuery as jest.MockedFunction<typeof useQuery>;
 
 describe("TanStackQueryAdapter", () => {
-  it("should throw error when @tanstack/react-query is not installed", () => {
-    expect(() => {
-      const adapter = new TanStackQueryAdapter();
-      return adapter;
-    }).toThrow(
-      "TanStackQueryAdapter requires @tanstack/react-query to be installed. Run: yarn add @tanstack/react-query"
-    );
+  let adapter: TanStackQueryAdapter;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    adapter = new TanStackQueryAdapter();
+  });
+
+  it("should create an instance successfully", () => {
+    expect(adapter).toBeInstanceOf(TanStackQueryAdapter);
   });
 
   it("should be exportable for conditional usage", () => {
@@ -17,8 +25,6 @@ describe("TanStackQueryAdapter", () => {
   });
 
   it("should test the adapter with mocked TanStack Query", () => {
-    // Mock the adapter methods directly
-    const mockUseQuery = jest.fn();
     const mockResponse: HttpClientResponse<unknown> = {
       data: { test: "data" },
       status: 200,
@@ -28,7 +34,7 @@ describe("TanStackQueryAdapter", () => {
 
     const mockFetcher = jest.fn().mockResolvedValue(mockResponse);
 
-    mockUseQuery.mockReturnValue({
+    (mockUseQuery as jest.Mock).mockReturnValue({
       data: { test: "data" },
       error: null,
       isLoading: false,
@@ -36,13 +42,7 @@ describe("TanStackQueryAdapter", () => {
       refetch: jest.fn(),
     });
 
-    // Create a mock adapter that bypasses the constructor
-    const tanstackAdapter = Object.create(TanStackQueryAdapter.prototype);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (tanstackAdapter as any).useQuery = mockUseQuery;
-
-    const result = tanstackAdapter.fetchData("test-key", mockFetcher, {
+    const result = adapter.fetchData("test-key", mockFetcher, {
       enabled: true,
       retry: 3,
       refreshInterval: 1000,
@@ -68,10 +68,9 @@ describe("TanStackQueryAdapter", () => {
   });
 
   it("should handle different retry configurations", () => {
-    const mockUseQuery = jest.fn();
     const mockFetcher = jest.fn();
 
-    mockUseQuery.mockReturnValue({
+    (mockUseQuery as jest.Mock).mockReturnValue({
       data: undefined,
       error: null,
       isLoading: true,
@@ -79,13 +78,8 @@ describe("TanStackQueryAdapter", () => {
       refetch: jest.fn(),
     });
 
-    const tanstackAdapter = Object.create(TanStackQueryAdapter.prototype);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (tanstackAdapter as any).useQuery = mockUseQuery;
-
     // Test with retry as boolean
-    tanstackAdapter.fetchData("test-key", mockFetcher, { retry: true });
+    adapter.fetchData("test-key", mockFetcher, { retry: true });
     expect(mockUseQuery).toHaveBeenCalledWith(
       expect.objectContaining({
         retry: 3,
@@ -93,7 +87,7 @@ describe("TanStackQueryAdapter", () => {
     );
 
     // Test with retry as number
-    tanstackAdapter.fetchData("test-key", mockFetcher, { retry: 5 });
+    adapter.fetchData("test-key", mockFetcher, { retry: 5 });
     expect(mockUseQuery).toHaveBeenCalledWith(
       expect.objectContaining({
         retry: 5,
@@ -101,7 +95,7 @@ describe("TanStackQueryAdapter", () => {
     );
 
     // Test with retry as false
-    tanstackAdapter.fetchData("test-key", mockFetcher, { retry: false });
+    adapter.fetchData("test-key", mockFetcher, { retry: false });
     expect(mockUseQuery).toHaveBeenCalledWith(
       expect.objectContaining({
         retry: false,
@@ -110,10 +104,9 @@ describe("TanStackQueryAdapter", () => {
   });
 
   it("should handle enabled option", () => {
-    const mockUseQuery = jest.fn();
     const mockFetcher = jest.fn();
 
-    mockUseQuery.mockReturnValue({
+    (mockUseQuery as jest.Mock).mockReturnValue({
       data: undefined,
       error: null,
       isLoading: false,
@@ -121,19 +114,14 @@ describe("TanStackQueryAdapter", () => {
       refetch: jest.fn(),
     });
 
-    const tanstackAdapter = Object.create(TanStackQueryAdapter.prototype);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (tanstackAdapter as any).useQuery = mockUseQuery;
-
-    tanstackAdapter.fetchData("test-key", mockFetcher, { enabled: false });
+    adapter.fetchData("test-key", mockFetcher, { enabled: false });
     expect(mockUseQuery).toHaveBeenCalledWith(
       expect.objectContaining({
         enabled: false,
       })
     );
 
-    tanstackAdapter.fetchData("test-key", mockFetcher, { enabled: true });
+    adapter.fetchData("test-key", mockFetcher, { enabled: true });
     expect(mockUseQuery).toHaveBeenCalledWith(
       expect.objectContaining({
         enabled: true,
@@ -141,7 +129,7 @@ describe("TanStackQueryAdapter", () => {
     );
 
     // Test default enabled
-    tanstackAdapter.fetchData("test-key", mockFetcher);
+    adapter.fetchData("test-key", mockFetcher);
     expect(mockUseQuery).toHaveBeenCalledWith(
       expect.objectContaining({
         enabled: true,
@@ -150,7 +138,6 @@ describe("TanStackQueryAdapter", () => {
   });
 
   it("should transform fetcher correctly", async () => {
-    const mockUseQuery = jest.fn();
     const mockResponse: HttpClientResponse<{ id: number }> = {
       data: { id: 123 },
       status: 200,
@@ -160,7 +147,7 @@ describe("TanStackQueryAdapter", () => {
 
     const mockFetcher = jest.fn().mockResolvedValue(mockResponse);
 
-    mockUseQuery.mockReturnValue({
+    (mockUseQuery as jest.Mock).mockReturnValue({
       data: { id: 123 },
       error: null,
       isLoading: false,
@@ -168,15 +155,11 @@ describe("TanStackQueryAdapter", () => {
       refetch: jest.fn(),
     });
 
-    const tanstackAdapter = Object.create(TanStackQueryAdapter.prototype);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (tanstackAdapter as any).useQuery = mockUseQuery;
-
-    tanstackAdapter.fetchData("test-key", mockFetcher);
+    adapter.fetchData("test-key", mockFetcher);
 
     // Get the transformed fetcher function
-    const queryFn = mockUseQuery.mock.calls[0][0].queryFn;
+    const call = (mockUseQuery as jest.Mock).mock.calls[0];
+    const queryFn = call[0].queryFn;
     const result = await queryFn();
 
     expect(mockFetcher).toHaveBeenCalled();
@@ -184,16 +167,10 @@ describe("TanStackQueryAdapter", () => {
   });
 
   it("should handle error conversion", () => {
-    const mockUseQuery = jest.fn();
     const mockError = new Error("Test error");
     const mockFetcher = jest.fn();
 
-    const tanstackAdapter = Object.create(TanStackQueryAdapter.prototype);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (tanstackAdapter as any).useQuery = mockUseQuery;
-
-    mockUseQuery.mockReturnValue({
+    (mockUseQuery as jest.Mock).mockReturnValue({
       data: undefined,
       error: mockError,
       isLoading: false,
@@ -201,12 +178,12 @@ describe("TanStackQueryAdapter", () => {
       refetch: jest.fn(),
     });
 
-    const result = tanstackAdapter.fetchData("test-key", mockFetcher);
+    const result = adapter.fetchData("test-key", mockFetcher);
 
     expect(result.error).toBe(mockError);
 
     // Test null error conversion
-    mockUseQuery.mockReturnValue({
+    (mockUseQuery as jest.Mock).mockReturnValue({
       data: undefined,
       error: null,
       isLoading: false,
@@ -214,21 +191,15 @@ describe("TanStackQueryAdapter", () => {
       refetch: jest.fn(),
     });
 
-    const result2 = tanstackAdapter.fetchData("test-key", mockFetcher);
+    const result2 = adapter.fetchData("test-key", mockFetcher);
     expect(result2.error).toBeUndefined();
   });
 
   it("should handle mutate function", () => {
-    const mockUseQuery = jest.fn();
     const mockRefetch = jest.fn();
     const mockFetcher = jest.fn();
 
-    const tanstackAdapter = Object.create(TanStackQueryAdapter.prototype);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (tanstackAdapter as any).useQuery = mockUseQuery;
-
-    mockUseQuery.mockReturnValue({
+    (mockUseQuery as jest.Mock).mockReturnValue({
       data: undefined,
       error: null,
       isLoading: false,
@@ -236,7 +207,7 @@ describe("TanStackQueryAdapter", () => {
       refetch: mockRefetch,
     });
 
-    const result = tanstackAdapter.fetchData("test-key", mockFetcher);
+    const result = adapter.fetchData("test-key", mockFetcher);
 
     result.mutate?.();
     expect(mockRefetch).toHaveBeenCalled();
