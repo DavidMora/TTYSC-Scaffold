@@ -53,7 +53,6 @@ describe("FetchAdapter", () => {
         headers: new Map([["content-type", "application/json"]]),
         json: jest.fn().mockResolvedValue({ data: "test" }),
         text: jest.fn().mockResolvedValue(JSON.stringify({ data: "test" })),
-        text: jest.fn().mockResolvedValue(JSON.stringify({ data: "test" })),
       };
       mockResponse.headers.forEach = jest.fn((callback) => {
         callback("application/json", "content-type", mockResponse.headers);
