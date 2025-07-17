@@ -25,7 +25,7 @@ export class FetchAdapter implements HttpClientAdapter {
   ): Promise<HttpClientResponse<T>> {
     const mergedConfig = { ...this.defaultConfig, ...config };
     const fullUrl = mergedConfig.baseURL
-      ? `${mergedConfig.baseURL}${url}`
+      ? new URL(url, mergedConfig.baseURL).toString()
       : url;
 
     const controller = new AbortController();
