@@ -13,23 +13,25 @@ jobs:
     outputs:
       node-version: ${{ steps.setup-node.outputs.node-version }}
     steps:
-      - name: Checkout code
+      - name: Checkout (needed for PR-size check)
+        if: github.event_name == 'pull_request'
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # Needed for SonarCloud
+          fetch-depth: 0            # we need history to diff against base
 
-      - name: Check PR size
+      - name: Enforce PR size limit
         if: github.event_name == 'pull_request'
         run: |
-          LINES_CHANGED=$(git diff --stat origin/${{ github.base_ref }} | tail -n 1 | awk '{print $4}' || echo "0")
-          if [ "$LINES_CHANGED" -gt 10000 ]; then
-            echo "❌ PR is too large! Contains $LINES_CHANGED lines changed. Maximum allowed is 10000 lines."
+          # yarn.lock is excluded to avoid counting it as changed lines
+          LINES_CHANGED=$(git diff --numstat origin/${{ github.base_ref }} -- . ':!yarn.lock' \
+            | awk '{added+=$1; deleted+=$2} END {print added+deleted}')
+          if [ "$LINES_CHANGED" -gt 1000 ]; then
+            echo "❌ PR is too large! Contains $LINES_CHANGED lines changed. Maximum allowed is 1000 lines."
             echo "Please split this PR into smaller ones for better review."
             exit 1
           else
             echo "✅ PR size is within limits ($LINES_CHANGED lines changed)"
           fi
-
       - name: Set up Node.js
         id: setup-node
         uses: actions/setup-node@v4
