@@ -6,7 +6,6 @@ import {
   FetchAdapter,
   AxiosAdapter,
   MockAdapter,
-  ReactAdapter,
   SWRAdapter,
   TanStackQueryAdapter,
 } from "../../../src/lib/api";
@@ -53,11 +52,6 @@ describe("API index exports", () => {
     it("should export MockAdapter", () => {
       expect(MockAdapter).toBeDefined();
       expect(typeof MockAdapter).toBe("function");
-    });
-
-    it("should export ReactAdapter", () => {
-      expect(ReactAdapter).toBeDefined();
-      expect(typeof ReactAdapter).toBe("function");
     });
 
     it("should export SWRAdapter", () => {
