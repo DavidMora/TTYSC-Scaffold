@@ -20,6 +20,7 @@ describe("HttpClient with FetchAdapter", () => {
         statusText: "OK",
         headers: new Headers({ "content-type": "application/json" }),
         json: jest.fn().mockResolvedValue({ data: "test" }),
+        text: jest.fn().mockResolvedValue(JSON.stringify({ data: "test" })),
       };
 
       (global.fetch as jest.Mock).mockResolvedValue(mockResponse);
@@ -67,6 +68,7 @@ describe("HttpClient with FetchAdapter", () => {
         statusText: "Created",
         headers: new Headers({ "content-type": "application/json" }),
         json: jest.fn().mockResolvedValue({ id: 1, name: "Test" }),
+        text: jest.fn().mockResolvedValue(JSON.stringify({ id: 1, name: "Test" })),
       };
 
       (global.fetch as jest.Mock).mockResolvedValue(mockResponse);
@@ -108,6 +110,7 @@ describe("HttpClient with FetchAdapter", () => {
         statusText: "OK",
         headers: new Headers(),
         json: jest.fn().mockResolvedValue({}),
+        text: jest.fn().mockResolvedValue(JSON.stringify({})),
       };
 
       (global.fetch as jest.Mock).mockResolvedValue(mockResponse);
@@ -127,6 +130,7 @@ describe("HttpClient with FetchAdapter", () => {
         statusText: "OK",
         headers: new Headers(),
         json: jest.fn().mockResolvedValue({}),
+        text: jest.fn().mockResolvedValue(JSON.stringify({})),
       };
 
       (global.fetch as jest.Mock).mockResolvedValue(mockResponse);
@@ -157,6 +161,7 @@ describe("HttpClient with FetchAdapter", () => {
         statusText: "OK",
         headers: new Headers(),
         json: jest.fn().mockResolvedValue({}),
+        text: jest.fn().mockResolvedValue(JSON.stringify({})),
       };
 
       (global.fetch as jest.Mock).mockResolvedValue(mockResponse);

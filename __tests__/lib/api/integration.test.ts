@@ -34,6 +34,7 @@ describe("API Module Integration Tests", () => {
         statusText: "OK",
         headers: new Map([["content-type", "application/json"]]),
         json: jest.fn().mockResolvedValue(mockData),
+        text: jest.fn().mockResolvedValue(JSON.stringify(mockData)),
       };
       mockResponse.headers.forEach = jest.fn((callback) => {
         callback("application/json", "content-type", mockResponse.headers);
@@ -136,6 +137,7 @@ describe("API Module Integration Tests", () => {
         statusText: "OK",
         headers: new Map(),
         json: jest.fn().mockResolvedValue({ success: true }),
+        text: jest.fn().mockResolvedValue(JSON.stringify({ success: true })),
       };
       mockResponse.headers.forEach = jest.fn();
 
@@ -205,6 +207,7 @@ describe("API Module Integration Tests", () => {
         statusText: "Not Found",
         headers: new Map(),
         json: jest.fn(),
+        text: jest.fn().mockResolvedValue("Not Found"),
       };
 
       mockFetch.mockResolvedValue(errorResponse);
@@ -219,8 +222,9 @@ describe("API Module Integration Tests", () => {
         ok: true,
         status: 200,
         statusText: "OK",
-        headers: new Map(),
+        headers: new Map([["content-type", "application/json"]]),
         json: jest.fn().mockRejectedValue(new Error("Invalid JSON")),
+        text: jest.fn().mockResolvedValue("malformed json"),
       };
       badResponse.headers.forEach = jest.fn();
 
@@ -250,6 +254,7 @@ describe("API Module Integration Tests", () => {
         statusText: "OK",
         headers: new Map(),
         json: jest.fn().mockResolvedValue({}),
+        text: jest.fn().mockResolvedValue("{}"),
       };
       mockResponse.headers.forEach = jest.fn();
 

@@ -52,6 +52,8 @@ describe("FetchAdapter", () => {
         statusText: "OK",
         headers: new Map([["content-type", "application/json"]]),
         json: jest.fn().mockResolvedValue({ data: "test" }),
+        text: jest.fn().mockResolvedValue(JSON.stringify({ data: "test" })),
+        text: jest.fn().mockResolvedValue(JSON.stringify({ data: "test" })),
       };
       mockResponse.headers.forEach = jest.fn((callback) => {
         callback("application/json", "content-type", mockResponse.headers);
@@ -91,6 +93,7 @@ describe("FetchAdapter", () => {
         statusText: "OK",
         headers: new Map(),
         json: jest.fn().mockResolvedValue({}),
+        text: jest.fn().mockResolvedValue(JSON.stringify({})),
       };
       mockResponse.headers.forEach = jest.fn();
 
@@ -115,6 +118,7 @@ describe("FetchAdapter", () => {
         statusText: "OK",
         headers: new Map(),
         json: jest.fn().mockResolvedValue({}),
+        text: jest.fn().mockResolvedValue(JSON.stringify({})),
       };
       mockResponse.headers.forEach = jest.fn();
 
@@ -140,6 +144,7 @@ describe("FetchAdapter", () => {
         statusText: "Not Found",
         headers: new Map(),
         json: jest.fn(),
+        text: jest.fn().mockResolvedValue("error"),
       };
 
       mockFetch.mockResolvedValue(mockResponse);
@@ -175,8 +180,9 @@ describe("FetchAdapter", () => {
         ok: true,
         status: 201,
         statusText: "Created",
-        headers: new Map(),
+        headers: new Map([["content-type", "application/json"]]),
         json: jest.fn().mockResolvedValue({ id: 1 }),
+        text: jest.fn().mockResolvedValue(JSON.stringify({ id: 1 })),
       };
       mockResponse.headers.forEach = jest.fn();
 
@@ -211,6 +217,7 @@ describe("FetchAdapter", () => {
         statusText: "OK",
         headers: new Map(),
         json: jest.fn().mockResolvedValue({}),
+        text: jest.fn().mockResolvedValue(JSON.stringify({})),
       };
       mockResponse.headers.forEach = jest.fn();
 
@@ -236,6 +243,7 @@ describe("FetchAdapter", () => {
         statusText: "OK",
         headers: new Map(),
         json: jest.fn().mockResolvedValue({ updated: true }),
+        text: jest.fn().mockResolvedValue(JSON.stringify({ updated: true })),
       };
       mockResponse.headers.forEach = jest.fn();
 
@@ -262,6 +270,7 @@ describe("FetchAdapter", () => {
         statusText: "No Content",
         headers: new Map(),
         json: jest.fn().mockResolvedValue({}),
+        text: jest.fn().mockResolvedValue(JSON.stringify({})),
       };
       mockResponse.headers.forEach = jest.fn();
 
@@ -286,6 +295,7 @@ describe("FetchAdapter", () => {
         statusText: "OK",
         headers: new Map(),
         json: jest.fn().mockResolvedValue({ patched: true }),
+        text: jest.fn().mockResolvedValue(JSON.stringify({ patched: true })),
       };
       mockResponse.headers.forEach = jest.fn();
 
@@ -327,6 +337,7 @@ describe("FetchAdapter", () => {
         statusText: "Server Error",
         headers: new Map(),
         json: jest.fn(),
+        text: jest.fn().mockResolvedValue("error"),
       };
       mockResponse.headers.forEach = jest.fn();
       mockFetch.mockResolvedValue(mockResponse);
@@ -351,6 +362,7 @@ describe("FetchAdapter", () => {
         statusText: "OK",
         headers: new Map(),
         json: jest.fn().mockResolvedValue({}),
+        text: jest.fn().mockResolvedValue(JSON.stringify({})),
       };
       mockResponse.headers.forEach = jest.fn();
 
@@ -387,6 +399,7 @@ describe("FetchAdapter", () => {
         statusText: "Not Found",
         headers: new Map(),
         json: jest.fn(),
+        text: jest.fn().mockResolvedValue("error"),
       };
 
       mockFetch.mockResolvedValue(mockResponse);
@@ -409,6 +422,7 @@ describe("FetchAdapter", () => {
         statusText: "OK",
         headers: new Map(),
         json: jest.fn().mockResolvedValue({}),
+        text: jest.fn().mockResolvedValue(JSON.stringify({})),
       };
       mockResponse.headers.forEach = jest.fn();
 
@@ -435,6 +449,7 @@ describe("FetchAdapter", () => {
         statusText: "OK",
         headers: new Map(),
         json: jest.fn().mockResolvedValue({}),
+        text: jest.fn().mockResolvedValue(JSON.stringify({})),
       };
       mockResponse.headers.forEach = jest.fn();
 
@@ -471,6 +486,7 @@ describe("FetchAdapter", () => {
         statusText: "OK",
         headers: new Map(),
         json: jest.fn().mockResolvedValue({}),
+        text: jest.fn().mockResolvedValue(JSON.stringify({})),
       };
       mockResponse.headers.forEach = jest.fn();
 
@@ -559,6 +575,7 @@ describe("FetchAdapter", () => {
         statusText: "OK",
         headers: new Map(),
         json: jest.fn().mockResolvedValue({}),
+        text: jest.fn().mockResolvedValue(JSON.stringify({})),
       };
       mockResponse.headers.forEach = jest.fn();
       mockFetch.mockResolvedValue(mockResponse);
@@ -577,6 +594,7 @@ describe("FetchAdapter", () => {
         statusText: "OK",
         headers: new Map(),
         json: jest.fn().mockResolvedValue({}),
+        text: jest.fn().mockResolvedValue(JSON.stringify({})),
       };
       mockResponse.headers.forEach = jest.fn();
       mockFetch.mockResolvedValue(mockResponse);
@@ -595,6 +613,7 @@ describe("FetchAdapter", () => {
         statusText: "OK",
         headers: new Map(),
         json: jest.fn().mockResolvedValue({}),
+        text: jest.fn().mockResolvedValue(JSON.stringify({})),
       };
       mockResponse.headers.forEach = jest.fn();
       mockFetch.mockResolvedValue(mockResponse);
@@ -617,6 +636,7 @@ describe("FetchAdapter", () => {
         statusText: "OK",
         headers: new Map(),
         json: jest.fn().mockResolvedValue({}),
+        text: jest.fn().mockResolvedValue(JSON.stringify({})),
       };
       mockResponse.headers.forEach = jest.fn();
       mockFetch.mockResolvedValue(mockResponse);
@@ -640,6 +660,7 @@ describe("FetchAdapter", () => {
         statusText: "No Content",
         headers: new Map(),
         json: jest.fn().mockResolvedValue({}),
+        text: jest.fn().mockResolvedValue(JSON.stringify({})),
       };
       mockResponse.headers.forEach = jest.fn();
       mockFetch.mockResolvedValue(mockResponse);
@@ -663,6 +684,7 @@ describe("FetchAdapter", () => {
         statusText: "OK",
         headers: new Map(),
         json: jest.fn().mockResolvedValue({}),
+        text: jest.fn().mockResolvedValue(JSON.stringify({})),
       };
       mockResponse.headers.forEach = jest.fn();
       mockFetch.mockResolvedValue(mockResponse);
@@ -680,6 +702,7 @@ describe("FetchAdapter", () => {
         statusText: "OK",
         headers: new Map(),
         json: jest.fn().mockResolvedValue({}),
+        text: jest.fn().mockResolvedValue(JSON.stringify({})),
       };
       mockResponse.headers.forEach = jest.fn();
       mockFetch.mockResolvedValue(mockResponse);
@@ -702,6 +725,7 @@ describe("FetchAdapter", () => {
         statusText: "OK",
         headers: new Map(),
         json: jest.fn().mockResolvedValue({}),
+        text: jest.fn().mockResolvedValue(JSON.stringify({})),
       };
       mockResponse.headers.forEach = jest.fn();
       mockFetch.mockResolvedValue(mockResponse);
@@ -729,6 +753,7 @@ describe("FetchAdapter", () => {
         statusText: "OK",
         headers: new Map(),
         json: jest.fn().mockResolvedValue({}),
+        text: jest.fn().mockResolvedValue(JSON.stringify({})),
       };
       mockResponse.headers.forEach = jest.fn();
       mockFetch.mockResolvedValue(mockResponse);
@@ -756,6 +781,7 @@ describe("FetchAdapter", () => {
         statusText: "OK",
         headers: new Map(),
         json: jest.fn().mockResolvedValue({}),
+        text: jest.fn().mockResolvedValue(JSON.stringify({})),
       };
       mockResponse.headers.forEach = jest.fn();
       mockFetch.mockResolvedValue(mockResponse);
@@ -787,6 +813,7 @@ describe("FetchAdapter", () => {
         statusText: "OK",
         headers: new Map(),
         json: jest.fn().mockResolvedValue({}),
+        text: jest.fn().mockResolvedValue(JSON.stringify({})),
       };
       mockResponse.headers.forEach = jest.fn();
       mockFetch.mockResolvedValue(mockResponse);

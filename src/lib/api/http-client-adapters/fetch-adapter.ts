@@ -54,8 +54,14 @@ export class FetchAdapter implements HttpClientAdapter {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 
-      const data = await response.json();
+      const contentType = response.headers.get("content-type");
+
+      const data = contentType?.includes("application/json")
+        ? await response.json()
+        : await response.text();
+
       const responseHeaders: Record<string, string> = {};
+
       response.headers.forEach((value, key) => {
         responseHeaders[key] = value;
       });
