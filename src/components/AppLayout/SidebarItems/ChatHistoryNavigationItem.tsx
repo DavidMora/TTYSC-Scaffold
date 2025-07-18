@@ -56,6 +56,18 @@ export default function ChatHistoryNavigationItem({
     </FlexBox>
   );
 
+  const renderEmptyState = () => (
+    <FlexBox
+      direction={FlexBoxDirection.Column}
+      className="gap-2 items-center py-4"
+    >
+      <Text className="text-center text-gray-500">No chats yet</Text>
+      <Text className="text-center text-sm text-gray-400">
+        Start a conversation to see your chat history
+      </Text>
+    </FlexBox>
+  );
+
   const renderChatMessages = (chat: Chat) => (
     <List>
       {chat.messages.map((message) => (
@@ -89,6 +101,10 @@ export default function ChatHistoryNavigationItem({
 
     if (errorLoading) {
       return renderErrorState();
+    }
+
+    if (chatHistory.length === 0) {
+      return renderEmptyState();
     }
 
     return chatHistory.map(renderChatCard);
