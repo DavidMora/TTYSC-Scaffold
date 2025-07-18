@@ -11,7 +11,6 @@ export const createAnalysis = async () => {
   const newAnalysis: Analysis = {
     id: `${Date.now()}`,
     name: "",
-    code: `ANLS-${Date.now().toString().slice(-3).padStart(3, "0")}`,
   };
 
   const analysisResponse = await httpClient.post<Analysis>(

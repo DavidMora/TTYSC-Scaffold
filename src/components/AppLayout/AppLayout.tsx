@@ -20,6 +20,7 @@ import { useAnalysis } from "@/hooks/useAnalysis";
 
 interface AppLayoutProps {
   children: React.ReactNode;
+  analysisId?: string;
 }
 
 const ErrorDisplay = ({
@@ -69,7 +70,7 @@ const LoadingDisplay = () => (
   </FlexBox>
 );
 
-export default function AppLayout({ children }: Readonly<AppLayoutProps>) {
+export default function AppLayout({ children, analysisId = '1' }: Readonly<AppLayoutProps>) {
   const [sideNavCollapsed] = useState(false);
 
   const {
@@ -80,12 +81,7 @@ export default function AppLayout({ children }: Readonly<AppLayoutProps>) {
     resetFilters,
   } = useAnalysisFilters();
 
-  const {
-    data: analysis,
-    error,
-    isLoading,
-    mutate: refetchAnalysis,
-  } = useAnalysis("1");
+  const { data: analysis, error, isLoading, isValidating, mutate: refetchAnalysis } = useAnalysis(analysisId);
 
   return (
     <FlexBox
@@ -139,7 +135,7 @@ export default function AppLayout({ children }: Readonly<AppLayoutProps>) {
               backgroundColor: "var(--sapToolbar_SeparatorColor)",
             }}
           />
-          {isLoading ? (
+          {isLoading || isValidating ? (
             <LoadingDisplay />
           ) : (
             <>

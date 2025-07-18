@@ -72,8 +72,9 @@ describe("AnalysisRenaming", () => {
   });
 
   it("should save changes and call onNameChange when Enter is pressed", () => {
-    const mockUseRenameAnalysis =
-      require("@/hooks/useAnalysis").useRenameAnalysis;
+    const mockUseRenameAnalysis = jest.mocked(
+      require("@/hooks/useAnalysis").useRenameAnalysis
+    );
     let onSuccessCallback: ((data: any) => void) | undefined;
 
     mockUseRenameAnalysis.mockImplementation((options: any) => {
@@ -145,16 +146,17 @@ describe("AnalysisRenaming", () => {
   });
 
   it("should handle rename analysis error and exit editing mode", () => {
-    const mockUseRenameAnalysis =
-      require("@/hooks/useAnalysis").useRenameAnalysis;
-    let onErrorCallback: (() => void) | undefined;
+    const mockUseRenameAnalysis = jest.mocked(    
+      require("@/hooks/useAnalysis").useRenameAnalysis
+    );
+    let onErrorCallback: ((error: Error) => void) | undefined;
 
-    mockUseRenameAnalysis.mockImplementation((options: any) => {
+    mockUseRenameAnalysis.mockImplementation((options: { onError?: (error: Error) => void }) => {
       onErrorCallback = options?.onError;
       return {
         mutate: jest.fn(() => {
           if (onErrorCallback) {
-            onErrorCallback();
+            onErrorCallback(new Error("Test error"));
           }
         }),
         isLoading: false,

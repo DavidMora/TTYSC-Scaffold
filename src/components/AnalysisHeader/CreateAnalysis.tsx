@@ -27,7 +27,9 @@ export const CreateAnalysis: React.FC<CreateAnalysisProps> = ({
   }, []);
 
   const handleStartNew = useCallback(async () => {
-    await onCreateAnalysis();
+    try {
+      await onCreateAnalysis();
+    } catch {}
     setIsModalOpen(false);
   }, [onCreateAnalysis]);
 
@@ -90,7 +92,7 @@ export const CreateAnalysis: React.FC<CreateAnalysisProps> = ({
             design: "Emphasized",
             disabled: isCreating,
             onClick: () => {
-              handleStartNew();
+              handleStartNew().catch(console.error);
             },
           },
         ]}

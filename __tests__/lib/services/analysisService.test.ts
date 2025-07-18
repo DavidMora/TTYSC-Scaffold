@@ -10,9 +10,9 @@ const mockResponse = (data: any, status = 200) => ({ data, status, statusText: "
 const BASE_URL = "http://localhost:5000/analysis";
 
 const mockAnalysisData = {
-  existing: { id: "test-id", name: "Test Analysis", code: "ANLS-001" },
-  created: { id: "1640995200000", name: "", code: "ANLS-000" },
-  updated: { id: "test-id", name: "Updated Analysis Name", code: "ANLS-001" },
+  existing: { id: "test-id", name: "Test Analysis" },
+  created: { id: "1640995200000", name: "" },
+  updated: { id: "test-id", name: "Updated Analysis Name" },
 };
 
 describe("analysisService", () => {

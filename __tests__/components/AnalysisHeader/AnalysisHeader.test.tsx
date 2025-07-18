@@ -9,15 +9,6 @@ jest.mock("@/hooks/useSequentialNaming", () => ({
   }),
 }));
 
-jest.mock("@/hooks/useAnalysis", () => ({
-  useCreateAnalysis: jest.fn(() => ({
-    mutate: jest.fn(),
-    isLoading: false,
-    error: null,
-    data: null,
-  })),
-}));
-
 jest.mock("@/components/AnalysisHeader/AnalysisRenaming", () => ({
   AnalysisRenaming: function MockAnalysisRenaming({
     analysisName,
@@ -94,8 +85,12 @@ jest.mock("@/components/Modal/ConfirmationModal", () => {
 const mockMutate = jest.fn();
 const mockUseCreateAnalysis = jest.fn();
 
+interface UseCreateAnalysisOptions {
+  onSuccess?: () => void;
+}
+
 jest.mock("@/hooks/useAnalysis", () => ({
-  useCreateAnalysis: (options: any) => mockUseCreateAnalysis(options),
+  useCreateAnalysis: (options: UseCreateAnalysisOptions) => mockUseCreateAnalysis(options),
 }));
 
 describe("Analysis Header", () => {
