@@ -1,4 +1,5 @@
-export const BASE = "http://localhost:5000";
+export const BASE =
+  process.env.TTYSC_BACKEND_API_BASE_URL || "http://localhost:5000";
 
 export const DEFINITIONS = `${BASE}/definitions`;
 export const DEFINITION = (id: string) => `${BASE}/definitions/${id}`;

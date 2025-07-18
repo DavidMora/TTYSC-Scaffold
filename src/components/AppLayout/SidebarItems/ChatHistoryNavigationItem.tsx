@@ -15,7 +15,7 @@ import { Chat } from "@/lib/types/chats";
 interface ChatHistoryNavigationItemProps {
   chatHistory?: Chat[];
   isLoading?: boolean;
-  errorLoading?: Error | undefined;
+  errorLoading: Error | undefined;
   onChatSelect?: (chatId: string) => void;
   onChatItemSelect?: (chatId: string, itemId: string) => void;
 }
@@ -37,51 +37,61 @@ export default function ChatHistoryNavigationItem({
     onChatItemSelect?.(chatId, itemId);
   };
 
+  const renderLoadingState = () => (
+    <FlexBox
+      direction={FlexBoxDirection.Column}
+      className="gap-2 items-center py-4"
+    >
+      <BusyIndicator active />
+      <Text>Loading chat history...</Text>
+    </FlexBox>
+  );
+
+  const renderErrorState = () => (
+    <FlexBox direction={FlexBoxDirection.Column} className="gap-2 py-4">
+      <MessageStrip design="Negative">
+        {errorLoading?.message ||
+          "Error loading chat history. Please try again."}
+      </MessageStrip>
+    </FlexBox>
+  );
+
+  const renderChatMessages = (chat: Chat) => (
+    <List>
+      {chat.messages.map((message) => (
+        <ListItemStandard
+          key={message.id}
+          onClick={() => handleChatItemClick(chat.id, message.id)}
+        >
+          {message.content}
+        </ListItemStandard>
+      ))}
+    </List>
+  );
+
+  const renderChatCard = (chat: Chat) => (
+    <Card key={chat.id} className="w-full">
+      <Panel
+        headerText={chat.title}
+        onToggle={() => handleChatToggle(chat.id)}
+        noAnimation
+        collapsed
+      >
+        {renderChatMessages(chat)}
+      </Panel>
+    </Card>
+  );
+
   const renderContent = () => {
     if (isLoading) {
-      return (
-        <FlexBox
-          direction={FlexBoxDirection.Column}
-          className="gap-2 items-center py-4"
-        >
-          <BusyIndicator active />
-          <Text>Loading chat history...</Text>
-        </FlexBox>
-      );
+      return renderLoadingState();
     }
 
     if (errorLoading) {
-      return (
-        <FlexBox direction={FlexBoxDirection.Column} className="gap-2 py-4">
-          <MessageStrip design="Negative">
-            {errorLoading.message ||
-              "Error loading chat history. Please try again."}
-          </MessageStrip>
-        </FlexBox>
-      );
+      return renderErrorState();
     }
 
-    return chatHistory.map((chat) => (
-      <Card key={chat.id} className="w-full">
-        <Panel
-          headerText={chat.title}
-          onToggle={() => handleChatToggle(chat.id)}
-          noAnimation
-          collapsed
-        >
-          <List>
-            {chat.messages.map((message) => (
-              <ListItemStandard
-                key={message.id}
-                onClick={() => handleChatItemClick(chat.id, message.id)}
-              >
-                {message.content}
-              </ListItemStandard>
-            ))}
-          </List>
-        </Panel>
-      </Card>
-    ));
+    return chatHistory.map(renderChatCard);
   };
 
   return (
