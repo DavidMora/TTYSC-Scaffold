@@ -15,6 +15,7 @@ interface ModalAction {
   label: string;
   design?: "Emphasized" | "Transparent" | "Default";
   onClick: () => void;
+  disabled?: boolean;
 }
 
 interface ConfirmationModalProps {
@@ -75,6 +76,7 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
               key={`${action.label}-${index}`}
               design={action.design || "Default"}
               onClick={action.onClick}
+              disabled={action.disabled}
             >
               {action.label}
             </Button>

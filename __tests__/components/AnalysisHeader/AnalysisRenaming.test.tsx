@@ -3,6 +3,15 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import { AnalysisRenaming } from "@/components/AnalysisHeader/AnalysisRenaming";
 import type { InputDomRef } from "@ui5/webcomponents-react";
 
+const mockMutate = jest.fn();
+
+jest.mock("@/hooks/useAnalysis", () => ({
+  useRenameAnalysis: jest.fn(() => ({
+    mutate: mockMutate,
+    isLoading: false,
+  })),
+}));
+
 jest.mock("@/components/Modal/ConfirmationModal", () => ({
   ConfirmationModal: function MockConfirmationModal({
     isOpen,
@@ -51,6 +60,7 @@ const createMockRef = (): React.RefObject<{
 describe("AnalysisRenaming", () => {
   const defaultProps = {
     analysisName: "Test Analysis",
+    analysisId: "test-analysis-id",
     onNameChange: jest.fn(),
     inputRef: createMockRef() as unknown as React.RefObject<InputDomRef | null>,
   };
@@ -58,9 +68,27 @@ describe("AnalysisRenaming", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockFocus.mockClear();
+    mockMutate.mockClear();
   });
 
   it("should save changes and call onNameChange when Enter is pressed", () => {
+    const mockUseRenameAnalysis = jest.mocked(
+      require("@/hooks/useAnalysis").useRenameAnalysis
+    );
+    let onSuccessCallback: ((data: any) => void) | undefined;
+
+    mockUseRenameAnalysis.mockImplementation((options: any) => {
+      onSuccessCallback = options?.onSuccess;
+      return {
+        mutate: jest.fn(({ data }: { data: any }) => {
+          if (onSuccessCallback) {
+            onSuccessCallback({ name: data.name });
+          }
+        }),
+        isLoading: false,
+      };
+    });
+
     render(<AnalysisRenaming {...defaultProps} />);
 
     fireEvent.click(screen.getByTestId("ui5-icon"));
@@ -115,5 +143,71 @@ describe("AnalysisRenaming", () => {
 
     expect(screen.getByTestId("ui5-input")).toBeInTheDocument();
     expect(defaultProps.onNameChange).not.toHaveBeenCalled();
+  });
+
+  it("should handle rename analysis error and exit editing mode", () => {
+    const mockUseRenameAnalysis = jest.mocked(    
+      require("@/hooks/useAnalysis").useRenameAnalysis
+    );
+    let onErrorCallback: ((error: Error) => void) | undefined;
+
+    mockUseRenameAnalysis.mockImplementation((options: { onError?: (error: Error) => void }) => {
+      onErrorCallback = options?.onError;
+      return {
+        mutate: jest.fn(() => {
+          if (onErrorCallback) {
+            onErrorCallback(new Error("Test error"));
+          }
+        }),
+        isLoading: false,
+      };
+    });
+
+    render(<AnalysisRenaming {...defaultProps} />);
+
+    fireEvent.click(screen.getByTestId("ui5-icon"));
+    const input = screen.getByTestId("ui5-input");
+
+    fireEvent.input(input, { target: { value: "New Analysis Name" } });
+    fireEvent.keyDown(input, { key: "Enter", code: "Enter" });
+
+    expect(screen.queryByTestId("ui5-input")).not.toBeInTheDocument();
+    expect(screen.getByTestId("ui5-text")).toBeInTheDocument();
+  });
+
+  it("should handle save edit when analysisId is not provided", () => {
+    const propsWithoutId = {
+      ...defaultProps,
+      analysisId: undefined,
+    };
+
+    render(<AnalysisRenaming {...propsWithoutId} />);
+
+    fireEvent.click(screen.getByTestId("ui5-icon"));
+    const input = screen.getByTestId("ui5-input");
+
+    fireEvent.input(input, { target: { value: "New Analysis Name" } });
+    fireEvent.keyDown(input, { key: "Enter", code: "Enter" });
+
+    expect(mockMutate).not.toHaveBeenCalled();
+  });
+
+  it("should show loading state with placeholder and opacity", () => {
+    const mockUseRenameAnalysis =
+      require("@/hooks/useAnalysis").useRenameAnalysis;
+    mockUseRenameAnalysis.mockImplementation(() => ({
+      mutate: mockMutate,
+      isLoading: true,
+    }));
+
+    render(<AnalysisRenaming {...defaultProps} />);
+
+    fireEvent.click(screen.getByTestId("ui5-icon"));
+    const input = screen.getByTestId("ui5-input");
+
+    expect(input).toHaveAttribute("placeholder", "Saving...");
+    expect(input).toHaveAttribute("disabled", "");
+
+    expect(input.style.opacity).toBe("0.7");
   });
 });
