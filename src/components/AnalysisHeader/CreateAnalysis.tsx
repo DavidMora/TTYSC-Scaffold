@@ -6,13 +6,14 @@ import {
   Icon,
 } from "@ui5/webcomponents-react";
 import { ConfirmationModal } from "../Modal/ConfirmationModal";
-
 interface CreateAnalysisProps {
-  onCreateAnalysis: () => void;
+  onCreateAnalysis: () => Promise<unknown>;
+  isCreating: boolean;
 }
 
 export const CreateAnalysis: React.FC<CreateAnalysisProps> = ({
   onCreateAnalysis,
+  isCreating,
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
@@ -25,8 +26,8 @@ export const CreateAnalysis: React.FC<CreateAnalysisProps> = ({
     setIsModalOpen(false);
   }, []);
 
-  const handleStartNew = useCallback(() => {
-    onCreateAnalysis();
+  const handleStartNew = useCallback(async () => {
+    await onCreateAnalysis();
     setIsModalOpen(false);
   }, [onCreateAnalysis]);
 
@@ -81,12 +82,16 @@ export const CreateAnalysis: React.FC<CreateAnalysisProps> = ({
           {
             label: "Cancel",
             design: "Transparent",
+            disabled: isCreating,
             onClick: closeModal,
           },
           {
-            label: "Start New",
+            label: isCreating ? "Creating..." : "Start New",
             design: "Emphasized",
-            onClick: handleStartNew,
+            disabled: isCreating,
+            onClick: () => {
+              handleStartNew();
+            },
           },
         ]}
       />

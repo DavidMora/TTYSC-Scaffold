@@ -31,52 +31,23 @@ const numberToOrdinalWord = (num: number): string => {
   return num.toString();
 };
 
-const generateAnalysisName = (counter: number, prefix: string): string => {
+const generateNameString = (counter: number, prefix: string): string => {
   const ordinal = numberToOrdinalWord(counter);
   return `${prefix} ${ordinal}`;
 };
 
-interface UseSequentialNamingProps {
-  initialCounter?: number;
-  prefix?: string;
-}
+export const useSequentialNaming = () => {
+  const [counter, setCounter] = useState(1);
 
-export const useSequentialNaming = ({
-  initialCounter = 1,
-  prefix = "Analysis",
-}: UseSequentialNamingProps = {}) => {
-  const [counter, setCounter] = useState(initialCounter);
-  const [currentName, setCurrentName] = useState(() =>
-    generateAnalysisName(initialCounter, prefix)
-  );
-
-  const generateNextName = useCallback(() => {
+  const generateAnalysisName = useCallback((): string => {
+    const nameWithOrdinal = generateNameString(counter, "Analysis");
     const nextCounter = counter + 1;
-    const newName = generateAnalysisName(nextCounter, prefix);
-    setCounter(() => {
-      setCurrentName(newName);
-      return nextCounter;
-    });
-    return newName;
-  }, [counter, prefix]);
-
-  const resetCounter = useCallback(
-    (newCounter: number = 1) => {
-      setCounter(newCounter);
-      setCurrentName(generateAnalysisName(newCounter, prefix));
-    },
-    [prefix]
-  );
-
-  const setCustomName = useCallback((name: string) => {
-    setCurrentName(name);
-  }, []);
+    setCounter(nextCounter);
+    return nameWithOrdinal;
+  }, [counter]);
 
   return {
-    counter,
-    currentName,
-    generateNextName,
-    resetCounter,
-    setCustomName,
+    generateAnalysisName,
+    currentCounter: counter,
   };
 };
