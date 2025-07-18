@@ -1,4 +1,4 @@
-import React, { useRef, useCallback } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import {
   FlexBox,
   FlexBoxJustifyContent,
@@ -11,20 +11,34 @@ import {
 import { AnalysisRenaming } from "./AnalysisRenaming";
 import { CreateAnalysis } from "./CreateAnalysis";
 import { useSequentialNaming } from "@/hooks/useSequentialNaming";
+import { useCreateAnalysis } from "@/hooks/useAnalysis";
 
 interface AnalysisHeaderProps {
   onFiltersReset?: () => void;
+  currentAnalysisId?: string;
+  currentAnalysisName?: string;
 }
 
-const AnalysisHeader: React.FC<AnalysisHeaderProps> = ({ onFiltersReset }) => {
-  const { currentName, generateNextName, setCustomName } =
-    useSequentialNaming();
+const AnalysisHeader: React.FC<AnalysisHeaderProps> = ({
+  onFiltersReset,
+  currentAnalysisId,
+  currentAnalysisName,
+}) => {
+  const { generateAnalysisName } = useSequentialNaming();
   const inputRef = useRef<InputDomRef>(null);
+  const [name, setName] = useState<string>(currentAnalysisName || "");
 
-  const handleCreateAnalysis = useCallback(() => {
-    generateNextName();
-    onFiltersReset?.();
-  }, [generateNextName, onFiltersReset]);
+  const { mutate: createAnalysis, isLoading: isCreating } = useCreateAnalysis({
+    onSuccess: () => {
+      onFiltersReset?.();
+      const newName = generateAnalysisName();
+      setName(newName);
+    },
+  });
+
+  useEffect(() => {
+    setName(currentAnalysisName || "");
+  }, [currentAnalysisName]);
 
   return (
     <FlexBox
@@ -34,12 +48,16 @@ const AnalysisHeader: React.FC<AnalysisHeaderProps> = ({ onFiltersReset }) => {
     >
       <FlexBox style={{ gap: "1.5rem" }}>
         <AnalysisRenaming
-          analysisName={currentName}
-          onNameChange={setCustomName}
+          analysisName={name}
+          analysisId={currentAnalysisId}
+          onNameChange={setName}
           inputRef={inputRef}
         />
 
-        <CreateAnalysis onCreateAnalysis={handleCreateAnalysis} />
+        <CreateAnalysis
+          onCreateAnalysis={createAnalysis}
+          isCreating={isCreating}
+        />
       </FlexBox>
 
       <FlexBox

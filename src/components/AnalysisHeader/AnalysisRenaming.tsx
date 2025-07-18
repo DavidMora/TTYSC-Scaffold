@@ -8,9 +8,11 @@ import {
   InputDomRef,
 } from "@ui5/webcomponents-react";
 import { ConfirmationModal } from "../Modal/ConfirmationModal";
+import { useRenameAnalysis } from "@/hooks/useAnalysis";
 
 interface AnalysisRenamingProps {
   analysisName: string;
+  analysisId?: string;
   onNameChange: (name: string) => void;
   inputRef: React.RefObject<InputDomRef | null>;
 }
@@ -19,12 +21,24 @@ const MAX_NAME_LENGTH = 30;
 
 export const AnalysisRenaming: React.FC<AnalysisRenamingProps> = ({
   analysisName,
+  analysisId,
   onNameChange,
   inputRef,
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editingValue, setEditingValue] = useState("");
   const [showValidationModal, setShowValidationModal] = useState(false);
+
+  const { mutate: renameAnalysis, isLoading } = useRenameAnalysis({
+    onSuccess: (data) => {
+      onNameChange(data.name);
+      setEditingValue("");
+      setIsEditing(false);
+    },
+    onError: () => {
+      setIsEditing(false);
+    },
+  });
 
   useEffect(() => {
     if (isEditing && !showValidationModal && inputRef.current) {
@@ -42,17 +56,16 @@ export const AnalysisRenaming: React.FC<AnalysisRenamingProps> = ({
     setEditingValue("");
   };
 
-  const handleSaveEdit = () => {
+  const handleSaveEdit = async () => {
     const trimmedValue = editingValue.trim();
 
     if (!trimmedValue || trimmedValue.length > MAX_NAME_LENGTH) {
       setShowValidationModal(true);
       return;
     }
-
-    onNameChange(trimmedValue);
-    setIsEditing(false);
-    setEditingValue("");
+    if (analysisId) {
+      await renameAnalysis({ id: analysisId, data: { name: trimmedValue } });
+    }
   };
 
   const handleKeyDown = (event: React.KeyboardEvent) => {
@@ -87,6 +100,8 @@ export const AnalysisRenaming: React.FC<AnalysisRenamingProps> = ({
             onInput={handleInputChange}
             onBlur={handleSaveEdit}
             maxlength={MAX_NAME_LENGTH}
+            disabled={isLoading}
+            placeholder={isLoading ? "Saving..." : undefined}
             style={{
               width: `${Math.max(
                 editingValue.length || analysisName.length,
@@ -94,6 +109,7 @@ export const AnalysisRenaming: React.FC<AnalysisRenamingProps> = ({
               )}ch`,
               minWidth: `120px`,
               transition: "width 0.2s ease",
+              opacity: isLoading ? 0.7 : 1,
             }}
           />
         ) : (
