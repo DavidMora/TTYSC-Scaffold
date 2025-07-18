@@ -13,6 +13,7 @@ import RawDataNavigationItem, {
   type RawDataItem,
 } from "./SidebarItems/RawDataNavigationItem";
 import ChatHistoryNavigationItem from "./SidebarItems/ChatHistoryNavigationItem";
+import { useChats } from "@/hooks/chats";
 
 interface SideBarProps {
   sideNavCollapsed?: boolean;
@@ -25,6 +26,13 @@ export default function SideBarMenu({
 }: Readonly<SideBarProps>) {
   const pathname = usePathname();
   const router = useRouter();
+
+  const {
+    data: chatHistory,
+    isLoading: isLoadingChatHistory,
+    error: chatHistoryError,
+    // mutate: chatHistoryMutate,
+  } = useChats();
 
   const handleFeedbackSubmit = (feedback: string) => {
     console.log("Feedback submitted:", feedback);
@@ -39,12 +47,12 @@ export default function SideBarMenu({
     // Implement data selection logic here
   };
 
-  const handleChatSelect = (chatId: number) => {
+  const handleChatSelect = (chatId: string) => {
     console.log("Chat selected:", chatId);
     // Implement chat selection logic here
   };
 
-  const handleChatItemSelect = (chatId: number, itemId: number) => {
+  const handleChatItemSelect = (chatId: string, itemId: string) => {
     console.log("Chat item selected:", chatId, itemId);
     // Implement chat item selection logic here
   };
@@ -80,6 +88,9 @@ export default function SideBarMenu({
       <FeedbackNavigationItem onSubmitFeedback={handleFeedbackSubmit} />
       <RawDataNavigationItem onDataSelection={handleRawDataSelection} />
       <ChatHistoryNavigationItem
+        chatHistory={chatHistory}
+        isLoading={isLoadingChatHistory}
+        errorLoading={chatHistoryError}
         onChatSelect={handleChatSelect}
         onChatItemSelect={handleChatItemSelect}
       />
