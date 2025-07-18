@@ -35,7 +35,7 @@ describe("useAnalysis hooks", () => {
 
   it("should create analysis", () => {
     renderHook(() => useCreateAnalysis({}));
-    expect(mockUseMutation).toHaveBeenCalledWith(expect.any(Function), expect.objectContaining({ invalidateQueries: [ANALYSIS_KEY] }));
+    expect(mockUseMutation).toHaveBeenCalledWith(expect.any(Function), expect.objectContaining({ invalidateQueries: [] }));
     
     mockUseMutation.mock.calls[0][0](undefined);
     expect(mockAnalysisService.createAnalysis).toHaveBeenCalled();
@@ -43,7 +43,7 @@ describe("useAnalysis hooks", () => {
 
   it("should rename analysis", () => {
     renderHook(() => useRenameAnalysis({}));
-    expect(mockUseMutation).toHaveBeenCalledWith(expect.any(Function), expect.objectContaining({ invalidateQueries: [ANALYSIS_KEY] }));
+    expect(mockUseMutation).toHaveBeenCalledWith(expect.any(Function), expect.objectContaining({ invalidateQueries: [] }));
     
     const mutationData = { id: "test-id", data: { name: "New Name" } };
     mockUseMutation.mock.calls[0][0](mutationData);

@@ -21,7 +21,7 @@ export const useCreateAnalysis = ({
   onError?: (error: Error) => void;
 }) => {
   return useMutation(() => createAnalysis(), {
-    invalidateQueries: [ANALYSIS_KEY],
+    invalidateQueries: [],
     onSuccess: (data) => {
       onSuccess?.(data.data.analysis);
     },
@@ -42,7 +42,7 @@ export const useRenameAnalysis = ({
     ({ id, data }: { id: string; data: { name: string } }) =>
       renameAnalysis(id, data),
     {
-      invalidateQueries: [ANALYSIS_KEY],
+      invalidateQueries: [],
       onSuccess: (data) => {
         onSuccess?.(data.data.analysis);
       },

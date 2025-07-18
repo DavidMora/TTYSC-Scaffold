@@ -1,4 +1,6 @@
 import { httpClient } from "@/lib/api";
+import { CREATE_ANALYSIS, GET_ANALYSIS_BY_ID, UPDATE_ANALYSIS } from "@/lib/constants/api/analysis";
+import { BASE_URL } from "@/lib/constants/config";
 import { getAnalysisById, createAnalysis, renameAnalysis } from "@/lib/services/analysisService";
 
 jest.mock("@/lib/api", () => ({
@@ -7,7 +9,6 @@ jest.mock("@/lib/api", () => ({
 
 const mockHttpClient = httpClient as jest.Mocked<typeof httpClient>;
 const mockResponse = (data: any, status = 200) => ({ data, status, statusText: "OK", headers: {} });
-const BASE_URL = "http://localhost:5000/analysis";
 
 const mockAnalysisData = {
   existing: { id: "test-id", name: "Test Analysis" },
@@ -31,7 +32,7 @@ describe("analysisService", () => {
       mockHttpClient.get.mockResolvedValue(response);
       const result = await getAnalysisById("test-id");
 
-      expect(mockHttpClient.get).toHaveBeenCalledWith(`${BASE_URL}/test-id`);
+      expect(mockHttpClient.get).toHaveBeenCalledWith(`${BASE_URL}${GET_ANALYSIS_BY_ID("test-id")}`);
       expect(result).toEqual(response);
     });
   });
@@ -43,7 +44,7 @@ describe("analysisService", () => {
       mockHttpClient.post.mockResolvedValue(response);
       const result = await createAnalysis();
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(BASE_URL, mockAnalysisData.created);
+      expect(mockHttpClient.post).toHaveBeenCalledWith(`${BASE_URL}${CREATE_ANALYSIS}`, mockAnalysisData.created);
       expect(result).toEqual({ ...response, data: { analysis: mockAnalysisData.created } });
     });
   });
@@ -55,7 +56,7 @@ describe("analysisService", () => {
       mockHttpClient.patch.mockResolvedValue(response);
       const result = await renameAnalysis("test-id", { name: "Updated Analysis Name" });
 
-      expect(mockHttpClient.patch).toHaveBeenCalledWith(`${BASE_URL}/test-id`, {
+      expect(mockHttpClient.patch).toHaveBeenCalledWith(`${BASE_URL}${UPDATE_ANALYSIS("test-id")}`, {
         name: "Updated Analysis Name",
         updatedAt: "2022-01-01T00:00:00.000Z",
       });

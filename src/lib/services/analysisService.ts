@@ -1,10 +1,10 @@
 import { httpClient } from "@/lib/api";
 import { Analysis } from "@/lib/types/analysis";
-import { API_CONFIG } from "@/lib/constants/config";
+import { BASE_URL } from "@/lib/constants/config";
 import { GET_ANALYSIS_BY_ID, CREATE_ANALYSIS, UPDATE_ANALYSIS } from "@/lib/constants/api/analysis";
 
 export const getAnalysisById = async (id: string) => {
-  return httpClient.get<Analysis>(`${API_CONFIG.BASE_URL}${GET_ANALYSIS_BY_ID(id)}`);
+  return httpClient.get<Analysis>(`${BASE_URL}${GET_ANALYSIS_BY_ID(id)}`);
 };
 
 export const createAnalysis = async () => {
@@ -14,7 +14,7 @@ export const createAnalysis = async () => {
   };
 
   const analysisResponse = await httpClient.post<Analysis>(
-    `${API_CONFIG.BASE_URL}${CREATE_ANALYSIS}`,
+    `${BASE_URL}${CREATE_ANALYSIS}`,
     newAnalysis
   );
 
@@ -33,7 +33,7 @@ export const renameAnalysis = async (id: string, data: { name: string }) => {
   };
 
   const response = await httpClient.patch<Analysis>(
-    `${API_CONFIG.BASE_URL}${UPDATE_ANALYSIS(id)}`,
+    `${BASE_URL}${UPDATE_ANALYSIS(id)}`,
     updateData
   );
 
