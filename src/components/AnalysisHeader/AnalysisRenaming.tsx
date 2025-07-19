@@ -31,7 +31,7 @@ export const AnalysisRenaming: React.FC<AnalysisRenamingProps> = ({
 
   const { mutate: renameAnalysis, isLoading } = useRenameAnalysis({
     onSuccess: (data) => {
-      onNameChange(data.name);
+      onNameChange(data.name ?? editingValue);
       setEditingValue("");
       setIsEditing(false);
     },

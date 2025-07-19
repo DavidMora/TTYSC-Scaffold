@@ -8,19 +8,15 @@ import {
   FlexBoxWrap,
 } from "@ui5/webcomponents-react";
 import { FILTER_CONFIGS } from "@/lib/constants/UI/analysisFilters";
-import type {
-  FilterKey,
-  FilterState,
-  FilterOptions,
-} from "@/lib/types/analysisFilters";
+import { FilterKeyType } from "@/lib/types/cases";
 
 const FilterSelect: React.FC<{
-  filterKey: FilterKey;
+  filterKey: FilterKeyType;
   label: string;
   value: string;
   options: string[];
   disabled: boolean;
-  onChange: (key: FilterKey, value: string) => void;
+  onChange: (key: FilterKeyType, value: string) => void;
 }> = ({ filterKey, label, value, options, disabled, onChange }) => (
   <FlexBox
     direction={FlexBoxDirection.Column}
@@ -52,6 +48,7 @@ const FilterSelect: React.FC<{
   </FlexBox>
 );
 
+
 const AnalysisFilter: React.FC<{
   filters: FilterState;
   availableOptions: FilterOptions;
@@ -73,11 +70,11 @@ const AnalysisFilter: React.FC<{
       </Text>
 
       <FlexBox wrap={FlexBoxWrap.Wrap} style={{ gap: "1rem" }}>
-        {FILTER_CONFIGS.map(({ key, label }) => (
+        {FILTER_CONFIGS.map(({ key, name }) => (
           <FilterSelect
             key={key}
             filterKey={key}
-            label={label}
+            label={name}
             value={filters[key]}
             options={availableOptions[key]}
             disabled={isDisabled(key)}

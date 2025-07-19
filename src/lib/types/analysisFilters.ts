@@ -20,13 +20,3 @@ export interface FilterConfig {
   key: FilterKey;
   label: string;
 }
-
-export interface FilterData {
-  [analysis: string]: {
-    [organization: string]: {
-      [site: string]: {
-        [sku: string]: string[];
-      };
-    };
-  };
-} 
