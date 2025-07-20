@@ -1,32 +1,37 @@
-export interface FilterState {
-  analysis: string;
-  organization: string;
-  cmSiteName: string;
-  sku: string;
-  nvpn: string;
-}
-
-export type FilterKey = keyof FilterState;
-
-export interface FilterOptions {
-  analysis: string[];
-  organization: string[];
-  cmSiteName: string[];
-  sku: string[];
-  nvpn: string[];
-}
-
-export interface FilterConfig {
+export interface FilterField {
   key: FilterKey;
   label: string;
 }
 
-export interface FilterData {
-  [analysis: string]: {
-    [organization: string]: {
-      [site: string]: {
-        [sku: string]: string[];
-      };
-    };
+export interface FilterValue {
+  key: string | null;
+  name: string;
+}
+
+export interface FilterState {
+  analysis: FilterValue;
+  organizations: FilterValue;
+  CM: FilterValue;
+  SKU: FilterValue;
+  NVPN: FilterValue;
+}
+
+export interface FilterOptions {
+  analysis: FilterValue[];
+  organizations: FilterValue[];
+  CM: FilterValue[];
+  SKU: FilterValue[];
+  NVPN: FilterValue[];
+}
+
+export type FilterKey = keyof FilterState;
+
+export interface CasesResponse {
+  data: FilterOptions;
+}
+
+export interface CasesAnalysisResponse {
+  data: {
+    analysis: FilterValue[];
   };
-} 
+}
