@@ -82,5 +82,13 @@ describe("casesService", () => {
       expect(mockHttpClient.get).toHaveBeenCalledTimes(1);
       expect(result).toEqual(response);
     });
+    
+    it("should handle network errors", async () => {
+      const error = new Error("Network error");
+      mockHttpClient.get.mockRejectedValue(error);
+      await expect(getCasesByAnalysis("test-analysis")).rejects.toThrow(
+        "Network error"
+      );
+    });
   });
 });

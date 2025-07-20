@@ -42,23 +42,27 @@ export const useAnalysisFilters = () => {
     useCasesByAnalysis(analysisKey);
 
   const availableOptions = useMemo<FilterOptions>(() => {
+    const options = { ...FILTER_OPTIONS };
+
     if (analysisResponse?.data?.analysis) {
-      FILTER_OPTIONS.analysis = createFilterOptions(
-        analysisResponse.data.analysis
-      );
+      options.analysis = createFilterOptions(analysisResponse.data.analysis);
     }
 
     if (analysisKey && casesResponse?.data) {
       DEPENDENT_FILTER_KEYS.forEach((filterKey) => {
         const data = casesResponse.data[filterKey];
-        FILTER_OPTIONS[filterKey] = createFilterOptions(
+        options[filterKey] = createFilterOptions(
           Array.isArray(data) ? data : []
         );
       });
     }
 
-    return FILTER_OPTIONS;
-  }, [analysisResponse?.data?.analysis, casesResponse?.data, analysisKey]);
+    return options;
+  }, [
+    analysisResponse?.data?.analysis,
+    casesResponse?.data,
+    analysisKey,
+  ]);
 
   const handleFilterChange = useCallback(
     (filterKey: FilterKey, value: string): void => {
