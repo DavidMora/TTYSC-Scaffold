@@ -1,5 +1,6 @@
 import {
   DataFetcherAdapter,
+  DataFetcherKey,
   DataFetcherOptions,
   DataFetcherResponse,
 } from "@/lib/types/api/data-fetcher";
@@ -15,7 +16,7 @@ class DataFetcher {
   }
 
   fetchData<T = unknown>(
-    key: string,
+    key: DataFetcherKey,
     fetcher: () => Promise<HttpClientResponse<T>>,
     options?: DataFetcherOptions
   ): DataFetcherResponse<T> {
@@ -28,4 +29,9 @@ const dataFetcher = new DataFetcher(new SWRAdapter());
 
 export default dataFetcher;
 export { DataFetcher };
-export type { DataFetcherAdapter, DataFetcherResponse, DataFetcherOptions };
+export type {
+  DataFetcherAdapter,
+  DataFetcherResponse,
+  DataFetcherOptions,
+  DataFetcherKey,
+};
