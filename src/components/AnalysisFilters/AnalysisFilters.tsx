@@ -7,7 +7,7 @@ import {
   FlexBoxDirection,
   FlexBoxWrap,
 } from "@ui5/webcomponents-react";
-import { FILTER_CONFIGS } from "@/lib/constants/UI/analysisFilters";
+import { FILTER_FIELDS } from "@/lib/constants/UI/analysisFilters";
 import type {
   FilterKey,
   FilterState,
@@ -73,13 +73,13 @@ const AnalysisFilter: React.FC<{
       </Text>
 
       <FlexBox wrap={FlexBoxWrap.Wrap} style={{ gap: "1rem" }}>
-        {FILTER_CONFIGS.map(({ key, label }) => (
+        {FILTER_FIELDS.map(({ key, label }) => (
           <FilterSelect
             key={key}
             filterKey={key}
             label={label}
-            value={filters[key]}
-            options={availableOptions[key]}
+            value={filters[key].name}
+            options={availableOptions[key].map((option) => option.name)}
             disabled={isDisabled(key)}
             onChange={handleFilterChange}
           />
