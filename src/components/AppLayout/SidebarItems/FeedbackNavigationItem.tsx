@@ -7,6 +7,7 @@ import {
   Button,
 } from "@ui5/webcomponents-react";
 import { useState } from "react";
+import { createFeedback } from "@/lib/services/feedback.service";
 
 interface FeedbackNavigationItemProps {
   onSubmitFeedback?: (feedback: string) => void;
@@ -16,13 +17,26 @@ export default function FeedbackNavigationItem({
   onSubmitFeedback,
 }: Readonly<FeedbackNavigationItemProps>) {
   const [feedbackText, setFeedbackText] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = () => {
     if (feedbackText.trim()) {
-      if (onSubmitFeedback) {
-        onSubmitFeedback(feedbackText);
-      }
-      setFeedbackText(""); // Clear after submission
+      setIsSubmitting(true);
+
+      createFeedback({
+        message: feedbackText,
+        category: "general",
+      })
+        .then(() => {
+          setFeedbackText("");
+          onSubmitFeedback?.(feedbackText);
+        })
+        .catch((error) => {
+          console.error("Error submitting feedback:", error);
+        })
+        .finally(() => {
+          setIsSubmitting(false);
+        });
     }
   };
 
@@ -35,14 +49,15 @@ export default function FeedbackNavigationItem({
           rows={4}
           value={feedbackText}
           onInput={(event) => setFeedbackText(event.target.value)}
+          disabled={isSubmitting}
         />
         <FlexBox direction={FlexBoxDirection.Row} className="gap-2">
           <Button
             design="Emphasized"
             onClick={handleSubmit}
-            disabled={!feedbackText.trim()}
+            disabled={!feedbackText.trim() || isSubmitting}
           >
-            Submit
+            {isSubmitting ? "Submitting..." : "Submit"}
           </Button>
         </FlexBox>
       </FlexBox>

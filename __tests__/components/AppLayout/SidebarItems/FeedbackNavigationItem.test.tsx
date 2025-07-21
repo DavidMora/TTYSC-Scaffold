@@ -2,6 +2,16 @@ import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import FeedbackNavigationItem from "../../../../src/components/AppLayout/SidebarItems/FeedbackNavigationItem";
 
+// Mock the feedback service
+jest.mock("../../../../src/lib/services/feedback.service", () => ({
+  createFeedback: jest.fn(),
+}));
+
+import { createFeedback } from "../../../../src/lib/services/feedback.service";
+const mockCreateFeedback = createFeedback as jest.MockedFunction<
+  typeof createFeedback
+>;
+
 // Mock UI5 components
 jest.mock("@ui5/webcomponents-react", () => ({
   SideNavigationItem: ({
@@ -97,6 +107,20 @@ describe("FeedbackNavigationItem", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    // Set up successful response by default
+    mockCreateFeedback.mockResolvedValue({
+      data: {
+        id: "1",
+        message: "test",
+        category: "general",
+        userId: "user1",
+        timestamp: "2024-01-01T00:00:00Z",
+        status: "active",
+      },
+      status: 201,
+      statusText: "Created",
+      headers: {},
+    });
   });
 
   it("renders correctly with all required elements", () => {
@@ -177,7 +201,7 @@ describe("FeedbackNavigationItem", () => {
     expect(button).toBeDisabled();
   });
 
-  it("calls onSubmitFeedback with feedback text when submit is clicked", () => {
+  it("calls onSubmitFeedback with feedback text when submit is clicked", async () => {
     render(<FeedbackNavigationItem onSubmitFeedback={mockOnSubmitFeedback} />);
 
     const textarea = screen.getByTestId("textarea");
@@ -190,11 +214,18 @@ describe("FeedbackNavigationItem", () => {
     // Click submit
     fireEvent.click(button);
 
-    expect(mockOnSubmitFeedback).toHaveBeenCalledTimes(1);
-    expect(mockOnSubmitFeedback).toHaveBeenCalledWith(testFeedback);
+    // Wait for the async operation to complete
+    await waitFor(() => {
+      expect(mockCreateFeedback).toHaveBeenCalledWith({
+        message: testFeedback,
+        category: "general",
+      });
+      expect(mockOnSubmitFeedback).toHaveBeenCalledTimes(1);
+      expect(mockOnSubmitFeedback).toHaveBeenCalledWith(testFeedback);
+    });
   });
 
-  it("clears textarea after successful submission", () => {
+  it("clears textarea after successful submission", async () => {
     render(<FeedbackNavigationItem onSubmitFeedback={mockOnSubmitFeedback} />);
 
     const textarea = screen.getByTestId("textarea");
@@ -208,8 +239,10 @@ describe("FeedbackNavigationItem", () => {
     // Click submit
     fireEvent.click(button);
 
-    // Textarea should be cleared
-    expect(textarea).toHaveValue("");
+    // Wait for the async operation to complete and textarea to be cleared
+    await waitFor(() => {
+      expect(textarea).toHaveValue("");
+    });
   });
 
   it("disables submit button after clearing textarea", () => {
@@ -369,7 +402,7 @@ describe("FeedbackNavigationItem", () => {
     expect(mockOnSubmitFeedback).not.toHaveBeenCalled();
   });
 
-  it("works without onSubmitFeedback prop when submit is clicked", () => {
+  it("works without onSubmitFeedback prop when submit is clicked", async () => {
     render(<FeedbackNavigationItem />);
 
     const textarea = screen.getByTestId("textarea");
@@ -382,11 +415,13 @@ describe("FeedbackNavigationItem", () => {
     // Click submit - should not throw error
     expect(() => fireEvent.click(button)).not.toThrow();
 
-    // Textarea should still be cleared
-    expect(textarea).toHaveValue("");
+    // Wait for the async operation to complete and textarea to be cleared
+    await waitFor(() => {
+      expect(textarea).toHaveValue("");
+    });
   });
 
-  it("covers optional chaining branch when onSubmitFeedback is explicitly undefined", () => {
+  it("covers optional chaining branch when onSubmitFeedback is explicitly undefined", async () => {
     render(<FeedbackNavigationItem onSubmitFeedback={undefined} />);
 
     const textarea = screen.getByTestId("textarea");
@@ -399,11 +434,13 @@ describe("FeedbackNavigationItem", () => {
     // Click submit - should not throw error and handle undefined gracefully
     expect(() => fireEvent.click(button)).not.toThrow();
 
-    // Textarea should still be cleared even when callback is undefined
-    expect(textarea).toHaveValue("");
+    // Wait for the async operation to complete and textarea to be cleared
+    await waitFor(() => {
+      expect(textarea).toHaveValue("");
+    });
   });
 
-  it("covers optional chaining when no callback provided at all", () => {
+  it("covers optional chaining when no callback provided at all", async () => {
     // This test ensures both branches of the optional chaining are covered
     const TestComponent = ({ hasCallback }: { hasCallback: boolean }) => {
       const callback = hasCallback ? jest.fn() : undefined;
@@ -417,7 +454,9 @@ describe("FeedbackNavigationItem", () => {
 
     fireEvent.change(textarea, { target: { value: "test" } });
     fireEvent.click(button);
-    expect(textarea).toHaveValue("");
+    await waitFor(() => {
+      expect(textarea).toHaveValue("");
+    });
 
     // Test without callback (covers false branch)
     rerender(<TestComponent hasCallback={false} />);
@@ -426,10 +465,12 @@ describe("FeedbackNavigationItem", () => {
 
     fireEvent.change(textarea, { target: { value: "test2" } });
     expect(() => fireEvent.click(button)).not.toThrow();
-    expect(textarea).toHaveValue("");
+    await waitFor(() => {
+      expect(textarea).toHaveValue("");
+    });
   });
 
-  it("trims whitespace from feedback before submission", () => {
+  it("trims whitespace from feedback before submission", async () => {
     render(<FeedbackNavigationItem onSubmitFeedback={mockOnSubmitFeedback} />);
 
     const textarea = screen.getByTestId("textarea");
@@ -442,8 +483,11 @@ describe("FeedbackNavigationItem", () => {
     // Click submit
     fireEvent.click(button);
 
-    // Should be called with the original text (trimming happens in condition check, not in the call)
-    expect(mockOnSubmitFeedback).toHaveBeenCalledWith(testFeedback);
+    // Wait for the async operation to complete
+    await waitFor(() => {
+      // Should be called with the original text (trimming happens in condition check, not in the call)
+      expect(mockOnSubmitFeedback).toHaveBeenCalledWith(testFeedback);
+    });
   });
 
   it("renders with correct FlexBox directions", () => {
@@ -458,5 +502,132 @@ describe("FeedbackNavigationItem", () => {
     // Button container should be Row direction
     expect(flexBoxes[1]).toHaveAttribute("data-direction", "Row");
     expect(flexBoxes[1]).toHaveClass("gap-2");
+  });
+
+  it("shows loading state while submitting feedback", async () => {
+    // Mock a delayed promise to test loading state
+    mockCreateFeedback.mockImplementation(
+      () =>
+        new Promise((resolve) =>
+          setTimeout(
+            () =>
+              resolve({
+                data: {
+                  id: "1",
+                  message: "delayed feedback",
+                  category: "general",
+                  userId: "user1",
+                  timestamp: "2024-01-01T00:00:00Z",
+                  status: "active",
+                },
+                status: 201,
+                statusText: "Created",
+                headers: {},
+              }),
+            100
+          )
+        )
+    );
+
+    render(<FeedbackNavigationItem onSubmitFeedback={mockOnSubmitFeedback} />);
+
+    const textarea = screen.getByTestId("textarea");
+    const button = screen.getByTestId("button");
+    const testFeedback = "Test feedback";
+
+    // Type feedback and submit
+    fireEvent.change(textarea, { target: { value: testFeedback } });
+    fireEvent.click(button);
+
+    // Should show loading state
+    expect(button).toHaveTextContent("Submitting...");
+    expect(button).toBeDisabled();
+    expect(textarea).toBeDisabled();
+
+    // Wait for loading state to clear (promise resolves automatically after 100ms)
+    await waitFor(() => {
+      expect(button).toHaveTextContent("Submit");
+      expect(button).toBeDisabled(); // Should be disabled because textarea is empty now
+      expect(textarea).not.toBeDisabled();
+    });
+  });
+
+  it("handles API error gracefully", async () => {
+    const consoleSpy = jest
+      .spyOn(console, "error")
+      .mockImplementation(() => {});
+    mockCreateFeedback.mockRejectedValue(new Error("API Error"));
+
+    render(<FeedbackNavigationItem onSubmitFeedback={mockOnSubmitFeedback} />);
+
+    const textarea = screen.getByTestId("textarea");
+    const button = screen.getByTestId("button");
+    const testFeedback = "Test feedback";
+
+    // Type feedback and submit
+    fireEvent.change(textarea, { target: { value: testFeedback } });
+    fireEvent.click(button);
+
+    // Wait for error handling
+    await waitFor(() => {
+      expect(consoleSpy).toHaveBeenCalledWith(
+        "Error submitting feedback:",
+        expect.any(Error)
+      );
+    });
+
+    // Should not call onSubmitFeedback on error
+    expect(mockOnSubmitFeedback).not.toHaveBeenCalled();
+
+    // Textarea should not be cleared on error
+    expect(textarea).toHaveValue(testFeedback);
+
+    // Button should be enabled again
+    expect(button).not.toBeDisabled();
+
+    consoleSpy.mockRestore();
+  });
+
+  it("disables controls during submission", async () => {
+    mockCreateFeedback.mockImplementation(
+      () =>
+        new Promise((resolve) =>
+          setTimeout(
+            () =>
+              resolve({
+                data: {
+                  id: "1",
+                  message: "test feedback",
+                  category: "general",
+                  userId: "user1",
+                  timestamp: "2024-01-01T00:00:00Z",
+                  status: "active",
+                },
+                status: 201,
+                statusText: "Created",
+                headers: {},
+              }),
+            100
+          )
+        )
+    );
+
+    render(<FeedbackNavigationItem onSubmitFeedback={mockOnSubmitFeedback} />);
+
+    const textarea = screen.getByTestId("textarea");
+    const button = screen.getByTestId("button");
+
+    // Type feedback and submit
+    fireEvent.change(textarea, { target: { value: "Test feedback" } });
+    fireEvent.click(button);
+
+    // During submission, both controls should be disabled
+    expect(textarea).toBeDisabled();
+    expect(button).toBeDisabled();
+
+    // Wait for submission to complete (promise resolves automatically after 100ms)
+    await waitFor(() => {
+      expect(textarea).not.toBeDisabled();
+    });
   });
 });
