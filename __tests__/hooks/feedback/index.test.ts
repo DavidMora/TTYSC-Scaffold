@@ -1,9 +1,9 @@
 import { renderHook } from "@testing-library/react";
-import { 
-  useFeedbacks, 
-  useFeedback, 
-  FEEDBACKS_KEY, 
-  FEEDBACK_KEY 
+import {
+  useFeedbacks,
+  useFeedback,
+  FEEDBACKS_KEY,
+  FEEDBACK_KEY,
 } from "../../../src/hooks/feedback";
 import { dataFetcher } from "../../../src/lib/api";
 
@@ -34,7 +34,9 @@ describe("Feedback Hooks", () => {
     });
 
     it("should handle special characters in FEEDBACK_KEY", () => {
-      expect(FEEDBACK_KEY("user@example.com")).toBe("feedback-user@example.com");
+      expect(FEEDBACK_KEY("user@example.com")).toBe(
+        "feedback-user@example.com"
+      );
       expect(FEEDBACK_KEY("123-456-789")).toBe("feedback-123-456-789");
       expect(FEEDBACK_KEY("special!@#$%")).toBe("feedback-special!@#$%");
     });
@@ -167,7 +169,7 @@ describe("Feedback Hooks", () => {
 
       // Test that the fetcher function exists and is callable
       expect(typeof fetcherFunction).toBe("function");
-      
+
       // Call the fetcher function to ensure it's properly constructed
       expect(() => fetcherFunction()).not.toThrow();
     });
@@ -318,14 +320,14 @@ describe("Feedback Hooks", () => {
 
       // Test that the fetcher function exists and is callable
       expect(typeof fetcherFunction).toBe("function");
-      
+
       // Call the fetcher function to ensure it's properly constructed
       expect(() => fetcherFunction()).not.toThrow();
     });
 
     it("should use correct key format for different IDs", () => {
       const testIds = ["123", "test-feedback", "user@domain.com"];
-      
+
       for (const id of testIds) {
         const mockFetchData = jest.fn().mockReturnValue({
           data: undefined,
@@ -363,13 +365,15 @@ describe("Feedback Hooks", () => {
 
       // First call
       renderHook(() => useFeedback("id1"));
-      
+
       // Second call with same ID
       renderHook(() => useFeedback("id1"));
 
       // Both calls should use the same key format
       expect(mockFetchData).toHaveBeenCalledTimes(2);
-      expect(mockFetchData.mock.calls[0][0]).toBe(mockFetchData.mock.calls[1][0]);
+      expect(mockFetchData.mock.calls[0][0]).toBe(
+        mockFetchData.mock.calls[1][0]
+      );
       expect(mockFetchData.mock.calls[0][0]).toBe("feedback-id1");
     });
 
