@@ -1,6 +1,7 @@
 import { HttpClientResponse } from "@/lib/types/api/http-client";
 import {
   DataFetcherAdapter,
+  DataFetcherKey,
   DataFetcherOptions,
   DataFetcherResponse,
 } from "@/lib/types/api/data-fetcher";
@@ -15,13 +16,24 @@ interface TanStackQueryResult<T> {
 }
 
 type UseQueryHook = <T>(options: {
-  queryKey: string[];
+  queryKey: readonly unknown[];
   queryFn: () => Promise<T>;
   enabled?: boolean;
   refetchInterval?: number;
   retry?: boolean | number;
   retryDelay?: number;
 }) => TanStackQueryResult<T>;
+
+/**
+ * Normalizes a DataFetcherKey into a format that TanStack Query can use
+ * TanStack Query expects an array as the queryKey
+ */
+function normalizeKeyForTanStackQuery(key: DataFetcherKey): readonly unknown[] {
+  if (typeof key === "string") {
+    return [key];
+  }
+  return key;
+}
 
 export class TanStackQueryAdapter implements DataFetcherAdapter {
   private readonly useQuery: UseQueryHook;
@@ -31,7 +43,7 @@ export class TanStackQueryAdapter implements DataFetcherAdapter {
   }
 
   fetchData<T = unknown>(
-    key: string,
+    key: DataFetcherKey,
     fetcher: () => Promise<HttpClientResponse<T>>,
     options: DataFetcherOptions = {}
   ): DataFetcherResponse<T> {
@@ -40,6 +52,9 @@ export class TanStackQueryAdapter implements DataFetcherAdapter {
       const response = await fetcher();
       return response.data;
     };
+
+    // Normalize the key for TanStack Query
+    const queryKey = normalizeKeyForTanStackQuery(key);
 
     // Calculate retry value
     let retry: boolean | number = false;
@@ -50,7 +65,7 @@ export class TanStackQueryAdapter implements DataFetcherAdapter {
     }
 
     const queryResult = this.useQuery({
-      queryKey: [key],
+      queryKey,
       queryFn,
       enabled: options.enabled !== false,
       refetchInterval: options.refreshInterval,
