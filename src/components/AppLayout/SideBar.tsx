@@ -31,7 +31,6 @@ export default function SideBarMenu({
     data: chatHistory,
     isLoading: isLoadingChatHistory,
     error: chatHistoryError,
-    // mutate: chatHistoryMutate,
   } = useChats();
 
   const handleFeedbackSubmit = (feedback: string) => {
