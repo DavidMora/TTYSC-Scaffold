@@ -1,27 +1,63 @@
 import { render, screen, fireEvent } from "@testing-library/react";
 import ChatHistoryNavigationItem from "@/components/AppLayout/SidebarItems/ChatHistoryNavigationItem";
+import { Chat } from "@/lib/types/chats";
 import "@testing-library/jest-dom";
 
 describe("ChatHistoryNavigationItem", () => {
   const mockOnChatSelect = jest.fn();
   const mockOnChatItemSelect = jest.fn();
 
-  const customChatHistory = [
+  const customChatHistory: Chat[] = [
     {
-      id: 1,
+      id: "chat-1",
       title: "Custom Chat 1",
-      textItems: [
-        { id: 1, text: "Message 1" },
-        { id: 2, text: "Message 2" },
+      date: "2024-01-01",
+      participants: [
+        { id: "user-1", name: "User 1" },
+        { id: "user-2", name: "User 2" },
+      ],
+      messages: [
+        {
+          id: "msg-1",
+          sender: "user-1",
+          timestamp: "2024-01-01T10:00:00Z",
+          content: "Message 1",
+        },
+        {
+          id: "msg-2",
+          sender: "user-2",
+          timestamp: "2024-01-01T10:01:00Z",
+          content: "Message 2",
+        },
       ],
     },
     {
-      id: 2,
+      id: "chat-2",
       title: "Custom Chat 2",
-      textItems: [
-        { id: 3, text: "Message 3" },
-        { id: 4, text: "Message 4" },
-        { id: 5, text: "Message 5" },
+      date: "2024-01-02",
+      participants: [
+        { id: "user-1", name: "User 1" },
+        { id: "user-3", name: "User 3" },
+      ],
+      messages: [
+        {
+          id: "msg-3",
+          sender: "user-1",
+          timestamp: "2024-01-02T10:00:00Z",
+          content: "Message 3",
+        },
+        {
+          id: "msg-4",
+          sender: "user-3",
+          timestamp: "2024-01-02T10:01:00Z",
+          content: "Message 4",
+        },
+        {
+          id: "msg-5",
+          sender: "user-1",
+          timestamp: "2024-01-02T10:02:00Z",
+          content: "Message 5",
+        },
       ],
     },
   ];
@@ -47,17 +83,12 @@ describe("ChatHistoryNavigationItem", () => {
       );
     });
 
-    it("should render with default chat history when no chatHistory prop is provided", () => {
+    it("should render empty state when no chatHistory prop is provided", () => {
       render(<ChatHistoryNavigationItem />);
 
-      // Should render 4 default chat items (from defaultChatHistory)
-      const panels = screen.getAllByTestId("ui5-panel");
-      expect(panels).toHaveLength(4);
-
-      // Check that default titles are rendered
-      panels.forEach((panel) => {
-        expect(panel).toHaveAttribute("data-header-text", "Chat Title");
-      });
+      // Should not render any panels since default is now an empty array
+      const panels = screen.queryAllByTestId("ui5-panel");
+      expect(panels).toHaveLength(0);
     });
 
     it("should render with custom chat history", () => {
@@ -70,14 +101,14 @@ describe("ChatHistoryNavigationItem", () => {
       expect(panels[1]).toHaveAttribute("data-header-text", "Custom Chat 2");
     });
 
-    it("should render all chat text items", () => {
+    it("should render all chat messages", () => {
       render(<ChatHistoryNavigationItem chatHistory={customChatHistory} />);
 
-      // Check first chat items
+      // Check first chat messages
       expect(screen.getByText("Message 1")).toBeInTheDocument();
       expect(screen.getByText("Message 2")).toBeInTheDocument();
 
-      // Check second chat items
+      // Check second chat messages
       expect(screen.getByText("Message 3")).toBeInTheDocument();
       expect(screen.getByText("Message 4")).toBeInTheDocument();
       expect(screen.getByText("Message 5")).toBeInTheDocument();
@@ -143,7 +174,7 @@ describe("ChatHistoryNavigationItem", () => {
       // Simulate panel click since the mock maps onToggle to onClick
       fireEvent.click(panels[0]);
 
-      expect(mockOnChatSelect).toHaveBeenCalledWith(1);
+      expect(mockOnChatSelect).toHaveBeenCalledWith("chat-1");
     });
 
     it("should call onChatSelect with correct chat ID for different chats", () => {
@@ -158,7 +189,7 @@ describe("ChatHistoryNavigationItem", () => {
 
       fireEvent.click(panels[1]);
 
-      expect(mockOnChatSelect).toHaveBeenCalledWith(2);
+      expect(mockOnChatSelect).toHaveBeenCalledWith("chat-2");
     });
 
     it("should call onChatItemSelect when list item is clicked", () => {
@@ -172,7 +203,7 @@ describe("ChatHistoryNavigationItem", () => {
       const listItem = screen.getByText("Message 1");
       fireEvent.click(listItem);
 
-      expect(mockOnChatItemSelect).toHaveBeenCalledWith(1, 1);
+      expect(mockOnChatItemSelect).toHaveBeenCalledWith("chat-1", "msg-1");
     });
 
     it("should call onChatItemSelect with correct IDs for different items", () => {
@@ -183,11 +214,11 @@ describe("ChatHistoryNavigationItem", () => {
         />
       );
 
-      // Click on Message 3 (chatId: 2, itemId: 3)
+      // Click on Message 3 (chatId: "chat-2", itemId: "msg-3")
       const listItem = screen.getByText("Message 3");
       fireEvent.click(listItem);
 
-      expect(mockOnChatItemSelect).toHaveBeenCalledWith(2, 3);
+      expect(mockOnChatItemSelect).toHaveBeenCalledWith("chat-2", "msg-3");
     });
 
     it("should call onChatItemSelect with correct IDs for last item in second chat", () => {
@@ -198,11 +229,11 @@ describe("ChatHistoryNavigationItem", () => {
         />
       );
 
-      // Click on Message 5 (chatId: 2, itemId: 5)
+      // Click on Message 5 (chatId: "chat-2", itemId: "msg-5")
       const listItem = screen.getByText("Message 5");
       fireEvent.click(listItem);
 
-      expect(mockOnChatItemSelect).toHaveBeenCalledWith(2, 5);
+      expect(mockOnChatItemSelect).toHaveBeenCalledWith("chat-2", "msg-5");
     });
 
     it("should not call onChatSelect when prop is not provided", () => {
@@ -234,56 +265,71 @@ describe("ChatHistoryNavigationItem", () => {
     });
   });
 
-  describe("Default Chat History", () => {
-    it("should render correct number of default chat items", () => {
-      render(<ChatHistoryNavigationItem />);
+  describe("Loading and Error States", () => {
+    it("should render loading state", () => {
+      render(<ChatHistoryNavigationItem isLoading={true} />);
 
-      // Default history has 4 chats, each with 3 text items
-      const listItems = screen.getAllByTestId("ui5-list-item-standard");
-      expect(listItems).toHaveLength(12); // 4 chats × 3 items each
+      expect(screen.getByTestId("ui5-busy-indicator")).toBeInTheDocument();
+      expect(screen.getByText("Loading chat history...")).toBeInTheDocument();
+
+      // Should not render any panels
+      const panels = screen.queryAllByTestId("ui5-panel");
+      expect(panels).toHaveLength(0);
     });
 
-    it("should render default chat titles", () => {
-      render(<ChatHistoryNavigationItem />);
+    it("should render error state", () => {
+      const error = new Error("Failed to load chat history");
+      render(<ChatHistoryNavigationItem errorLoading={error} />);
 
-      const panels = screen.getAllByTestId("ui5-panel");
-      panels.forEach((panel) => {
-        expect(panel).toHaveAttribute("data-header-text", "Chat Title");
-      });
+      expect(screen.getByTestId("ui5-messagestrip")).toBeInTheDocument();
+      expect(
+        screen.getByText("Failed to load chat history")
+      ).toBeInTheDocument();
+
+      // Should not render any panels
+      const panels = screen.queryAllByTestId("ui5-panel");
+      expect(panels).toHaveLength(0);
     });
 
-    it("should render default chat text items", () => {
-      render(<ChatHistoryNavigationItem />);
+    it("should render error state with default message when error has no message", () => {
+      const error = new Error("");
+      render(<ChatHistoryNavigationItem errorLoading={error} />);
 
-      // Each default chat has "Chat 1", "Chat 2", "Chat 3"
-      const chat1Items = screen.getAllByText("Chat 1");
-      const chat2Items = screen.getAllByText("Chat 2");
-      const chat3Items = screen.getAllByText("Chat 3");
-
-      expect(chat1Items).toHaveLength(4); // 4 default chats
-      expect(chat2Items).toHaveLength(4); // 4 default chats
-      expect(chat3Items).toHaveLength(4); // 4 default chats
+      expect(screen.getByTestId("ui5-messagestrip")).toBeInTheDocument();
+      expect(
+        screen.getByText("Error loading chat history. Please try again.")
+      ).toBeInTheDocument();
     });
 
-    it("should handle onChatSelect with default chat history", () => {
-      render(<ChatHistoryNavigationItem onChatSelect={mockOnChatSelect} />);
+    it("should render error state with default message when error is undefined", () => {
+      const error = {} as Error;
+      render(<ChatHistoryNavigationItem errorLoading={error} />);
 
-      const panels = screen.getAllByTestId("ui5-panel");
-      fireEvent.click(panels[2]); // Third chat (id: 3)
-
-      expect(mockOnChatSelect).toHaveBeenCalledWith(3);
+      expect(screen.getByTestId("ui5-messagestrip")).toBeInTheDocument();
+      expect(
+        screen.getByText("Error loading chat history. Please try again.")
+      ).toBeInTheDocument();
     });
 
-    it("should handle onChatItemSelect with default chat history", () => {
+    it("should prioritize loading state over error state", () => {
+      const error = new Error("Failed to load");
       render(
-        <ChatHistoryNavigationItem onChatItemSelect={mockOnChatItemSelect} />
+        <ChatHistoryNavigationItem isLoading={true} errorLoading={error} />
       );
 
-      // Get all "Chat 2" items and click the first one (should be from chat id: 1, item id: 2)
-      const chat2Items = screen.getAllByText("Chat 2");
-      fireEvent.click(chat2Items[0]);
+      expect(screen.getByTestId("ui5-busy-indicator")).toBeInTheDocument();
+      expect(screen.getByText("Loading chat history...")).toBeInTheDocument();
+      expect(screen.queryByTestId("ui5-messagestrip")).not.toBeInTheDocument();
+    });
 
-      expect(mockOnChatItemSelect).toHaveBeenCalledWith(1, 2);
+    it("should not render loading or error states when data is available", () => {
+      render(<ChatHistoryNavigationItem chatHistory={customChatHistory} />);
+
+      expect(
+        screen.queryByTestId("ui5-busy-indicator")
+      ).not.toBeInTheDocument();
+      expect(screen.queryByTestId("ui5-messagestrip")).not.toBeInTheDocument();
+      expect(screen.getAllByTestId("ui5-panel")).toHaveLength(2);
     });
   });
 
@@ -300,16 +346,18 @@ describe("ChatHistoryNavigationItem", () => {
       expect(panels).toHaveLength(0);
     });
 
-    it("should handle chat with empty text items", () => {
-      const emptyTextItemsHistory = [
+    it("should handle chat with empty messages", () => {
+      const emptyMessagesHistory: Chat[] = [
         {
-          id: 1,
+          id: "empty-chat-1",
           title: "Empty Chat",
-          textItems: [],
+          date: "2024-01-01",
+          participants: [{ id: "user-1", name: "User 1" }],
+          messages: [],
         },
       ];
 
-      render(<ChatHistoryNavigationItem chatHistory={emptyTextItemsHistory} />);
+      render(<ChatHistoryNavigationItem chatHistory={emptyMessagesHistory} />);
 
       const panel = screen.getByTestId("ui5-panel");
       expect(panel).toHaveAttribute("data-header-text", "Empty Chat");
@@ -322,12 +370,21 @@ describe("ChatHistoryNavigationItem", () => {
       expect(listItems).toHaveLength(0);
     });
 
-    it("should handle single chat with single text item", () => {
-      const singleItemHistory = [
+    it("should handle single chat with single message", () => {
+      const singleItemHistory: Chat[] = [
         {
-          id: 99,
+          id: "single-chat-99",
           title: "Single Chat",
-          textItems: [{ id: 100, text: "Only Message" }],
+          date: "2024-01-01",
+          participants: [{ id: "user-1", name: "User 1" }],
+          messages: [
+            {
+              id: "msg-100",
+              sender: "user-1",
+              timestamp: "2024-01-01T10:00:00Z",
+              content: "Only Message",
+            },
+          ],
         },
       ];
 
@@ -344,12 +401,15 @@ describe("ChatHistoryNavigationItem", () => {
       // Test clicking the panel
       const panel = screen.getByTestId("ui5-panel");
       fireEvent.click(panel);
-      expect(mockOnChatSelect).toHaveBeenCalledWith(99);
+      expect(mockOnChatSelect).toHaveBeenCalledWith("single-chat-99");
 
       // Test clicking the list item
       const listItem = screen.getByText("Only Message");
       fireEvent.click(listItem);
-      expect(mockOnChatItemSelect).toHaveBeenCalledWith(99, 100);
+      expect(mockOnChatItemSelect).toHaveBeenCalledWith(
+        "single-chat-99",
+        "msg-100"
+      );
     });
   });
 
@@ -402,7 +462,7 @@ describe("ChatHistoryNavigationItem", () => {
       fireEvent.click(panels[0]);
 
       expect(mockOnChatSelect).toHaveBeenCalledTimes(1);
-      expect(mockOnChatSelect).toHaveBeenCalledWith(1);
+      expect(mockOnChatSelect).toHaveBeenCalledWith("chat-1");
     });
 
     it("should execute handleChatItemClick function", () => {
@@ -417,7 +477,7 @@ describe("ChatHistoryNavigationItem", () => {
       fireEvent.click(listItem);
 
       expect(mockOnChatItemSelect).toHaveBeenCalledTimes(1);
-      expect(mockOnChatItemSelect).toHaveBeenCalledWith(1, 2);
+      expect(mockOnChatItemSelect).toHaveBeenCalledWith("chat-1", "msg-2");
     });
 
     it("should handle optional callback parameters correctly", () => {
@@ -434,29 +494,50 @@ describe("ChatHistoryNavigationItem", () => {
       }).not.toThrow();
     });
 
-    it("should cover all default chat history items", () => {
+    it("should render content when chat history is provided", () => {
       render(
         <ChatHistoryNavigationItem
+          chatHistory={customChatHistory}
           onChatSelect={mockOnChatSelect}
           onChatItemSelect={mockOnChatItemSelect}
         />
       );
 
-      // Click all 4 default panels
+      // Click all panels
       const panels = screen.getAllByTestId("ui5-panel");
       panels.forEach((panel, index) => {
         fireEvent.click(panel);
-        expect(mockOnChatSelect).toHaveBeenCalledWith(index + 1);
+        expect(mockOnChatSelect).toHaveBeenCalledWith(
+          index === 0 ? "chat-1" : "chat-2"
+        );
       });
 
-      // Click some default chat items
-      const firstChatItem = screen.getAllByText("Chat 1")[0];
-      fireEvent.click(firstChatItem);
-      expect(mockOnChatItemSelect).toHaveBeenCalledWith(1, 1);
+      // Click some chat items
+      const firstChatMessage = screen.getByText("Message 1");
+      fireEvent.click(firstChatMessage);
+      expect(mockOnChatItemSelect).toHaveBeenCalledWith("chat-1", "msg-1");
 
-      const lastChatItem = screen.getAllByText("Chat 3")[3]; // Last "Chat 3" from chat id 4
-      fireEvent.click(lastChatItem);
-      expect(mockOnChatItemSelect).toHaveBeenCalledWith(4, 3);
+      const lastChatMessage = screen.getByText("Message 5");
+      fireEvent.click(lastChatMessage);
+      expect(mockOnChatItemSelect).toHaveBeenCalledWith("chat-2", "msg-5");
+    });
+
+    it("should cover renderContent function branches", () => {
+      // Test loading branch
+      const { rerender } = render(
+        <ChatHistoryNavigationItem isLoading={true} />
+      );
+      expect(screen.getByTestId("ui5-busy-indicator")).toBeInTheDocument();
+
+      // Test error branch
+      rerender(
+        <ChatHistoryNavigationItem errorLoading={new Error("Test error")} />
+      );
+      expect(screen.getByTestId("ui5-messagestrip")).toBeInTheDocument();
+
+      // Test normal content branch
+      rerender(<ChatHistoryNavigationItem chatHistory={customChatHistory} />);
+      expect(screen.getAllByTestId("ui5-panel")).toHaveLength(2);
     });
   });
 });
