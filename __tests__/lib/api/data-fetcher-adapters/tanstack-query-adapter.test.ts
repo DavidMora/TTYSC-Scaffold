@@ -213,6 +213,31 @@ describe("TanStackQueryAdapter", () => {
     expect(mockRefetch).toHaveBeenCalled();
   });
 
+  it("should handle array keys correctly", () => {
+    const mockFetcher = jest.fn();
+
+    (mockUseQuery as jest.Mock).mockReturnValue({
+      data: { test: "data" },
+      error: null,
+      isLoading: false,
+      isFetching: false,
+      refetch: jest.fn(),
+    });
+
+    // Test with array key
+    const arrayKey = ["users", 123, { active: true }];
+    adapter.fetchData(arrayKey, mockFetcher);
+
+    expect(mockUseQuery).toHaveBeenCalledWith({
+      queryKey: arrayKey,
+      queryFn: expect.any(Function),
+      enabled: true,
+      refetchInterval: undefined,
+      retry: false,
+      retryDelay: undefined,
+    });
+  });
+
   describe("export", () => {
     it("should export TanStackQueryAdapter as default", async () => {
       const tanstackAdapterModule = await import(

@@ -1,5 +1,7 @@
 import { HttpClientResponse } from "./http-client";
 
+export type DataFetcherKey = string | readonly unknown[];
+
 export interface DataFetcherResponse<T = unknown> {
   data: T | undefined;
   error: Error | undefined;
@@ -10,7 +12,7 @@ export interface DataFetcherResponse<T = unknown> {
 
 export interface DataFetcherAdapter {
   fetchData<T = unknown>(
-    key: string,
+    key: DataFetcherKey,
     fetcher: () => Promise<HttpClientResponse<T>>,
     options?: DataFetcherOptions
   ): DataFetcherResponse<T>;
