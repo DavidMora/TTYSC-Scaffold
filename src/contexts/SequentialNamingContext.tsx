@@ -5,6 +5,7 @@ import React, {
   useContext,
   useState,
   useCallback,
+  useMemo,
   ReactNode,
 } from "react";
 
@@ -63,16 +64,21 @@ export const SequentialNamingProvider: React.FC<
   const [counter, setCounter] = useState(1);
 
   const generateAnalysisName = useCallback((): string => {
-    const nameWithOrdinal = generateNameString(counter, "Analysis");
-    const nextCounter = counter + 1;
-    setCounter(nextCounter);
+    let nameWithOrdinal = "";
+    setCounter((currentCounter) => {
+      nameWithOrdinal = generateNameString(currentCounter, "Analysis");
+      return currentCounter + 1;
+    });
     return nameWithOrdinal;
-  }, [counter]);
+  }, []);
 
-  const value: SequentialNamingContextType = {
-    generateAnalysisName,
-    currentCounter: counter,
-  };
+  const value: SequentialNamingContextType = useMemo(
+    () => ({
+      generateAnalysisName,
+      currentCounter: counter,
+    }),
+    [generateAnalysisName, counter]
+  );
 
   return (
     <SequentialNamingContext.Provider value={value}>

@@ -9,7 +9,6 @@ import { HEADER_BAR_CONFIG } from "@/lib/constants/UI/HeaderBar";
 
 interface AppLayoutProps {
   children: React.ReactNode;
-  analysisId?: string;
 }
 
 export default function AppLayout({ children }: Readonly<AppLayoutProps>) {

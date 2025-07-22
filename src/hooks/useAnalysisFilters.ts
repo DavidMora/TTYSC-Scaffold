@@ -58,7 +58,7 @@ export const useAnalysisFilters = () => {
     }
 
     return options;
-  }, [analysisResponse?.data, casesResponse?.data, analysisKey]);
+  }, [analysisResponse?.data?.analysis, casesResponse?.data, analysisKey]);
 
   const handleFilterChange = useCallback(
     (filterKey: FilterKey, value: string): void => {

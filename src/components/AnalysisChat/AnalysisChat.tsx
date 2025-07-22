@@ -45,7 +45,6 @@ export default function AnalysisChat() {
             <div
               style={{
                 maxWidth: "70%",
-                minWidth: "600px",
                 backgroundColor: "var(--sapAccentBackgroundColor10)",
                 borderRadius: "16px",
                 border: "1px solid #D5D7DA",

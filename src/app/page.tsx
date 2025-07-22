@@ -1,13 +1,14 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
   FlexBox,
   FlexBoxDirection,
   Title,
   Text,
   Icon,
+  Button,
 } from "@ui5/webcomponents-react";
 import { useCreateAnalysis } from "@/hooks/useAnalysis";
 
@@ -50,8 +51,58 @@ const LoadingDisplay = () => (
   </FlexBox>
 );
 
+const ErrorDisplay = ({
+  error,
+  onRetry,
+}: {
+  error: Error;
+  onRetry: () => void;
+}) => (
+  <FlexBox
+    direction={FlexBoxDirection.Column}
+    style={{
+      padding: "1.5rem",
+      alignItems: "center",
+      justifyContent: "center",
+      textAlign: "center",
+      gap: "0.5rem",
+      minHeight: "200px",
+    }}
+  >
+    <Title
+      level="H3"
+      style={{ color: "var(--sapNeutralTextColor)", margin: 0 }}
+    >
+      Something went wrong
+    </Title>
+
+    <Text
+      style={{
+        maxWidth: "400px",
+        color: "var(--sapNeutralTextColor)",
+        fontSize: "0.9rem",
+        lineHeight: "1.3",
+        margin: 0,
+      }}
+    >
+      {error.message}
+    </Text>
+
+    <Button
+      onClick={onRetry}
+      style={{
+        marginTop: "0.25rem",
+      }}
+      design="Emphasized"
+    >
+      Try again
+    </Button>
+  </FlexBox>
+);
+
 export default function Home() {
   const router = useRouter();
+  const [error, setError] = useState<Error | null>(null);
 
   const createAnalysisMutation = useCreateAnalysis({
     onSuccess: (newAnalysis) => {
@@ -59,14 +110,23 @@ export default function Home() {
     },
     onError: (error) => {
       console.error("Failed to create analysis:", error);
+      setError(error);
     },
   });
 
-  useEffect(() => {
-    if (!createAnalysisMutation.isLoading && !createAnalysisMutation.data) {
-      createAnalysisMutation.mutate?.();
-    }
-  }, [createAnalysisMutation]);
+  const handleRetry = () => {
+    setError(null);
+    createAnalysisMutation.mutate?.();
+  };
 
-  return <LoadingDisplay />;
+  useEffect(() => {
+    createAnalysisMutation.mutate?.();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  return error ? (
+    <ErrorDisplay error={error} onRetry={handleRetry} />
+  ) : (
+    <LoadingDisplay />
+  );
 }
