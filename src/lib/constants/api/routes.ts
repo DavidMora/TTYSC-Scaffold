@@ -7,6 +7,10 @@ export const DEFINITION = (id: string) =>
 export const DEFINITION_DETAILS = (id: string) =>
   `${BASE}/definitions/${encodeURIComponent(id)}/details`;
 
+export const FEEDBACKS = `${BASE}/feedback`;
+export const FEEDBACK = (id: string) =>
+  `${BASE}/feedback/${encodeURIComponent(id)}`;
+
 // Sidebar Navigation Items endpoints
 export const CHATS = `${BASE}/chats`;
 export const CHAT = (id: string) => `${BASE}/chats/${encodeURIComponent(id)}`;
