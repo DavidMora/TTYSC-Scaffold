@@ -1,6 +1,7 @@
 import { HttpClientResponse } from "@/lib/types/api/http-client";
 import {
   DataFetcherAdapter,
+  DataFetcherKey,
   DataFetcherOptions,
   DataFetcherResponse,
 } from "@/lib/types/api/data-fetcher";
@@ -18,10 +19,18 @@ interface SWRResponse<T> {
 }
 
 type SWRHook = <T>(
-  key: string,
+  key: string | readonly unknown[] | null,
   fetcher: () => Promise<T>,
   options?: unknown
 ) => SWRResponse<T>;
+
+/**
+ * Normalizes a DataFetcherKey into a format that SWR can use
+ * SWR accepts string, array, or null as keys
+ */
+function normalizeKeyForSWR(key: DataFetcherKey): string | readonly unknown[] {
+  return key; // SWR natively supports both string and array keys
+}
 
 export class SWRAdapter implements DataFetcherAdapter {
   private readonly useSWR: SWRHook;
@@ -32,7 +41,7 @@ export class SWRAdapter implements DataFetcherAdapter {
   }
 
   fetchData<T = unknown>(
-    key: string,
+    key: DataFetcherKey,
     fetcher: () => Promise<HttpClientResponse<T>>,
     options: DataFetcherOptions = {}
   ): DataFetcherResponse<T> {
@@ -41,6 +50,9 @@ export class SWRAdapter implements DataFetcherAdapter {
       const response = await fetcher();
       return response.data;
     };
+
+    // Normalize the key for SWR
+    const normalizedKey = normalizeKeyForSWR(key);
 
     // Calculate retry count
     let errorRetryCount = 0;
@@ -62,7 +74,7 @@ export class SWRAdapter implements DataFetcherAdapter {
     };
 
     const { data, error, isLoading, isValidating, mutate } = this.useSWR(
-      key,
+      normalizedKey,
       swrFetcher,
       swrOptions
     );

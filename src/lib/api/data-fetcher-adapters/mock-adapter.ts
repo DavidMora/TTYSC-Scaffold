@@ -1,6 +1,7 @@
 import { HttpClientResponse } from "@/lib/types/api/http-client";
 import {
   DataFetcherAdapter,
+  DataFetcherKey,
   DataFetcherOptions,
   DataFetcherResponse,
 } from "@/lib/types/api/data-fetcher";
@@ -11,7 +12,7 @@ import {
  */
 export class MockAdapter implements DataFetcherAdapter {
   fetchData<T = unknown>(
-    key: string,
+    key: DataFetcherKey,
     fetcher: () => Promise<HttpClientResponse<T>>,
     options: DataFetcherOptions = {}
   ): DataFetcherResponse<T> {

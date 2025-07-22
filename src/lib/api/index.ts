@@ -10,3 +10,16 @@ export { default as AxiosAdapter } from "@/lib/api/http-client-adapters/axios-ad
 export { default as MockAdapter } from "@/lib/api/data-fetcher-adapters/mock-adapter";
 export { default as SWRAdapter } from "@/lib/api/data-fetcher-adapters/swr-adapter";
 export { default as TanStackQueryAdapter } from "@/lib/api/data-fetcher-adapters/tanstack-query-adapter";
+
+// Types
+export type {
+  DataFetcherKey,
+  DataFetcherAdapter,
+  DataFetcherOptions,
+  DataFetcherResponse,
+} from "@/lib/api/data-fetcher";
+export type {
+  HttpClientConfig,
+  HttpClientResponse,
+  HttpClientAdapter,
+} from "@/lib/types/api/http-client";
