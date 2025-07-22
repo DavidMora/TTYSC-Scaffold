@@ -1,8 +1,17 @@
 import React from "react";
-import { render, screen, fireEvent, act } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import AnalysisHeader from "@/components/AnalysisHeader/AnalysisHeader";
+import { Analysis } from "@/lib/types/analysis";
 
-jest.mock("@/hooks/useSequentialNaming", () => ({
+const mockPush = jest.fn();
+
+jest.mock("next/navigation", () => ({
+  useRouter: () => ({
+    push: mockPush,
+  }),
+}));
+
+jest.mock("@/contexts/SequentialNamingContext", () => ({
   useSequentialNaming: () => ({
     generateAnalysisName: jest.fn(() => "Analysis One"),
     currentCounter: 1,
@@ -86,11 +95,12 @@ const mockMutate = jest.fn();
 const mockUseCreateAnalysis = jest.fn();
 
 interface UseCreateAnalysisOptions {
-  onSuccess?: () => void;
+  onSuccess?: (data: Analysis) => void;
 }
 
 jest.mock("@/hooks/useAnalysis", () => ({
-  useCreateAnalysis: (options: UseCreateAnalysisOptions) => mockUseCreateAnalysis(options),
+  useCreateAnalysis: (options: UseCreateAnalysisOptions) =>
+    mockUseCreateAnalysis(options),
 }));
 
 describe("Analysis Header", () => {
@@ -118,19 +128,16 @@ describe("Analysis Header", () => {
     }).not.toThrow();
   });
 
-  it("should call onFiltersReset and update name when create analysis succeeds", () => {
+  it("should call onFiltersReset and navigate on successful analysis creation", async () => {
     const mockOnFiltersReset = jest.fn();
-    const mockGenerateAnalysisName = jest.fn(() => "New Analysis");
+    const mockAnalysisData: Analysis = {
+      id: "test-analysis-id",
+      name: "Test Analysis",
+    };
 
-    const useSequentialNamingMock = require("@/hooks/useSequentialNaming");
-    useSequentialNamingMock.useSequentialNaming = jest.fn(() => ({
-      generateAnalysisName: mockGenerateAnalysisName,
-      currentCounter: 1,
-    }));
-
-    let onSuccessCallback: (() => void) | undefined;
-    mockUseCreateAnalysis.mockImplementation((options: any) => {
-      onSuccessCallback = options?.onSuccess;
+    let capturedOnSuccess: ((data: Analysis) => void) | undefined;
+    mockUseCreateAnalysis.mockImplementation((options) => {
+      capturedOnSuccess = options.onSuccess;
       return {
         mutate: mockMutate,
         isLoading: false,
@@ -141,12 +148,13 @@ describe("Analysis Header", () => {
 
     render(<AnalysisHeader onFiltersReset={mockOnFiltersReset} />);
 
-    expect(onSuccessCallback).toBeDefined();
-    act(() => {
-      onSuccessCallback!();
-    });
+    if (capturedOnSuccess) {
+      capturedOnSuccess(mockAnalysisData);
+    }
 
-    expect(mockOnFiltersReset).toHaveBeenCalledTimes(1);
-    expect(mockGenerateAnalysisName).toHaveBeenCalledTimes(1);
+    await waitFor(() => {
+      expect(mockOnFiltersReset).toHaveBeenCalled();
+      expect(mockPush).toHaveBeenCalledWith("/test-analysis-id");
+    });
   });
 });

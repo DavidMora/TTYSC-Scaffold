@@ -1,52 +1,193 @@
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, waitFor, screen, fireEvent } from "@testing-library/react";
 import Home from "@/app/page";
 import "@testing-library/jest-dom";
 import React from "react";
+import { useCreateAnalysis } from "@/hooks/useAnalysis";
 
 const mockPush = jest.fn();
+const mockMutate = jest.fn();
 
-// Mock next/navigation
 jest.mock("next/navigation", () => ({
   useRouter: () => ({
     push: mockPush,
   }),
-  usePathname: () => "/", // Add this if any component needs it
+  usePathname: () => "/",
 }));
 
-// Mock @ui5/webcomponents-react components
-jest.mock("@ui5/webcomponents-react", () => ({
-  Page: ({ children, style }: any) => <div style={style}>{children}</div>,
-  Title: ({ children, style }: any) => <h1 style={style}>{children}</h1>,
-  Text: ({ children, style }: any) => <p style={style}>{children}</p>,
-  Card: ({ children, style }: any) => <div style={style}>{children}</div>,
-  CardHeader: ({ titleText }: any) => <div>{titleText}</div>,
-  Button: ({ children, onClick }: any) => (
-    <button onClick={onClick}>{children}</button>
-  ),
-  FlexBox: ({ children, style }: any) => <div style={style}>{children}</div>,
-  MessageStrip: ({ children }: any) => <div>{children}</div>,
-  Icon: ({ name, slot }: any) => <span data-name={name} data-slot={slot} />,
-  FlexBoxDirection: { Column: "column", Row: "row" },
-  FlexBoxJustifyContent: { SpaceAround: "space-around", Center: "center" },
-  FlexBoxAlignItems: { Center: "center" },
+jest.mock("@/hooks/useAnalysis", () => ({
+  useCreateAnalysis: jest.fn(),
 }));
+
+const mockUseCreateAnalysis = useCreateAnalysis as jest.MockedFunction<
+  typeof useCreateAnalysis
+>;
 
 describe("Home page", () => {
   beforeEach(() => {
     mockPush.mockClear();
+    mockMutate.mockClear();
+    jest.clearAllMocks();
   });
 
-  it("renders the main title", () => {
+  it("renders loading display by default", () => {
+    mockUseCreateAnalysis.mockReturnValue({
+      mutate: mockMutate,
+      data: undefined,
+      error: null,
+      isLoading: true,
+      reset: jest.fn(),
+    });
+
     render(<Home />);
-    expect(screen.getByText("Welcome to SAPUI5 Next.js")).toBeInTheDocument();
+
+    expect(screen.getByText("Creating Your Analysis...")).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "Setting up your analysis dashboard. You'll be redirected automatically."
+      )
+    ).toBeInTheDocument();
   });
 
-  it("navigates to about page on button click", () => {
+  it("calls createAnalysis on mount", async () => {
+    mockUseCreateAnalysis.mockReturnValue({
+      mutate: mockMutate,
+      data: undefined,
+      error: null,
+      isLoading: true,
+      reset: jest.fn(),
+    });
+
     render(<Home />);
 
-    const aboutButton = screen.getByText("Learn About This Project");
-    fireEvent.click(aboutButton);
+    await waitFor(() => {
+      expect(mockMutate).toHaveBeenCalledTimes(1);
+    });
+  });
 
-    expect(mockPush).toHaveBeenCalledWith("/about");
+  it("navigates to analysis page on successful creation", async () => {
+    const mockAnalysis = { id: "test-analysis-id", name: "Test Analysis" };
+
+    mockUseCreateAnalysis.mockImplementation(({ onSuccess }) => {
+      React.useEffect(() => {
+        if (onSuccess) {
+          onSuccess(mockAnalysis);
+        }
+      }, [onSuccess]);
+
+      return {
+        mutate: mockMutate,
+        data: {
+          data: { analysis: mockAnalysis },
+          status: 200,
+          statusText: "OK",
+          headers: {},
+        },
+        error: null,
+        isLoading: false,
+        reset: jest.fn(),
+      };
+    });
+
+    render(<Home />);
+
+    await waitFor(() => {
+      expect(mockPush).toHaveBeenCalledWith("/test-analysis-id");
+    });
+  });
+
+  it("displays error when analysis creation fails", async () => {
+    const consoleSpy = jest
+      .spyOn(console, "error")
+      .mockImplementation(() => {});
+    const testError = new Error("Failed to create analysis");
+
+    mockUseCreateAnalysis.mockImplementation(({ onError }) => {
+      React.useEffect(() => {
+        if (onError) {
+          onError(testError);
+        }
+      }, [onError]);
+
+      return {
+        mutate: mockMutate,
+        data: undefined,
+        error: testError,
+        isLoading: false,
+        reset: jest.fn(),
+      };
+    });
+
+    render(<Home />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Something went wrong")).toBeInTheDocument();
+      expect(screen.getByText(testError.message)).toBeInTheDocument();
+      expect(screen.getByText("Try again")).toBeInTheDocument();
+    });
+
+    expect(consoleSpy).toHaveBeenCalledWith(
+      "Failed to create analysis:",
+      testError
+    );
+
+    consoleSpy.mockRestore();
+  });
+
+  it("handles retry functionality correctly", async () => {
+    const consoleSpy = jest
+      .spyOn(console, "error")
+      .mockImplementation(() => {});
+    const testError = new Error("Failed to create analysis");
+
+    mockUseCreateAnalysis.mockImplementation(({ onError }) => {
+      React.useEffect(() => {
+        if (onError) {
+          onError(testError);
+        }
+      }, [onError]);
+
+      return {
+        mutate: mockMutate,
+        data: undefined,
+        error: testError,
+        isLoading: false,
+        reset: jest.fn(),
+      };
+    });
+
+    render(<Home />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Something went wrong")).toBeInTheDocument();
+    });
+
+    mockMutate.mockClear();
+
+    const retryButton = screen.getByText("Try again");
+    fireEvent.click(retryButton);
+
+    expect(mockMutate).toHaveBeenCalledTimes(1);
+
+    consoleSpy.mockRestore();
+  });
+
+  it("only calls mutate once on mount even with strict mode", async () => {
+    mockUseCreateAnalysis.mockReturnValue({
+      mutate: mockMutate,
+      data: undefined,
+      error: null,
+      isLoading: true,
+      reset: jest.fn(),
+    });
+
+    // Simulate React.StrictMode double-render
+    const { unmount } = render(<Home />);
+    unmount();
+    render(<Home />);
+
+    // Should still only be called once per component instance
+    await waitFor(() => {
+      expect(mockMutate).toHaveBeenCalledTimes(2); // Once per render
+    });
   });
 });

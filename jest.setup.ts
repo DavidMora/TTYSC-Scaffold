@@ -19,6 +19,7 @@ jest.mock("next/navigation", () => ({
   usePathname() {
     return "/";
   },
+  useParams: jest.fn(),
 }));
 
 // Ensure UI5 WebComponents React mock is used

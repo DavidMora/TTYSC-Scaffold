@@ -10,29 +10,30 @@ import {
 
 import { AnalysisRenaming } from "./AnalysisRenaming";
 import { CreateAnalysis } from "./CreateAnalysis";
-import { useSequentialNaming } from "@/hooks/useSequentialNaming";
 import { useCreateAnalysis } from "@/hooks/useAnalysis";
+import { useRouter } from "next/navigation";
 
 interface AnalysisHeaderProps {
   onFiltersReset?: () => void;
   currentAnalysisId?: string;
   currentAnalysisName?: string;
+  showAutoSaved?: boolean;
 }
 
 const AnalysisHeader: React.FC<AnalysisHeaderProps> = ({
   onFiltersReset,
   currentAnalysisId,
   currentAnalysisName,
+  showAutoSaved = false,
 }) => {
-  const { generateAnalysisName } = useSequentialNaming();
   const inputRef = useRef<InputDomRef>(null);
   const [name, setName] = useState<string>(currentAnalysisName || "");
+  const router = useRouter();
 
   const { mutate: createAnalysis, isLoading: isCreating } = useCreateAnalysis({
-    onSuccess: () => {
+    onSuccess: (data) => {
       onFiltersReset?.();
-      const newName = generateAnalysisName();
-      setName(newName);
+      router.push(`/${data.id}`);
     },
   });
 
@@ -60,30 +61,32 @@ const AnalysisHeader: React.FC<AnalysisHeaderProps> = ({
         />
       </FlexBox>
 
-      <FlexBox
-        alignItems={FlexBoxAlignItems.Center}
-        style={{
-          gap: "0.5rem",
-          color: "var(--sapHighlightColor)",
-        }}
-      >
-        <Text
+      {showAutoSaved && (
+        <FlexBox
+          alignItems={FlexBoxAlignItems.Center}
           style={{
-            fontSize: "var(--sapFontSize)",
+            gap: "0.5rem",
             color: "var(--sapHighlightColor)",
-            fontWeight: "400",
           }}
         >
-          Analysis Auto-Saved
-        </Text>
-        <Icon
-          name="accept"
-          style={{
-            fontSize: "1rem",
-            color: "var(--sapHighlightColor)",
-          }}
-        />
-      </FlexBox>
+          <Text
+            style={{
+              fontSize: "var(--sapFontSize)",
+              color: "var(--sapHighlightColor)",
+              fontWeight: "400",
+            }}
+          >
+            Analysis Auto-Saved
+          </Text>
+          <Icon
+            name="accept"
+            style={{
+              fontSize: "1rem",
+              color: "var(--sapHighlightColor)",
+            }}
+          />
+        </FlexBox>
+      )}
     </FlexBox>
   );
 };

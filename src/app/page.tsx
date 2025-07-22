@@ -1,136 +1,132 @@
 "use client";
 
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import {
-  Page,
-  Title,
-  Text,
-  Card,
-  CardHeader,
-  Button,
   FlexBox,
   FlexBoxDirection,
-  FlexBoxJustifyContent,
-  FlexBoxAlignItems,
-  MessageStrip,
+  Title,
+  Text,
   Icon,
+  Button,
 } from "@ui5/webcomponents-react";
-import { useRouter } from "next/navigation";
+import { useCreateAnalysis } from "@/hooks/useAnalysis";
+
+const LoadingDisplay = () => (
+  <FlexBox
+    direction={FlexBoxDirection.Column}
+    style={{
+      padding: "3rem",
+      alignItems: "center",
+      justifyContent: "center",
+      textAlign: "center",
+      gap: "1.5rem",
+      minHeight: "400px",
+    }}
+  >
+    <Icon
+      name="business-objects-experience"
+      style={{
+        fontSize: "4rem",
+        color: "var(--sapNeutralTextColor)",
+        opacity: 0.6,
+      }}
+    />
+
+    <Title level="H2" style={{ color: "var(--sapNeutralTextColor)" }}>
+      Creating Your Analysis...
+    </Title>
+
+    <Text
+      style={{
+        maxWidth: "500px",
+        color: "var(--sapNeutralTextColor)",
+        fontSize: "1.1rem",
+        lineHeight: "1.5",
+      }}
+    >
+      Setting up your analysis dashboard. You&apos;ll be redirected
+      automatically.
+    </Text>
+  </FlexBox>
+);
+
+const ErrorDisplay = ({
+  error,
+  onRetry,
+}: {
+  error: Error;
+  onRetry: () => void;
+}) => (
+  <FlexBox
+    direction={FlexBoxDirection.Column}
+    style={{
+      padding: "1.5rem",
+      alignItems: "center",
+      justifyContent: "center",
+      textAlign: "center",
+      gap: "0.5rem",
+      minHeight: "200px",
+    }}
+  >
+    <Title
+      level="H3"
+      style={{ color: "var(--sapNeutralTextColor)", margin: 0 }}
+    >
+      Something went wrong
+    </Title>
+
+    <Text
+      style={{
+        maxWidth: "400px",
+        color: "var(--sapNeutralTextColor)",
+        fontSize: "0.9rem",
+        lineHeight: "1.3",
+        margin: 0,
+      }}
+    >
+      {error.message}
+    </Text>
+
+    <Button
+      onClick={onRetry}
+      style={{
+        marginTop: "0.25rem",
+      }}
+      design="Emphasized"
+    >
+      Try again
+    </Button>
+  </FlexBox>
+);
 
 export default function Home() {
   const router = useRouter();
+  const [error, setError] = useState<Error | null>(null);
 
-  const handleNavigateToAbout = () => {
-    router.push("/about");
+  const createAnalysisMutation = useCreateAnalysis({
+    onSuccess: (newAnalysis) => {
+      router.push(`/${newAnalysis.id}`);
+    },
+    onError: (error) => {
+      console.error("Failed to create analysis:", error);
+      setError(error);
+    },
+  });
+
+  const handleRetry = () => {
+    setError(null);
+    createAnalysisMutation.mutate?.();
   };
 
-  return (
-    <Page style={{ padding: "0rem" }}>
-      <FlexBox direction={FlexBoxDirection.Column} style={{ gap: "1rem" }}>
-        {/* Header Section */}
-        <FlexBox
-          direction={FlexBoxDirection.Column}
-          alignItems={FlexBoxAlignItems.Center}
-          style={{ padding: "2rem 0" }}
-        >
-          <Title level="H1" style={{ marginBottom: "1rem" }}>
-            Welcome to SAPUI5 Next.js
-          </Title>
-          <Text style={{ textAlign: "center", maxWidth: "600px" }}>
-            This is a modern web application built with Next.js and SAPUI5 React
-            components. Experience the power of enterprise-grade UI components
-            with the flexibility of React.
-          </Text>
-          <div
-            style={{
-              marginTop: "1rem",
-              backgroundColor: "var(--sapSuccessColor)",
-              color: "white",
-              padding: "0.5rem 1rem",
-              borderRadius: "0.25rem",
-              fontSize: "0.875rem",
-            }}
-          >
-            Powered by SAPUI5
-          </div>
-        </FlexBox>
+  useEffect(() => {
+    createAnalysisMutation.mutate?.();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-        {/* Success Message */}
-        <MessageStrip design="Positive">
-          <Icon name="accept" slot="icon" />
-          Your SAPUI5 Next.js application is successfully configured!
-        </MessageStrip>
-
-        {/* Feature Cards */}
-        <FlexBox
-          direction={FlexBoxDirection.Row}
-          justifyContent={FlexBoxJustifyContent.SpaceAround}
-          style={{ gap: "1rem", flexWrap: "wrap" }}
-        >
-          <Card style={{ minWidth: "300px", flex: 1 }}>
-            <CardHeader
-              titleText="Enterprise Components"
-              subtitleText="Professional UI"
-            />
-            <div style={{ padding: "1rem" }}>
-              <Text>
-                Use enterprise-grade SAPUI5 components that follow SAP Fiori
-                design guidelines for consistent and professional user
-                interfaces.
-              </Text>
-              <FlexBox style={{ marginTop: "1rem" }}>
-                <Button design="Emphasized">Explore Components</Button>
-              </FlexBox>
-            </div>
-          </Card>
-
-          <Card style={{ minWidth: "300px", flex: 1 }}>
-            <CardHeader
-              titleText="Next.js Integration"
-              subtitleText="Modern Framework"
-            />
-            <div style={{ padding: "1rem" }}>
-              <Text>
-                Leverage the power of Next.js with server-side rendering,
-                routing, and optimization features combined with SAPUI5
-                components.
-              </Text>
-              <FlexBox style={{ marginTop: "1rem" }}>
-                <Button design="Default">Learn More</Button>
-              </FlexBox>
-            </div>
-          </Card>
-
-          <Card style={{ minWidth: "300px", flex: 1 }}>
-            <CardHeader
-              titleText="Responsive Design"
-              subtitleText="Mobile Ready"
-            />
-            <div style={{ padding: "1rem" }}>
-              <Text>
-                Built-in responsive design ensures your application works
-                perfectly across all devices and screen sizes.
-              </Text>
-              <FlexBox style={{ marginTop: "1rem" }}>
-                <Button design="Default">View Demo</Button>
-              </FlexBox>
-            </div>
-          </Card>
-        </FlexBox>
-
-        {/* Navigation Section */}
-        <FlexBox
-          justifyContent={FlexBoxJustifyContent.Center}
-          style={{ marginTop: "2rem", marginBottom: "2rem" }}
-        >
-          <Button
-            design="Emphasized"
-            onClick={handleNavigateToAbout}
-            icon="navigation-right-arrow"
-          >
-            Learn About This Project
-          </Button>
-        </FlexBox>
-      </FlexBox>
-    </Page>
+  return error ? (
+    <ErrorDisplay error={error} onRetry={handleRetry} />
+  ) : (
+    <LoadingDisplay />
   );
 }

@@ -1,88 +1,18 @@
 "use client";
 
-import {
-  FlexBox,
-  FlexBoxDirection,
-  BusyIndicator,
-  Text,
-  Title,
-  Button,
-} from "@ui5/webcomponents-react";
+import { FlexBox, FlexBoxDirection } from "@ui5/webcomponents-react";
 import { useState } from "react";
 import SideBarMenu from "@/components/AppLayout/SideBar";
 import { sideBarItems } from "@/lib/constants/UI/SideBarItems";
 import HeaderBar from "@/components/AppLayout/HeaderBar";
 import { HEADER_BAR_CONFIG } from "@/lib/constants/UI/HeaderBar";
-import AnalysisFilter from "@/components/AnalysisFilters/AnalysisFilters";
-import { useAnalysisFilters } from "@/hooks/useAnalysisFilters";
-import AnalysisHeader from "../AnalysisHeader/AnalysisHeader";
-import { useAnalysis } from "@/hooks/useAnalysis";
 
 interface AppLayoutProps {
   children: React.ReactNode;
-  analysisId?: string;
 }
 
-const ErrorDisplay = ({
-  error,
-  onRetry,
-}: {
-  error: Error;
-  onRetry?: () => void;
-}) => (
-  <FlexBox
-    direction={FlexBoxDirection.Column}
-    style={{
-      padding: "2rem",
-      alignItems: "center",
-      justifyContent: "center",
-      textAlign: "center",
-      gap: "1rem",
-      backgroundColor: "var(--sapGroup_ContentBackground)",
-    }}
-  >
-    <Title level="H3" style={{ color: "var(--sapNeutralTextColor)" }}>
-      Unable to Load Analysis
-    </Title>
-
-    <Text style={{ maxWidth: "400px", color: "var(--sapNeutralTextColor)" }}>
-      {error.message ||
-        "Something went wrong while fetching the analysis data. Please try again."}
-    </Text>
-
-    {onRetry && (
-      <Button design="Emphasized" onClick={onRetry}>
-        Try Again
-      </Button>
-    )}
-  </FlexBox>
-);
-
-const LoadingDisplay = () => (
-  <FlexBox
-    style={{
-      padding: "2rem",
-      justifyContent: "center",
-      alignItems: "center",
-    }}
-  >
-    <BusyIndicator active size="L" text="Loading analysis..." />
-  </FlexBox>
-);
-
-export default function AppLayout({ children, analysisId = '1' }: Readonly<AppLayoutProps>) {
+export default function AppLayout({ children }: Readonly<AppLayoutProps>) {
   const [sideNavCollapsed] = useState(false);
-
-  const {
-    filters,
-    availableOptions,
-    isDisabled,
-    handleFilterChange,
-    resetFilters,
-  } = useAnalysisFilters();
-
-  const { data: analysis, error, isLoading, isValidating, mutate: refetchAnalysis } = useAnalysis(analysisId);
-
   return (
     <FlexBox
       direction={FlexBoxDirection.Column}
@@ -114,6 +44,8 @@ export default function AppLayout({ children, analysisId = '1' }: Readonly<AppLa
             display: "flex",
             flexDirection: "column",
             gap: "1rem",
+            position: "relative",
+            paddingBottom: "10px",
           }}
         >
           <HeaderBar {...HEADER_BAR_CONFIG.supplyChain} />
@@ -123,37 +55,7 @@ export default function AppLayout({ children, analysisId = '1' }: Readonly<AppLa
               backgroundColor: "var(--sapToolbar_SeparatorColor)",
             }}
           />
-          <AnalysisFilter
-            filters={filters}
-            availableOptions={availableOptions}
-            isDisabled={isDisabled}
-            handleFilterChange={handleFilterChange}
-          />
-          <hr
-            style={{
-              height: "2px",
-              backgroundColor: "var(--sapToolbar_SeparatorColor)",
-            }}
-          />
-          {isLoading || isValidating ? (
-            <LoadingDisplay />
-          ) : (
-            <>
-              {error ? (
-                <ErrorDisplay error={error} onRetry={refetchAnalysis} />
-              ) : (
-                <>
-                  <AnalysisHeader
-                    onFiltersReset={resetFilters}
-                    currentAnalysisId={analysis?.id}
-                    currentAnalysisName={analysis?.name}
-                  />
-
-                  {children}
-                </>
-              )}
-            </>
-          )}
+          {children}
         </div>
       </FlexBox>
     </FlexBox>

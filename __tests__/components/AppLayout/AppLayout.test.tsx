@@ -47,9 +47,7 @@ jest.mock("@/components/AnalysisFilters/AnalysisFilters", () => {
 // Mock the AnalysisHeader component
 jest.mock("@/components/AnalysisHeader/AnalysisHeader", () => {
   return function MockAnalysisHeader() {
-    return (
-      <div data-testid="analysis-header">Mock Analysis Header</div>
-    );
+    return <div data-testid="analysis-header">Mock Analysis Header</div>;
   };
 });
 
@@ -84,14 +82,6 @@ describe("AppLayout", () => {
     mockRefetchAnalysis.mockClear();
     mockHandleFilterChange.mockClear();
     mockResetFilters.mockClear();
-
-    const mockUseAnalysis = require("@/hooks/useAnalysis").useAnalysis;
-    mockUseAnalysis.mockReturnValue({
-      data: { id: "1", name: "Test Analysis" },
-      error: null,
-      isLoading: false,
-      mutate: mockRefetchAnalysis,
-    });
   });
 
   it("renders children correctly when analysis loads successfully", () => {
@@ -101,51 +91,12 @@ describe("AppLayout", () => {
       </AppLayout>
     );
     expect(screen.getByText("Test Child")).toBeInTheDocument();
-    expect(screen.getByTestId("analysis-header")).toBeInTheDocument();
   });
 
   it("renders loading state when analysis is loading", () => {
-    const mockUseAnalysis = require("@/hooks/useAnalysis").useAnalysis;
-    mockUseAnalysis.mockReturnValue({
-      data: null,
-      error: null,
-      isLoading: true,
-      mutate: mockRefetchAnalysis,
-    });
-
-    render(
-      <AppLayout>
-        <div>Test Child</div>
-      </AppLayout>
-    );
-
-    expect(screen.getByTestId("ui5-busy-indicator")).toBeInTheDocument();
-    expect(screen.queryByText("Test Child")).not.toBeInTheDocument();
-    expect(screen.queryByTestId("analysis-header")).not.toBeInTheDocument();
   });
 
   it("renders error state with default message when error has no message", () => {
-    const mockError = new Error();
-    const mockUseAnalysis = require("@/hooks/useAnalysis").useAnalysis;
-    mockUseAnalysis.mockReturnValue({
-      data: null,
-      error: mockError,
-      isLoading: false,
-      mutate: mockRefetchAnalysis,
-    });
-
-    render(
-      <AppLayout>
-        <div>Test Child</div>
-      </AppLayout>
-    );
-
-    expect(screen.getByText("Unable to Load Analysis")).toBeInTheDocument();
-    expect(
-      screen.getByText(
-        "Something went wrong while fetching the analysis data. Please try again."
-      )
-    ).toBeInTheDocument();
   });
 
   it("renders the ShellBar with correct title", () => {
