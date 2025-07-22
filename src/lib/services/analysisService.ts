@@ -1,10 +1,20 @@
 import { httpClient } from "@/lib/api";
 import { Analysis } from "@/lib/types/analysis";
 import { BASE_URL } from "@/lib/constants/config";
-import { GET_ANALYSIS_BY_ID, CREATE_ANALYSIS, UPDATE_ANALYSIS } from "@/lib/constants/api/analysis";
+import {
+  GET_ANALYSIS_BY_ID,
+  CREATE_ANALYSIS,
+  UPDATE_ANALYSIS,
+} from "@/lib/constants/api/analysis";
+
+interface AnalysisResponse {
+  data: Analysis;
+}
 
 export const getAnalysisById = async (id: string) => {
-  return httpClient.get<Analysis>(`${BASE_URL}${GET_ANALYSIS_BY_ID(id)}`);
+  return httpClient.get<AnalysisResponse>(
+    `${BASE_URL}${GET_ANALYSIS_BY_ID(id)}`
+  );
 };
 
 export const createAnalysis = async () => {

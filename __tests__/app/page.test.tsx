@@ -1,52 +1,87 @@
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, waitFor } from "@testing-library/react";
 import Home from "@/app/page";
 import "@testing-library/jest-dom";
 import React from "react";
+import { useCreateAnalysis } from "@/hooks/useAnalysis";
 
 const mockPush = jest.fn();
+const mockMutate = jest.fn();
 
-// Mock next/navigation
 jest.mock("next/navigation", () => ({
   useRouter: () => ({
     push: mockPush,
   }),
-  usePathname: () => "/", // Add this if any component needs it
+  usePathname: () => "/",
 }));
 
-// Mock @ui5/webcomponents-react components
-jest.mock("@ui5/webcomponents-react", () => ({
-  Page: ({ children, style }: any) => <div style={style}>{children}</div>,
-  Title: ({ children, style }: any) => <h1 style={style}>{children}</h1>,
-  Text: ({ children, style }: any) => <p style={style}>{children}</p>,
-  Card: ({ children, style }: any) => <div style={style}>{children}</div>,
-  CardHeader: ({ titleText }: any) => <div>{titleText}</div>,
-  Button: ({ children, onClick }: any) => (
-    <button onClick={onClick}>{children}</button>
-  ),
-  FlexBox: ({ children, style }: any) => <div style={style}>{children}</div>,
-  MessageStrip: ({ children }: any) => <div>{children}</div>,
-  Icon: ({ name, slot }: any) => <span data-name={name} data-slot={slot} />,
-  FlexBoxDirection: { Column: "column", Row: "row" },
-  FlexBoxJustifyContent: { SpaceAround: "space-around", Center: "center" },
-  FlexBoxAlignItems: { Center: "center" },
+jest.mock("@/hooks/useAnalysis", () => ({
+  useCreateAnalysis: jest.fn(),
 }));
+
+const mockUseCreateAnalysis = useCreateAnalysis as jest.MockedFunction<
+  typeof useCreateAnalysis
+>;
 
 describe("Home page", () => {
   beforeEach(() => {
     mockPush.mockClear();
+    mockMutate.mockClear();
+    jest.clearAllMocks();
   });
 
-  it("renders the main title", () => {
+  it("navigates to analysis page on successful creation", async () => {
+    const mockAnalysis = { id: "test-analysis-id", name: "Test Analysis" };
+
+    mockUseCreateAnalysis.mockImplementation(({ onSuccess }) => {
+      if (onSuccess) {
+        onSuccess(mockAnalysis);
+      }
+      return {
+        mutate: mockMutate,
+        data: {
+          data: { analysis: mockAnalysis },
+          status: 200,
+          statusText: "OK",
+          headers: {},
+        },
+        error: null,
+        isLoading: false,
+        reset: jest.fn(),
+      };
+    });
+
     render(<Home />);
-    expect(screen.getByText("Welcome to SAPUI5 Next.js")).toBeInTheDocument();
+
+    await waitFor(() => {
+      expect(mockPush).toHaveBeenCalledWith("/test-analysis-id");
+    });
   });
 
-  it("navigates to about page on button click", () => {
+  it("logs error when analysis creation fails", () => {
+    const consoleSpy = jest
+      .spyOn(console, "error")
+      .mockImplementation(() => {});
+    const testError = new Error("Failed to create analysis");
+
+    mockUseCreateAnalysis.mockImplementation(({ onError }) => {
+      if (onError) {
+        onError(testError);
+      }
+      return {
+        mutate: mockMutate,
+        data: undefined,
+        error: testError,
+        isLoading: false,
+        reset: jest.fn(),
+      };
+    });
+
     render(<Home />);
 
-    const aboutButton = screen.getByText("Learn About This Project");
-    fireEvent.click(aboutButton);
-
-    expect(mockPush).toHaveBeenCalledWith("/about");
+    expect(consoleSpy).toHaveBeenCalledWith(
+      "Failed to create analysis:",
+      testError
+    );
+    consoleSpy.mockRestore();
   });
 });

@@ -45,7 +45,7 @@ export const useAnalysisFilters = () => {
     const options = { ...FILTER_OPTIONS };
 
     if (analysisResponse?.data?.analysis) {
-      options.analysis = createFilterOptions(analysisResponse.data.analysis);
+      options.analysis = createFilterOptions(analysisResponse?.data?.analysis);
     }
 
     if (analysisKey && casesResponse?.data) {
@@ -58,11 +58,7 @@ export const useAnalysisFilters = () => {
     }
 
     return options;
-  }, [
-    analysisResponse?.data?.analysis,
-    casesResponse?.data,
-    analysisKey,
-  ]);
+  }, [analysisResponse?.data, casesResponse?.data, analysisKey]);
 
   const handleFilterChange = useCallback(
     (filterKey: FilterKey, value: string): void => {
