@@ -2,15 +2,18 @@ import { httpClient } from "@/lib/api";
 import { HttpClientResponse } from "@/lib/types/api/http-client";
 import { CHATS, CHAT } from "@/lib/constants/api/routes";
 import { Chat, CreateChatRequest, UpdateChatRequest } from "@/lib/types/chats";
+import { BaseResponse } from "@/lib/types/http/responses";
 
-export const getChats = async (): Promise<HttpClientResponse<Chat[]>> => {
-  return await httpClient.get<Chat[]>(CHATS);
+export const getChats = async (): Promise<
+  HttpClientResponse<BaseResponse<Chat[]>>
+> => {
+  return await httpClient.get<BaseResponse<Chat[]>>(CHATS);
 };
 
 export const getChat = async (
   id: string
-): Promise<HttpClientResponse<Chat>> => {
-  return await httpClient.get<Chat>(CHAT(id));
+): Promise<HttpClientResponse<BaseResponse<Chat>>> => {
+  return await httpClient.get<BaseResponse<Chat>>(CHAT(id));
 };
 
 export const createChat = async (
