@@ -11,16 +11,33 @@ describe("Chat Types", () => {
       const message: ChatMessage = {
         id: "msg123",
         role: "user",
+        title: "Optional title",
         created: "2023-07-17T10:00:00Z",
         content: "Hello, this is a test message!",
       };
 
       expect(message.id).toBe("msg123");
       expect(message.role).toBe("user");
+      expect(message.title).toBe("Optional title");
       expect(message.content).toBe("Hello, this is a test message!");
       expect(typeof message.id).toBe("string");
       expect(typeof message.role).toBe("string");
+      expect(typeof message.title).toBe("string");
       expect(typeof message.content).toBe("string");
+    });
+
+    it("should allow messages without title", () => {
+      const messageWithoutTitle: ChatMessage = {
+        id: "msg124",
+        role: "assistant",
+        created: "2023-07-17T10:00:00Z",
+        content: "Message without title",
+      };
+
+      expect(messageWithoutTitle.title).toBeUndefined();
+      expect(messageWithoutTitle.id).toBe("msg124");
+      expect(messageWithoutTitle.role).toBe("assistant");
+      expect(messageWithoutTitle.content).toBe("Message without title");
     });
 
     it("should allow array of messages", () => {
@@ -28,6 +45,7 @@ describe("Chat Types", () => {
         {
           id: "msg1",
           role: "user",
+          title: "First Message Title",
           content: "First message",
           created: "2023-07-17T10:00:00Z",
         },
@@ -41,7 +59,9 @@ describe("Chat Types", () => {
 
       expect(messages).toHaveLength(2);
       expect(messages[0].content).toBe("First message");
+      expect(messages[0].title).toBe("First Message Title");
       expect(messages[1].role).toBe("assistant");
+      expect(messages[1].title).toBeUndefined();
     });
   });
 
