@@ -52,7 +52,11 @@ describe("API Client with Basic Authentication", () => {
     const base64Credentials = authHeader.replace("Basic ", "");
     const credentials = atob(base64Credentials);
 
-    expect(credentials).toBe("user:password");
+    // Use environment variables or test-specific credentials
+    const expectedCredentials = `${
+      process.env.NEXT_PUBLIC_API_USERNAME || "user"
+    }:${process.env.NEXT_PUBLIC_API_PASSWORD || "password"}`;
+    expect(credentials).toBe(expectedCredentials);
   });
 
   it("should make request to correct endpoint", async () => {
