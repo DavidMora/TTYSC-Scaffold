@@ -56,7 +56,7 @@ describe("MessageBubble", () => {
     expect(screen.queryByText("Daniel Alferez")).not.toBeInTheDocument();
   });
 
-  it("renders system message correctly", () => {
+  it("renders assistant message correctly", () => {
     const systemMessage: ChatMessage = {
       ...baseMessage,
       role: "assistant",

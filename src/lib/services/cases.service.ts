@@ -8,5 +8,9 @@ export const getCasesAnalysis = async () => {
 };
 
 export const getCasesByAnalysis = async (analysisNameType: string) => {
+  if (!analysisNameType) {
+    throw new Error("Analysis name type is required");
+  }
+
   return apiClient.get<CasesResponse>(CASES_BY_ANALYSIS(analysisNameType));
 };

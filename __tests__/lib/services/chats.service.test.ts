@@ -10,6 +10,7 @@ import {
 } from "@/lib/services/chats.service";
 import {
   Chat,
+  BotResponse,
   CreateChatMessageRequest,
   UpdateChatRequest,
 } from "@/lib/types/chats";
@@ -62,7 +63,6 @@ describe("Chats Service", () => {
           id: "2",
           date: "2023-07-16",
           title: "Project Discussion",
-
           messages: [],
         },
       ];
@@ -235,7 +235,6 @@ describe("Chats Service", () => {
         id: "chat-to-update",
         date: "2023-07-17",
         title: "Updated Chat Title",
-
         messages: [],
       };
 
@@ -400,8 +399,8 @@ describe("Chats Service", () => {
         use_knowledge_base: false,
       };
 
-      const mockResponse: HttpClientResponse<Chat> = {
-        data: {} as Chat,
+      const mockResponse: HttpClientResponse<BotResponse> = {
+        data: {} as BotResponse,
         status: 200,
         statusText: "OK",
         headers: {},

@@ -14,8 +14,17 @@ interface MessageBubbleProps {
 export function MessageBubble({
   message,
   user = { name: "Unknown", initials: "U" },
-}: MessageBubbleProps) {
+}: Readonly<MessageBubbleProps>) {
   const isUser = message.role === "user";
+
+  const nonUserStyle = !isUser
+    ? {
+        display: "flex",
+        flexDirection: "column" as const,
+        alignItems: "flex-start" as const,
+      }
+    : {};
+
   return (
     <div
       style={{
@@ -34,50 +43,44 @@ export function MessageBubble({
           border: "1px solid #D5D7DA",
           padding: "10px 14px",
           color: "black",
-          ...(!isUser && {
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "flex-start",
-          }),
+          ...nonUserStyle,
         }}
       >
         {isUser ? (
-          <>
-            <FlexBox
-              alignItems={"Center"}
-              style={{ marginBottom: "7px", gap: "10px" }}
-            >
-              <Avatar
-                initials={user.initials}
-                size="XS"
+          <FlexBox
+            alignItems={"Center"}
+            style={{ marginBottom: "7px", gap: "10px" }}
+          >
+            <Avatar
+              initials={user.initials}
+              size="XS"
+              style={{
+                backgroundColor: "#5B738B80",
+                color: "white",
+                fontSize: "var(--sapFontSize)",
+              }}
+            />
+            <div>
+              <Text
                 style={{
-                  backgroundColor: "#5B738B80",
-                  color: "white",
-                  fontSize: "var(--sapFontSize)",
+                  fontWeight: "700",
+                  fontSize: "var(--sapFontHeader5Size)",
+                  color: "black",
+                  display: "block",
                 }}
-              />
-              <div>
-                <Text
-                  style={{
-                    fontWeight: "700",
-                    fontSize: "var(--sapFontHeader5Size)",
-                    color: "black",
-                    display: "block",
-                  }}
-                >
-                  {user.name}
-                </Text>
-                <Text
-                  style={{
-                    fontSize: "var(--sapFontSmallSize)",
-                    display: "block",
-                  }}
-                >
-                  {parseDate(message.created)}
-                </Text>
-              </div>
-            </FlexBox>
-          </>
+              >
+                {user.name}
+              </Text>
+              <Text
+                style={{
+                  fontSize: "var(--sapFontSmallSize)",
+                  display: "block",
+                }}
+              >
+                {parseDate(message.created)}
+              </Text>
+            </div>
+          </FlexBox>
         ) : (
           <>
             <div>

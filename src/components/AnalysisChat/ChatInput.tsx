@@ -1,12 +1,20 @@
 import React, { useState } from "react";
-import { TextArea, Button, Ui5CustomEvent, TextAreaDomRef } from "@ui5/webcomponents-react";
+import {
+  TextArea,
+  Button,
+  Ui5CustomEvent,
+  TextAreaDomRef,
+} from "@ui5/webcomponents-react";
 
 interface ChatInputProps {
   onSendMessage: (message: string) => void;
   isLoading: boolean;
 }
 
-export function ChatInput({ onSendMessage, isLoading }: ChatInputProps) {
+export function ChatInput({
+  onSendMessage,
+  isLoading,
+}: Readonly<ChatInputProps>) {
   const [input, setInput] = useState("");
 
   const handleSend = () => {
@@ -18,8 +26,14 @@ export function ChatInput({ onSendMessage, isLoading }: ChatInputProps) {
   const handleInput = (event: Ui5CustomEvent<TextAreaDomRef>) => {
     setInput(event.target.value);
   };
-  
-  
+
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      handleSend();
+    }
+  };
+
   return (
     <div
       style={{
@@ -43,6 +57,7 @@ export function ChatInput({ onSendMessage, isLoading }: ChatInputProps) {
           aria-label="Chat message input"
           style={{ width: "100%", paddingRight: "0.5rem" }}
           value={input}
+          onKeyDown={handleKeyDown}
           onInput={handleInput}
           disabled={isLoading}
         />

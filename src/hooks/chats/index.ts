@@ -72,10 +72,7 @@ export const useSendChatMessage = ({
   onError?: (error: Error) => void;
 }) => {
   return useMutation<BotResponse, CreateChatMessageRequest>(
-    async (payload) => {
-      const response = await createChatMessage(payload);
-      return response.data;
-    },
+    (payload) => createChatMessage(payload).then((res) => res.data),
     {
       onSuccess: (data) => {
         onSuccess?.(data);

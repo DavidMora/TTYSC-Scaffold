@@ -6,8 +6,6 @@ import {
 } from "@/lib/types/chats";
 
 describe("Chat Types", () => {
-
-
   describe("ChatMessage", () => {
     it("should define correct interface structure", () => {
       const message: ChatMessage = {
@@ -76,7 +74,7 @@ describe("Chat Types", () => {
     it("should allow empty participants and messages", () => {
       const emptyChat: Chat = {
         id: "empty-chat",
-        date: "2023-07-17",     
+        date: "2023-07-17",
         title: "Empty Chat",
         messages: [],
       };
@@ -86,13 +84,10 @@ describe("Chat Types", () => {
   });
 
   describe("CreateChatRequest", () => {
-
     it("should allow minimal chat creation", () => {
       const minimalChat: CreateChatMessageRequest = {
         chatId: "chat123",
-        messages: [
-          { role: "user", content: "This is a new message" },
-        ],
+        messages: [{ role: "user", content: "This is a new message" }],
         use_knowledge_base: true,
       };
 
@@ -104,21 +99,33 @@ describe("Chat Types", () => {
     it("should omit id and timestamp from ChatMessage", () => {
       const createMessageRequest: CreateChatMessageRequest = {
         chatId: "chat123",
-        messages: [
-          { role: "user", content: "This is a new message" },
-        ],
+        messages: [{ role: "user", content: "This is a new message" }],
         use_knowledge_base: true,
       };
 
       expect(createMessageRequest.messages).toHaveLength(1);
-      expect(createMessageRequest.messages[0].content).toBe("This is a new message");
+      expect(createMessageRequest.messages[0].content).toBe(
+        "This is a new message"
+      );
     });
 
     it("should allow different message content", () => {
       const messages: CreateChatMessageRequest[] = [
-        { chatId: "chat123", messages: [{ role: "user", content: "Hello!" }], use_knowledge_base: true },
-        { chatId: "chat123", messages: [{ role: "user", content: "How are you?" }], use_knowledge_base: true },
-        { chatId: "chat123", messages: [{ role: "user", content: "I'm doing great, thanks!" }], use_knowledge_base: true },
+        {
+          chatId: "chat123",
+          messages: [{ role: "user", content: "Hello!" }],
+          use_knowledge_base: true,
+        },
+        {
+          chatId: "chat123",
+          messages: [{ role: "user", content: "How are you?" }],
+          use_knowledge_base: true,
+        },
+        {
+          chatId: "chat123",
+          messages: [{ role: "user", content: "I'm doing great, thanks!" }],
+          use_knowledge_base: true,
+        },
       ];
 
       expect(messages).toHaveLength(3);
@@ -181,10 +188,11 @@ describe("Chat Types", () => {
       };
 
       expect(fullMessage.role).toBe(createMessageRequest.messages[0].role);
-      expect(fullMessage.content).toBe(createMessageRequest.messages[0].content);
+      expect(fullMessage.content).toBe(
+        createMessageRequest.messages[0].content
+      );
       expect(fullMessage.id).toBe("generated-msg-id");
       expect(fullMessage.created).toBe("2023-07-17T10:00:00Z");
     });
   });
-
 });

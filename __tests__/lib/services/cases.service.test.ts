@@ -84,5 +84,11 @@ describe("casesService", () => {
         "Network error"
       );
     });
+
+    it("should throw an error if analysis name type is not provided", async () => {
+      await expect(getCasesByAnalysis("")).rejects.toThrow(
+        "Analysis name type is required"
+      );
+    });
   });
 });

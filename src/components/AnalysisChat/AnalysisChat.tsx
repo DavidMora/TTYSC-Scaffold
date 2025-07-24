@@ -14,7 +14,7 @@ interface AnalysisChatProps {
 export default function AnalysisChat({
   chatId,
   previousMessages,
-}: AnalysisChatProps) {
+}: Readonly<AnalysisChatProps>) {
   const messagesContainerRef = useRef<HTMLDivElement | null>(null);
 
   const scrollToBottom = () => {
@@ -26,12 +26,10 @@ export default function AnalysisChat({
     }, 50);
   };
 
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [messages, setMessages] = useState<ChatMessage[]>(previousMessages);
 
   useEffect(() => {
-    if (previousMessages.length > 0) {
-      setMessages(previousMessages);
-    }
+    setMessages(previousMessages);
   }, [previousMessages]);
 
   const addMessage = (

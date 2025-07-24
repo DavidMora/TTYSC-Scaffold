@@ -105,8 +105,8 @@ export default function Home() {
   const [error, setError] = useState<Error | null>(null);
 
   const createAnalysisMutation = useCreateChat({
-    onSuccess: (newAnalysis) => {
-      router.push(`/${newAnalysis.id}`);
+    onSuccess: (newChat) => {
+      router.push(`/${newChat.id}`);
     },
     onError: (error) => {
       console.error("Failed to create analysis:", error);
