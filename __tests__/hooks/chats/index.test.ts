@@ -28,7 +28,11 @@ describe("Chat Hooks", () => {
   describe("useChats", () => {
     it("should call dataFetcher.fetchData with correct parameters", () => {
       const mockResponse = {
-        data: [],
+        data: {
+          data: [],
+          success: true,
+          message: "Chats fetched successfully",
+        },
         error: undefined,
         isLoading: false,
         isValidating: false,
@@ -47,7 +51,7 @@ describe("Chat Hooks", () => {
         }
       );
 
-      expect(result.current).toBe(mockResponse);
+      expect(result.current.data).toEqual([]);
     });
 
     it("should use getChats service function as fetcher", () => {
@@ -117,7 +121,7 @@ describe("Chat Hooks", () => {
       ];
 
       const mockResponse = {
-        data: mockChats,
+        data: { data: mockChats },
         error: undefined,
         isLoading: false,
         isValidating: false,
@@ -139,7 +143,7 @@ describe("Chat Hooks", () => {
 
     it("should call dataFetcher.fetchData with correct parameters", () => {
       const mockResponse = {
-        data: undefined,
+        data: { data: undefined },
         error: undefined,
         isLoading: false,
         isValidating: false,
@@ -158,7 +162,7 @@ describe("Chat Hooks", () => {
         }
       );
 
-      expect(result.current).toBe(mockResponse);
+      expect(result.current.data).toBeUndefined();
     });
 
     it("should use getChat service function as fetcher with correct id", () => {
@@ -270,7 +274,7 @@ describe("Chat Hooks", () => {
       };
 
       const mockResponse = {
-        data: mockChat,
+        data: { data: mockChat },
         error: undefined,
         isLoading: false,
         isValidating: false,
