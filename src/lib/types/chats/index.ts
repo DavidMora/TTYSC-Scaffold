@@ -1,3 +1,5 @@
+import type { BaseResponse } from "@/lib/types/http/responses";
+
 export interface ChatParticipant {
   id: string;
   name: string;
@@ -17,6 +19,10 @@ export interface Chat {
   title: string;
   messages: ChatMessage[];
 }
+
+export type ChatsResponse = BaseResponse<Chat[]>;
+
+export type ChatResponse = BaseResponse<Chat>;
 
 // Create payloads
 export type CreateChatRequest = Omit<Chat, "id" | "date" | "messages">;

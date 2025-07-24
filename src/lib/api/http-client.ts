@@ -54,13 +54,19 @@ class HttpClient {
 // Default instance using FetchAdapter
 const httpClient = new HttpClient();
 
+// Only create auth config if credentials exist
+const authConfig =
+  process.env.NEXT_PUBLIC_API_USERNAME && process.env.NEXT_PUBLIC_API_PASSWORD
+    ? {
+        username: process.env.NEXT_PUBLIC_API_USERNAME,
+        password: process.env.NEXT_PUBLIC_API_PASSWORD,
+      }
+    : undefined;
+
 // Main API client with Basic Authentication
 const apiClient = new HttpClient(undefined, {
   baseURL: process.env.NEXT_PUBLIC_API_BASE_URL,
-  auth: {
-    username: process.env.NEXT_PUBLIC_API_USERNAME || "user",
-    password: process.env.NEXT_PUBLIC_API_PASSWORD || "password",
-  },
+  auth: authConfig,
 });
 
 // Alternative instance using AxiosAdapter (commented out)

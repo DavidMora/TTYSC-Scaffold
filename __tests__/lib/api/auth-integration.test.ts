@@ -1,11 +1,32 @@
-import { apiClient } from "@/lib/api";
+import { HttpClient } from "@/lib/api";
 
 // Mock fetch for testing
 global.fetch = jest.fn();
 
 describe("API Client with Basic Authentication", () => {
+  let apiClient: HttpClient;
+
+  beforeAll(() => {
+    // Set environment variables for the test
+    process.env.NEXT_PUBLIC_API_USERNAME = "testuser";
+    process.env.NEXT_PUBLIC_API_PASSWORD = "testpass";
+    process.env.NEXT_PUBLIC_API_BASE_URL = "https://api.example.com";
+
+    // Create apiClient with auth config like in http-client.ts
+    const authConfig = {
+      username: process.env.NEXT_PUBLIC_API_USERNAME,
+      password: process.env.NEXT_PUBLIC_API_PASSWORD,
+    };
+
+    apiClient = new HttpClient(undefined, {
+      baseURL: process.env.NEXT_PUBLIC_API_BASE_URL,
+      auth: authConfig,
+    });
+  });
+
   beforeEach(() => {
     jest.clearAllMocks();
+
     (global.fetch as jest.Mock).mockResolvedValue({
       ok: true,
       status: 200,
@@ -52,10 +73,8 @@ describe("API Client with Basic Authentication", () => {
     const base64Credentials = authHeader.replace("Basic ", "");
     const credentials = atob(base64Credentials);
 
-    // Use environment variables or test-specific credentials
-    const expectedCredentials = `${
-      process.env.NEXT_PUBLIC_API_USERNAME || "user"
-    }:${process.env.NEXT_PUBLIC_API_PASSWORD || "password"}`;
+    // Use the test credentials we set
+    const expectedCredentials = "testuser:testpass";
     expect(credentials).toBe(expectedCredentials);
   });
 
