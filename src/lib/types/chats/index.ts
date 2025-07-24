@@ -1,3 +1,5 @@
+import type { BaseResponse } from "@/lib/types/http/responses";
+
 export interface ChatMessage {
   id: string;
   role: "user" | "assistant";
@@ -11,6 +13,10 @@ export interface Chat {
   title: string;
   messages: ChatMessage[];
 }
+
+export type ChatsResponse = BaseResponse<Chat[]>;
+
+export type ChatResponse = BaseResponse<Chat>;
 
 // Create payloads
 export type UpdateChatRequest = Partial<Chat> & { id: string };

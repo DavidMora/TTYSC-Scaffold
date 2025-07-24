@@ -1,5 +1,9 @@
 // Main exports
-export { default as httpClient, HttpClient } from "@/lib/api/http-client";
+export {
+  default as httpClient,
+  HttpClient,
+  apiClient,
+} from "@/lib/api/http-client";
 export { default as dataFetcher, DataFetcher } from "@/lib/api/data-fetcher";
 
 // HTTP Client Adapters

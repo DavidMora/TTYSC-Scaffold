@@ -1,4 +1,4 @@
-import { httpClient } from "@/lib/api";
+import { apiClient } from "@/lib/api";
 import { CHATS, CHAT, CHAT_MESSAGE } from "@/lib/constants/api/routes";
 import {
   getChats,
@@ -8,12 +8,17 @@ import {
   deleteChat,
   createChatMessage,
 } from "@/lib/services/chats.service";
-import { Chat, CreateChatMessageRequest, UpdateChatRequest } from "@/lib/types/chats";
+import {
+  Chat,
+  CreateChatMessageRequest,
+  UpdateChatRequest,
+} from "@/lib/types/chats";
 import { HttpClientResponse } from "@/lib/types/api/http-client";
+import { BaseResponse } from "@/lib/types/http/responses";
 
-// Mock the httpClient
+// Mock the apiClient
 jest.mock("@/lib/api", () => ({
-  httpClient: {
+  apiClient: {
     get: jest.fn(),
     post: jest.fn(),
     patch: jest.fn(),
@@ -21,7 +26,7 @@ jest.mock("@/lib/api", () => ({
   },
 }));
 
-const mockHttpClient = httpClient as jest.Mocked<typeof httpClient>;
+const mockHttpClient = apiClient as jest.Mocked<typeof apiClient>;
 
 describe("Chats Service", () => {
   beforeEach(() => {
@@ -57,13 +62,17 @@ describe("Chats Service", () => {
           id: "2",
           date: "2023-07-16",
           title: "Project Discussion",
-         
+
           messages: [],
         },
       ];
 
-      const mockResponse: HttpClientResponse<Chat[]> = {
-        data: mockChats,
+      const mockResponse: HttpClientResponse<BaseResponse<Chat[]>> = {
+        data: {
+          data: mockChats,
+          message: "Chats retrieved successfully",
+          success: true,
+        },
         status: 200,
         statusText: "OK",
         headers: {},
@@ -73,7 +82,7 @@ describe("Chats Service", () => {
 
       const result = await getChats();
 
-      expect(result.data).toEqual(mockChats);
+      expect(result.data.data).toEqual(mockChats);
       expect(result.status).toBe(200);
     });
 
@@ -109,7 +118,7 @@ describe("Chats Service", () => {
         id: testChatId,
         date: "2023-07-17",
         title: "Team Meeting",
-        
+
         messages: [
           {
             id: "msg1",
@@ -192,7 +201,6 @@ describe("Chats Service", () => {
     });
 
     it("should handle validation errors", async () => {
-      
       const mockResponse: HttpClientResponse<Chat> = {
         data: {} as Chat,
         status: 400,
@@ -209,7 +217,6 @@ describe("Chats Service", () => {
     });
 
     it("should handle error response", async () => {
-      
       const mockError = new Error("Server error");
       mockHttpClient.post.mockRejectedValue(mockError);
 
@@ -228,7 +235,7 @@ describe("Chats Service", () => {
         id: "chat-to-update",
         date: "2023-07-17",
         title: "Updated Chat Title",
-        
+
         messages: [],
       };
 
@@ -404,10 +411,13 @@ describe("Chats Service", () => {
 
       const result = await createChatMessage(mockPayload);
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(CHAT_MESSAGE, mockPayload);
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        CHAT_MESSAGE,
+        mockPayload
+      );
       expect(result).toBe(mockResponse);
     });
-  }); 
+  });
 
   describe("Integration with API routes", () => {
     it("should use correct CHATS endpoint", () => {
