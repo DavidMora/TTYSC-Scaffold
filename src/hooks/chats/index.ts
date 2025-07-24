@@ -5,13 +5,22 @@ export const CHATS_KEY = "chatHistory";
 export const CHAT_KEY = (id: string) => `chat-${id}`;
 
 export const useChats = () => {
-  return dataFetcher.fetchData(CHATS_KEY, () => getChats(), {
+  const fetcher = dataFetcher.fetchData(CHATS_KEY, () => getChats(), {
     revalidateOnFocus: false,
   });
+  return {
+    ...fetcher,
+    data: fetcher.data?.data,
+  };
 };
 
 export const useChat = (id: string) => {
-  return dataFetcher.fetchData(CHAT_KEY(id), () => getChat(id), {
+  const fetcher = dataFetcher.fetchData(CHAT_KEY(id), () => getChat(id), {
     revalidateOnFocus: false,
   });
+
+  return {
+    ...fetcher,
+    data: fetcher.data?.data,
+  };
 };
