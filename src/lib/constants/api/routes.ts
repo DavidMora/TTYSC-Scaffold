@@ -1,5 +1,5 @@
 export const BASE =
-  process.env.TTYSC_BACKEND_API_BASE_URL || "http://localhost:5000";
+  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000";
 
 export const DEFINITIONS = `${BASE}/definitions`;
 export const DEFINITION = (id: string) =>
@@ -16,7 +16,10 @@ export const CHATS = `${BASE}/chats`;
 export const CHAT = (id: string) => `${BASE}/chats/${encodeURIComponent(id)}`;
 export const CHAT_MESSAGES = (id: string) =>
   `${BASE}/chats/${encodeURIComponent(id)}/messages`;
-export const CHAT_MESSAGE = (chatId: string, messageId: string) =>
-  `${BASE}/chats/${encodeURIComponent(chatId)}/messages/${encodeURIComponent(
-    messageId
-  )}`;
+export const CHAT_MESSAGE = `${BASE}/chat`;
+
+// Cases endpoints
+export const CASES = `${BASE}/cases`;
+export const CASE_ANALYSIS = `${BASE}/cases/analysis`;
+export const CASES_BY_ANALYSIS = (analysisNameType: string) =>
+  `${BASE}/cases?analysisNameType=${analysisNameType}`;

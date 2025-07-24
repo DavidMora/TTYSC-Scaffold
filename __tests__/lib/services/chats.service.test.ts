@@ -1,13 +1,14 @@
 import { httpClient } from "@/lib/api";
-import { CHATS, CHAT } from "@/lib/constants/api/routes";
+import { CHATS, CHAT, CHAT_MESSAGE } from "@/lib/constants/api/routes";
 import {
   getChats,
   getChat,
   createChat,
   updateChat,
   deleteChat,
-} from "@/services/chats.service";
-import { Chat, CreateChatRequest, UpdateChatRequest } from "@/lib/types/chats";
+  createChatMessage,
+} from "@/lib/services/chats.service";
+import { Chat, CreateChatMessageRequest, UpdateChatRequest } from "@/lib/types/chats";
 import { HttpClientResponse } from "@/lib/types/api/http-client";
 
 // Mock the httpClient
@@ -50,20 +51,13 @@ describe("Chats Service", () => {
           id: "1",
           date: "2023-07-17",
           title: "Team Meeting",
-          participants: [
-            { id: "user1", name: "John Doe" },
-            { id: "user2", name: "Jane Smith" },
-          ],
           messages: [],
         },
         {
           id: "2",
           date: "2023-07-16",
           title: "Project Discussion",
-          participants: [
-            { id: "user1", name: "John Doe" },
-            { id: "user3", name: "Bob Johnson" },
-          ],
+         
           messages: [],
         },
       ];
@@ -115,22 +109,19 @@ describe("Chats Service", () => {
         id: testChatId,
         date: "2023-07-17",
         title: "Team Meeting",
-        participants: [
-          { id: "user1", name: "John Doe" },
-          { id: "user2", name: "Jane Smith" },
-        ],
+        
         messages: [
           {
             id: "msg1",
-            sender: "user1",
-            timestamp: "2023-07-17T10:00:00Z",
+            created: "2023-07-17T10:00:00Z",
             content: "Hello everyone!",
+            role: "user",
           },
           {
             id: "msg2",
-            sender: "user2",
-            timestamp: "2023-07-17T10:01:00Z",
+            created: "2023-07-17T10:01:00Z",
             content: "Hi John!",
+            role: "assistant",
           },
         ],
       };
@@ -176,18 +167,10 @@ describe("Chats Service", () => {
 
   describe("createChat", () => {
     it("should call httpClient.post with correct URL and payload", async () => {
-      const mockPayload: CreateChatRequest = {
-        title: "New Chat",
-        participants: [
-          { id: "user1", name: "John Doe" },
-          { id: "user2", name: "Jane Smith" },
-        ],
-      };
-
       const mockCreatedChat: Chat = {
         id: "new-chat-id",
         date: "2023-07-17",
-        ...mockPayload,
+        title: "New Chat",
         messages: [],
       };
 
@@ -200,20 +183,16 @@ describe("Chats Service", () => {
 
       mockHttpClient.post.mockResolvedValue(mockResponse);
 
-      const result = await createChat(mockPayload);
+      const result = await createChat();
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(CHATS, mockPayload);
+      expect(mockHttpClient.post).toHaveBeenCalledWith(CHATS);
       expect(result).toBe(mockResponse);
       expect(result.data).toEqual(mockCreatedChat);
       expect(result.status).toBe(201);
     });
 
     it("should handle validation errors", async () => {
-      const invalidPayload: CreateChatRequest = {
-        title: "",
-        participants: [],
-      };
-
+      
       const mockResponse: HttpClientResponse<Chat> = {
         data: {} as Chat,
         status: 400,
@@ -223,22 +202,18 @@ describe("Chats Service", () => {
 
       mockHttpClient.post.mockResolvedValue(mockResponse);
 
-      const result = await createChat(invalidPayload);
+      const result = await createChat();
 
       expect(result.status).toBe(400);
       expect(result.statusText).toBe("Bad Request");
     });
 
     it("should handle error response", async () => {
-      const mockPayload: CreateChatRequest = {
-        title: "New Chat",
-        participants: [{ id: "user1", name: "John Doe" }],
-      };
-
+      
       const mockError = new Error("Server error");
       mockHttpClient.post.mockRejectedValue(mockError);
 
-      await expect(createChat(mockPayload)).rejects.toThrow("Server error");
+      await expect(createChat()).rejects.toThrow("Server error");
     });
   });
 
@@ -253,7 +228,7 @@ describe("Chats Service", () => {
         id: "chat-to-update",
         date: "2023-07-17",
         title: "Updated Chat Title",
-        participants: [{ id: "user1", name: "John Doe" }],
+        
         messages: [],
       };
 
@@ -279,11 +254,7 @@ describe("Chats Service", () => {
     it("should handle partial updates", async () => {
       const mockPayload: UpdateChatRequest = {
         id: "chat-id",
-        participants: [
-          { id: "user1", name: "John Doe" },
-          { id: "user2", name: "Jane Smith" },
-          { id: "user3", name: "Bob Johnson" },
-        ],
+        title: "Updated Chat Title",
       };
 
       const mockResponse: HttpClientResponse<Chat> = {
@@ -413,6 +384,30 @@ describe("Chats Service", () => {
       expect(result.statusText).toBe("Forbidden");
     });
   });
+
+  describe("createChatMessage", () => {
+    it("should call httpClient.post with correct URL and payload", async () => {
+      const mockPayload: CreateChatMessageRequest = {
+        chatId: "chat-id",
+        messages: [],
+        use_knowledge_base: false,
+      };
+
+      const mockResponse: HttpClientResponse<Chat> = {
+        data: {} as Chat,
+        status: 200,
+        statusText: "OK",
+        headers: {},
+      };
+
+      mockHttpClient.post.mockResolvedValue(mockResponse);
+
+      const result = await createChatMessage(mockPayload);
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(CHAT_MESSAGE, mockPayload);
+      expect(result).toBe(mockResponse);
+    });
+  }); 
 
   describe("Integration with API routes", () => {
     it("should use correct CHATS endpoint", () => {

@@ -3,7 +3,6 @@
 import AnalysisChat from "@/components/AnalysisChat/AnalysisChat";
 import AnalysisFilter from "@/components/AnalysisFilters/AnalysisFilters";
 import AnalysisHeader from "@/components/AnalysisHeader/AnalysisHeader";
-import { useAnalysis } from "@/hooks/useAnalysis";
 import { useAnalysisFilters } from "@/hooks/useAnalysisFilters";
 import { useSequentialNaming } from "@/contexts/SequentialNamingContext";
 import {
@@ -16,6 +15,7 @@ import {
 } from "@ui5/webcomponents-react";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import { useChat } from "@/hooks/chats";
 
 const ErrorDisplay = ({
   error,
@@ -83,14 +83,14 @@ export default function AnalysisContainer() {
     isLoading,
     isValidating,
     mutate: refetchAnalysis,
-  } = useAnalysis(analysisId);
+  } = useChat(analysisId);
 
   const { generateAnalysisName } = useSequentialNaming();
 
   useEffect(() => {
     if (analysis?.data) {
-      if (analysis?.data?.name !== "") {
-        setAnalysisName(analysis?.data?.name);
+      if (analysis?.data?.title !== "") {
+        setAnalysisName(analysis?.data?.title);
       } else if (analysisName === "") {
         setAnalysisName(generateAnalysisName());
       }
@@ -125,7 +125,10 @@ export default function AnalysisContainer() {
                 currentAnalysisName={analysisName}
                 showAutoSaved={true}
               />
-              <AnalysisChat />
+              <AnalysisChat
+                chatId={analysis?.data?.id || ""}
+                previousMessages={analysis?.data?.messages || []}
+              />
             </>
           )}
         </>

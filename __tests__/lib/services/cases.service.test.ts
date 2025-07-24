@@ -1,13 +1,9 @@
 import { httpClient } from "@/lib/api";
-import { BASE_URL } from "@/lib/constants/config";
-import {
-  GET_CASES_ANALYSIS,
-  GET_CASES_BY_ANALYSIS,
-} from "@/lib/constants/api/cases";
+import { CASE_ANALYSIS, CASES_BY_ANALYSIS } from "@/lib/constants/api/routes";
 import {
   getCasesAnalysis,
   getCasesByAnalysis,
-} from "@/lib/services/casesService";
+} from "@/lib/services/cases.service";
 import {
   CasesAnalysisResponse,
   CasesResponse,
@@ -61,9 +57,7 @@ describe("casesService", () => {
 
       const result = await getCasesAnalysis();
 
-      expect(mockHttpClient.get).toHaveBeenCalledWith(
-        `${BASE_URL}${GET_CASES_ANALYSIS}`
-      );
+      expect(mockHttpClient.get).toHaveBeenCalledWith(CASE_ANALYSIS);
       expect(mockHttpClient.get).toHaveBeenCalledTimes(1);
       expect(result).toEqual(response);
     });
@@ -77,12 +71,12 @@ describe("casesService", () => {
       const result = await getCasesByAnalysis("test-analysis");
 
       expect(mockHttpClient.get).toHaveBeenCalledWith(
-        `${BASE_URL}${GET_CASES_BY_ANALYSIS("test-analysis")}`
+        CASES_BY_ANALYSIS("test-analysis")
       );
       expect(mockHttpClient.get).toHaveBeenCalledTimes(1);
       expect(result).toEqual(response);
     });
-    
+
     it("should handle network errors", async () => {
       const error = new Error("Network error");
       mockHttpClient.get.mockRejectedValue(error);

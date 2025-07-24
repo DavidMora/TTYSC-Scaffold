@@ -10,8 +10,8 @@ import {
 
 import { AnalysisRenaming } from "./AnalysisRenaming";
 import { CreateAnalysis } from "./CreateAnalysis";
-import { useCreateAnalysis } from "@/hooks/useAnalysis";
 import { useRouter } from "next/navigation";
+import { useCreateChat } from "@/hooks/chats";
 
 interface AnalysisHeaderProps {
   onFiltersReset?: () => void;
@@ -30,7 +30,7 @@ const AnalysisHeader: React.FC<AnalysisHeaderProps> = ({
   const [name, setName] = useState<string>(currentAnalysisName || "");
   const router = useRouter();
 
-  const { mutate: createAnalysis, isLoading: isCreating } = useCreateAnalysis({
+  const { mutate: createAnalysis, isLoading: isCreating } = useCreateChat({
     onSuccess: (data) => {
       onFiltersReset?.();
       router.push(`/${data.id}`);

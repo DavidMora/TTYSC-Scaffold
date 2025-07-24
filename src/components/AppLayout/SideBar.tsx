@@ -87,7 +87,7 @@ export default function SideBarMenu({
       <FeedbackNavigationItem onSubmitFeedback={handleFeedbackSubmit} />
       <RawDataNavigationItem onDataSelection={handleRawDataSelection} />
       <ChatHistoryNavigationItem
-        chatHistory={chatHistory}
+        chatHistory={chatHistory?.data}
         isLoading={isLoadingChatHistory}
         errorLoading={chatHistoryError}
         onChatSelect={handleChatSelect}

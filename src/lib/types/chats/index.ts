@@ -1,44 +1,46 @@
-export interface ChatParticipant {
-  id: string;
-  name: string;
-}
-
 export interface ChatMessage {
   id: string;
-  sender: string;
-  timestamp: string;
+  role: "user" | "assistant";
+  title?: string;
   content: string;
+  created: string;
 }
-
 export interface Chat {
   id: string;
   date: string;
-  participants: ChatParticipant[];
   title: string;
   messages: ChatMessage[];
 }
 
 // Create payloads
-export type CreateChatRequest = Omit<Chat, "id" | "date" | "messages">;
-export type CreateChatMessageRequest = Omit<ChatMessage, "id" | "timestamp">;
-export type CreateChatParticipantRequest = Omit<ChatParticipant, "id">;
 export type UpdateChatRequest = Partial<Chat> & { id: string };
 
-// Response types
-export interface CreateChatResponse {
-  success: boolean;
-  data: Chat;
-  message?: string;
+export interface CreateChatMessageRequest {
+  chatId: string;
+  messages: Array<{
+    role: "user" | "assistant";
+    content: string;
+  }>;
+  use_knowledge_base: boolean;
 }
 
-export interface CreateChatMessageResponse {
-  success: boolean;
-  data: ChatMessage;
-  message?: string;
-}
-
-export interface CreateChatParticipantResponse {
-  success: boolean;
-  data: ChatParticipant;
-  message?: string;
+export interface BotResponse {
+  id: string;
+  object: string;
+  model: string;
+  created: string;
+  choices: Array<{
+    message: {
+      content: string;
+      role: "user" | "assistant";
+      title?: string;
+    };
+    finish_reason: string;
+    index: number;
+  }>;
+  usage: {
+    prompt_tokens: number;
+    completion_tokens: number;
+    total_tokens: number;
+  };
 }

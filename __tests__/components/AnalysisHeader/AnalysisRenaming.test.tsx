@@ -2,11 +2,13 @@ import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { AnalysisRenaming } from "@/components/AnalysisHeader/AnalysisRenaming";
 import type { InputDomRef } from "@ui5/webcomponents-react";
+import { useRenameChat } from "@/hooks/chats";
+import { Chat } from "@/lib/types/chats";
 
 const mockMutate = jest.fn();
 
-jest.mock("@/hooks/useAnalysis", () => ({
-  useRenameAnalysis: jest.fn(() => ({
+jest.mock("@/hooks/chats", () => ({
+  useRenameChat: jest.fn(() => ({
     mutate: mockMutate,
     isLoading: false,
   })),
@@ -72,20 +74,21 @@ describe("AnalysisRenaming", () => {
   });
 
   it("should save changes and call onNameChange when Enter is pressed", () => {
-    const mockUseRenameAnalysis = jest.mocked(
-      require("@/hooks/useAnalysis").useRenameAnalysis
-    );
-    let onSuccessCallback: ((data: any) => void) | undefined;
+    const mockUseRenameAnalysis = jest.mocked(useRenameChat);
+    let onSuccessCallback: ((data: { title: string; }) => void) | undefined;
 
-    mockUseRenameAnalysis.mockImplementation((options: any) => {
+    mockUseRenameAnalysis.mockImplementation((options: { onSuccess?: (data: { title: string; }) => void }) => {
       onSuccessCallback = options?.onSuccess;
       return {
-        mutate: jest.fn(({ data }: { data: any }) => {
+        mutate: jest.fn(({ data }: { data: Chat }) => {
           if (onSuccessCallback) {
-            onSuccessCallback({ name: data.name });
+            onSuccessCallback({ title: data.title });
           }
         }),
         isLoading: false,
+        data: undefined,
+        error: null,
+        reset: jest.fn(),
       };
     });
 
@@ -146,9 +149,7 @@ describe("AnalysisRenaming", () => {
   });
 
   it("should handle rename analysis error and exit editing mode", () => {
-    const mockUseRenameAnalysis = jest.mocked(    
-      require("@/hooks/useAnalysis").useRenameAnalysis
-    );
+    const mockUseRenameAnalysis = jest.mocked(useRenameChat);
     let onErrorCallback: ((error: Error) => void) | undefined;
 
     mockUseRenameAnalysis.mockImplementation((options: { onError?: (error: Error) => void }) => {
@@ -193,11 +194,13 @@ describe("AnalysisRenaming", () => {
   });
 
   it("should show loading state with placeholder and opacity", () => {
-    const mockUseRenameAnalysis =
-      require("@/hooks/useAnalysis").useRenameAnalysis;
+    const mockUseRenameAnalysis = jest.mocked(useRenameChat);
     mockUseRenameAnalysis.mockImplementation(() => ({
       mutate: mockMutate,
       isLoading: true,
+      data: undefined,
+      error: null,
+      reset: jest.fn(),
     }));
 
     render(<AnalysisRenaming {...defaultProps} />);
