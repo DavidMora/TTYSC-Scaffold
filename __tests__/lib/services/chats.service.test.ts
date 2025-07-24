@@ -416,6 +416,62 @@ describe("Chats Service", () => {
       );
       expect(result).toBe(mockResponse);
     });
+
+    it("should handle error response", async () => {
+      const mockError = new Error("Failed to send message");
+      mockHttpClient.post.mockRejectedValue(mockError);
+
+      const mockPayload: CreateChatMessageRequest = {
+        chatId: "chat-id",
+        messages: [{ role: "user", content: "Hello" }],
+        use_knowledge_base: false,
+      };
+
+      await expect(createChatMessage(mockPayload)).rejects.toThrow(
+        "Failed to send message"
+      );
+    });
+
+    it("should return bot response successfully", async () => {
+      const mockBotResponse: BotResponse = {
+        id: "response-id",
+        object: "chat.completion",
+        model: "gpt-3.5-turbo",
+        created: "2023-07-17T10:00:00Z",
+        choices: [
+          {
+            message: { content: "Hello!", role: "assistant" },
+            finish_reason: "stop",
+            index: 0,
+          },
+        ],
+        usage: {
+          prompt_tokens: 10,
+          completion_tokens: 20,
+          total_tokens: 30,
+        },
+      };
+
+      const mockResponse: HttpClientResponse<BotResponse> = {
+        data: mockBotResponse,
+        status: 200,
+        statusText: "OK",
+        headers: {},
+      };
+
+      mockHttpClient.post.mockResolvedValue(mockResponse);
+
+      const mockPayload: CreateChatMessageRequest = {
+        chatId: "chat-id",
+        messages: [{ role: "user", content: "Hello" }],
+        use_knowledge_base: true,
+      };
+
+      const result = await createChatMessage(mockPayload);
+
+      expect(result.data).toEqual(mockBotResponse);
+      expect(result.status).toBe(200);
+    });
   });
 
   describe("Integration with API routes", () => {

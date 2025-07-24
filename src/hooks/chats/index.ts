@@ -74,6 +74,7 @@ export const useSendChatMessage = ({
   return useMutation<BotResponse, CreateChatMessageRequest>(
     (payload) => createChatMessage(payload).then((res) => res.data),
     {
+      invalidateQueries: [], // No need to invalidate any queries here
       onSuccess: (data) => {
         onSuccess?.(data);
       },

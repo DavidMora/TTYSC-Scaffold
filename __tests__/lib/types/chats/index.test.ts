@@ -71,7 +71,7 @@ describe("Chat Types", () => {
       expect(Array.isArray(chat.messages)).toBe(true);
     });
 
-    it("should allow empty participants and messages", () => {
+    it("should allow empty messages", () => {
       const emptyChat: Chat = {
         id: "empty-chat",
         date: "2023-07-17",
@@ -83,8 +83,8 @@ describe("Chat Types", () => {
     });
   });
 
-  describe("CreateChatRequest", () => {
-    it("should allow minimal chat creation", () => {
+  describe("CreateChatMessageRequest", () => {
+    it("should allow minimal message creation", () => {
       const minimalChat: CreateChatMessageRequest = {
         chatId: "chat123",
         messages: [{ role: "user", content: "This is a new message" }],
@@ -144,7 +144,7 @@ describe("Chat Types", () => {
       expect(updateRequest.title).toBe("Updated Chat Title");
     });
 
-    it("should allow updating only participants", () => {
+    it("should allow updating with minimal fields", () => {
       const updateParticipants: UpdateChatRequest = {
         id: "chat123",
       };
