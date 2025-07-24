@@ -5,16 +5,17 @@ import { parseDate } from "@/lib/utils/dateUtils";
 
 interface MessageBubbleProps {
   message: ChatMessage;
+  user?: {
+    name: string;
+    initials: string;
+  };
 }
 
-const MOCK_USER = {
-  name: "Daniel",
-  initials: "DA",
-};
-
-export function MessageBubble({ message }: MessageBubbleProps) {
+export function MessageBubble({
+  message,
+  user = { name: "Unknown", initials: "U" },
+}: MessageBubbleProps) {
   const isUser = message.role === "user";
-
   return (
     <div
       style={{
@@ -47,7 +48,7 @@ export function MessageBubble({ message }: MessageBubbleProps) {
               style={{ marginBottom: "7px", gap: "10px" }}
             >
               <Avatar
-                initials={MOCK_USER.initials}
+                initials={user.initials}
                 size="XS"
                 style={{
                   backgroundColor: "#5B738B80",
@@ -64,7 +65,7 @@ export function MessageBubble({ message }: MessageBubbleProps) {
                     display: "block",
                   }}
                 >
-                  {MOCK_USER.name}
+                  {user.name}
                 </Text>
                 <Text
                   style={{

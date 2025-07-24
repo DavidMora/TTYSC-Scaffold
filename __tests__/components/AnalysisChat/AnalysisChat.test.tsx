@@ -17,11 +17,11 @@ jest.mock("@/components/AnalysisChat/MessageBubble", () => ({
     user,
   }: {
     message: ChatMessage;
-    user: { name: string; initials: string };
+    user?: { name: string; initials: string };
   }) => (
     <div data-testid={`message-${message.id}`} data-role={message.role}>
       <div data-testid="message-content">{message.content}</div>
-      <div data-testid="user-name">{user.name}</div>
+      <div data-testid="user-name">{user?.name || "Unknown"}</div>
     </div>
   ),
 }));

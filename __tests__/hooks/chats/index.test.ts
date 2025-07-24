@@ -79,7 +79,11 @@ describe("Chat Hooks", () => {
         }
       );
 
-      expect(result.current.data).toEqual([]);
+      expect(result.current.data).toEqual({
+        data: [],
+        message: "Chats fetched successfully",
+        success: true,
+      });
     });
 
     it("should use getChats service function as fetcher", () => {
@@ -159,7 +163,7 @@ describe("Chat Hooks", () => {
 
       const { result } = renderHook(() => useChats());
 
-      expect(result.current.data).toBe(mockChats);
+      expect(result.current.data).toEqual({ data: mockChats });
       expect(result.current.error).toBeUndefined();
       expect(result.current.isLoading).toBe(false);
     });
@@ -189,7 +193,7 @@ describe("Chat Hooks", () => {
         }
       );
 
-      expect(result.current.data).toBeUndefined();
+      expect(result.current.data).toEqual({ data: undefined });
     });
 
     it("should use getChat service function as fetcher with correct id", () => {
@@ -308,7 +312,7 @@ describe("Chat Hooks", () => {
 
       const { result } = renderHook(() => useChat(testChatId));
 
-      expect(result.current.data).toBe(mockChat);
+      expect(result.current.data).toEqual({ data: mockChat });
       expect(result.current.error).toBeUndefined();
       expect(result.current.isLoading).toBe(false);
     });
@@ -334,7 +338,7 @@ describe("Chat Hooks", () => {
       );
 
       expect(mockUseMutation).toHaveBeenCalledWith(expect.any(Function), {
-        invalidateQueries: [],
+        invalidateQueries: [CHATS_KEY],
         onSuccess: expect.any(Function),
         onError: expect.any(Function),
       });

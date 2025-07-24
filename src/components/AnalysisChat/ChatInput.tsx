@@ -40,6 +40,7 @@ export function ChatInput({ onSendMessage, isLoading }: ChatInputProps) {
       >
         <TextArea
           placeholder="Write your lines here"
+          aria-label="Chat message input"
           style={{ width: "100%", paddingRight: "0.5rem" }}
           value={input}
           onInput={handleInput}

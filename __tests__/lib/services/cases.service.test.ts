@@ -1,4 +1,4 @@
-import { httpClient } from "@/lib/api";
+import { apiClient } from "@/lib/api";
 import { CASE_ANALYSIS, CASES_BY_ANALYSIS } from "@/lib/constants/api/routes";
 import {
   getCasesAnalysis,
@@ -10,10 +10,10 @@ import {
 } from "@/lib/types/analysisFilters";
 
 jest.mock("@/lib/api", () => ({
-  httpClient: { get: jest.fn() },
+  apiClient: { get: jest.fn() },
 }));
 
-const mockHttpClient = httpClient as jest.Mocked<typeof httpClient>;
+const mockHttpClient = apiClient as jest.Mocked<typeof apiClient>;
 const mockResponse = (data: unknown, status = 200) => ({
   data,
   status,
