@@ -54,9 +54,18 @@ class HttpClient {
 // Default instance using FetchAdapter
 const httpClient = new HttpClient();
 
+// Main API client with Basic Authentication
+const apiClient = new HttpClient(undefined, {
+  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL,
+  auth: {
+    username: process.env.NEXT_PUBLIC_API_USERNAME || "user",
+    password: process.env.NEXT_PUBLIC_API_PASSWORD || "password",
+  },
+});
+
 // Alternative instance using AxiosAdapter (commented out)
 // const httpClient = new HttpClient(new AxiosAdapter());
 
 export default httpClient;
-export { HttpClient };
+export { HttpClient, apiClient };
 export type { HttpClientAdapter, HttpClientConfig, HttpClientResponse };

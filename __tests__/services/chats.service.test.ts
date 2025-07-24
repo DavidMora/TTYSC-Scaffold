@@ -1,4 +1,4 @@
-import { httpClient } from "@/lib/api";
+import { apiClient } from "@/lib/api";
 import { CHATS, CHAT } from "@/lib/constants/api/routes";
 import {
   getChats,
@@ -11,9 +11,9 @@ import { Chat, CreateChatRequest, UpdateChatRequest } from "@/lib/types/chats";
 import { HttpClientResponse } from "@/lib/types/api/http-client";
 import { BaseResponse } from "@/lib/types/http/responses";
 
-// Mock the httpClient
+// Mock the apiClient
 jest.mock("@/lib/api", () => ({
-  httpClient: {
+  apiClient: {
     get: jest.fn(),
     post: jest.fn(),
     patch: jest.fn(),
@@ -21,7 +21,7 @@ jest.mock("@/lib/api", () => ({
   },
 }));
 
-const mockHttpClient = httpClient as jest.Mocked<typeof httpClient>;
+const mockHttpClient = apiClient as jest.Mocked<typeof apiClient>;
 
 describe("Chats Service", () => {
   beforeEach(() => {
