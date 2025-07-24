@@ -83,8 +83,8 @@ describe("Chat Types", () => {
     });
   });
 
-  describe("CreateChatMessageRequest", () => {
-    it("should allow minimal message creation", () => {
+  describe("CreateChatMessageRequest - Minimal", () => {
+    it("should allow minimal chat message request creation", () => {
       const minimalChat: CreateChatMessageRequest = {
         chatId: "chat123",
         messages: [{ role: "user", content: "This is a new message" }],
@@ -95,7 +95,7 @@ describe("Chat Types", () => {
     });
   });
 
-  describe("CreateChatMessageRequest", () => {
+  describe("CreateChatMessageRequest - Structure validation", () => {
     it("should omit id and timestamp from ChatMessage", () => {
       const createMessageRequest: CreateChatMessageRequest = {
         chatId: "chat123",
