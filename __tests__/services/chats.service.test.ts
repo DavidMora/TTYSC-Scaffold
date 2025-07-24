@@ -9,6 +9,7 @@ import {
 } from "@/services/chats.service";
 import { Chat, CreateChatRequest, UpdateChatRequest } from "@/lib/types/chats";
 import { HttpClientResponse } from "@/lib/types/api/http-client";
+import { BaseResponse } from "@/lib/types/http/responses";
 
 // Mock the httpClient
 jest.mock("@/lib/api", () => ({
@@ -68,8 +69,12 @@ describe("Chats Service", () => {
         },
       ];
 
-      const mockResponse: HttpClientResponse<Chat[]> = {
-        data: mockChats,
+      const mockResponse: HttpClientResponse<BaseResponse<Chat[]>> = {
+        data: {
+          data: mockChats,
+          message: "Chats retrieved successfully",
+          success: true,
+        },
         status: 200,
         statusText: "OK",
         headers: {},
@@ -79,7 +84,7 @@ describe("Chats Service", () => {
 
       const result = await getChats();
 
-      expect(result.data).toEqual(mockChats);
+      expect(result.data.data).toEqual(mockChats);
       expect(result.status).toBe(200);
     });
 
