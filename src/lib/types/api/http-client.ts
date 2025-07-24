@@ -2,6 +2,10 @@ export interface HttpClientConfig {
   baseURL?: string;
   timeout?: number;
   headers?: Record<string, string>;
+  auth?: {
+    username: string;
+    password: string;
+  };
 }
 
 export interface HttpClientResponse<T = unknown> {

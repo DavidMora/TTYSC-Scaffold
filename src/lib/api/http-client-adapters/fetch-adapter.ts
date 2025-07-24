@@ -15,6 +15,7 @@ export class FetchAdapter implements HttpClientAdapter {
         "Content-Type": "application/json",
         ...config.headers,
       },
+      auth: config.auth,
     };
   }
 
@@ -41,6 +42,15 @@ export class FetchAdapter implements HttpClientAdapter {
         ...config?.headers,
         ...(options.headers as Record<string, string>),
       };
+
+      // Add Basic Authentication if configured
+      const authConfig = config?.auth || this.defaultConfig.auth;
+      if (authConfig) {
+        const credentials = btoa(
+          `${authConfig.username}:${authConfig.password}`
+        );
+        mergedHeaders.Authorization = `Basic ${credentials}`;
+      }
 
       const response = await fetch(fullUrl, {
         ...options,

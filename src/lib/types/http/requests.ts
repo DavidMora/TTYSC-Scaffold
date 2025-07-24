@@ -20,5 +20,5 @@ export interface RangeOperators {
 }
 
 export interface BaseQueryParams extends PaginationParams, SortParams {
-  [key: string]: string | number | undefined;
+  [key: string]: string | number | boolean | undefined | null;
 }
