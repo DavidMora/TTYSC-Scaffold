@@ -2,7 +2,7 @@ import { render, waitFor, screen, fireEvent } from "@testing-library/react";
 import Home from "@/app/page";
 import "@testing-library/jest-dom";
 import React from "react";
-import { useCreateAnalysis } from "@/hooks/useAnalysis";
+import { useCreateChat } from "@/hooks/chats";
 
 const mockPush = jest.fn();
 const mockMutate = jest.fn();
@@ -14,12 +14,12 @@ jest.mock("next/navigation", () => ({
   usePathname: () => "/",
 }));
 
-jest.mock("@/hooks/useAnalysis", () => ({
-  useCreateAnalysis: jest.fn(),
+jest.mock("@/hooks/chats", () => ({
+  useCreateChat: jest.fn(),
 }));
 
-const mockUseCreateAnalysis = useCreateAnalysis as jest.MockedFunction<
-  typeof useCreateAnalysis
+const mockUseCreateChat = useCreateChat as jest.MockedFunction<
+  typeof useCreateChat
 >;
 
 describe("Home page", () => {
@@ -30,7 +30,7 @@ describe("Home page", () => {
   });
 
   it("renders loading display by default", () => {
-    mockUseCreateAnalysis.mockReturnValue({
+    mockUseCreateChat.mockReturnValue({
       mutate: mockMutate,
       data: undefined,
       error: null,
@@ -49,7 +49,7 @@ describe("Home page", () => {
   });
 
   it("calls createAnalysis on mount", async () => {
-    mockUseCreateAnalysis.mockReturnValue({
+    mockUseCreateChat.mockReturnValue({
       mutate: mockMutate,
       data: undefined,
       error: null,
@@ -65,9 +65,15 @@ describe("Home page", () => {
   });
 
   it("navigates to analysis page on successful creation", async () => {
-    const mockAnalysis = { id: "test-analysis-id", name: "Test Analysis" };
+    const mockAnalysis = {
+      id: "test-analysis-id",
+      date: "2021-01-01",
+      participants: [],
+      title: "Test Analysis",
+      messages: [],
+    };
 
-    mockUseCreateAnalysis.mockImplementation(({ onSuccess }) => {
+    mockUseCreateChat.mockImplementation(({ onSuccess }) => {
       React.useEffect(() => {
         if (onSuccess) {
           onSuccess(mockAnalysis);
@@ -77,7 +83,7 @@ describe("Home page", () => {
       return {
         mutate: mockMutate,
         data: {
-          data: { analysis: mockAnalysis },
+          data: mockAnalysis,
           status: 200,
           statusText: "OK",
           headers: {},
@@ -101,7 +107,7 @@ describe("Home page", () => {
       .mockImplementation(() => {});
     const testError = new Error("Failed to create analysis");
 
-    mockUseCreateAnalysis.mockImplementation(({ onError }) => {
+    mockUseCreateChat.mockImplementation(({ onError }) => {
       React.useEffect(() => {
         if (onError) {
           onError(testError);
@@ -139,7 +145,7 @@ describe("Home page", () => {
       .mockImplementation(() => {});
     const testError = new Error("Failed to create analysis");
 
-    mockUseCreateAnalysis.mockImplementation(({ onError }) => {
+    mockUseCreateChat.mockImplementation(({ onError }) => {
       React.useEffect(() => {
         if (onError) {
           onError(testError);
@@ -172,7 +178,7 @@ describe("Home page", () => {
   });
 
   it("only calls mutate once on mount even with strict mode", async () => {
-    mockUseCreateAnalysis.mockReturnValue({
+    mockUseCreateChat.mockReturnValue({
       mutate: mockMutate,
       data: undefined,
       error: null,

@@ -2,7 +2,7 @@ import { dataFetcher } from "@/lib/api";
 import {
   getCasesAnalysis,
   getCasesByAnalysis,
-} from "@/lib/services/casesService";
+} from "@/lib/services/cases.service";
 
 export const useCasesAnalysis = () => {
   return dataFetcher.fetchData("cases_analysis", () => getCasesAnalysis());

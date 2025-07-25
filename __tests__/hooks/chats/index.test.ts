@@ -1,8 +1,23 @@
 import { renderHook } from "@testing-library/react";
-import { useChats, useChat, CHATS_KEY, CHAT_KEY } from "@/hooks/chats";
+import {
+  useChats,
+  useChat,
+  useCreateChat,
+  useRenameChat,
+  useSendChatMessage,
+  CHATS_KEY,
+  CHAT_KEY,
+} from "@/hooks/chats";
 import { dataFetcher } from "@/lib/api";
-import { getChats, getChat } from "@/services/chats.service";
-import { Chat } from "@/lib/types/chats";
+import {
+  getChats,
+  getChat,
+  createChat,
+  updateChat,
+  createChatMessage,
+} from "@/lib/services/chats.service";
+import { Chat, BotResponse } from "@/lib/types/chats";
+import { useMutation } from "@/hooks/useMutation";
 
 // Mock the dependencies
 jest.mock("@/lib/api", () => ({
@@ -11,14 +26,27 @@ jest.mock("@/lib/api", () => ({
   },
 }));
 
-jest.mock("@/services/chats.service", () => ({
+jest.mock("@/lib/services/chats.service", () => ({
   getChats: jest.fn(),
   getChat: jest.fn(),
+  createChat: jest.fn(),
+  updateChat: jest.fn(),
+  createChatMessage: jest.fn(),
+}));
+
+jest.mock("@/hooks/useMutation", () => ({
+  useMutation: jest.fn(),
 }));
 
 const mockDataFetcher = dataFetcher as jest.Mocked<typeof dataFetcher>;
 const mockGetChats = getChats as jest.MockedFunction<typeof getChats>;
 const mockGetChat = getChat as jest.MockedFunction<typeof getChat>;
+const mockCreateChat = createChat as jest.MockedFunction<typeof createChat>;
+const mockUpdateChat = updateChat as jest.MockedFunction<typeof updateChat>;
+const mockCreateChatMessage = createChatMessage as jest.MockedFunction<
+  typeof createChatMessage
+>;
+const mockUseMutation = useMutation as jest.MockedFunction<typeof useMutation>;
 
 describe("Chat Hooks", () => {
   beforeEach(() => {
@@ -51,7 +79,11 @@ describe("Chat Hooks", () => {
         }
       );
 
-      expect(result.current.data).toEqual([]);
+      expect(result.current.data).toEqual({
+        data: [],
+        message: "Chats fetched successfully",
+        success: true,
+      });
     });
 
     it("should use getChats service function as fetcher", () => {
@@ -115,7 +147,6 @@ describe("Chat Hooks", () => {
           id: "1",
           date: "2023-07-17",
           title: "Test Chat",
-          participants: [{ id: "user1", name: "John Doe" }],
           messages: [],
         },
       ];
@@ -132,7 +163,7 @@ describe("Chat Hooks", () => {
 
       const { result } = renderHook(() => useChats());
 
-      expect(result.current.data).toBe(mockChats);
+      expect(result.current.data).toEqual({ data: mockChats });
       expect(result.current.error).toBeUndefined();
       expect(result.current.isLoading).toBe(false);
     });
@@ -162,7 +193,7 @@ describe("Chat Hooks", () => {
         }
       );
 
-      expect(result.current.data).toBeUndefined();
+      expect(result.current.data).toEqual({ data: undefined });
     });
 
     it("should use getChat service function as fetcher with correct id", () => {
@@ -259,16 +290,12 @@ describe("Chat Hooks", () => {
         id: testChatId,
         date: "2023-07-17",
         title: "Test Chat",
-        participants: [
-          { id: "user1", name: "John Doe" },
-          { id: "user2", name: "Jane Smith" },
-        ],
         messages: [
           {
             id: "msg1",
-            sender: "user1",
-            timestamp: "2023-07-17T10:00:00Z",
+            created: "2023-07-17T10:00:00Z",
             content: "Hello!",
+            role: "user",
           },
         ],
       };
@@ -285,9 +312,282 @@ describe("Chat Hooks", () => {
 
       const { result } = renderHook(() => useChat(testChatId));
 
-      expect(result.current.data).toBe(mockChat);
+      expect(result.current.data).toEqual({ data: mockChat });
       expect(result.current.error).toBeUndefined();
       expect(result.current.isLoading).toBe(false);
+    });
+  });
+
+  describe("useCreateChat", () => {
+    it("should call useMutation with correct parameters", () => {
+      const mockMutationResult = {
+        mutate: jest.fn(),
+        data: undefined,
+        error: null,
+        isLoading: false,
+        reset: jest.fn(),
+      };
+
+      mockUseMutation.mockReturnValue(mockMutationResult);
+
+      const onSuccess = jest.fn();
+      const onError = jest.fn();
+
+      const { result } = renderHook(() =>
+        useCreateChat({ onSuccess, onError })
+      );
+
+      expect(mockUseMutation).toHaveBeenCalledWith(expect.any(Function), {
+        invalidateQueries: [CHATS_KEY],
+        onSuccess: expect.any(Function),
+        onError: expect.any(Function),
+      });
+
+      expect(result.current).toBe(mockMutationResult);
+    });
+
+    it("should call onSuccess callback with correct data", async () => {
+      const mockChat: Chat = {
+        id: "new-chat-id",
+        date: "2023-07-17",
+        title: "New Chat",
+        messages: [],
+      };
+
+      const mockResponse = {
+        data: mockChat,
+        status: 200,
+        statusText: "OK",
+        headers: {},
+      };
+      mockCreateChat.mockResolvedValue(mockResponse);
+
+      const onSuccess = jest.fn();
+      const onError = jest.fn();
+
+      const mockMutationResult = {
+        mutate: jest.fn(),
+        data: undefined,
+        error: null,
+        isLoading: false,
+        reset: jest.fn(),
+      };
+
+      mockUseMutation.mockReturnValue(mockMutationResult);
+
+      renderHook(() => useCreateChat({ onSuccess, onError }));
+
+      const mutationFunction = mockUseMutation.mock.calls[0][0];
+      const onSuccessCallback = mockUseMutation.mock.calls[0][1]?.onSuccess;
+
+      const result = await mutationFunction(undefined);
+      onSuccessCallback?.(result);
+
+      expect(onSuccess).toHaveBeenCalledWith(mockChat);
+    });
+
+    it("should call onError callback when mutation fails", async () => {
+      const mockError = new Error("Failed to create chat");
+      mockCreateChat.mockRejectedValue(mockError);
+
+      const onSuccess = jest.fn();
+      const onError = jest.fn();
+
+      const mockMutationResult = {
+        mutate: jest.fn(),
+        data: undefined,
+        error: null,
+        isLoading: false,
+        reset: jest.fn(),
+      };
+
+      mockUseMutation.mockReturnValue(mockMutationResult);
+
+      renderHook(() => useCreateChat({ onSuccess, onError }));
+
+      const mutationFunction = mockUseMutation.mock.calls[0][0];
+      const onErrorCallback = mockUseMutation.mock.calls[0][1]?.onError;
+
+      try {
+        await mutationFunction(undefined);
+      } catch (error) {
+        onErrorCallback?.(error as Error);
+      }
+
+      expect(onError).toHaveBeenCalledWith(mockError);
+    });
+  });
+
+  describe("useRenameChat", () => {
+    it("should call onSuccess callback with correct data", async () => {
+      const mockChat: Chat = {
+        id: "test-id",
+        date: "2023-07-17",
+        title: "New Title",
+        messages: [],
+      };
+      const mockResponse = {
+        data: mockChat,
+        status: 200,
+        statusText: "OK",
+        headers: {},
+      };
+      mockUpdateChat.mockResolvedValue(mockResponse);
+
+      const onSuccess = jest.fn();
+      const onError = jest.fn();
+
+      const mockMutationResult = {
+        mutate: jest.fn(),
+        data: undefined,
+        error: null,
+        isLoading: false,
+        reset: jest.fn(),
+      };
+
+      mockUseMutation.mockReturnValue(mockMutationResult);
+
+      renderHook(() => useRenameChat({ onSuccess, onError }));
+
+      // Get the mutation function and onSuccess callback
+      const mutationFunction = mockUseMutation.mock.calls[0][0];
+      const onSuccessCallback = mockUseMutation.mock.calls[0][1]?.onSuccess;
+
+      // Call the mutation function and then the onSuccess callback
+      const result = await mutationFunction({
+        id: "test-id",
+        data: { title: "New Title" },
+      });
+      onSuccessCallback?.(result);
+
+      expect(onSuccess).toHaveBeenCalledWith(mockChat);
+    });
+
+    it("should call onError callback when mutation fails", async () => {
+      const mockError = new Error("Failed to rename chat");
+      mockUpdateChat.mockRejectedValue(mockError);
+
+      const onSuccess = jest.fn();
+      const onError = jest.fn();
+
+      const mockMutationResult = {
+        mutate: jest.fn(),
+        data: undefined,
+        error: null,
+        isLoading: false,
+        reset: jest.fn(),
+      };
+
+      mockUseMutation.mockReturnValue(mockMutationResult);
+
+      renderHook(() => useRenameChat({ onSuccess, onError }));
+
+      const mutationFunction = mockUseMutation.mock.calls[0][0];
+      const onErrorCallback = mockUseMutation.mock.calls[0][1]?.onError;
+
+      try {
+        await mutationFunction({ id: "test-id", data: { title: "New Title" } });
+      } catch (error) {
+        onErrorCallback?.(error as Error);
+      }
+
+      expect(onError).toHaveBeenCalledWith(mockError);
+    });
+  });
+
+  describe("useSendChatMessage", () => {
+    it("should call onSuccess callback with correct data", async () => {
+      const mockBotResponse: BotResponse = {
+        id: "response-id",
+        object: "chat.completion",
+        model: "gpt-3.5-turbo",
+        created: "2023-07-17T10:00:00Z",
+        choices: [
+          {
+            message: {
+              content: "Hello there!",
+              role: "assistant",
+            },
+            finish_reason: "stop",
+            index: 0,
+          },
+        ],
+        usage: {
+          prompt_tokens: 5,
+          completion_tokens: 10,
+          total_tokens: 15,
+        },
+      };
+
+      const mockResponse = {
+        data: mockBotResponse,
+        status: 200,
+        statusText: "OK",
+        headers: {},
+      };
+      mockCreateChatMessage.mockResolvedValue(mockResponse);
+
+      const onSuccess = jest.fn();
+      const onError = jest.fn();
+
+      const mockMutationResult = {
+        mutate: jest.fn(),
+        data: undefined,
+        error: null,
+        isLoading: false,
+        reset: jest.fn(),
+      };
+
+      mockUseMutation.mockReturnValue(mockMutationResult);
+
+      renderHook(() => useSendChatMessage({ onSuccess, onError }));
+
+      const mutationFunction = mockUseMutation.mock.calls[0][0];
+      const onSuccessCallback = mockUseMutation.mock.calls[0][1]?.onSuccess;
+
+      const result = await mutationFunction({
+        chatId: "test-id",
+        messages: [{ role: "user", content: "Hello" }],
+        use_knowledge_base: true,
+      });
+      onSuccessCallback?.(result);
+
+      expect(onSuccess).toHaveBeenCalledWith(mockBotResponse);
+    });
+
+    it("should call onError callback when mutation fails", async () => {
+      const mockError = new Error("Failed to send message");
+      mockCreateChatMessage.mockRejectedValue(mockError);
+
+      const onSuccess = jest.fn();
+      const onError = jest.fn();
+
+      const mockMutationResult = {
+        mutate: jest.fn(),
+        data: undefined,
+        error: null,
+        isLoading: false,
+        reset: jest.fn(),
+      };
+
+      mockUseMutation.mockReturnValue(mockMutationResult);
+
+      renderHook(() => useSendChatMessage({ onSuccess, onError }));
+
+      const mutationFunction = mockUseMutation.mock.calls[0][0];
+      const onErrorCallback = mockUseMutation.mock.calls[0][1]?.onError;
+
+      try {
+        await mutationFunction({
+          chatId: "test-id",
+          messages: [{ role: "user", content: "Hello" }],
+          use_knowledge_base: false,
+        });
+      } catch (error) {
+        onErrorCallback?.(error as Error);
+      }
+
+      expect(onError).toHaveBeenCalledWith(mockError);
     });
   });
 

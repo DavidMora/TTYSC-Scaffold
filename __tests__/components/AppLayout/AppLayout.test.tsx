@@ -67,15 +67,6 @@ jest.mock("@/hooks/useAnalysisFilters", () => ({
 
 const mockRefetchAnalysis = jest.fn();
 
-jest.mock("@/hooks/useAnalysis", () => ({
-  useAnalysis: jest.fn(() => ({
-    data: { id: "1", name: "Test Analysis" },
-    error: null,
-    isLoading: false,
-    mutate: mockRefetchAnalysis,
-  })),
-}));
-
 describe("AppLayout", () => {
   beforeEach(() => {
     mockPush.mockClear();

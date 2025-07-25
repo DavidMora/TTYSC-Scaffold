@@ -1,23 +1,19 @@
-import { httpClient } from "@/lib/api";
-import { BASE_URL } from "@/lib/constants/config";
-import {
-  GET_CASES_ANALYSIS,
-  GET_CASES_BY_ANALYSIS,
-} from "@/lib/constants/api/cases";
+import { apiClient } from "@/lib/api";
+import { CASE_ANALYSIS, CASES_BY_ANALYSIS } from "@/lib/constants/api/routes";
 import {
   getCasesAnalysis,
   getCasesByAnalysis,
-} from "@/lib/services/casesService";
+} from "@/lib/services/cases.service";
 import {
   CasesAnalysisResponse,
   CasesResponse,
 } from "@/lib/types/analysisFilters";
 
 jest.mock("@/lib/api", () => ({
-  httpClient: { get: jest.fn() },
+  apiClient: { get: jest.fn() },
 }));
 
-const mockHttpClient = httpClient as jest.Mocked<typeof httpClient>;
+const mockHttpClient = apiClient as jest.Mocked<typeof apiClient>;
 const mockResponse = (data: unknown, status = 200) => ({
   data,
   status,
@@ -61,9 +57,7 @@ describe("casesService", () => {
 
       const result = await getCasesAnalysis();
 
-      expect(mockHttpClient.get).toHaveBeenCalledWith(
-        `${BASE_URL}${GET_CASES_ANALYSIS}`
-      );
+      expect(mockHttpClient.get).toHaveBeenCalledWith(CASE_ANALYSIS);
       expect(mockHttpClient.get).toHaveBeenCalledTimes(1);
       expect(result).toEqual(response);
     });
@@ -77,17 +71,23 @@ describe("casesService", () => {
       const result = await getCasesByAnalysis("test-analysis");
 
       expect(mockHttpClient.get).toHaveBeenCalledWith(
-        `${BASE_URL}${GET_CASES_BY_ANALYSIS("test-analysis")}`
+        CASES_BY_ANALYSIS("test-analysis")
       );
       expect(mockHttpClient.get).toHaveBeenCalledTimes(1);
       expect(result).toEqual(response);
     });
-    
+
     it("should handle network errors", async () => {
       const error = new Error("Network error");
       mockHttpClient.get.mockRejectedValue(error);
       await expect(getCasesByAnalysis("test-analysis")).rejects.toThrow(
         "Network error"
+      );
+    });
+
+    it("should throw an error if analysis name type is not provided", async () => {
+      await expect(getCasesByAnalysis("")).rejects.toThrow(
+        "Analysis name type is required"
       );
     });
   });

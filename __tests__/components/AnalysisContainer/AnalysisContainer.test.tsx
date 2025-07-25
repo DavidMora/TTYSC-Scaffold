@@ -31,9 +31,9 @@ jest.mock("@/hooks/useAnalysisFilters", () => ({
   useAnalysisFilters: () => mockUseAnalysisFilters(),
 }));
 
-const mockUseAnalysis = jest.fn();
-jest.mock("@/hooks/useAnalysis", () => ({
-  useAnalysis: () => mockUseAnalysis(),
+const mockUseChat = jest.fn();
+jest.mock("@/hooks/chats", () => ({
+  useChat: () => mockUseChat(),
 }));
 
 const mockGenerateAnalysisName = jest.fn(() => "Generated Analysis Name");
@@ -46,6 +46,10 @@ jest.mock("@/contexts/SequentialNamingContext", () => ({
   ),
   useSequentialNaming: () => mockUseSequentialNaming(),
 }));
+
+// Get the mocked component
+import AnalysisChat from "@/components/AnalysisChat/AnalysisChat";
+const mockAnalysisChat = jest.mocked(AnalysisChat);
 
 // Helper function to render with providers
 const renderWithProviders = (component: React.ReactElement) => {
@@ -70,13 +74,13 @@ describe("AnalysisContainer", () => {
   });
 
   it("renders loading state", () => {
-    mockUseAnalysis.mockReturnValue({ isLoading: true, isValidating: false });
+    mockUseChat.mockReturnValue({ isLoading: true, isValidating: false });
     renderWithProviders(<AnalysisContainer />);
     expect(screen.getByTestId("ui5-busy-indicator")).toBeInTheDocument();
   });
 
   it("renders error state with fallback message if error.message is falsy", () => {
-    mockUseAnalysis.mockReturnValue({
+    mockUseChat.mockReturnValue({
       isLoading: false,
       isValidating: false,
       error: {},
@@ -97,7 +101,7 @@ describe("AnalysisContainer", () => {
       name: "Test Analysis Name",
     };
 
-    mockUseAnalysis.mockReturnValue({
+    mockUseChat.mockReturnValue({
       isLoading: false,
       isValidating: false,
       error: null,
@@ -115,10 +119,10 @@ describe("AnalysisContainer", () => {
   it("generates analysis name when data name is empty and no name is set", async () => {
     const mockAnalysisData = {
       id: "test-analysis-id",
-      name: "",
+      title: "",
     };
 
-    mockUseAnalysis.mockReturnValue({
+    mockUseChat.mockReturnValue({
       isLoading: false,
       isValidating: false,
       error: null,
@@ -132,5 +136,25 @@ describe("AnalysisContainer", () => {
       expect(mockGenerateAnalysisName).toHaveBeenCalled();
       expect(screen.getByTestId("analysis-header")).toBeInTheDocument();
     });
+  });
+
+  it("passes empty values to AnalysisChat when data is not available", () => {
+    mockUseChat.mockReturnValue({
+      isLoading: false,
+      isValidating: false,
+      error: null,
+      data: { data: null },
+      mutate: jest.fn(),
+    });
+
+    renderWithProviders(<AnalysisContainer />);
+
+    expect(mockAnalysisChat).toHaveBeenCalledWith(
+      {
+        chatId: "",
+        previousMessages: [],
+      },
+      undefined
+    );
   });
 });
