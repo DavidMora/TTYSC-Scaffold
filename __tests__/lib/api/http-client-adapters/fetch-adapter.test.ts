@@ -75,6 +75,7 @@ describe("FetchAdapter", () => {
       expect(result).toEqual({
         data: { data: "test" },
         status: 200,
+        ok: true,
         statusText: "OK",
         headers: { "content-type": "application/json" },
       });
@@ -204,6 +205,7 @@ describe("FetchAdapter", () => {
       expect(result).toEqual({
         data: { id: 1 },
         status: 201,
+        ok: true,
         statusText: "Created",
         headers: {},
       });

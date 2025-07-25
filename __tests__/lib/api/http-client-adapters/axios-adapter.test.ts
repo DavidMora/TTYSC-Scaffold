@@ -44,6 +44,7 @@ describe("AxiosAdapter", () => {
     const mockResponse = {
       data: { test: "data" },
       status: 200,
+      ok: true,
       statusText: "OK",
       headers: { "content-type": "application/json" },
     };
@@ -55,6 +56,7 @@ describe("AxiosAdapter", () => {
     expect(result).toEqual({
       data: { test: "data" },
       status: 200,
+      ok: true,
       statusText: "OK",
       headers: { "content-type": "application/json" },
     });
@@ -66,6 +68,7 @@ describe("AxiosAdapter", () => {
     const mockResponse = {
       data: { id: 1 },
       status: 200,
+      ok: true,
       statusText: "OK",
       headers: {},
     };
@@ -80,6 +83,7 @@ describe("AxiosAdapter", () => {
     expect(result).toEqual({
       data: { id: 1 },
       status: 200,
+      ok: true,
       statusText: "OK",
       headers: {},
     });
@@ -89,6 +93,7 @@ describe("AxiosAdapter", () => {
     const mockResponse = {
       data: { id: 1, name: "Created" },
       status: 201,
+      ok: true,
       statusText: "Created",
       headers: {},
     };
@@ -106,6 +111,7 @@ describe("AxiosAdapter", () => {
     expect(result).toEqual({
       data: { id: 1, name: "Created" },
       status: 201,
+      ok: true,
       statusText: "Created",
       headers: {},
     });
@@ -115,6 +121,7 @@ describe("AxiosAdapter", () => {
     const mockResponse = {
       data: { id: 1, name: "Updated" },
       status: 200,
+      ok: true,
       statusText: "OK",
       headers: {},
     };
@@ -132,6 +139,7 @@ describe("AxiosAdapter", () => {
     expect(result).toEqual({
       data: { id: 1, name: "Updated" },
       status: 200,
+      ok: true,
       statusText: "OK",
       headers: {},
     });
@@ -153,6 +161,7 @@ describe("AxiosAdapter", () => {
     expect(result).toEqual({
       data: {},
       status: 204,
+      ok: true,
       statusText: "No Content",
       headers: {},
     });
@@ -162,6 +171,7 @@ describe("AxiosAdapter", () => {
     const mockResponse = {
       data: { id: 1, name: "Patched" },
       status: 200,
+      ok: true,
       statusText: "OK",
       headers: {},
     };
@@ -179,6 +189,7 @@ describe("AxiosAdapter", () => {
     expect(result).toEqual({
       data: { id: 1, name: "Patched" },
       status: 200,
+      ok: true,
       statusText: "OK",
       headers: {},
     });

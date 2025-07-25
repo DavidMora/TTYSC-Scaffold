@@ -81,6 +81,7 @@ export class FetchAdapter implements HttpClientAdapter {
         status: response.status,
         statusText: response.statusText,
         headers: responseHeaders,
+        ok: response.ok,
       };
     } catch (error) {
       clearTimeout(timeoutId);

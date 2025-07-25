@@ -26,6 +26,7 @@ export class AxiosAdapter implements HttpClientAdapter {
       status: response.status,
       statusText: response.statusText,
       headers: this.normalizeHeaders(response.headers),
+      ok: this.isStatusOk(response.status),
     };
   }
 
@@ -40,6 +41,7 @@ export class AxiosAdapter implements HttpClientAdapter {
       status: response.status,
       statusText: response.statusText,
       headers: this.normalizeHeaders(response.headers),
+      ok: this.isStatusOk(response.status),
     };
   }
 
@@ -54,6 +56,7 @@ export class AxiosAdapter implements HttpClientAdapter {
       status: response.status,
       statusText: response.statusText,
       headers: this.normalizeHeaders(response.headers),
+      ok: this.isStatusOk(response.status),
     };
   }
 
@@ -67,6 +70,7 @@ export class AxiosAdapter implements HttpClientAdapter {
       status: response.status,
       statusText: response.statusText,
       headers: this.normalizeHeaders(response.headers),
+      ok: this.isStatusOk(response.status),
     };
   }
 
@@ -81,7 +85,12 @@ export class AxiosAdapter implements HttpClientAdapter {
       status: response.status,
       statusText: response.statusText,
       headers: this.normalizeHeaders(response.headers),
+      ok: this.isStatusOk(response.status),
     };
+  }
+
+  private isStatusOk(status: number): boolean {
+    return status >= 200 && status < 300;
   }
 
   private normalizeHeaders(

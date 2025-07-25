@@ -13,6 +13,7 @@ export interface HttpClientResponse<T = unknown> {
   status: number;
   statusText: string;
   headers: Record<string, string>;
+  ok: boolean;
 }
 
 export interface HttpClientAdapter {
