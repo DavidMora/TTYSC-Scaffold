@@ -17,7 +17,7 @@ export default function SettingsNavigationItem() {
   };
 
   return (
-    <SideNavigationItem text="Settings" icon="action-settings" unselectable>
+    <SideNavigationItem text="Settings" icon="action-settings">
       <FlexBox direction={FlexBoxDirection.Column} style={{ padding: "1rem" }}>
         {/* Toggle Switch */}
         <FlexBox style={{ paddingBlockEnd: "1rem" }}>
