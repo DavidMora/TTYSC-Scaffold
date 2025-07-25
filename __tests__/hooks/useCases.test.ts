@@ -1,10 +1,10 @@
 import { renderHook } from "@testing-library/react";
 import { useCasesAnalysis, useCasesByAnalysis } from "@/hooks/useCases";
 import { dataFetcher } from "@/lib/api";
-import * as casesService from "@/lib/services/casesService";
+import * as casesService from "@/lib/services/cases.service";
 
 jest.mock("@/lib/api");
-jest.mock("@/lib/services/casesService");
+jest.mock("@/lib/services/cases.service");
 
 const mockDataFetcher = dataFetcher as jest.Mocked<typeof dataFetcher>;
 const mockCasesService = casesService as jest.Mocked<typeof casesService>;

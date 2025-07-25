@@ -10,7 +10,7 @@ import {
   Icon,
   Button,
 } from "@ui5/webcomponents-react";
-import { useCreateAnalysis } from "@/hooks/useAnalysis";
+import { useCreateChat } from "@/hooks/chats";
 
 const LoadingDisplay = () => (
   <FlexBox
@@ -104,9 +104,9 @@ export default function Home() {
   const router = useRouter();
   const [error, setError] = useState<Error | null>(null);
 
-  const createAnalysisMutation = useCreateAnalysis({
-    onSuccess: (newAnalysis) => {
-      router.push(`/${newAnalysis.id}`);
+  const createAnalysisMutation = useCreateChat({
+    onSuccess: (newChat) => {
+      router.push(`/${newChat.id}`);
     },
     onError: (error) => {
       console.error("Failed to create analysis:", error);

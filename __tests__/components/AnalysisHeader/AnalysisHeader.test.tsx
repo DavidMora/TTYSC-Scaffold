@@ -1,7 +1,7 @@
 import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import AnalysisHeader from "@/components/AnalysisHeader/AnalysisHeader";
-import { Analysis } from "@/lib/types/analysis";
+import { Chat } from "@/lib/types/chats";
 
 const mockPush = jest.fn();
 
@@ -95,11 +95,11 @@ const mockMutate = jest.fn();
 const mockUseCreateAnalysis = jest.fn();
 
 interface UseCreateAnalysisOptions {
-  onSuccess?: (data: Analysis) => void;
+  onSuccess?: (data: Chat) => void;
 }
 
-jest.mock("@/hooks/useAnalysis", () => ({
-  useCreateAnalysis: (options: UseCreateAnalysisOptions) =>
+jest.mock("@/hooks/chats", () => ({
+  useCreateChat: (options: UseCreateAnalysisOptions) =>
     mockUseCreateAnalysis(options),
 }));
 
@@ -130,12 +130,14 @@ describe("Analysis Header", () => {
 
   it("should call onFiltersReset and navigate on successful analysis creation", async () => {
     const mockOnFiltersReset = jest.fn();
-    const mockAnalysisData: Analysis = {
+    const mockAnalysisData: Chat = {
       id: "test-analysis-id",
-      name: "Test Analysis",
+      title: "Test Analysis",
+      date: "2021-01-01",
+      messages: [],
     };
 
-    let capturedOnSuccess: ((data: Analysis) => void) | undefined;
+    let capturedOnSuccess: ((data: Chat) => void) | undefined;
     mockUseCreateAnalysis.mockImplementation((options) => {
       capturedOnSuccess = options.onSuccess;
       return {

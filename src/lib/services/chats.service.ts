@@ -1,11 +1,13 @@
 import { apiClient } from "@/lib/api";
 import { HttpClientResponse } from "@/lib/types/api/http-client";
-import { CHATS, CHAT } from "@/lib/constants/api/routes";
+import { CHATS, CHAT, CHAT_MESSAGE } from "@/lib/constants/api/routes";
 import {
   ChatResponse,
   ChatsResponse,
-  CreateChatRequest,
+  CreateChatMessageRequest,
+  BotResponse,
   UpdateChatRequest,
+  Chat,
 } from "@/lib/types/chats";
 
 export const getChats = async (): Promise<
@@ -20,20 +22,24 @@ export const getChat = async (
   return await apiClient.get<ChatResponse>(CHAT(id));
 };
 
-export const createChat = async (
-  payload: CreateChatRequest
-): Promise<HttpClientResponse<ChatResponse>> => {
-  return await apiClient.post<ChatResponse>(CHATS, payload);
+export const createChat = async (): Promise<HttpClientResponse<Chat>> => {
+  return await apiClient.post<Chat>(CHATS);
 };
 
 export const updateChat = async (
   payload: UpdateChatRequest
-): Promise<HttpClientResponse<ChatResponse>> => {
-  return await apiClient.patch<ChatResponse>(CHAT(payload.id), payload);
+): Promise<HttpClientResponse<Chat>> => {
+  return await apiClient.patch<Chat>(CHAT(payload.id), payload);
 };
 
 export const deleteChat = async (
   id: string
 ): Promise<HttpClientResponse<void>> => {
   return await apiClient.delete<void>(CHAT(id));
+};
+
+export const createChatMessage = async (
+  payload: CreateChatMessageRequest
+): Promise<HttpClientResponse<BotResponse>> => {
+  return await apiClient.post<BotResponse>(CHAT_MESSAGE, payload);
 };

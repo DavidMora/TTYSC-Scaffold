@@ -8,7 +8,7 @@ import {
   InputDomRef,
 } from "@ui5/webcomponents-react";
 import { ConfirmationModal } from "../Modal/ConfirmationModal";
-import { useRenameAnalysis } from "@/hooks/useAnalysis";
+import { useRenameChat } from "@/hooks/chats";
 
 interface AnalysisRenamingProps {
   analysisName: string;
@@ -29,9 +29,9 @@ export const AnalysisRenaming: React.FC<AnalysisRenamingProps> = ({
   const [editingValue, setEditingValue] = useState("");
   const [showValidationModal, setShowValidationModal] = useState(false);
 
-  const { mutate: renameAnalysis, isLoading } = useRenameAnalysis({
+  const { mutate: renameAnalysis, isLoading } = useRenameChat({
     onSuccess: (data) => {
-      onNameChange(data.name);
+      onNameChange(data.title);
       setEditingValue("");
       setIsEditing(false);
     },
@@ -64,7 +64,7 @@ export const AnalysisRenaming: React.FC<AnalysisRenamingProps> = ({
       return;
     }
     if (analysisId) {
-      await renameAnalysis({ id: analysisId, data: { name: trimmedValue } });
+      await renameAnalysis({ id: analysisId, data: { title: trimmedValue } });
     }
   };
 

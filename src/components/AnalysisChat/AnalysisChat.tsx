@@ -1,24 +1,89 @@
 "use client";
 
-import {
-  TextArea,
-  Button,
-  FlexBox,
-  Avatar,
-  Text,
-} from "@ui5/webcomponents-react";
+import React, { useEffect, useRef, useState } from "react";
+import { ChatMessage, CreateChatMessageRequest } from "@/lib/types/chats";
+import { useSendChatMessage } from "@/hooks/chats";
+import { MessageBubble } from "@/components/AnalysisChat/MessageBubble";
+import { ChatInput } from "@/components/AnalysisChat/ChatInput";
 
-export default function AnalysisChat() {
-  const messages = [
-    {
-      id: 1,
-      type: "user",
-      initials: "DA",
-      sender: "Daniel",
-      timestamp: "7/22/2024, 14:56",
-      content: "This is a sample user message to show the format.",
+interface AnalysisChatProps {
+  chatId: string;
+  previousMessages: ChatMessage[];
+}
+
+export default function AnalysisChat({
+  chatId,
+  previousMessages,
+}: Readonly<AnalysisChatProps>) {
+  const messagesContainerRef = useRef<HTMLDivElement | null>(null);
+
+  const scrollToBottom = () => {
+    setTimeout(() => {
+      if (messagesContainerRef.current) {
+        messagesContainerRef.current.scrollTop =
+          messagesContainerRef.current.scrollHeight;
+      }
+    }, 50);
+  };
+
+  const [messages, setMessages] = useState<ChatMessage[]>(previousMessages);
+
+  useEffect(() => {
+    setMessages(previousMessages);
+  }, [previousMessages]);
+
+  const addMessage = (
+    content: string,
+    role: "user" | "assistant",
+    title?: string
+  ) => {
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: Date.now().toString(),
+        role,
+        created: new Date().toLocaleString(),
+        title,
+        content,
+      },
+    ]);
+  };
+
+  const { mutate, isLoading } = useSendChatMessage({
+    onSuccess: (botMsg) => {
+      const content = botMsg?.choices?.[0]?.message?.content || "";
+      const role = botMsg?.choices?.[0]?.message?.role || "assistant";
+      const title = botMsg?.choices?.[0]?.message?.title || "";
+      addMessage(content, role, title);
+      scrollToBottom();
     },
-  ];
+    onError: () => {
+      addMessage("Error: There was an error sending the message.", "assistant");
+      scrollToBottom();
+    },
+  });
+
+  const handleSendMessage = (input: string) => {
+    if (input.trim()) {
+      addMessage(input, "user");
+
+      const conversationHistory: CreateChatMessageRequest["messages"] = [
+        ...messages.map((msg) => ({
+          role: msg.role,
+          content: msg.content,
+        })),
+        { role: "user", content: input },
+      ];
+
+      mutate({
+        messages: conversationHistory,
+        use_knowledge_base: true,
+        chatId: chatId,
+      });
+
+      scrollToBottom();
+    }
+  };
 
   return (
     <div
@@ -32,108 +97,17 @@ export default function AnalysisChat() {
       }}
     >
       {/* Message area with overflow */}
-      <div style={{ flex: 1, overflow: "auto", padding: "1rem 0" }}>
+      <div
+        ref={messagesContainerRef}
+        style={{ flex: 1, overflow: "auto", padding: "1rem 1.5rem" }}
+      >
         {messages.map((msg) => (
-          <div
-            key={msg.id}
-            style={{
-              display: "flex",
-              justifyContent: "flex-end",
-              margin: "1rem 0 0 0",
-            }}
-          >
-            <div
-              style={{
-                maxWidth: "70%",
-                backgroundColor: "var(--sapAccentBackgroundColor10)",
-                borderRadius: "16px",
-                border: "1px solid #D5D7DA",
-                padding: "10px 14px",
-                color: "black",
-              }}
-            >
-              <FlexBox
-                alignItems={"Center"}
-                style={{ marginBottom: "7px", gap: "10px" }}
-              >
-                <Avatar
-                  initials={msg.initials}
-                  size="XS"
-                  style={{
-                    backgroundColor: "#5B738B80",
-                    color: "white",
-                    fontSize: "var(--sapFontSize)",
-                  }}
-                />
-                <div>
-                  <Text
-                    style={{
-                      fontWeight: "700",
-                      fontSize: "var(--sapFontHeader5Size)",
-                      color: "black",
-                      display: "block",
-                    }}
-                  >
-                    {msg.sender}
-                  </Text>
-                  <Text
-                    style={{
-                      fontSize: "var(--sapFontSmallSize)",
-                      display: "block",
-                    }}
-                  >
-                    {msg.timestamp}
-                  </Text>
-                </div>
-              </FlexBox>
-              <Text
-                style={{
-                  fontSize: "var(--sapFontSize)",
-                  fontWeight: "400",
-                }}
-              >
-                {msg.content}
-              </Text>
-            </div>
-          </div>
+          <MessageBubble key={msg.id} message={msg} />
         ))}
       </div>
+
       {/* Input */}
-      <div
-        style={{
-          width: "100%",
-          background: "white",
-          zIndex: 10,
-          padding: "0.5rem 0",
-        }}
-      >
-        <div
-          style={{
-            position: "relative",
-            width: "98%",
-            margin: "0 auto",
-            display: "flex",
-            alignItems: "center",
-          }}
-        >
-          <TextArea
-            placeholder="Write your lines here"
-            style={{
-              width: "100%",
-              paddingRight: "0.5rem",
-            }}
-          />
-          <Button
-            icon="paper-plane"
-            style={{
-              width: "32px",
-              height: "26px",
-              color: "var(--sapButton_Emphasized_TextColor)",
-              background: "var(--sapButton_Emphasized_Background_Color)",
-            }}
-          />
-        </div>
-      </div>
+      <ChatInput onSendMessage={handleSendMessage} isLoading={isLoading} />
     </div>
   );
 }
