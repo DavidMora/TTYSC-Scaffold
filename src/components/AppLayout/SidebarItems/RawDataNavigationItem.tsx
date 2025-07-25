@@ -6,6 +6,8 @@ import {
   Select,
   Option,
   Label,
+  Card,
+  CardHeader,
 } from "@ui5/webcomponents-react";
 import { useState } from "react";
 
@@ -188,6 +190,18 @@ export default function RawDataNavigationItem({
             </Select>
           </FlexBox>
         ))}
+        <Card
+          className="w-full"
+          header={
+            <CardHeader
+              additionalText="view"
+              titleText="Demand During Lead Time"
+              subtitleText="Here you can expand the table for you to see the full display of it "
+            />
+          }
+        >
+          {/* <Text>Card Content</Text> */}
+        </Card>
       </FlexBox>
     </SideNavigationItem>
   );
