@@ -1,5 +1,5 @@
 import React from "react";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom";
 
 jest.mock("@/hooks/settings", () => ({
@@ -47,11 +47,8 @@ describe("SettingsNavigationItem", () => {
 
   it("calls the radio button handler on click (Yes)", () => {
     render(<SettingsNavigationItem />);
-    const radioButtons = screen.getAllByTestId("ui5-radio-button");
-    const yesRadio = radioButtons.find(
-      (r) => r.nextSibling?.textContent === "Yes"
-    );
-    fireEvent.click(yesRadio!);
+    const yesRadio = screen.getByRole("radio", { name: "Yes" });
+    fireEvent.click(yesRadio);
     expect(mockUpdateSettings).toHaveBeenCalledTimes(1);
     expect(mockUpdateSettings).toHaveBeenCalledWith(
       expect.objectContaining({ hideIndexTable: true })
@@ -84,7 +81,12 @@ describe("SettingsNavigationItem", () => {
     const switchElement = screen.getByRole("checkbox");
     fireEvent.click(switchElement);
     // Wait for async update
-    await new Promise((r) => setTimeout(r, 0));
+    await waitFor(() => {
+      expect(console.error).toHaveBeenCalledWith(
+        "Failed to update settings:",
+        "fail"
+      );
+    });
     expect(console.error).toHaveBeenCalledWith(
       "Failed to update settings:",
       "fail"

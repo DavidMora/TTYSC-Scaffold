@@ -1,7 +1,6 @@
 import { dataFetcher } from "@/lib/api";
 import { getSettings } from "@/lib/services/settings.service";
-
-const SETTINGS_KEY = "settings";
+import { SETTINGS_KEY } from "@/lib/constants/cache-keys";
 
 export const useSettings = () => {
   const fetcher = dataFetcher.fetchData(SETTINGS_KEY, getSettings);

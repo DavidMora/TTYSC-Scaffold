@@ -30,4 +30,18 @@ describe("settings.service", () => {
     expect(apiClient.patch).toHaveBeenCalledWith(SETTINGS, settingsPayload);
     expect(result).toBe(mockResponse);
   });
+
+  it("getSettings handles API errors", async () => {
+    const mockError = new Error("API Error");
+    (apiClient.get as jest.Mock).mockRejectedValue(mockError);
+    await expect(getSettings()).rejects.toThrow("API Error");
+  });
+
+  it("updateSettings handles API errors", async () => {
+    const mockError = new Error("Update failed");
+    (apiClient.patch as jest.Mock).mockRejectedValue(mockError);
+    await expect(updateSettings({ shareChats: true })).rejects.toThrow(
+      "Update failed"
+    );
+  });
 });

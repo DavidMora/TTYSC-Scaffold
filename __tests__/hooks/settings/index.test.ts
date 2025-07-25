@@ -24,4 +24,23 @@ describe("useSettings hook", () => {
     expect(result.data).toEqual({ theme: "dark" });
     expect(result.isLoading).toBe(false);
   });
+
+  it("handles undefined data correctly", () => {
+    const mockFetcher = { data: undefined, isLoading: true };
+    (dataFetcher.fetchData as jest.Mock).mockReturnValue(mockFetcher);
+    const result = useSettings();
+    expect(result.data).toBeUndefined();
+    expect(result.isLoading).toBe(true);
+  });
+
+  it("handles error states", () => {
+    const mockFetcher = {
+      data: undefined,
+      isLoading: false,
+      error: new Error("Failed"),
+    };
+    (dataFetcher.fetchData as jest.Mock).mockReturnValue(mockFetcher);
+    const result = useSettings();
+    expect(result.error).toEqual(new Error("Failed"));
+  });
 });

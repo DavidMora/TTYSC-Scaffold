@@ -20,9 +20,14 @@ export default function SettingsNavigationItem() {
   } = useSettings();
 
   // Initialize state from settings when loaded
-  const [shareChatsEnabled, setShareChatsEnabled] = useState<boolean>(true);
-  const [hideTableIndex, setHideTableIndex] = useState<boolean>(false);
+  const [shareChatsEnabled, setShareChatsEnabled] = useState<boolean>(
+    settings?.shareChats ?? true
+  );
+  const [hideTableIndex, setHideTableIndex] = useState<boolean>(
+    settings?.hideIndexTable ?? false
+  );
   const [isUpdating, setIsUpdating] = useState(false);
+  const [updateError, setUpdateError] = useState<string | null>(null);
 
   useEffect(() => {
     if (settings) {
@@ -33,15 +38,14 @@ export default function SettingsNavigationItem() {
 
   const updateSettings = async (newSettings: UpdateSettingsRequest) => {
     setIsUpdating(true);
+    setUpdateError(null);
     try {
       const response = await updateSettingsService(newSettings);
       if (response.ok) {
         mutateSettings?.();
       } else {
-        console.error(
-          "Failed to update settings:",
-          response.statusText || undefined
-        );
+        setUpdateError("Failed to update settings");
+        console.error("Failed to update settings:", response.statusText);
       }
     } finally {
       setIsUpdating(false);
@@ -51,12 +55,12 @@ export default function SettingsNavigationItem() {
   const handleShareChatsToggle = () => {
     const newValue = !shareChatsEnabled;
     setShareChatsEnabled(newValue);
-    updateSettings({ ...settings, shareChats: newValue });
+    updateSettings({ ...(settings || {}), shareChats: newValue });
   };
 
   const handleTableIndexChange = (value: boolean) => {
     setHideTableIndex(value);
-    updateSettings({ ...settings, hideIndexTable: value });
+    updateSettings({ ...(settings || {}), hideIndexTable: value });
   };
 
   let content = null;
@@ -111,6 +115,11 @@ export default function SettingsNavigationItem() {
         {isUpdating && (
           <Label style={{ marginTop: "1rem", color: "#888" }}>
             Updating settings...
+          </Label>
+        )}
+        {updateError && (
+          <Label style={{ marginTop: "1rem", color: "red" }}>
+            {updateError}
           </Label>
         )}
       </FlexBox>

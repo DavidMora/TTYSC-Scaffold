@@ -29,11 +29,8 @@ describe("SettingsNavigationItem radio button No branch", () => {
 
   it("calls the radio button handler on click (No)", () => {
     render(<SettingsNavigationItem />);
-    const radioButtons = screen.getAllByTestId("ui5-radio-button");
-    const noRadio = radioButtons.find(
-      (r) => r.nextSibling?.textContent === "No"
-    );
-    fireEvent.click(noRadio!);
+    const noRadio = screen.getByRole("radio", { name: "No" });
+    fireEvent.click(noRadio);
     expect(mockUpdateSettings).toHaveBeenCalledTimes(1);
     expect(mockUpdateSettings).toHaveBeenCalledWith(
       expect.objectContaining({ hideIndexTable: false })
