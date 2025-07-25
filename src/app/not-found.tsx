@@ -60,6 +60,9 @@ export default function NotFound() {
           <Title level="H2" style={{ margin: "0" }}>
             Page Not Found
           </Title>
+          <Title level="H2" style={{ margin: "0" }}>
+            New title for testing
+          </Title>
           <Text style={{ maxWidth: "500px", textAlign: "center" }}>
             The page you are looking for doesn&apos;t exist or has been moved.
             Please check the URL or navigate back to continue using the
