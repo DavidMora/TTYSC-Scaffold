@@ -38,7 +38,10 @@ export default function SettingsNavigationItem() {
       if (response.ok) {
         mutateSettings?.();
       } else {
-        console.error("Failed to update settings:", response.statusText);
+        console.error(
+          "Failed to update settings:",
+          response.statusText || undefined
+        );
       }
     } finally {
       setIsUpdating(false);
