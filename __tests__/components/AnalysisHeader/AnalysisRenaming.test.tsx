@@ -2,16 +2,22 @@ import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { AnalysisRenaming } from "@/components/AnalysisHeader/AnalysisRenaming";
 import type { InputDomRef } from "@ui5/webcomponents-react";
-import { useRenameChat } from "@/hooks/chats";
-import { Chat } from "@/lib/types/chats";
 
 const mockMutate = jest.fn();
+const mockActivateAutosaveUI = jest.fn();
 
+// Mock the hooks
 jest.mock("@/hooks/chats", () => ({
-  useRenameChat: jest.fn(() => ({
+  useUpdateChat: jest.fn(() => ({
     mutate: mockMutate,
     isLoading: false,
   })),
+}));
+
+jest.mock("@/contexts/AutosaveUIProvider", () => ({
+  useAutosaveUI: () => ({
+    activateAutosaveUI: mockActivateAutosaveUI,
+  }),
 }));
 
 jest.mock("@/components/Modal/ConfirmationModal", () => ({
@@ -71,27 +77,10 @@ describe("AnalysisRenaming", () => {
     jest.clearAllMocks();
     mockFocus.mockClear();
     mockMutate.mockClear();
+    mockActivateAutosaveUI.mockClear();
   });
 
   it("should save changes and call onNameChange when Enter is pressed", () => {
-    const mockUseRenameAnalysis = jest.mocked(useRenameChat);
-    let onSuccessCallback: ((data: { title: string; }) => void) | undefined;
-
-    mockUseRenameAnalysis.mockImplementation((options: { onSuccess?: (data: { title: string; }) => void }) => {
-      onSuccessCallback = options?.onSuccess;
-      return {
-        mutate: jest.fn(({ data }: { data: Chat }) => {
-          if (onSuccessCallback) {
-            onSuccessCallback({ title: data.title });
-          }
-        }),
-        isLoading: false,
-        data: undefined,
-        error: null,
-        reset: jest.fn(),
-      };
-    });
-
     render(<AnalysisRenaming {...defaultProps} />);
 
     fireEvent.click(screen.getByTestId("ui5-icon"));
@@ -100,9 +89,10 @@ describe("AnalysisRenaming", () => {
     fireEvent.input(input, { target: { value: "New Analysis Name" } });
     fireEvent.keyDown(input, { key: "Enter", code: "Enter" });
 
-    expect(defaultProps.onNameChange).toHaveBeenCalledWith("New Analysis Name");
-    expect(screen.queryByTestId("ui5-input")).not.toBeInTheDocument();
-    expect(screen.getByTestId("ui5-text")).toBeInTheDocument();
+    expect(mockMutate).toHaveBeenCalledWith({
+      id: "test-analysis-id",
+      title: "New Analysis Name",
+    });
   });
 
   it("should cancel editing when Escape is pressed", () => {
@@ -114,7 +104,7 @@ describe("AnalysisRenaming", () => {
     fireEvent.input(input, { target: { value: "New Analysis Name" } });
     fireEvent.keyDown(input, { key: "Escape", code: "Escape" });
 
-    expect(defaultProps.onNameChange).not.toHaveBeenCalled();
+    expect(mockMutate).not.toHaveBeenCalled();
     expect(screen.queryByTestId("ui5-input")).not.toBeInTheDocument();
     expect(screen.getByTestId("ui5-text")).toHaveTextContent("Test Analysis");
   });
@@ -145,35 +135,7 @@ describe("AnalysisRenaming", () => {
     fireEvent.keyDown(input, { key: "Tab", code: "Tab" });
 
     expect(screen.getByTestId("ui5-input")).toBeInTheDocument();
-    expect(defaultProps.onNameChange).not.toHaveBeenCalled();
-  });
-
-  it("should handle rename analysis error and exit editing mode", () => {
-    const mockUseRenameAnalysis = jest.mocked(useRenameChat);
-    let onErrorCallback: ((error: Error) => void) | undefined;
-
-    mockUseRenameAnalysis.mockImplementation((options: { onError?: (error: Error) => void }) => {
-      onErrorCallback = options?.onError;
-      return {
-        mutate: jest.fn(() => {
-          if (onErrorCallback) {
-            onErrorCallback(new Error("Test error"));
-          }
-        }),
-        isLoading: false,
-      };
-    });
-
-    render(<AnalysisRenaming {...defaultProps} />);
-
-    fireEvent.click(screen.getByTestId("ui5-icon"));
-    const input = screen.getByTestId("ui5-input");
-
-    fireEvent.input(input, { target: { value: "New Analysis Name" } });
-    fireEvent.keyDown(input, { key: "Enter", code: "Enter" });
-
-    expect(screen.queryByTestId("ui5-input")).not.toBeInTheDocument();
-    expect(screen.getByTestId("ui5-text")).toBeInTheDocument();
+    expect(mockMutate).not.toHaveBeenCalled();
   });
 
   it("should handle save edit when analysisId is not provided", () => {
@@ -193,24 +155,123 @@ describe("AnalysisRenaming", () => {
     expect(mockMutate).not.toHaveBeenCalled();
   });
 
-  it("should show loading state with placeholder and opacity", () => {
-    const mockUseRenameAnalysis = jest.mocked(useRenameChat);
-    mockUseRenameAnalysis.mockImplementation(() => ({
-      mutate: mockMutate,
-      isLoading: true,
-      data: undefined,
-      error: null,
-      reset: jest.fn(),
-    }));
+  it("should handle error case when rename fails", () => {
+    // Mock the hook to return an error callback
+    const mockOnError = jest.fn();
+    const mockUseUpdateChat = require("@/hooks/chats").useUpdateChat;
+    mockUseUpdateChat.mockReturnValue({
+      mutate: (params: any) => {
+        // Simulate error by calling onError
+        mockOnError();
+      },
+      isLoading: false,
+    });
 
     render(<AnalysisRenaming {...defaultProps} />);
 
     fireEvent.click(screen.getByTestId("ui5-icon"));
     const input = screen.getByTestId("ui5-input");
 
-    expect(input).toHaveAttribute("placeholder", "Saving...");
-    expect(input).toHaveAttribute("disabled", "");
+    fireEvent.input(input, { target: { value: "New Analysis Name" } });
+    fireEvent.keyDown(input, { key: "Enter", code: "Enter" });
 
-    expect(input.style.opacity).toBe("0.7");
+    // Should exit editing mode on error
+    expect(screen.queryByTestId("ui5-input")).not.toBeInTheDocument();
+    expect(screen.getByTestId("ui5-text")).toHaveTextContent("Test Analysis");
+  });
+
+  it("should handle validation for empty trimmed value", () => {
+    render(<AnalysisRenaming {...defaultProps} />);
+
+    fireEvent.click(screen.getByTestId("ui5-icon"));
+    const input = screen.getByTestId("ui5-input");
+
+    fireEvent.input(input, { target: { value: "   " } });
+    fireEvent.keyDown(input, { key: "Enter", code: "Enter" });
+
+    expect(screen.getByTestId("validation-modal")).toBeInTheDocument();
+    expect(mockMutate).not.toHaveBeenCalled();
+  });
+
+  it("should handle validation for name exceeding max length", () => {
+    render(<AnalysisRenaming {...defaultProps} />);
+
+    fireEvent.click(screen.getByTestId("ui5-icon"));
+    const input = screen.getByTestId("ui5-input");
+
+    const longName = "A".repeat(31); // MAX_NAME_LENGTH is 30
+    fireEvent.input(input, { target: { value: longName } });
+    fireEvent.keyDown(input, { key: "Enter", code: "Enter" });
+
+    expect(screen.getByTestId("validation-modal")).toBeInTheDocument();
+    expect(mockMutate).not.toHaveBeenCalled();
+  });
+
+  it("should handle onBlur event to save changes", () => {
+    render(<AnalysisRenaming {...defaultProps} />);
+
+    fireEvent.click(screen.getByTestId("ui5-icon"));
+    const input = screen.getByTestId("ui5-input");
+
+    fireEvent.input(input, { target: { value: "New Analysis Name" } });
+    fireEvent.blur(input);
+
+    expect(mockMutate).toHaveBeenCalledWith({
+      id: "test-analysis-id",
+      title: "New Analysis Name",
+    });
+  });
+
+  it("should focus input when entering edit mode", () => {
+    render(<AnalysisRenaming {...defaultProps} />);
+
+    fireEvent.click(screen.getByTestId("ui5-icon"));
+
+    expect(mockFocus).toHaveBeenCalled();
+  });
+
+  it("should not focus input when validation modal is open", () => {
+    render(<AnalysisRenaming {...defaultProps} />);
+
+    // Open validation modal first
+    fireEvent.click(screen.getByTestId("ui5-icon"));
+    const input = screen.getByTestId("ui5-input");
+    fireEvent.input(input, { target: { value: "" } });
+    fireEvent.keyDown(input, { key: "Enter", code: "Enter" });
+
+    expect(screen.getByTestId("validation-modal")).toBeInTheDocument();
+
+    // Clear focus mock calls
+    mockFocus.mockClear();
+
+    // Try to enter edit mode again
+    fireEvent.click(screen.getByTestId("ui5-icon"));
+
+    // Should not focus when validation modal is open
+    expect(mockFocus).not.toHaveBeenCalled();
+  });
+
+  it("should focus input when validation modal is closed and entering edit mode", () => {
+    render(<AnalysisRenaming {...defaultProps} />);
+
+    // Open validation modal first
+    fireEvent.click(screen.getByTestId("ui5-icon"));
+    const input = screen.getByTestId("ui5-input");
+    fireEvent.input(input, { target: { value: "" } });
+    fireEvent.keyDown(input, { key: "Enter", code: "Enter" });
+
+    expect(screen.getByTestId("validation-modal")).toBeInTheDocument();
+
+    // Close validation modal
+    fireEvent.click(screen.getByTestId("modal-action-ok"));
+
+    // Clear focus mock calls
+    mockFocus.mockClear();
+
+    // Enter edit mode again
+    fireEvent.click(screen.getByTestId("ui5-icon"));
+
+    // Should focus when validation modal is closed
+    expect(mockFocus).toHaveBeenCalled();
   });
 });

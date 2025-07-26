@@ -8,6 +8,7 @@ import {
   BotResponse,
   UpdateChatRequest,
   Chat,
+  CreateChatRequest,
 } from "@/lib/types/chats";
 
 export const getChats = async (): Promise<
@@ -22,8 +23,10 @@ export const getChat = async (
   return await apiClient.get<ChatResponse>(CHAT(id));
 };
 
-export const createChat = async (): Promise<HttpClientResponse<Chat>> => {
-  return await apiClient.post<Chat>(CHATS);
+export const createChat = async (
+  payload: CreateChatRequest
+): Promise<HttpClientResponse<Chat>> => {
+  return await apiClient.post<Chat>(CHATS, payload);
 };
 
 export const updateChat = async (

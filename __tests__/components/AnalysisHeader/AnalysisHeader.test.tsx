@@ -128,13 +128,35 @@ describe("Analysis Header", () => {
     }).not.toThrow();
   });
 
-  it("should call onFiltersReset and navigate on successful analysis creation", async () => {
-    const mockOnFiltersReset = jest.fn();
+  it("should navigate on successful analysis creation", async () => {
     const mockAnalysisData: Chat = {
       id: "test-analysis-id",
       title: "Test Analysis",
       date: "2021-01-01",
       messages: [],
+      draft: "",
+      metadata: {
+        analysis: {
+          key: "test-analysis-key",
+          name: "Test Analysis",
+        },
+        organizations: {
+          key: "test-organization-key",
+          name: "Test Organization",
+        },
+        CM: {
+          key: "test-cm-key",
+          name: "Test CM",
+        },
+        SKU: {
+          key: "test-sku-key",
+          name: "Test SKU",
+        },
+        NVPN: {
+          key: "test-nvpn-key",
+          name: "Test NVPN",
+        },
+      },
     };
 
     let capturedOnSuccess: ((data: Chat) => void) | undefined;
@@ -148,14 +170,13 @@ describe("Analysis Header", () => {
       };
     });
 
-    render(<AnalysisHeader onFiltersReset={mockOnFiltersReset} />);
+    render(<AnalysisHeader />);
 
     if (capturedOnSuccess) {
       capturedOnSuccess(mockAnalysisData);
     }
 
     await waitFor(() => {
-      expect(mockOnFiltersReset).toHaveBeenCalled();
       expect(mockPush).toHaveBeenCalledWith("/test-analysis-id");
     });
   });

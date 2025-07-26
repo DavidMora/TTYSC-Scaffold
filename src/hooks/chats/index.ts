@@ -6,7 +6,13 @@ import {
   updateChat,
   createChatMessage,
 } from "@/lib/services/chats.service";
-import { BotResponse, Chat, CreateChatMessageRequest } from "@/lib/types/chats";
+import {
+  BotResponse,
+  Chat,
+  CreateChatMessageRequest,
+  CreateChatRequest,
+  UpdateChatRequest,
+} from "@/lib/types/chats";
 import { useMutation } from "../useMutation";
 
 export const CHATS_KEY = "chatHistory";
@@ -31,7 +37,7 @@ export const useCreateChat = ({
   onSuccess?: (data: Chat) => void;
   onError?: (error: Error) => void;
 }) => {
-  return useMutation(() => createChat(), {
+  return useMutation((payload: CreateChatRequest) => createChat(payload), {
     invalidateQueries: [CHATS_KEY],
     onSuccess: (data) => {
       onSuccess?.(data.data);
@@ -42,26 +48,22 @@ export const useCreateChat = ({
   });
 };
 
-export const useRenameChat = ({
+export const useUpdateChat = ({
   onSuccess,
   onError,
 }: {
-  onSuccess?: (data: { title: string }) => void;
+  onSuccess?: (data: Chat) => void;
   onError?: (error: Error) => void;
 }) => {
-  return useMutation(
-    ({ id, data }: { id: string; data: { title: string } }) =>
-      updateChat({ id, title: data.title }),
-    {
-      invalidateQueries: [CHATS_KEY],
-      onSuccess: (data) => {
-        onSuccess?.(data.data);
-      },
-      onError: (error) => {
-        onError?.(error);
-      },
-    }
-  );
+  return useMutation((payload: UpdateChatRequest) => updateChat(payload), {
+    invalidateQueries: [CHATS_KEY],
+    onSuccess: (data) => {
+      onSuccess?.(data.data);
+    },
+    onError: (error) => {
+      onError?.(error);
+    },
+  });
 };
 
 export const useSendChatMessage = ({

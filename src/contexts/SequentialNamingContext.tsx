@@ -61,16 +61,28 @@ interface SequentialNamingProviderProps {
 export const SequentialNamingProvider: React.FC<
   SequentialNamingProviderProps
 > = ({ children }) => {
-  const [counter, setCounter] = useState(1);
+  const getInitialCounter = (): number => {
+    if (typeof window !== "undefined") {
+      const savedCounter = localStorage.getItem("sequentialNamingCounter");
+      if (savedCounter) {
+        const parsedCounter = parseInt(savedCounter, 10);
+        if (!isNaN(parsedCounter)) {
+          return parsedCounter;
+        }
+      }
+    }
+    return 1;
+  };
+
+  const [counter, setCounter] = useState(getInitialCounter);
 
   const generateAnalysisName = useCallback((): string => {
-    let nameWithOrdinal = "";
-    setCounter((currentCounter) => {
-      nameWithOrdinal = generateNameString(currentCounter, "Analysis");
-      return currentCounter + 1;
-    });
+    const nameWithOrdinal = generateNameString(counter, "Analysis");
+    const newCounter = counter + 1;
+    setCounter(newCounter);
+    localStorage.setItem("sequentialNamingCounter", newCounter.toString());
     return nameWithOrdinal;
-  }, []);
+  }, [counter]);
 
   const value: SequentialNamingContextType = useMemo(
     () => ({
