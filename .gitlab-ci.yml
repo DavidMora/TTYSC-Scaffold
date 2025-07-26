@@ -1,0 +1,114 @@
+# ---
+---
+# --- Global Pipeline Creation Rules ---
+# This 'workflow' block controls which pipelines are created,
+# preventing duplicates.
+workflow:
+  rules:
+    # Rule 1: Run for merge requests.
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    # Rule 2: Run for pushes to 'main' or 'dev' branches.
+    - if: '$CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "dev"'
+    # Rule 3: Run for scheduled pipelines.
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+
+# --- Define Pipeline Stages ---
+stages:
+  - pre-commit
+  - build
+  - unittests
+  - deploy
+  - cleanup
+
+# --- Global Defaults ---
+default:
+  artifacts:
+    expire_in: 1 week
+  interruptible: true
+
+# --- Stage 1: Install & Lint ---
+install-deps:
+  stage: pre-commit
+  tags:
+    - ttysc-runner-latest
+  image: node:22
+  script:
+    - corepack enable
+    - yarn install --immutable
+  rules:
+    - if: |
+        $CI_PIPELINE_SOURCE == "push" ||
+        $CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+
+lint:
+  stage: pre-commit
+  tags:
+    - ttysc-runner-latest
+  image: node:22
+  script:
+    - yarn lint
+  needs:
+    - install-deps
+  rules:
+    - if: |
+        $CI_PIPELINE_SOURCE == "push" ||
+        $CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+# --- Stage 2: Build ---
+build-app:
+  stage: build
+  tags:
+    - ttysc-runner-latest
+  image: node:22
+  script:
+    - yarn build
+  needs: [install-deps]
+  rules:
+    - if: |
+        $CI_COMMIT_BRANCH == "main" ||
+        $CI_PIPELINE_SOURCE == "merge_request_event"'
+
+# --- Stage 3: Unit Tests ---
+test:
+  stage: unittests
+  tags:
+    - ttysc-runner-latest
+  image: node:22
+  script:
+    - yarn test
+  needs:
+    - install-deps
+  rules:
+    - if: |
+        $CI_PIPELINE_SOURCE == "push" ||
+        $CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+
+# --- Stage 4: Deploy (Placeholder) ---
+deploy:
+  stage: deploy
+  tags:
+    - ttysc-runner-latest
+  image: node:22
+  script:
+    - echo "Placeholder for deploy. Add your deployment steps here (e.g.,"
+    - echo "Vercel CLI,)"
+    - echo "custom script, etc."
+  needs: [build-app]
+  rules:
+    - if: |
+        $CI_COMMIT_BRANCH == "main" &&
+        $CI_COMMIT_MESSAGE =~ /deploy/'
+
+# --- Stage 5: Cleanup (Optional) ---
+cleanup:
+  stage: cleanup
+  tags:
+    - ttysc-runner-latest
+  image: node:22
+  script:
+    - echo "Placeholder for cleanup."
+    - echo "Add cleanup steps if needed."
+  rules:
+    - when: always
