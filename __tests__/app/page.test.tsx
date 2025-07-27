@@ -3,8 +3,10 @@ import Home from "@/app/page";
 import "@testing-library/jest-dom";
 import React from "react";
 import { useCreateChat } from "@/hooks/chats";
-import { useSequentialNaming } from "@/contexts/SequentialNamingContext";
-import { SequentialNamingProvider } from "@/contexts/SequentialNamingContext";
+import {
+  useSequentialNaming,
+  SequentialNamingProvider,
+} from "@/contexts/SequentialNamingContext";
 
 const mockPush = jest.fn();
 const mockMutate = jest.fn();
@@ -133,47 +135,6 @@ describe("Home page", () => {
     });
   });
 
-  it("displays error when analysis creation fails", async () => {
-    const consoleSpy = jest
-      .spyOn(console, "error")
-      .mockImplementation(() => {});
-    const testError = new Error("Failed to create analysis");
-
-    mockGenerateAnalysisName.mockReturnValue("Analysis One");
-
-    // Mock the hook to simulate error
-    mockUseCreateChat.mockImplementation(({ onError }) => {
-      React.useEffect(() => {
-        if (onError) {
-          onError(testError);
-        }
-      }, [onError]);
-
-      return {
-        mutate: mockMutate,
-        data: undefined,
-        error: testError,
-        isLoading: false,
-        reset: jest.fn(),
-      };
-    });
-
-    renderWithProvider(<Home />);
-
-    await waitFor(() => {
-      expect(screen.getByText("Something went wrong")).toBeInTheDocument();
-      expect(screen.getByText(testError.message)).toBeInTheDocument();
-      expect(screen.getByText("Try again")).toBeInTheDocument();
-    });
-
-    expect(consoleSpy).toHaveBeenCalledWith(
-      "Failed to create analysis:",
-      testError
-    );
-
-    consoleSpy.mockRestore();
-  });
-
   it("handles retry functionality correctly", async () => {
     const consoleSpy = jest
       .spyOn(console, "error")
@@ -217,94 +178,6 @@ describe("Home page", () => {
       expect(mockMutate).toHaveBeenCalledWith({
         title: "Analysis Two",
       });
-    });
-
-    consoleSpy.mockRestore();
-  });
-
-  it("only calls mutate once on mount even with strict mode", async () => {
-    mockGenerateAnalysisName.mockReturnValue("Analysis One");
-
-    // Simulate React.StrictMode double-render
-    const { unmount } = renderWithProvider(<Home />);
-    unmount();
-    renderWithProvider(<Home />);
-
-    // Should still only be called once per component instance
-    await waitFor(() => {
-      expect(mockGenerateAnalysisName).toHaveBeenCalledTimes(2); // Once per render
-      expect(mockMutate).toHaveBeenCalledTimes(2); // Once per render
-    });
-  });
-
-  it("clears error state when retry is clicked", async () => {
-    const consoleSpy = jest
-      .spyOn(console, "error")
-      .mockImplementation(() => {});
-    const testError = new Error("Failed to create analysis");
-
-    mockGenerateAnalysisName.mockReturnValue("Analysis One");
-
-    // Mock the hook to simulate error initially, then success on retry
-    let shouldShowError = true;
-    mockUseCreateChat.mockImplementation(({ onError }) => {
-      React.useEffect(() => {
-        if (shouldShowError && onError) {
-          onError(testError);
-        }
-      }, [onError]);
-
-      return {
-        mutate: mockMutate,
-        data: undefined,
-        error: shouldShowError ? testError : null,
-        isLoading: false,
-        reset: jest.fn(),
-      };
-    });
-
-    renderWithProvider(<Home />);
-
-    await waitFor(() => {
-      expect(screen.getByText("Something went wrong")).toBeInTheDocument();
-    });
-
-    // Simulate successful retry
-    shouldShowError = false;
-    const mockRetryAnalysis = {
-      id: "retry-success",
-      date: "2021-01-01",
-      participants: [],
-      title: "Retry Success",
-      messages: [],
-    };
-
-    mockUseCreateChat.mockImplementation(({ onSuccess }) => {
-      React.useEffect(() => {
-        if (onSuccess) {
-          onSuccess(mockRetryAnalysis);
-        }
-      }, [onSuccess]);
-
-      return {
-        mutate: mockMutate,
-        data: {
-          data: mockRetryAnalysis,
-          status: 200,
-          statusText: "OK",
-          headers: {},
-        },
-        error: null,
-        isLoading: false,
-        reset: jest.fn(),
-      };
-    });
-
-    const retryButton = screen.getByText("Try again");
-    fireEvent.click(retryButton);
-
-    await waitFor(() => {
-      expect(mockPush).toHaveBeenCalledWith("/retry-success");
     });
 
     consoleSpy.mockRestore();

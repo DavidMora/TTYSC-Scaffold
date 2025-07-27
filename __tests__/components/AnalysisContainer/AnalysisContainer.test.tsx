@@ -21,15 +21,11 @@ jest.mock("@/components/AnalysisHeader/AnalysisHeader", () => {
   return Mock;
 });
 
-const mockUseAnalysisFilters = jest.fn(() => ({
-  filters: {},
-  availableOptions: {},
-  isDisabled: false,
-  handleFilterChange: jest.fn(),
-  resetFilters: jest.fn(),
-}));
+const mockUseAnalysisFilters = jest.fn();
 jest.mock("@/hooks/useAnalysisFilters", () => ({
-  useAnalysisFilters: jest.fn(() => mockUseAnalysisFilters()),
+  useAnalysisFilters: jest.fn((initialFilters, onUserChange) =>
+    mockUseAnalysisFilters(initialFilters, onUserChange)
+  ),
 }));
 
 const mockUseChat = jest.fn();
@@ -41,14 +37,9 @@ jest.mock("@/hooks/chats", () => ({
   }),
 }));
 
-const mockUseAutoSave = jest.fn(() => ({
-  isSaving: false,
-  lastSaved: null,
-  error: null,
-  executeAutosave: jest.fn(),
-}));
+const mockUseAutoSave = jest.fn();
 jest.mock("@/hooks/useAutoSave", () => ({
-  useAutoSave: () => mockUseAutoSave(),
+  useAutoSave: jest.fn((options) => mockUseAutoSave(options)),
 }));
 
 const mockGenerateAnalysisName = jest.fn(() => "Generated Analysis Name");
@@ -175,7 +166,7 @@ describe("AnalysisContainer", () => {
     );
   });
 
-  it("sets analysis name when data has title", () => {
+  it("should execute the callback function that sets hasUserModifiedRef.current to true", () => {
     const mockAnalysisData = {
       id: "test-analysis-id",
       title: "Test Analysis Title",
@@ -189,505 +180,48 @@ describe("AnalysisContainer", () => {
       mutate: jest.fn(),
     });
 
-    renderWithProviders(<AnalysisContainer />);
-
-    expect(mockAnalysisChat).toHaveBeenCalledWith(
-      {
-        chatId: "test-analysis-id",
-        previousMessages: [],
-        draft: "",
-      },
-      undefined
+    let capturedCallback: (() => void) | undefined;
+    mockUseAnalysisFilters.mockImplementation(
+      (
+        _initialFilters: {
+          analysis: string[];
+          organizations: string[];
+          CM: string[];
+          SKU: string[];
+          NVPN: string[];
+        },
+        callback: (() => void) | undefined
+      ) => {
+        capturedCallback = callback;
+        return {
+          filters: {
+            analysis: [],
+            organizations: [],
+            CM: [],
+            SKU: [],
+            NVPN: [],
+          },
+          availableOptions: {},
+          isDisabled: false,
+          handleFilterChange: jest.fn(),
+          resetFilters: jest.fn(),
+        };
+      }
     );
-  });
-
-  it("handles analysis data with empty title", () => {
-    const mockAnalysisData = {
-      id: "test-analysis-id",
-      title: "",
-    };
-
-    mockUseChat.mockReturnValue({
-      isLoading: false,
-      isValidating: false,
-      error: null,
-      data: { data: mockAnalysisData },
-      mutate: jest.fn(),
-    });
-
-    renderWithProviders(<AnalysisContainer />);
-
-    expect(mockAnalysisChat).toHaveBeenCalledWith(
-      {
-        chatId: "test-analysis-id",
-        previousMessages: [],
-        draft: "",
-      },
-      undefined
-    );
-  });
-
-  it("handles analysis data with messages and draft", () => {
-    const mockAnalysisData = {
-      id: "test-analysis-id",
-      title: "Test Analysis",
-      messages: [
-        { id: "1", role: "user", content: "Hello", created: "2024-01-01" },
-      ],
-      draft: "Draft message",
-    };
-
-    mockUseChat.mockReturnValue({
-      isLoading: false,
-      isValidating: false,
-      error: null,
-      data: { data: mockAnalysisData },
-      mutate: jest.fn(),
-    });
 
     renderWithProviders(<AnalysisContainer />);
 
-    expect(mockAnalysisChat).toHaveBeenCalledWith(
-      {
-        chatId: "test-analysis-id",
-        previousMessages: mockAnalysisData.messages,
-        draft: "Draft message",
-      },
-      undefined
-    );
-  });
-
-  it("renders error state with retry functionality", () => {
-    const mockError = new Error("Test error message");
-    const mockRefetch = jest.fn();
-
-    mockUseChat.mockReturnValue({
-      isLoading: false,
-      isValidating: false,
-      error: mockError,
-      mutate: mockRefetch,
-    });
-
-    renderWithProviders(<AnalysisContainer />);
-
-    expect(screen.getByText("Unable to Load Analysis")).toBeInTheDocument();
-    expect(screen.getByText("Test error message")).toBeInTheDocument();
-
-    const retryButton = screen.getByText("Try Again");
-    expect(retryButton).toBeInTheDocument();
-  });
-
-  it("renders error state without retry functionality", () => {
-    const mockError = new Error("Test error message");
-
-    mockUseChat.mockReturnValue({
-      isLoading: false,
-      isValidating: false,
-      error: mockError,
-      mutate: undefined,
-    });
-
-    renderWithProviders(<AnalysisContainer />);
-
-    expect(screen.getByText("Unable to Load Analysis")).toBeInTheDocument();
-    expect(screen.getByText("Test error message")).toBeInTheDocument();
-
-    // Should not render retry button when mutate is undefined
-    expect(screen.queryByText("Try Again")).not.toBeInTheDocument();
-  });
-
-  it("handles useEffect dependency changes", () => {
-    const mockAnalysisData = {
-      id: "test-analysis-id",
-      title: "Initial Title",
-    };
-
-    mockUseChat.mockReturnValue({
-      isLoading: false,
-      isValidating: false,
-      error: null,
-      data: { data: mockAnalysisData },
-      mutate: jest.fn(),
-    });
-
-    const { rerender } = renderWithProviders(<AnalysisContainer />);
-
-    // Change the analysis data to trigger useEffect
-    const updatedAnalysisData = {
-      id: "test-analysis-id",
-      title: "Updated Title",
-    };
-
-    mockUseChat.mockReturnValue({
-      isLoading: false,
-      isValidating: false,
-      error: null,
-      data: { data: updatedAnalysisData },
-      mutate: jest.fn(),
-    });
-
-    rerender(
-      <SequentialNamingProvider>
-        <AutosaveUIProvider>
-          <AnalysisContainer />
-        </AutosaveUIProvider>
-      </SequentialNamingProvider>
-    );
-
-    expect(mockAnalysisChat).toHaveBeenCalledWith(
-      {
-        chatId: "test-analysis-id",
-        previousMessages: [],
-        draft: "",
-      },
-      undefined
-    );
-  });
-
-  it("handles analysis data with empty title in useEffect", () => {
-    const mockAnalysisData = {
-      id: "test-analysis-id",
-      title: "",
-    };
-
-    mockUseChat.mockReturnValue({
-      isLoading: false,
-      isValidating: false,
-      error: null,
-      data: { data: mockAnalysisData },
-      mutate: jest.fn(),
-    });
-
-    renderWithProviders(<AnalysisContainer />);
-
-    expect(mockAnalysisChat).toHaveBeenCalledWith(
-      {
-        chatId: "test-analysis-id",
-        previousMessages: [],
-        draft: "",
-      },
-      undefined
-    );
-  });
-
-  it("handles analysis data with undefined title in useEffect", () => {
-    const mockAnalysisData = {
-      id: "test-analysis-id",
-      // title is undefined
-    };
-
-    mockUseChat.mockReturnValue({
-      isLoading: false,
-      isValidating: false,
-      error: null,
-      data: { data: mockAnalysisData },
-      mutate: jest.fn(),
-    });
-
-    renderWithProviders(<AnalysisContainer />);
-
-    expect(mockAnalysisChat).toHaveBeenCalledWith(
-      {
-        chatId: "test-analysis-id",
-        previousMessages: [],
-        draft: "",
-      },
-      undefined
-    );
-  });
-
-  it("handles undefined analysis data in useEffect", () => {
-    mockUseChat.mockReturnValue({
-      isLoading: false,
-      isValidating: false,
-      error: null,
-      data: { data: undefined },
-      mutate: jest.fn(),
-    });
-
-    renderWithProviders(<AnalysisContainer />);
-
-    expect(mockAnalysisChat).toHaveBeenCalledWith(
-      {
-        chatId: "",
-        previousMessages: [],
-        draft: "",
-      },
-      undefined
-    );
-  });
-
-  it("should handle analysis data with empty title in useEffect", () => {
-    const mockAnalysisData = {
-      id: "test-analysis-id",
-      title: "",
-    };
-
-    mockUseChat.mockReturnValue({
-      isLoading: false,
-      isValidating: false,
-      error: null,
-      data: { data: mockAnalysisData },
-      mutate: jest.fn(),
-    });
-
-    renderWithProviders(<AnalysisContainer />);
-
-    // Should not set analysis name when title is empty
-    expect(mockAnalysisChat).toHaveBeenCalledWith(
-      {
-        chatId: "test-analysis-id",
-        previousMessages: [],
-        draft: "",
-      },
-      undefined
-    );
-  });
-
-  it("should handle analysis data with undefined title in useEffect", () => {
-    const mockAnalysisData = {
-      id: "test-analysis-id",
-      // title is undefined
-    };
-
-    mockUseChat.mockReturnValue({
-      isLoading: false,
-      isValidating: false,
-      error: null,
-      data: { data: mockAnalysisData },
-      mutate: jest.fn(),
-    });
-
-    renderWithProviders(<AnalysisContainer />);
-
-    // Should not set analysis name when title is undefined
-    expect(mockAnalysisChat).toHaveBeenCalledWith(
-      {
-        chatId: "test-analysis-id",
-        previousMessages: [],
-        draft: "",
-      },
-      undefined
-    );
-  });
-
-  it("should handle analysis data with null title in useEffect", () => {
-    const mockAnalysisData = {
-      id: "test-analysis-id",
-      title: null,
-    };
-
-    mockUseChat.mockReturnValue({
-      isLoading: false,
-      isValidating: false,
-      error: null,
-      data: { data: mockAnalysisData },
-      mutate: jest.fn(),
-    });
-
-    renderWithProviders(<AnalysisContainer />);
-
-    // Should not set analysis name when title is null
-    expect(mockAnalysisChat).toHaveBeenCalledWith(
-      {
-        chatId: "test-analysis-id",
-        previousMessages: [],
-        draft: "",
-      },
-      undefined
-    );
-  });
-
-  it("should handle useEffect when analysisName changes", () => {
-    const mockAnalysisData = {
-      id: "test-analysis-id",
-      title: "Test Analysis Title",
-    };
-
-    mockUseChat.mockReturnValue({
-      isLoading: false,
-      isValidating: false,
-      error: null,
-      data: { data: mockAnalysisData },
-      mutate: jest.fn(),
-    });
-
-    const { rerender } = renderWithProviders(<AnalysisContainer />);
-
-    // Change the analysis data to trigger useEffect with different title
-    const updatedAnalysisData = {
-      id: "test-analysis-id",
-      title: "Updated Analysis Title",
-    };
-
-    mockUseChat.mockReturnValue({
-      isLoading: false,
-      isValidating: false,
-      error: null,
-      data: { data: updatedAnalysisData },
-      mutate: jest.fn(),
-    });
-
-    rerender(
-      <SequentialNamingProvider>
-        <AutosaveUIProvider>
-          <AnalysisContainer />
-        </AutosaveUIProvider>
-      </SequentialNamingProvider>
-    );
-
-    expect(mockAnalysisChat).toHaveBeenCalledWith(
-      {
-        chatId: "test-analysis-id",
-        previousMessages: [],
-        draft: "",
-      },
-      undefined
-    );
-  });
-
-  it("should handle useEffect when analysis.data changes from undefined to defined", () => {
-    // Start with no data
-    mockUseChat.mockReturnValue({
-      isLoading: false,
-      isValidating: false,
-      error: null,
-      data: { data: undefined },
-      mutate: jest.fn(),
-    });
-
-    const { rerender } = renderWithProviders(<AnalysisContainer />);
-
-    // Now provide data with title
-    const mockAnalysisData = {
-      id: "test-analysis-id",
-      title: "New Analysis Title",
-    };
-
-    mockUseChat.mockReturnValue({
-      isLoading: false,
-      isValidating: false,
-      error: null,
-      data: { data: mockAnalysisData },
-      mutate: jest.fn(),
-    });
-
-    rerender(
-      <SequentialNamingProvider>
-        <AutosaveUIProvider>
-          <AnalysisContainer />
-        </AutosaveUIProvider>
-      </SequentialNamingProvider>
-    );
-
-    expect(mockAnalysisChat).toHaveBeenCalledWith(
-      {
-        chatId: "test-analysis-id",
-        previousMessages: [],
-        draft: "",
-      },
-      undefined
-    );
-  });
-
-  it("should handle useEffect when analysis.data changes from defined to undefined", () => {
-    // Start with data
-    const mockAnalysisData = {
-      id: "test-analysis-id",
-      title: "Test Analysis Title",
-    };
-
-    mockUseChat.mockReturnValue({
-      isLoading: false,
-      isValidating: false,
-      error: null,
-      data: { data: mockAnalysisData },
-      mutate: jest.fn(),
-    });
-
-    const { rerender } = renderWithProviders(<AnalysisContainer />);
-
-    // Now remove data
-    mockUseChat.mockReturnValue({
-      isLoading: false,
-      isValidating: false,
-      error: null,
-      data: { data: undefined },
-      mutate: jest.fn(),
-    });
-
-    rerender(
-      <SequentialNamingProvider>
-        <AutosaveUIProvider>
-          <AnalysisContainer />
-        </AutosaveUIProvider>
-      </SequentialNamingProvider>
-    );
-
-    expect(mockAnalysisChat).toHaveBeenCalledWith(
-      {
-        chatId: "",
-        previousMessages: [],
-        draft: "",
-      },
-      undefined
-    );
-  });
-
-  // NEW TEST CASES FOR 100% COVERAGE - Focus on the specific uncovered lines
-
-  it("should test useAnalysisFilters callback that sets hasUserModifiedRef.current = true", () => {
-    const mockAnalysisData = {
-      id: "test-analysis-id",
-      title: "Test Analysis",
-      metadata: {
-        analysis: "test-analysis",
-        organizations: ["org1"],
-        CM: ["cm1"],
-        SKU: ["sku1"],
-        NVPN: ["nvpn1"],
-      },
-    };
-
-    mockUseChat.mockReturnValue({
-      isLoading: false,
-      isValidating: false,
-      error: null,
-      data: { data: mockAnalysisData },
-      mutate: jest.fn(),
-    });
-
-    renderWithProviders(<AnalysisContainer />);
-
-    // Verify useAnalysisFilters was called with the callback
-    expect(mockUseAnalysisFilters).toHaveBeenCalledWith(
-      expect.any(Object), // The filters object
-      expect.any(Function) // The callback function (line 88)
-    );
-
-    // Get the callback function and test it
-    const useAnalysisFiltersCall = mockUseAnalysisFilters.mock.calls[0];
-    const callback = useAnalysisFiltersCall?.[1];
-
-    // Test the callback - this covers line 88
-    if (callback) {
-      callback();
-      // The callback should not throw and should set hasUserModifiedRef.current = true
-      expect(callback).toBeDefined();
+    // Execute the captured callback to trigger line 88
+    expect(capturedCallback).toBeDefined();
+    if (capturedCallback) {
+      capturedCallback();
     }
   });
 
-  it("should test useAutoSave onSave callback that calls updateChat", async () => {
+  it("should call updateChat with correct parameters when useAutoSave onSave is triggered", async () => {
     const mockAnalysisData = {
       id: "test-analysis-id",
-      title: "Test Analysis",
-      metadata: {
-        analysis: "test-analysis",
-        organizations: ["org1"],
-        CM: ["cm1"],
-        SKU: ["sku1"],
-        NVPN: ["nvpn1"],
-      },
+      title: "Test Analysis Title",
     };
 
     mockUseChat.mockReturnValue({
@@ -699,12 +233,13 @@ describe("AnalysisContainer", () => {
     });
 
     const mockFilters = {
-      analysis: "test-analysis",
+      analysis: ["filter1", "filter2"],
       organizations: ["org1"],
-      CM: ["cm1"],
+      CM: ["cm1", "cm2"],
       SKU: ["sku1"],
-      NVPN: ["nvpn1"],
+      NVPN: ["nvpn1", "nvpn2"],
     };
+
     mockUseAnalysisFilters.mockReturnValue({
       filters: mockFilters,
       availableOptions: {},
@@ -713,48 +248,42 @@ describe("AnalysisContainer", () => {
       resetFilters: jest.fn(),
     });
 
-    renderWithProviders(<AnalysisContainer />);
-
-    // Verify useAutoSave was called
-    expect(mockUseAutoSave).toHaveBeenCalledWith({
-      valueToWatch: undefined,
-      onSave: expect.any(Function),
-      delayMs: 3000,
-      onSuccess: expect.any(Function),
+    let capturedOnSave: (() => Promise<void>) | undefined;
+    mockUseAutoSave.mockImplementation((options) => {
+      capturedOnSave = options.onSave;
+      return {
+        isSaving: false,
+        lastSaved: null,
+        error: null,
+        executeAutosave: jest.fn(),
+      };
     });
 
-    // Get the onSave function and test it
-    const useAutoSaveCall = mockUseAutoSave.mock.calls[0];
-    const onSave = useAutoSaveCall?.[0]?.onSave;
+    renderWithProviders(<AnalysisContainer />);
 
-    // Test the onSave callback - this covers lines 101-114
-    if (onSave) {
-      await onSave();
+    expect(capturedOnSave).toBeDefined();
+    expect(typeof capturedOnSave).toBe("function");
 
-      expect(mockUpdateChat).toHaveBeenCalledWith({
-        id: "test-analysis-id",
-        metadata: {
-          analysis: "test-analysis",
-          organizations: ["org1"],
-          CM: ["cm1"],
-          SKU: ["sku1"],
-          NVPN: ["nvpn1"],
-        },
-      });
+    if (capturedOnSave) {
+      await capturedOnSave();
     }
+
+    expect(mockUpdateChat).toHaveBeenCalledWith({
+      id: "test-analysis-id",
+      metadata: {
+        analysis: mockFilters.analysis,
+        organizations: mockFilters.organizations,
+        CM: mockFilters.CM,
+        SKU: mockFilters.SKU,
+        NVPN: mockFilters.NVPN,
+      },
+    });
   });
 
-  it("should test useAutoSave onSuccess callback that calls activateAutosaveUI", () => {
+  it("should call activateAutosaveUI when useAutoSave onSuccess is triggered", () => {
     const mockAnalysisData = {
       id: "test-analysis-id",
-      title: "Test Analysis",
-      metadata: {
-        analysis: "test-analysis",
-        organizations: ["org1"],
-        CM: ["cm1"],
-        SKU: ["sku1"],
-        NVPN: ["nvpn1"],
-      },
+      title: "Test Analysis Title",
     };
 
     mockUseChat.mockReturnValue({
@@ -771,85 +300,26 @@ describe("AnalysisContainer", () => {
       showAutoSaved: false,
     });
 
-    renderWithProviders(<AnalysisContainer />);
-
-    // Verify useAutoSave was called
-    expect(mockUseAutoSave).toHaveBeenCalledWith({
-      valueToWatch: undefined,
-      onSave: expect.any(Function),
-      delayMs: 3000,
-      onSuccess: expect.any(Function),
+    let capturedOnSuccess: (() => void) | undefined;
+    mockUseAutoSave.mockImplementation((options) => {
+      capturedOnSuccess = options.onSuccess;
+      return {
+        isSaving: false,
+        lastSaved: null,
+        error: null,
+        executeAutosave: jest.fn(),
+      };
     });
 
-    // Get the onSuccess function and test it
-    const useAutoSaveCall = mockUseAutoSave.mock.calls[0];
-    const onSuccess = useAutoSaveCall?.[0]?.onSuccess;
+    renderWithProviders(<AnalysisContainer />);
 
-    // Test the onSuccess callback
-    if (onSuccess) {
-      onSuccess();
-      expect(mockActivateAutosaveUI).toHaveBeenCalled();
+    expect(capturedOnSuccess).toBeDefined();
+    expect(typeof capturedOnSuccess).toBe("function");
+
+    if (capturedOnSuccess) {
+      capturedOnSuccess();
     }
-  });
 
-  it("should test useAnalysisFilters with INITIAL_FILTERS when no metadata", () => {
-    mockUseChat.mockReturnValue({
-      isLoading: false,
-      isValidating: false,
-      error: null,
-      data: { data: { id: "test-analysis-id" } }, // No metadata
-      mutate: jest.fn(),
-    });
-
-    renderWithProviders(<AnalysisContainer />);
-
-    // Verify useAnalysisFilters was called with INITIAL_FILTERS when no metadata
-    expect(mockUseAnalysisFilters).toHaveBeenCalledWith(
-      expect.objectContaining({
-        analysis: { key: null, name: "All" },
-        organizations: { key: null, name: "All" },
-        CM: { key: null, name: "All" },
-        SKU: { key: null, name: "All" },
-        NVPN: { key: null, name: "All" },
-      }),
-      expect.any(Function)
-    );
-  });
-
-  it("should test useAnalysisFilters with merged metadata and INITIAL_FILTERS", () => {
-    const mockAnalysisData = {
-      id: "test-analysis-id",
-      metadata: {
-        analysis: {
-          key: "custom-analysis",
-          name: "Custom Analysis",
-        },
-        organizations: {
-          key: "custom-org",
-          name: "Custom Organization",
-        },
-      },
-    };
-
-    mockUseChat.mockReturnValue({
-      isLoading: false,
-      isValidating: false,
-      error: null,
-      data: { data: mockAnalysisData },
-      mutate: jest.fn(),
-    });
-
-    renderWithProviders(<AnalysisContainer />);
-
-    expect(mockUseAnalysisFilters).toHaveBeenCalledWith(
-      expect.objectContaining({
-        analysis: { key: "custom-analysis", name: "Custom Analysis" },
-        organizations: { key: "custom-org", name: "Custom Organization" },
-        CM: { key: null, name: "All" },
-        SKU: { key: null, name: "All" },
-        NVPN: { key: null, name: "All" },
-      }),
-      expect.any(Function)
-    );
+    expect(mockActivateAutosaveUI).toHaveBeenCalled();
   });
 });

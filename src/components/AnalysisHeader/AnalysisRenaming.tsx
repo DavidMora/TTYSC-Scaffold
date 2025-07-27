@@ -105,7 +105,6 @@ export const AnalysisRenaming: React.FC<AnalysisRenamingProps> = ({
             onBlur={handleSaveEdit}
             maxlength={MAX_NAME_LENGTH}
             disabled={isLoading}
-            placeholder={isLoading ? "Saving..." : undefined}
             style={{
               width: `${Math.max(
                 editingValue.length || analysisName.length,
@@ -113,7 +112,6 @@ export const AnalysisRenaming: React.FC<AnalysisRenamingProps> = ({
               )}ch`,
               minWidth: `120px`,
               transition: "width 0.2s ease",
-              opacity: isLoading ? 0.7 : 1,
             }}
           />
         ) : (
