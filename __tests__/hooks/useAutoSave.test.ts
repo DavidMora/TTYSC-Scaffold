@@ -41,7 +41,7 @@ describe("useAutoSave", () => {
           useAutoSave({
             valueToWatch: value,
             onSave: mockOnSave,
-            delayMs: 100, // Usar delay corto para pruebas rápidas
+            delayMs: 100,
           }),
         { initialProps: { value: "initial" } }
       );
@@ -66,7 +66,7 @@ describe("useAutoSave", () => {
           useAutoSave({
             valueToWatch: value,
             onSave: mockOnSave,
-            delayMs: 200, // Delay más corto para pruebas
+            delayMs: 200,
           }),
         { initialProps: { value: "initial" } }
       );
@@ -110,22 +110,19 @@ describe("useAutoSave", () => {
           useAutoSave({
             valueToWatch: value,
             onSave: mockOnSave,
-            delayMs: 100, // Delay corto para pruebas rápidas
+            delayMs: 100,
           }),
         { initialProps: { value: "initial" } }
       );
 
-      // Rapid changes
       rerender({ value: "change1" });
       rerender({ value: "change2" });
       rerender({ value: "change3" });
 
       expect(result.current.isSaving).toBe(true);
 
-      // Wait for the debounced delay
       await new Promise((resolve) => setTimeout(resolve, 150));
 
-      // Should only call onSave once for the last change
       expect(mockOnSave).toHaveBeenCalledTimes(1);
       expect(result.current.isSaving).toBe(false);
     });
@@ -141,7 +138,7 @@ describe("useAutoSave", () => {
             valueToWatch: value,
             onSave: mockOnSave,
             onSuccess: mockOnSuccess,
-            delayMs: 100, // Delay corto para pruebas
+            delayMs: 100,
           }),
         { initialProps: { value: "initial" } }
       );
@@ -168,7 +165,7 @@ describe("useAutoSave", () => {
             valueToWatch: value,
             onSave: mockOnSave,
             onError: mockOnError,
-            delayMs: 100, // Delay corto para pruebas
+            delayMs: 100,
           }),
         { initialProps: { value: "initial" } }
       );

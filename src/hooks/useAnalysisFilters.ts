@@ -79,7 +79,6 @@ export const useAnalysisFilters = (
 
       if (!selectedOption) return;
 
-      // Marcar que el usuario ha hecho cambios
       onUserChange?.();
 
       setFilters((prevFilters) => {

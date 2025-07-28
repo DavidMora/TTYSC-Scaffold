@@ -9,7 +9,7 @@ import { ChatInput } from "@/components/AnalysisChat/ChatInput";
 interface AnalysisChatProps {
   chatId: string;
   previousMessages: ChatMessage[];
-  draft: string;
+  draft?: string;
 }
 
 export default function AnalysisChat({

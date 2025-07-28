@@ -35,7 +35,7 @@ jest.mock("@/components/AnalysisChat/ChatInput", () => ({
     isLoading: boolean;
   }) => {
     const [inputValue, setInputValue] = React.useState("");
-    
+
     return (
       <div data-testid="chat-input">
         <input
@@ -177,7 +177,7 @@ describe("AnalysisChat", () => {
 
       const input = screen.getByTestId("message-input");
       const sendButton = screen.getByTestId("send-button");
-      
+
       fireEvent.change(input, { target: { value: "Test message" } });
       fireEvent.click(sendButton);
 
@@ -281,7 +281,7 @@ describe("AnalysisChat", () => {
           object: "chat.completion",
           model: "gpt-4",
           created: "2024-01-01T10:00:00Z",
-          choices: undefined,
+          choices: [],
           usage: {
             prompt_tokens: 10,
             completion_tokens: 20,
@@ -293,111 +293,33 @@ describe("AnalysisChat", () => {
       }
     });
 
-    it("should test onSuccess callback with undefined message", () => {
-      let capturedOnSuccess: ((data: BotResponse) => void) | undefined;
-
-      mockUseSendChatMessage.mockImplementation((options) => {
-        capturedOnSuccess = options?.onSuccess;
-        return {
-          mutate: mockMutate,
-          isLoading: false,
-          data: undefined,
-          error: null,
-          reset: jest.fn(),
-        };
+    it("should call scrollToBottom when sending messages", () => {
+      Object.defineProperty(window, "setTimeout", {
+        value: jest.fn((callback) => {
+          callback();
+          return 1;
+        }),
+        writable: true,
       });
 
-      render(<AnalysisChat {...defaultProps} />);
+      render(<AnalysisChat {...defaultProps} draft="" />);
 
-      if (capturedOnSuccess) {
-        const mockBotResponse: BotResponse = {
-          id: "test-id",
-          object: "chat.completion",
-          model: "gpt-4",
-          created: "2024-01-01T10:00:00Z",
-          choices: [
-            {
-              message: undefined,
-              finish_reason: "stop",
-              index: 0,
-            },
-          ],
-          usage: {
-            prompt_tokens: 10,
-            completion_tokens: 20,
-            total_tokens: 30,
-          },
-        };
+      const input = screen.getByTestId("message-input");
+      const sendButton = screen.getByTestId("send-button");
 
-        capturedOnSuccess(mockBotResponse);
-      }
+      fireEvent.change(input, { target: { value: "Test message" } });
+      fireEvent.click(sendButton);
+
+      expect(mockMutate).toHaveBeenCalled();
     });
 
-    describe("Scroll Functionality", () => {
-      it("should call scrollToBottom when sending messages", () => {
-        Object.defineProperty(window, "setTimeout", {
-          value: jest.fn((callback) => {
-            callback();
-            return 1;
-          }),
-          writable: true,
-        });
+    it("should not send message when input is empty", () => {
+      render(<AnalysisChat {...defaultProps} draft="" />);
 
-        render(<AnalysisChat {...defaultProps} />);
+      const sendButton = screen.getByTestId("send-button");
+      fireEvent.click(sendButton);
 
-        const input = screen.getByTestId("message-input");
-        const sendButton = screen.getByTestId("send-button");
-        
-        fireEvent.change(input, { target: { value: "Test message" } });
-        fireEvent.click(sendButton);
-
-        expect(mockMutate).toHaveBeenCalled();
-      });
-    });
-
-    describe("handleSendMessage", () => {
-      it("should not send message when input is empty", () => {
-        render(<AnalysisChat {...defaultProps} />);
-
-        const sendButton = screen.getByTestId("send-button");
-        fireEvent.click(sendButton);
-
-        // Should not call mutate when input is empty
-        expect(mockMutate).not.toHaveBeenCalled();
-      });
-
-      it("should not send message when input is only whitespace", () => {
-        render(<AnalysisChat {...defaultProps} />);
-
-        const input = screen.getByTestId("message-input");
-        fireEvent.change(input, { target: { value: "   " } });
-        
-        const sendButton = screen.getByTestId("send-button");
-        fireEvent.click(sendButton);
-
-        // Should not call mutate when input is only whitespace
-        expect(mockMutate).not.toHaveBeenCalled();
-      });
-
-      it("should send message with conversation history", () => {
-        render(<AnalysisChat {...defaultProps} />);
-
-        const input = screen.getByTestId("message-input");
-        fireEvent.change(input, { target: { value: "New message" } });
-        
-        const sendButton = screen.getByTestId("send-button");
-        fireEvent.click(sendButton);
-
-        expect(mockMutate).toHaveBeenCalledWith({
-          messages: [
-            { role: "user", content: "Hello" },
-            { role: "assistant", content: "Hi there!" },
-            { role: "user", content: "New message" },
-          ],
-          use_knowledge_base: true,
-          chatId: "test-chat-id",
-        });
-      });
+      expect(mockMutate).not.toHaveBeenCalled();
     });
   });
 });

@@ -13,7 +13,7 @@ import { useParams } from "next/navigation";
 interface ChatInputProps {
   onSendMessage: (message: string) => void;
   isLoading: boolean;
-  draft: string;
+  draft?: string;
 }
 
 export function ChatInput({
@@ -21,7 +21,7 @@ export function ChatInput({
   isLoading,
   draft,
 }: Readonly<ChatInputProps>) {
-  const [input, setInput] = useState(draft);
+  const [input, setInput] = useState(draft || "");
   const { id } = useParams();
 
   const { activateAutosaveUI } = useAutosaveUI();

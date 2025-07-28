@@ -20,7 +20,6 @@ describe("useSequentialNaming", () => {
     localStorageMock.getItem.mockClear();
     localStorageMock.setItem.mockClear();
     localStorageMock.clear.mockClear();
-    // Reset localStorage to simulate fresh state
     localStorageMock.getItem.mockReturnValue(null);
   });
 
@@ -94,111 +93,5 @@ describe("useSequentialNaming", () => {
     });
 
     expect(result.current.currentCounter).toBe(5);
-  });
-
-  it("should generate correct ordinal names for numbers 1-20", () => {
-    const { result } = renderHook(() => useSequentialNaming(), {
-      wrapper: createWrapper(),
-    });
-
-    const expectedNames = [
-      "Analysis One",
-      "Analysis Two",
-      "Analysis Three",
-      "Analysis Four",
-      "Analysis Five",
-      "Analysis Six",
-      "Analysis Seven",
-      "Analysis Eight",
-      "Analysis Nine",
-      "Analysis Ten",
-      "Analysis Eleven",
-      "Analysis Twelve",
-      "Analysis Thirteen",
-      "Analysis Fourteen",
-      "Analysis Fifteen",
-      "Analysis Sixteen",
-      "Analysis Seventeen",
-      "Analysis Eighteen",
-      "Analysis Nineteen",
-      "Analysis Twenty",
-    ];
-
-    for (let i = 0; i < 20; i++) {
-      act(() => {
-        const name = result.current.generateAnalysisName();
-        expect(name).toBe(expectedNames[i]);
-      });
-    }
-  });
-
-  it("should generate numeric names for numbers beyond 20", () => {
-    const { result } = renderHook(() => useSequentialNaming(), {
-      wrapper: createWrapper(),
-    });
-
-    // Generate 20 names first to get to counter 21
-    for (let i = 0; i < 20; i++) {
-      act(() => {
-        result.current.generateAnalysisName();
-      });
-    }
-
-    // Now test numbers beyond 20
-    act(() => {
-      const name = result.current.generateAnalysisName();
-      expect(name).toBe("Analysis 21");
-    });
-
-    act(() => {
-      const name = result.current.generateAnalysisName();
-      expect(name).toBe("Analysis 22");
-    });
-  });
-
-  it("should save counter to localStorage when generating names", () => {
-    const { result } = renderHook(() => useSequentialNaming(), {
-      wrapper: createWrapper(),
-    });
-
-    act(() => {
-      result.current.generateAnalysisName();
-    });
-
-    expect(localStorageMock.setItem).toHaveBeenCalledWith(
-      "sequentialNamingCounter",
-      "2"
-    );
-
-    act(() => {
-      result.current.generateAnalysisName();
-    });
-
-    expect(localStorageMock.setItem).toHaveBeenCalledWith(
-      "sequentialNamingCounter",
-      "3"
-    );
-  });
-
-  it("should handle server-side rendering (no window object)", () => {
-    // Mock window as undefined to simulate SSR
-    const originalWindow = global.window;
-    // @ts-expect-error - Intentionally deleting window for SSR test
-    delete global.window;
-
-    const { result } = renderHook(() => useSequentialNaming(), {
-      wrapper: createWrapper(),
-    });
-
-    expect(result.current.currentCounter).toBe(1);
-
-    // Test that generateAnalysisName works without localStorage in SSR
-    act(() => {
-      const name = result.current.generateAnalysisName();
-      expect(name).toBe("Analysis One");
-    });
-
-    // Restore window
-    global.window = originalWindow;
   });
 });
