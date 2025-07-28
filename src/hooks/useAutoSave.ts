@@ -30,9 +30,10 @@ export const useAutoSave = (options: AutosaveOptions) => {
       clearTimeout(timeoutRef.current);
     }
 
-    setState((prev) => ({ ...prev, isSaving: true, error: null }));
+    setState((prev) => ({ ...prev, error: null }));
 
     timeoutRef.current = setTimeout(async () => {
+      setState((prev) => ({ ...prev, isSaving: true }));
       try {
         await options.onSave();
         setState((prev) => ({
@@ -68,10 +69,6 @@ export const useAutoSave = (options: AutosaveOptions) => {
     }
 
     previousValueRef.current = valueToWatch;
-
-    if (valueToWatch === undefined) {
-      return;
-    }
 
     if (valueToWatch === null || valueToWatch === undefined) {
       return;

@@ -420,7 +420,7 @@ describe("Chat Hooks", () => {
     });
   });
 
-  describe("useRenameChat", () => {
+  describe("useUpdateChat", () => {
     it("should call onSuccess callback with correct data", async () => {
       const mockChat: Chat = {
         id: "test-id",

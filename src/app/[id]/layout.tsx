@@ -3,7 +3,7 @@ import { AutosaveUIProvider } from "@/contexts/AutosaveUIProvider";
 export default function ChatLayout({
   children,
 }: {
-  children: React.ReactNode;
+  children: Readonly<React.ReactNode>;
 }) {
   return <AutosaveUIProvider>{children}</AutosaveUIProvider>;
 }

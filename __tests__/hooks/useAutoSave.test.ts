@@ -48,8 +48,6 @@ describe("useAutoSave", () => {
 
       rerender({ value: "changed" });
 
-      expect(result.current.isSaving).toBe(true);
-
       // Wait for the short delay
       await new Promise((resolve) => setTimeout(resolve, 150));
 
@@ -72,8 +70,6 @@ describe("useAutoSave", () => {
       );
 
       rerender({ value: "changed" });
-
-      expect(result.current.isSaving).toBe(true);
 
       // Should not trigger before delay
       await new Promise((resolve) => setTimeout(resolve, 100));
@@ -118,8 +114,6 @@ describe("useAutoSave", () => {
       rerender({ value: "change1" });
       rerender({ value: "change2" });
       rerender({ value: "change3" });
-
-      expect(result.current.isSaving).toBe(true);
 
       await new Promise((resolve) => setTimeout(resolve, 150));
 
