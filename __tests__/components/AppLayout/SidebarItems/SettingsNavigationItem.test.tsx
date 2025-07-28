@@ -89,10 +89,6 @@ describe("SettingsNavigationItem", () => {
         "fail"
       );
     });
-    expect(console.error).toHaveBeenCalledWith(
-      "Failed to update settings:",
-      "fail"
-    );
     (console.error as jest.Mock).mockRestore();
   });
 });
