@@ -31,10 +31,17 @@ export default function SettingsNavigationItem() {
 
   useEffect(() => {
     if (settings) {
-      setShareChatsEnabled(!!settings.shareChats);
-      setHideTableIndex(!!settings.hideIndexTable);
+      const newShareChats = !!settings.shareChats;
+      const newHideIndex = !!settings.hideIndexTable;
+
+      if (shareChatsEnabled !== newShareChats) {
+        setShareChatsEnabled(newShareChats);
+      }
+      if (hideTableIndex !== newHideIndex) {
+        setHideTableIndex(newHideIndex);
+      }
     }
-  }, [settings]);
+  }, [settings, shareChatsEnabled, hideTableIndex]);
 
   const updateSettings = async (newSettings: UpdateSettingsRequest) => {
     setIsUpdating(true);
