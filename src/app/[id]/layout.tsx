@@ -1,9 +1,9 @@
 import { AutosaveUIProvider } from "@/contexts/AutosaveUIProvider";
 
-export default function ChatLayout({
-  children,
-}: {
-  children: Readonly<React.ReactNode>;
-}) {
+interface ChatLayoutProps {
+  children: React.ReactNode;
+}
+
+export default function ChatLayout({ children }: Readonly<ChatLayoutProps>) {
   return <AutosaveUIProvider>{children}</AutosaveUIProvider>;
 }

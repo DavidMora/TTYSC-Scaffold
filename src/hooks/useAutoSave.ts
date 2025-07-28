@@ -70,7 +70,7 @@ export const useAutoSave = (options: AutosaveOptions) => {
 
     previousValueRef.current = valueToWatch;
 
-    if (valueToWatch === null || valueToWatch === undefined) {
+    if (valueToWatch == null) {
       return;
     }
 
