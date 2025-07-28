@@ -55,11 +55,13 @@ describe("SettingsNavigationItem", () => {
     );
   });
 
-  it("shows the updating label when isUpdating is true", () => {
+  it("shows the updating label when isUpdating is true", async () => {
     render(<SettingsNavigationItem />);
     const switchElement = screen.getByRole("checkbox");
     fireEvent.click(switchElement);
-    expect(screen.getByText("Updating settings...")).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText("Updating settings...")).toBeInTheDocument();
+    });
   });
 
   it("SideNavigationItem has correct props", () => {
