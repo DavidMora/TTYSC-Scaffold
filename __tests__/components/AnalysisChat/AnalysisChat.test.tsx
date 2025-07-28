@@ -33,25 +33,31 @@ jest.mock("@/components/AnalysisChat/ChatInput", () => ({
   }: {
     onSendMessage: (msg: string) => void;
     isLoading: boolean;
-  }) => (
-    <div data-testid="chat-input">
-      <input
-        data-testid="message-input"
-        placeholder="Write your lines here"
-        disabled={isLoading}
-        onChange={() => {
-          // Simulate input change
-        }}
-      />
-      <button
-        data-testid="send-button"
-        onClick={() => onSendMessage("Test message")}
-        disabled={isLoading}
-      >
-        Send
-      </button>
-    </div>
-  ),
+  }) => {
+    const [inputValue, setInputValue] = React.useState("");
+
+    return (
+      <div data-testid="chat-input">
+        <input
+          data-testid="message-input"
+          placeholder="Write your lines here"
+          disabled={isLoading}
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
+        />
+        <button
+          data-testid="send-button"
+          onClick={() => {
+            onSendMessage(inputValue);
+            setInputValue("");
+          }}
+          disabled={isLoading}
+        >
+          Send
+        </button>
+      </div>
+    );
+  },
 }));
 
 const mockUseSendChatMessage = useSendChatMessage as jest.MockedFunction<
@@ -169,7 +175,10 @@ describe("AnalysisChat", () => {
 
       render(<AnalysisChat {...defaultProps} />);
 
+      const input = screen.getByTestId("message-input");
       const sendButton = screen.getByTestId("send-button");
+
+      fireEvent.change(input, { target: { value: "Test message" } });
       fireEvent.click(sendButton);
 
       // Verify that the success callback would be called with the response data
@@ -250,23 +259,67 @@ describe("AnalysisChat", () => {
       }
     });
 
-    describe("Scroll Functionality", () => {
-      it("should call scrollToBottom when sending messages", () => {
-        Object.defineProperty(window, "setTimeout", {
-          value: jest.fn((callback) => {
-            callback();
-            return 1;
-          }),
-          writable: true,
-        });
+    it("should test onSuccess callback with undefined choices", () => {
+      let capturedOnSuccess: ((data: BotResponse) => void) | undefined;
 
-        render(<AnalysisChat {...defaultProps} />);
-
-        const sendButton = screen.getByTestId("send-button");
-        fireEvent.click(sendButton);
-
-        expect(mockMutate).toHaveBeenCalled();
+      mockUseSendChatMessage.mockImplementation((options) => {
+        capturedOnSuccess = options?.onSuccess;
+        return {
+          mutate: mockMutate,
+          isLoading: false,
+          data: undefined,
+          error: null,
+          reset: jest.fn(),
+        };
       });
+
+      render(<AnalysisChat {...defaultProps} />);
+
+      if (capturedOnSuccess) {
+        const mockBotResponse: BotResponse = {
+          id: "test-id",
+          object: "chat.completion",
+          model: "gpt-4",
+          created: "2024-01-01T10:00:00Z",
+          choices: [],
+          usage: {
+            prompt_tokens: 10,
+            completion_tokens: 20,
+            total_tokens: 30,
+          },
+        };
+
+        capturedOnSuccess(mockBotResponse);
+      }
+    });
+
+    it("should call scrollToBottom when sending messages", () => {
+      Object.defineProperty(window, "setTimeout", {
+        value: jest.fn((callback) => {
+          callback();
+          return 1;
+        }),
+        writable: true,
+      });
+
+      render(<AnalysisChat {...defaultProps} draft="" />);
+
+      const input = screen.getByTestId("message-input");
+      const sendButton = screen.getByTestId("send-button");
+
+      fireEvent.change(input, { target: { value: "Test message" } });
+      fireEvent.click(sendButton);
+
+      expect(mockMutate).toHaveBeenCalled();
+    });
+
+    it("should not send message when input is empty", () => {
+      render(<AnalysisChat {...defaultProps} draft="" />);
+
+      const sendButton = screen.getByTestId("send-button");
+      fireEvent.click(sendButton);
+
+      expect(mockMutate).not.toHaveBeenCalled();
     });
   });
 });

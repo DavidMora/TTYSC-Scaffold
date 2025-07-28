@@ -9,11 +9,13 @@ import { ChatInput } from "@/components/AnalysisChat/ChatInput";
 interface AnalysisChatProps {
   chatId: string;
   previousMessages: ChatMessage[];
+  draft?: string;
 }
 
 export default function AnalysisChat({
   chatId,
   previousMessages,
+  draft,
 }: Readonly<AnalysisChatProps>) {
   const messagesContainerRef = useRef<HTMLDivElement | null>(null);
 
@@ -107,7 +109,11 @@ export default function AnalysisChat({
       </div>
 
       {/* Input */}
-      <ChatInput onSendMessage={handleSendMessage} isLoading={isLoading} />
+      <ChatInput
+        draft={draft}
+        onSendMessage={handleSendMessage}
+        isLoading={isLoading}
+      />
     </div>
   );
 }

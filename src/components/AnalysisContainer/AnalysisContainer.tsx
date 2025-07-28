@@ -4,7 +4,6 @@ import AnalysisChat from "@/components/AnalysisChat/AnalysisChat";
 import AnalysisFilter from "@/components/AnalysisFilters/AnalysisFilters";
 import AnalysisHeader from "@/components/AnalysisHeader/AnalysisHeader";
 import { useAnalysisFilters } from "@/hooks/useAnalysisFilters";
-import { useSequentialNaming } from "@/contexts/SequentialNamingContext";
 import {
   BusyIndicator,
   Button,
@@ -13,9 +12,12 @@ import {
   Text,
   Title,
 } from "@ui5/webcomponents-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams } from "next/navigation";
-import { useChat } from "@/hooks/chats";
+import { useChat, useUpdateChat } from "@/hooks/chats";
+import { useAutosaveUI } from "@/contexts/AutosaveUIProvider";
+import { useAutoSave } from "@/hooks/useAutoSave";
+import { INITIAL_FILTERS } from "@/lib/constants/UI/analysisFilters";
 
 const ErrorDisplay = ({
   error,
@@ -70,14 +72,6 @@ export default function AnalysisContainer() {
   const [analysisName, setAnalysisName] = useState<string>("");
 
   const {
-    filters,
-    availableOptions,
-    isDisabled,
-    handleFilterChange,
-    resetFilters,
-  } = useAnalysisFilters();
-
-  const {
     data: analysis,
     error,
     isLoading,
@@ -85,49 +79,84 @@ export default function AnalysisContainer() {
     mutate: refetchAnalysis,
   } = useChat(analysisId);
 
-  const { generateAnalysisName } = useSequentialNaming();
+  const { filters, availableOptions, isDisabled, handleFilterChange } =
+    useAnalysisFilters(
+      analysis?.data?.metadata
+        ? { ...INITIAL_FILTERS, ...analysis.data.metadata }
+        : INITIAL_FILTERS,
+      () => {
+        hasUserModifiedRef.current = true;
+      }
+    );
+
+  const { activateAutosaveUI, showAutoSaved } = useAutosaveUI();
+
+  const { mutate: updateChat } = useUpdateChat({});
+
+  const hasUserModifiedRef = useRef(false);
+
+  useAutoSave({
+    valueToWatch: hasUserModifiedRef.current ? filters : undefined,
+    onSave: async () => {
+      await updateChat({
+        id: analysisId,
+        metadata: {
+          analysis: filters.analysis,
+          organizations: filters.organizations,
+          CM: filters.CM,
+          SKU: filters.SKU,
+          NVPN: filters.NVPN,
+        },
+      });
+    },
+    delayMs: 3000,
+    onSuccess: () => {
+      activateAutosaveUI();
+    },
+    onError: (error) => {
+      console.error("Autosave failed:", error);
+    },
+  });
 
   useEffect(() => {
     if (analysis?.data) {
       if (analysis?.data?.title !== "") {
         setAnalysisName(analysis?.data?.title);
-      } else if (analysisName === "") {
-        setAnalysisName(generateAnalysisName());
       }
     }
-  }, [analysis?.data, generateAnalysisName, analysisName]);
+  }, [analysis?.data, analysisName]);
 
   return (
     <>
-      <AnalysisFilter
-        filters={filters}
-        availableOptions={availableOptions}
-        isDisabled={isDisabled}
-        handleFilterChange={handleFilterChange}
-      />
-      <hr
-        style={{
-          height: "2px",
-          backgroundColor: "var(--sapToolbar_SeparatorColor)",
-        }}
-      />
       {isLoading || isValidating ? (
         <LoadingDisplay />
       ) : (
         <>
+          <AnalysisFilter
+            filters={filters}
+            availableOptions={availableOptions}
+            isDisabled={isDisabled}
+            handleFilterChange={handleFilterChange}
+          />
+          <hr
+            style={{
+              height: "2px",
+              backgroundColor: "var(--sapToolbar_SeparatorColor)",
+            }}
+          />
           {error ? (
             <ErrorDisplay error={error} onRetry={refetchAnalysis} />
           ) : (
             <>
               <AnalysisHeader
-                onFiltersReset={resetFilters}
                 currentAnalysisId={analysis?.data?.id}
                 currentAnalysisName={analysisName}
-                showAutoSaved={true}
+                showAutoSaved={showAutoSaved}
               />
               <AnalysisChat
                 chatId={analysis?.data?.id || ""}
                 previousMessages={analysis?.data?.messages || []}
+                draft={analysis?.data?.draft || ""}
               />
             </>
           )}

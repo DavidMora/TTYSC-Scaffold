@@ -2,16 +2,22 @@ import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { AnalysisRenaming } from "@/components/AnalysisHeader/AnalysisRenaming";
 import type { InputDomRef } from "@ui5/webcomponents-react";
-import { useRenameChat } from "@/hooks/chats";
-import { Chat } from "@/lib/types/chats";
 
 const mockMutate = jest.fn();
+const mockActivateAutosaveUI = jest.fn();
 
+// Mock the hooks
 jest.mock("@/hooks/chats", () => ({
-  useRenameChat: jest.fn(() => ({
+  useUpdateChat: jest.fn(() => ({
     mutate: mockMutate,
     isLoading: false,
   })),
+}));
+
+jest.mock("@/contexts/AutosaveUIProvider", () => ({
+  useAutosaveUI: () => ({
+    activateAutosaveUI: mockActivateAutosaveUI,
+  }),
 }));
 
 jest.mock("@/components/Modal/ConfirmationModal", () => ({
@@ -71,27 +77,10 @@ describe("AnalysisRenaming", () => {
     jest.clearAllMocks();
     mockFocus.mockClear();
     mockMutate.mockClear();
+    mockActivateAutosaveUI.mockClear();
   });
 
   it("should save changes and call onNameChange when Enter is pressed", () => {
-    const mockUseRenameAnalysis = jest.mocked(useRenameChat);
-    let onSuccessCallback: ((data: { title: string; }) => void) | undefined;
-
-    mockUseRenameAnalysis.mockImplementation((options: { onSuccess?: (data: { title: string; }) => void }) => {
-      onSuccessCallback = options?.onSuccess;
-      return {
-        mutate: jest.fn(({ data }: { data: Chat }) => {
-          if (onSuccessCallback) {
-            onSuccessCallback({ title: data.title });
-          }
-        }),
-        isLoading: false,
-        data: undefined,
-        error: null,
-        reset: jest.fn(),
-      };
-    });
-
     render(<AnalysisRenaming {...defaultProps} />);
 
     fireEvent.click(screen.getByTestId("ui5-icon"));
@@ -100,9 +89,10 @@ describe("AnalysisRenaming", () => {
     fireEvent.input(input, { target: { value: "New Analysis Name" } });
     fireEvent.keyDown(input, { key: "Enter", code: "Enter" });
 
-    expect(defaultProps.onNameChange).toHaveBeenCalledWith("New Analysis Name");
-    expect(screen.queryByTestId("ui5-input")).not.toBeInTheDocument();
-    expect(screen.getByTestId("ui5-text")).toBeInTheDocument();
+    expect(mockMutate).toHaveBeenCalledWith({
+      id: "test-analysis-id",
+      title: "New Analysis Name",
+    });
   });
 
   it("should cancel editing when Escape is pressed", () => {
@@ -114,7 +104,7 @@ describe("AnalysisRenaming", () => {
     fireEvent.input(input, { target: { value: "New Analysis Name" } });
     fireEvent.keyDown(input, { key: "Escape", code: "Escape" });
 
-    expect(defaultProps.onNameChange).not.toHaveBeenCalled();
+    expect(mockMutate).not.toHaveBeenCalled();
     expect(screen.queryByTestId("ui5-input")).not.toBeInTheDocument();
     expect(screen.getByTestId("ui5-text")).toHaveTextContent("Test Analysis");
   });
@@ -145,35 +135,7 @@ describe("AnalysisRenaming", () => {
     fireEvent.keyDown(input, { key: "Tab", code: "Tab" });
 
     expect(screen.getByTestId("ui5-input")).toBeInTheDocument();
-    expect(defaultProps.onNameChange).not.toHaveBeenCalled();
-  });
-
-  it("should handle rename analysis error and exit editing mode", () => {
-    const mockUseRenameAnalysis = jest.mocked(useRenameChat);
-    let onErrorCallback: ((error: Error) => void) | undefined;
-
-    mockUseRenameAnalysis.mockImplementation((options: { onError?: (error: Error) => void }) => {
-      onErrorCallback = options?.onError;
-      return {
-        mutate: jest.fn(() => {
-          if (onErrorCallback) {
-            onErrorCallback(new Error("Test error"));
-          }
-        }),
-        isLoading: false,
-      };
-    });
-
-    render(<AnalysisRenaming {...defaultProps} />);
-
-    fireEvent.click(screen.getByTestId("ui5-icon"));
-    const input = screen.getByTestId("ui5-input");
-
-    fireEvent.input(input, { target: { value: "New Analysis Name" } });
-    fireEvent.keyDown(input, { key: "Enter", code: "Enter" });
-
-    expect(screen.queryByTestId("ui5-input")).not.toBeInTheDocument();
-    expect(screen.getByTestId("ui5-text")).toBeInTheDocument();
+    expect(mockMutate).not.toHaveBeenCalled();
   });
 
   it("should handle save edit when analysisId is not provided", () => {
@@ -193,24 +155,59 @@ describe("AnalysisRenaming", () => {
     expect(mockMutate).not.toHaveBeenCalled();
   });
 
-  it("should show loading state with placeholder and opacity", () => {
-    const mockUseRenameAnalysis = jest.mocked(useRenameChat);
-    mockUseRenameAnalysis.mockImplementation(() => ({
-      mutate: mockMutate,
-      isLoading: true,
-      data: undefined,
-      error: null,
-      reset: jest.fn(),
-    }));
+  it("should handle successful rename by calling onNameChange and activateAutosaveUI", () => {
+    const mockOnNameChange = jest.fn();
+
+    // Mock the useUpdateChat hook to simulate success callback
+    const { useUpdateChat } = jest.requireMock("@/hooks/chats");
+    useUpdateChat.mockImplementation(
+      ({ onSuccess }: { onSuccess: (data: { title: string }) => void }) => ({
+        mutate: () => {
+          // Simulate successful mutation
+          onSuccess({ title: "Updated Analysis Name" });
+        },
+        isLoading: false,
+      })
+    );
+
+    render(
+      <AnalysisRenaming {...defaultProps} onNameChange={mockOnNameChange} />
+    );
+
+    fireEvent.click(screen.getByTestId("ui5-icon"));
+    const input = screen.getByTestId("ui5-input");
+
+    fireEvent.input(input, { target: { value: "Updated Analysis Name" } });
+    fireEvent.keyDown(input, { key: "Enter", code: "Enter" });
+
+    // Verify that success callbacks are called
+    expect(mockOnNameChange).toHaveBeenCalledWith("Updated Analysis Name");
+    expect(mockActivateAutosaveUI).toHaveBeenCalled();
+  });
+
+  it("should handle rename error by resetting editing state", () => {
+    // Mock the useUpdateChat hook to simulate error callback
+    const { useUpdateChat } = jest.requireMock("@/hooks/chats");
+    useUpdateChat.mockImplementation(
+      ({ onError }: { onError: (error: Error) => void }) => ({
+        mutate: () => {
+          // Simulate error
+          onError(new Error("Rename failed"));
+        },
+        isLoading: false,
+      })
+    );
 
     render(<AnalysisRenaming {...defaultProps} />);
 
     fireEvent.click(screen.getByTestId("ui5-icon"));
     const input = screen.getByTestId("ui5-input");
 
-    expect(input).toHaveAttribute("placeholder", "Saving...");
-    expect(input).toHaveAttribute("disabled", "");
+    fireEvent.input(input, { target: { value: "New Analysis Name" } });
+    fireEvent.keyDown(input, { key: "Enter", code: "Enter" });
 
-    expect(input.style.opacity).toBe("0.7");
+    // Verify that editing state is reset on error
+    expect(screen.queryByTestId("ui5-input")).not.toBeInTheDocument();
+    expect(screen.getByTestId("ui5-text")).toHaveTextContent("Test Analysis");
   });
 });

@@ -27,6 +27,36 @@ jest.mock("@/lib/api", () => ({
   },
 }));
 
+const generalMockChat: Chat = {
+  id: "test-chat-id",
+  date: "2023-07-17",
+  title: "Team Meeting",
+  messages: [],
+  draft: "",
+  metadata: {
+    analysis: {
+      key: "test-analysis-key",
+      name: "Test Analysis",
+    },
+    organizations: {
+      key: "test-organization-key",
+      name: "Test Organization",
+    },
+    CM: {
+      key: "test-cm-key",
+      name: "Test CM",
+    },
+    SKU: {
+      key: "test-sku-key",
+      name: "Test SKU",
+    },
+    NVPN: {
+      key: "test-nvpn-key",
+      name: "Test NVPN",
+    },
+  },
+};
+
 const mockHttpClient = apiClient as jest.Mocked<typeof apiClient>;
 
 describe("Chats Service", () => {
@@ -54,16 +84,12 @@ describe("Chats Service", () => {
     it("should return chat list successfully", async () => {
       const mockChats: Chat[] = [
         {
-          id: "1",
-          date: "2023-07-17",
-          title: "Team Meeting",
-          messages: [],
+          ...generalMockChat,
         },
         {
-          id: "2",
-          date: "2023-07-16",
+          ...generalMockChat,
+          id: "test-chat-id-2",
           title: "Project Discussion",
-          messages: [],
         },
       ];
 
@@ -118,7 +144,8 @@ describe("Chats Service", () => {
         id: testChatId,
         date: "2023-07-17",
         title: "Team Meeting",
-
+        draft: "",
+        metadata: generalMockChat.metadata,
         messages: [
           {
             id: "msg1",
@@ -181,6 +208,8 @@ describe("Chats Service", () => {
         date: "2023-07-17",
         title: "New Chat",
         messages: [],
+        draft: "",
+        metadata: generalMockChat.metadata,
       };
 
       const mockResponse: HttpClientResponse<Chat> = {
@@ -192,9 +221,11 @@ describe("Chats Service", () => {
 
       mockHttpClient.post.mockResolvedValue(mockResponse);
 
-      const result = await createChat();
+      const result = await createChat({ title: "New Chat" });
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(CHATS);
+      expect(mockHttpClient.post).toHaveBeenCalledWith(CHATS, {
+        title: "New Chat",
+      });
       expect(result).toBe(mockResponse);
       expect(result.data).toEqual(mockCreatedChat);
       expect(result.status).toBe(201);
@@ -210,7 +241,7 @@ describe("Chats Service", () => {
 
       mockHttpClient.post.mockResolvedValue(mockResponse);
 
-      const result = await createChat();
+      const result = await createChat({ title: "New Chat" });
 
       expect(result.status).toBe(400);
       expect(result.statusText).toBe("Bad Request");
@@ -220,7 +251,9 @@ describe("Chats Service", () => {
       const mockError = new Error("Server error");
       mockHttpClient.post.mockRejectedValue(mockError);
 
-      await expect(createChat()).rejects.toThrow("Server error");
+      await expect(createChat({ title: "New Chat" })).rejects.toThrow(
+        "Server error"
+      );
     });
   });
 
@@ -235,6 +268,8 @@ describe("Chats Service", () => {
         id: "chat-to-update",
         date: "2023-07-17",
         title: "Updated Chat Title",
+        draft: "",
+        metadata: generalMockChat.metadata,
         messages: [],
       };
 

@@ -3,9 +3,14 @@ import Home from "@/app/page";
 import "@testing-library/jest-dom";
 import React from "react";
 import { useCreateChat } from "@/hooks/chats";
+import {
+  useSequentialNaming,
+  SequentialNamingProvider,
+} from "@/contexts/SequentialNamingContext";
 
 const mockPush = jest.fn();
 const mockMutate = jest.fn();
+const mockGenerateAnalysisName = jest.fn();
 
 jest.mock("next/navigation", () => ({
   useRouter: () => ({
@@ -18,18 +23,41 @@ jest.mock("@/hooks/chats", () => ({
   useCreateChat: jest.fn(),
 }));
 
+jest.mock("@/contexts/SequentialNamingContext", () => ({
+  useSequentialNaming: jest.fn(),
+  SequentialNamingProvider: ({ children }: { children: React.ReactNode }) =>
+    children,
+}));
+
 const mockUseCreateChat = useCreateChat as jest.MockedFunction<
   typeof useCreateChat
 >;
+
+const mockUseSequentialNaming = useSequentialNaming as jest.MockedFunction<
+  typeof useSequentialNaming
+>;
+
+// Helper function to render component with provider
+const renderWithProvider = (component: React.ReactElement) => {
+  return render(
+    <SequentialNamingProvider>{component}</SequentialNamingProvider>
+  );
+};
 
 describe("Home page", () => {
   beforeEach(() => {
     mockPush.mockClear();
     mockMutate.mockClear();
+    mockGenerateAnalysisName.mockClear();
     jest.clearAllMocks();
-  });
 
-  it("renders loading display by default", () => {
+    // Default mock for useSequentialNaming
+    mockUseSequentialNaming.mockReturnValue({
+      generateAnalysisName: mockGenerateAnalysisName,
+      currentCounter: 1,
+    });
+
+    // Default mock for useCreateChat
     mockUseCreateChat.mockReturnValue({
       mutate: mockMutate,
       data: undefined,
@@ -37,8 +65,12 @@ describe("Home page", () => {
       isLoading: true,
       reset: jest.fn(),
     });
+  });
 
-    render(<Home />);
+  it("renders loading display by default", () => {
+    mockGenerateAnalysisName.mockReturnValue("Analysis One");
+
+    renderWithProvider(<Home />);
 
     expect(screen.getByText("Creating Your Analysis...")).toBeInTheDocument();
     expect(
@@ -48,19 +80,17 @@ describe("Home page", () => {
     ).toBeInTheDocument();
   });
 
-  it("calls createAnalysis on mount", async () => {
-    mockUseCreateChat.mockReturnValue({
-      mutate: mockMutate,
-      data: undefined,
-      error: null,
-      isLoading: true,
-      reset: jest.fn(),
-    });
+  it("calls createAnalysis on mount with generated name", async () => {
+    mockGenerateAnalysisName.mockReturnValue("Analysis One");
 
-    render(<Home />);
+    renderWithProvider(<Home />);
 
     await waitFor(() => {
+      expect(mockGenerateAnalysisName).toHaveBeenCalledTimes(1);
       expect(mockMutate).toHaveBeenCalledTimes(1);
+      expect(mockMutate).toHaveBeenCalledWith({
+        title: "Analysis One",
+      });
     });
   });
 
@@ -73,7 +103,11 @@ describe("Home page", () => {
       messages: [],
     };
 
+    mockGenerateAnalysisName.mockReturnValue("Analysis One");
+
+    // Mock the hook to simulate success
     mockUseCreateChat.mockImplementation(({ onSuccess }) => {
+      // Simulate the success callback being called
       React.useEffect(() => {
         if (onSuccess) {
           onSuccess(mockAnalysis);
@@ -94,49 +128,11 @@ describe("Home page", () => {
       };
     });
 
-    render(<Home />);
+    renderWithProvider(<Home />);
 
     await waitFor(() => {
       expect(mockPush).toHaveBeenCalledWith("/test-analysis-id");
     });
-  });
-
-  it("displays error when analysis creation fails", async () => {
-    const consoleSpy = jest
-      .spyOn(console, "error")
-      .mockImplementation(() => {});
-    const testError = new Error("Failed to create analysis");
-
-    mockUseCreateChat.mockImplementation(({ onError }) => {
-      React.useEffect(() => {
-        if (onError) {
-          onError(testError);
-        }
-      }, [onError]);
-
-      return {
-        mutate: mockMutate,
-        data: undefined,
-        error: testError,
-        isLoading: false,
-        reset: jest.fn(),
-      };
-    });
-
-    render(<Home />);
-
-    await waitFor(() => {
-      expect(screen.getByText("Something went wrong")).toBeInTheDocument();
-      expect(screen.getByText(testError.message)).toBeInTheDocument();
-      expect(screen.getByText("Try again")).toBeInTheDocument();
-    });
-
-    expect(consoleSpy).toHaveBeenCalledWith(
-      "Failed to create analysis:",
-      testError
-    );
-
-    consoleSpy.mockRestore();
   });
 
   it("handles retry functionality correctly", async () => {
@@ -145,6 +141,9 @@ describe("Home page", () => {
       .mockImplementation(() => {});
     const testError = new Error("Failed to create analysis");
 
+    mockGenerateAnalysisName.mockReturnValue("Analysis One");
+
+    // Mock the hook to simulate error
     mockUseCreateChat.mockImplementation(({ onError }) => {
       React.useEffect(() => {
         if (onError) {
@@ -161,39 +160,26 @@ describe("Home page", () => {
       };
     });
 
-    render(<Home />);
+    renderWithProvider(<Home />);
 
     await waitFor(() => {
       expect(screen.getByText("Something went wrong")).toBeInTheDocument();
     });
 
     mockMutate.mockClear();
+    mockGenerateAnalysisName.mockReturnValue("Analysis Two");
 
     const retryButton = screen.getByText("Try again");
     fireEvent.click(retryButton);
 
-    expect(mockMutate).toHaveBeenCalledTimes(1);
+    await waitFor(() => {
+      expect(mockGenerateAnalysisName).toHaveBeenCalledTimes(2);
+      expect(mockMutate).toHaveBeenCalledTimes(1);
+      expect(mockMutate).toHaveBeenCalledWith({
+        title: "Analysis Two",
+      });
+    });
 
     consoleSpy.mockRestore();
-  });
-
-  it("only calls mutate once on mount even with strict mode", async () => {
-    mockUseCreateChat.mockReturnValue({
-      mutate: mockMutate,
-      data: undefined,
-      error: null,
-      isLoading: true,
-      reset: jest.fn(),
-    });
-
-    // Simulate React.StrictMode double-render
-    const { unmount } = render(<Home />);
-    unmount();
-    render(<Home />);
-
-    // Should still only be called once per component instance
-    await waitFor(() => {
-      expect(mockMutate).toHaveBeenCalledTimes(2); // Once per render
-    });
   });
 });

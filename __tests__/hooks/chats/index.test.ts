@@ -3,7 +3,7 @@ import {
   useChats,
   useChat,
   useCreateChat,
-  useRenameChat,
+  useUpdateChat,
   useSendChatMessage,
   CHATS_KEY,
   CHAT_KEY,
@@ -352,6 +352,8 @@ describe("Chat Hooks", () => {
         date: "2023-07-17",
         title: "New Chat",
         messages: [],
+        draft: "",
+        metadata: {},
       };
 
       const mockResponse = {
@@ -418,13 +420,15 @@ describe("Chat Hooks", () => {
     });
   });
 
-  describe("useRenameChat", () => {
+  describe("useUpdateChat", () => {
     it("should call onSuccess callback with correct data", async () => {
       const mockChat: Chat = {
         id: "test-id",
         date: "2023-07-17",
         title: "New Title",
         messages: [],
+        draft: "",
+        metadata: {},
       };
       const mockResponse = {
         data: mockChat,
@@ -447,7 +451,7 @@ describe("Chat Hooks", () => {
 
       mockUseMutation.mockReturnValue(mockMutationResult);
 
-      renderHook(() => useRenameChat({ onSuccess, onError }));
+      renderHook(() => useUpdateChat({ onSuccess, onError }));
 
       // Get the mutation function and onSuccess callback
       const mutationFunction = mockUseMutation.mock.calls[0][0];
@@ -480,7 +484,7 @@ describe("Chat Hooks", () => {
 
       mockUseMutation.mockReturnValue(mockMutationResult);
 
-      renderHook(() => useRenameChat({ onSuccess, onError }));
+      renderHook(() => useUpdateChat({ onSuccess, onError }));
 
       const mutationFunction = mockUseMutation.mock.calls[0][0];
       const onErrorCallback = mockUseMutation.mock.calls[0][1]?.onError;
