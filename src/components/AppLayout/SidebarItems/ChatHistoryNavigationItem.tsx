@@ -86,7 +86,6 @@ export default function ChatHistoryNavigationItem({
       <Panel
         headerText={chat.title}
         onToggle={() => handleChatToggle(chat.id)}
-        noAnimation
         collapsed
       >
         {renderChatMessages(chat)}

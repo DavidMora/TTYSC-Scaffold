@@ -1,6 +1,8 @@
 export const BASE =
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000";
 
+export const SETTINGS = `${BASE}/settings`;
+
 export const DEFINITIONS = `${BASE}/definitions`;
 export const DEFINITION = (id: string) =>
   `${BASE}/definitions/${encodeURIComponent(id)}`;
