@@ -11,12 +11,10 @@ export interface TableDataRow {
   [key: string]: TableDataRowComplex;
 }
 
-export interface TableData<
-  T extends Record<string, TableDataRowComplex> = TableDataRow
-> {
-  headers: { text: string; accessorKey: keyof T & string }[];
-  rows: T[];
-  rowIdentifier?: keyof T & string;
+export interface TableData {
+  headers: { text: string; accessorKey: string }[];
+  rows: TableDataRow[];
+  rowIdentifier?: string;
 }
 
 export interface TableDataProps {

@@ -54,7 +54,15 @@ const BaseDataTable: React.FC<Readonly<TableDataProps>> = (props) => {
             <TableRow key={rowKey} rowKey={rowKey}>
               {props.data.headers.map((column) => (
                 <TableCell key={column.accessorKey}>
-                  <Text>{row[column.accessorKey] as string}</Text>
+                  <Text>
+                    {(() => {
+                      const value = row[column.accessorKey];
+                      if (value === null || value === undefined) return "";
+                      if (typeof value === "object")
+                        return JSON.stringify(value);
+                      return String(value);
+                    })()}
+                  </Text>
                 </TableCell>
               ))}
             </TableRow>

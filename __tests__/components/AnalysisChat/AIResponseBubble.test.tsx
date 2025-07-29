@@ -35,10 +35,15 @@ describe("AIResponseBubble", () => {
     expect(screen.getByTestId("feedback-vote")).toBeInTheDocument();
   });
 
-  it("renders data table", () => {
+  it("renders data table when message ID meets condition", () => {
     render(<AIResponseBubble message={baseMessage} />);
-
     expect(screen.getByTestId("base-data-table")).toBeInTheDocument();
+  });
+
+  it("does not render data table when message ID doesn't meet condition", () => {
+    const messageWithoutTable = { ...baseMessage, id: "5" };
+    render(<AIResponseBubble message={messageWithoutTable} />);
+    expect(screen.queryByTestId("base-data-table")).not.toBeInTheDocument();
   });
 
   it("applies correct styling for AI response", () => {

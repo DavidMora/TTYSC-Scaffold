@@ -253,6 +253,41 @@ describe("BaseDataTable", () => {
       expect(screen.getByText("true")).toBeInTheDocument();
       expect(screen.getByText("false")).toBeInTheDocument();
     });
+
+    it("should handle object values in cells by stringifying them", () => {
+      const dataWithObjects = {
+        data: {
+          headers: [
+            { text: "Name", accessorKey: "name" },
+            { text: "Metadata", accessorKey: "metadata" },
+            { text: "Settings", accessorKey: "settings" },
+          ],
+          rows: [
+            { 
+              id: "1", 
+              name: "John Doe", 
+              metadata: { department: "IT", role: "Developer" },
+              settings: { theme: "dark", notifications: true }
+            },
+            { 
+              id: "2", 
+              name: "Jane Smith", 
+              metadata: { department: "HR", role: "Manager" },
+              settings: { theme: "light", notifications: false }
+            },
+          ],
+          rowIdentifier: "id",
+        },
+      };
+
+      render(<BaseDataTable {...dataWithObjects} />);
+
+      // Object values should be JSON stringified
+      expect(screen.getByText('{"department":"IT","role":"Developer"}')).toBeInTheDocument();
+      expect(screen.getByText('{"theme":"dark","notifications":true}')).toBeInTheDocument();
+      expect(screen.getByText('{"department":"HR","role":"Manager"}')).toBeInTheDocument();
+      expect(screen.getByText('{"theme":"light","notifications":false}')).toBeInTheDocument();
+    });
   });
 
   describe("Table Features", () => {

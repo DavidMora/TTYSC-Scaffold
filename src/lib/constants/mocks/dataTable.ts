@@ -16,7 +16,7 @@ export const tableData: TableData = {
       productFamily: "HGS",
       system: "H100",
       demandUnits: "100K",
-      fulfilledDemandUnits: "80k",
+      fulfilledDemandUnits: "80K",
     },
     {
       id: "2",
@@ -24,7 +24,7 @@ export const tableData: TableData = {
       productFamily: "DGI",
       system: "B110",
       demandUnits: "100K",
-      fulfilledDemandUnits: "80k",
+      fulfilledDemandUnits: "80K",
     },
     {
       id: "3",
@@ -32,7 +32,7 @@ export const tableData: TableData = {
       productFamily: "HGD",
       system: "System",
       demandUnits: "100K",
-      fulfilledDemandUnits: "80k",
+      fulfilledDemandUnits: "80K",
     },
     {
       id: "4",
@@ -40,7 +40,7 @@ export const tableData: TableData = {
       productFamily: "DGE",
       system: "B100",
       demandUnits: "100K",
-      fulfilledDemandUnits: "80k",
+      fulfilledDemandUnits: "80K",
     },
     {
       id: "5",
@@ -48,7 +48,7 @@ export const tableData: TableData = {
       productFamily: "HGC",
       system: "B110",
       demandUnits: "100K",
-      fulfilledDemandUnits: "80k",
+      fulfilledDemandUnits: "80K",
     },
     {
       id: "6",
@@ -56,7 +56,7 @@ export const tableData: TableData = {
       productFamily: "DGT",
       system: "System",
       demandUnits: "100K",
-      fulfilledDemandUnits: "80k",
+      fulfilledDemandUnits: "80K",
     },
     {
       id: "7",
@@ -64,7 +64,7 @@ export const tableData: TableData = {
       productFamily: "HGP",
       system: "B110",
       demandUnits: "100K",
-      fulfilledDemandUnits: "80k",
+      fulfilledDemandUnits: "80K",
     },
     {
       id: "8",
@@ -72,7 +72,7 @@ export const tableData: TableData = {
       productFamily: "DGS",
       system: "H100",
       demandUnits: "100K",
-      fulfilledDemandUnits: "80k",
+      fulfilledDemandUnits: "80K",
     },
     {
       id: "9",
@@ -80,7 +80,7 @@ export const tableData: TableData = {
       productFamily: "HGI",
       system: "H200",
       demandUnits: "100K",
-      fulfilledDemandUnits: "80k",
+      fulfilledDemandUnits: "80K",
     },
     {
       id: "10",
@@ -88,7 +88,7 @@ export const tableData: TableData = {
       productFamily: "DGS",
       system: "System",
       demandUnits: "100K",
-      fulfilledDemandUnits: "80k",
+      fulfilledDemandUnits: "80K",
     },
     {
       id: "11",
@@ -96,7 +96,7 @@ export const tableData: TableData = {
       productFamily: "HGI",
       system: "B100",
       demandUnits: "100K",
-      fulfilledDemandUnits: "80k",
+      fulfilledDemandUnits: "80K",
     },
     {
       id: "12",
@@ -104,7 +104,7 @@ export const tableData: TableData = {
       productFamily: "DGD",
       system: "H200",
       demandUnits: "100K",
-      fulfilledDemandUnits: "80k",
+      fulfilledDemandUnits: "80K",
     },
     {
       id: "13",
@@ -112,7 +112,7 @@ export const tableData: TableData = {
       productFamily: "HGE",
       system: "System",
       demandUnits: "100K",
-      fulfilledDemandUnits: "80k",
+      fulfilledDemandUnits: "80K",
     },
     {
       id: "14",
@@ -120,7 +120,7 @@ export const tableData: TableData = {
       productFamily: "DGC",
       system: "B100",
       demandUnits: "100K",
-      fulfilledDemandUnits: "80k",
+      fulfilledDemandUnits: "80K",
     },
     {
       id: "15",
@@ -128,7 +128,7 @@ export const tableData: TableData = {
       productFamily: "DGC",
       system: "B100",
       demandUnits: "100K",
-      fulfilledDemandUnits: "80k",
+      fulfilledDemandUnits: "80K",
     },
     {
       id: "16",
@@ -136,7 +136,7 @@ export const tableData: TableData = {
       productFamily: "HGE",
       system: "B110",
       demandUnits: "100K",
-      fulfilledDemandUnits: "80k",
+      fulfilledDemandUnits: "80K",
     },
     {
       id: "17",
@@ -144,7 +144,7 @@ export const tableData: TableData = {
       productFamily: "DGD",
       system: "H100",
       demandUnits: "100K",
-      fulfilledDemandUnits: "80k",
+      fulfilledDemandUnits: "80K",
     },
     {
       id: "18",
@@ -152,7 +152,7 @@ export const tableData: TableData = {
       productFamily: "HGI",
       system: "System",
       demandUnits: "100K",
-      fulfilledDemandUnits: "80k",
+      fulfilledDemandUnits: "80K",
     },
     {
       id: "19",
@@ -160,7 +160,7 @@ export const tableData: TableData = {
       productFamily: "DGS",
       system: "B110",
       demandUnits: "100K",
-      fulfilledDemandUnits: "80k",
+      fulfilledDemandUnits: "80K",
     },
     {
       id: "20",
@@ -168,7 +168,7 @@ export const tableData: TableData = {
       productFamily: "HGP",
       system: "H200",
       demandUnits: "100K",
-      fulfilledDemandUnits: "80k",
+      fulfilledDemandUnits: "80K",
     },
   ],
 } as const satisfies TableData;

@@ -8,11 +8,18 @@ import BaseDataTable from "@/components/Tables/BaseDataTable";
 
 interface AIResponseBubbleProps {
   message: ChatMessage;
+  showTable?: boolean;
 }
 
-export function AIResponseBubble({ message }: Readonly<AIResponseBubbleProps>) {
+export function AIResponseBubble({
+  message,
+  showTable,
+}: Readonly<AIResponseBubbleProps>) {
+  
   // Mocking the table to show 20% of the time
-  const shouldShowTable = parseInt(message.id) % 10 < 2;
+  const mockTableDisplayFrequency = 0.2;
+  const shouldShowTable =
+    showTable ?? parseInt(message.id) % 10 < mockTableDisplayFrequency * 10;
 
   return (
     <div
@@ -28,6 +35,7 @@ export function AIResponseBubble({ message }: Readonly<AIResponseBubbleProps>) {
         padding: "10px 14px",
         color: "black",
         position: "relative",
+        zIndex: 1,
       }}
     >
       <div
@@ -49,7 +57,7 @@ export function AIResponseBubble({ message }: Readonly<AIResponseBubbleProps>) {
             fontWeight: "700",
           }}
         >
-          {message.title}
+          {message.title ?? "AI Response"}
         </Text>
       </div>
 
