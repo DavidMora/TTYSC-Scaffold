@@ -124,7 +124,7 @@ export default function AnalysisContainer() {
         setAnalysisName(analysis?.data?.title);
       }
     }
-  }, [analysis?.data, analysisName]);
+  }, [analysis?.data]);
 
   return (
     <>

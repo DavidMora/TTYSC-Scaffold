@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, useEffect } from "react";
+import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import {
   FILTER_ALL_VALUE,
   FILTER_OPTIONS,
@@ -39,10 +39,12 @@ export const useAnalysisFilters = (
   const [filters, setFilters] = useState<FilterState>(
     initialFilters || INITIAL_FILTERS
   );
+  const hasInitialized = useRef(false);
 
   useEffect(() => {
-    if (initialFilters) {
+    if (initialFilters && !hasInitialized.current) {
       setFilters(initialFilters);
+      hasInitialized.current = true;
     }
   }, [initialFilters]);
 

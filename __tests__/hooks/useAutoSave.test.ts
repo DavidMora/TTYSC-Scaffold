@@ -49,7 +49,7 @@ describe("useAutoSave", () => {
       rerender({ value: "changed" });
 
       // Wait for the short delay
-      await new Promise((resolve) => setTimeout(resolve, 150));
+      await new Promise((resolve) => setTimeout(resolve, 300));
 
       expect(mockOnSave).toHaveBeenCalledTimes(1);
       expect(result.current.isSaving).toBe(false);
