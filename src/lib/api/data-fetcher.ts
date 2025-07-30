@@ -29,10 +29,11 @@ class DataFetcher {
   }
 
   mutateData<TData = unknown, TVariables = unknown>(
+    mutationKey: unknown[],
     mutationFn: (variables: TVariables) => Promise<HttpClientResponse<TData>>,
     options?: MutationOptions<TData, TVariables>
   ): MutationResponse<TData, TVariables> {
-    return this.mutationAdapter.mutateData(mutationFn, options);
+    return this.mutationAdapter.mutateData(mutationKey, mutationFn, options);
   }
 }
 

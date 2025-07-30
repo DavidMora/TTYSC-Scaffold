@@ -79,10 +79,15 @@ describe("Chat Hooks", () => {
   describe("useCreateChat", () => {
     it("should create chat with correct configuration", async () => {
       const mockChat = { id: "123", title: "New Chat" };
-      const mockMutateData = jest.fn().mockReturnValue({
-        mutate: jest.fn(),
-        mutateAsync: jest.fn(),
-      });
+      const mockMutateData = jest
+        .fn()
+        .mockImplementation((mutationKey, mutationFn, options) => ({
+          mutate: jest.fn(),
+          mutateAsync: jest.fn(),
+          mutationKey,
+          mutationFn,
+          options,
+        }));
       mockedDataFetcher.mutateData = mockMutateData;
       mockedCreateChat.mockResolvedValue({
         data: mockChat,
@@ -95,11 +100,12 @@ describe("Chat Hooks", () => {
       renderHook(() => useCreateChat({ onSuccess, onError }));
 
       expect(mockMutateData).toHaveBeenCalledWith(
+        expect.any(Array),
         expect.any(Function),
         expect.objectContaining({ invalidateQueries: ["chatHistory"] })
       );
 
-      const mutationFn = mockMutateData.mock.calls[0][0];
+      const mutationFn = mockMutateData.mock.calls[0][1];
       const payload = { title: "New Chat" };
       const mutationResult = await mutationFn(payload);
       expect(mockedCreateChat).toHaveBeenCalledWith(payload);
@@ -119,6 +125,7 @@ describe("Chat Hooks", () => {
 
       renderHook(() => useCreateChat({}));
       expect(mockMutateData).toHaveBeenCalledWith(
+        expect.any(Array),
         expect.any(Function),
         expect.objectContaining({ invalidateQueries: ["chatHistory"] })
       );
@@ -135,7 +142,7 @@ describe("Chat Hooks", () => {
       const onSuccess = jest.fn();
       renderHook(() => useCreateChat({ onSuccess }));
 
-      const config = mockMutateData.mock.calls[0][1];
+      const config = mockMutateData.mock.calls[0][2];
       config.onSuccess(mockChat);
       expect(onSuccess).toHaveBeenCalledWith(mockChat);
     });
@@ -151,7 +158,7 @@ describe("Chat Hooks", () => {
       const onError = jest.fn();
       renderHook(() => useCreateChat({ onError }));
 
-      const config = mockMutateData.mock.calls[0][1];
+      const config = mockMutateData.mock.calls[0][2];
       config.onError(mockError);
       expect(onError).toHaveBeenCalledWith(mockError);
     });
@@ -160,10 +167,15 @@ describe("Chat Hooks", () => {
   describe("useUpdateChat", () => {
     it("should update chat with correct configuration", async () => {
       const mockChat = { id: "123", title: "Updated Chat" };
-      const mockMutateData = jest.fn().mockReturnValue({
-        mutate: jest.fn(),
-        mutateAsync: jest.fn(),
-      });
+      const mockMutateData = jest
+        .fn()
+        .mockImplementation((mutationKey, mutationFn, options) => ({
+          mutate: jest.fn(),
+          mutateAsync: jest.fn(),
+          mutationKey,
+          mutationFn,
+          options,
+        }));
       mockedDataFetcher.mutateData = mockMutateData;
       mockedUpdateChat.mockResolvedValue({
         data: mockChat,
@@ -176,11 +188,12 @@ describe("Chat Hooks", () => {
       renderHook(() => useUpdateChat({ onSuccess, onError }));
 
       expect(mockMutateData).toHaveBeenCalledWith(
+        expect.any(Array),
         expect.any(Function),
         expect.objectContaining({ invalidateQueries: ["chatHistory"] })
       );
 
-      const mutationFn = mockMutateData.mock.calls[0][0];
+      const mutationFn = mockMutateData.mock.calls[0][1];
       const payload = { id: "123", title: "Updated Chat" };
       const mutationResult = await mutationFn(payload);
       expect(mockedUpdateChat).toHaveBeenCalledWith(payload);
@@ -202,7 +215,7 @@ describe("Chat Hooks", () => {
       const onSuccess = jest.fn();
       renderHook(() => useUpdateChat({ onSuccess }));
 
-      const config = mockMutateData.mock.calls[0][1];
+      const config = mockMutateData.mock.calls[0][2];
       config.onSuccess(mockChat);
       expect(onSuccess).toHaveBeenCalledWith(mockChat);
     });
@@ -218,7 +231,7 @@ describe("Chat Hooks", () => {
       const onError = jest.fn();
       renderHook(() => useUpdateChat({ onError }));
 
-      const config = mockMutateData.mock.calls[0][1];
+      const config = mockMutateData.mock.calls[0][2];
       config.onError(mockError);
       expect(onError).toHaveBeenCalledWith(mockError);
     });
@@ -247,10 +260,15 @@ describe("Chat Hooks", () => {
           total_tokens: 15,
         },
       };
-      const mockMutateData = jest.fn().mockReturnValue({
-        mutate: jest.fn(),
-        mutateAsync: jest.fn(),
-      });
+      const mockMutateData = jest
+        .fn()
+        .mockImplementation((mutationKey, mutationFn, options) => ({
+          mutate: jest.fn(),
+          mutateAsync: jest.fn(),
+          mutationKey,
+          mutationFn,
+          options,
+        }));
       mockedDataFetcher.mutateData = mockMutateData;
       mockedCreateChatMessage.mockResolvedValue({
         data: mockResponse,
@@ -265,11 +283,12 @@ describe("Chat Hooks", () => {
       renderHook(() => useSendChatMessage({ onSuccess, onError }));
 
       expect(mockMutateData).toHaveBeenCalledWith(
+        expect.any(Array),
         expect.any(Function),
         expect.objectContaining({ invalidateQueries: [] })
       );
 
-      const mutationFn = mockMutateData.mock.calls[0][0];
+      const mutationFn = mockMutateData.mock.calls[0][1];
       const payload = { chatId: "123", message: "Hello" };
       const mutationResult = await mutationFn(payload);
       expect(mockedCreateChatMessage).toHaveBeenCalledWith(payload);
@@ -313,7 +332,7 @@ describe("Chat Hooks", () => {
       const onSuccess = jest.fn();
       renderHook(() => useSendChatMessage({ onSuccess }));
 
-      const config = mockMutateData.mock.calls[0][1];
+      const config = mockMutateData.mock.calls[0][2];
       config.onSuccess(mockResponse);
       expect(onSuccess).toHaveBeenCalledWith(mockResponse);
     });
@@ -329,7 +348,7 @@ describe("Chat Hooks", () => {
       const onError = jest.fn();
       renderHook(() => useSendChatMessage({ onError }));
 
-      const config = mockMutateData.mock.calls[0][1];
+      const config = mockMutateData.mock.calls[0][2];
       config.onError(mockError);
       expect(onError).toHaveBeenCalledWith(mockError);
     });

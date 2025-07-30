@@ -36,6 +36,7 @@ describe("SWRMutationAdapter", () => {
     const mutationFn = jest.fn().mockResolvedValue({ data: "result" });
     const adapter = new SWRMutationAdapter(mockUseSWRMutation);
     adapter.mutateData(
+      ["test-key"],
       mutationFn,
       {},
       {
@@ -81,6 +82,7 @@ describe("SWRMutationAdapter", () => {
         reset: mockReset,
       });
       let response = new SWRMutationAdapter(mockUseSWRMutation).mutateData(
+        ["test-key"],
         jest.fn()
       );
       expect(response.isSuccess).toBe(true);
@@ -97,6 +99,7 @@ describe("SWRMutationAdapter", () => {
         reset: mockReset,
       });
       response = new SWRMutationAdapter(mockUseSWRMutation).mutateData(
+        ["test-key"],
         jest.fn()
       );
       expect(response.isSuccess).toBe(false);
@@ -105,7 +108,8 @@ describe("SWRMutationAdapter", () => {
     });
     it("should return mutation response with initial state", () => {
       const mutationFn = jest.fn();
-      const response = adapter.mutateData(mutationFn);
+      const mutationKey = ["test-key"];
+      const response = adapter.mutateData(mutationKey, mutationFn);
 
       expect(response.data).toBeUndefined();
       expect(response.error).toBeUndefined();
@@ -128,7 +132,8 @@ describe("SWRMutationAdapter", () => {
         statusText: "OK",
       } as HttpClientResponse<typeof mockData>);
 
-      const response = adapter.mutateData(mutationFn);
+      const mutationKey = ["test-key"];
+      const response = adapter.mutateData(mutationKey, mutationFn);
       const variables = { name: "test" };
 
       const result = await response.mutate(variables);
@@ -147,7 +152,8 @@ describe("SWRMutationAdapter", () => {
         statusText: "OK",
       } as HttpClientResponse<{ id: number }>);
 
-      const response = adapter.mutateData(mutationFn);
+      const mutationKey = ["test-key"];
+      const response = adapter.mutateData(mutationKey, mutationFn);
       const variables = { name: "test" };
 
       await expect(response.mutate(variables)).rejects.toThrow(error);
@@ -164,7 +170,10 @@ describe("SWRMutationAdapter", () => {
         statusText: "OK",
       } as HttpClientResponse<typeof mockData>);
 
-      const response = adapter.mutateData(mutationFn, { onSuccess });
+      const mutationKey = ["test-key"];
+      const response = adapter.mutateData(mutationKey, mutationFn, {
+        onSuccess,
+      });
       const variables = { name: "test" };
 
       await response.mutate(variables);
@@ -183,7 +192,8 @@ describe("SWRMutationAdapter", () => {
         statusText: "OK",
       } as HttpClientResponse<{ id: number }>);
 
-      const response = adapter.mutateData(mutationFn, { onError });
+      const mutationKey = ["test-key"];
+      const response = adapter.mutateData(mutationKey, mutationFn, { onError });
       const variables = { name: "test" };
 
       await expect(response.mutate(variables)).rejects.toThrow();
@@ -202,7 +212,10 @@ describe("SWRMutationAdapter", () => {
         statusText: "OK",
       } as HttpClientResponse<typeof mockData>);
 
-      const response = adapter.mutateData(mutationFn, { onSettled });
+      const mutationKey = ["test-key"];
+      const response = adapter.mutateData(mutationKey, mutationFn, {
+        onSettled,
+      });
       const variables = { name: "test" };
 
       await response.mutate(variables);
@@ -221,7 +234,10 @@ describe("SWRMutationAdapter", () => {
         statusText: "OK",
       } as HttpClientResponse<{ id: number }>);
 
-      const response = adapter.mutateData(mutationFn, { onSettled });
+      const mutationKey = ["test-key"];
+      const response = adapter.mutateData(mutationKey, mutationFn, {
+        onSettled,
+      });
       const variables = { name: "test" };
 
       await expect(response.mutate(variables)).rejects.toThrow();
@@ -246,7 +262,8 @@ describe("SWRMutationAdapter", () => {
         statusText: "OK",
       } as HttpClientResponse<typeof mockData>);
 
-      const response = adapter.mutateData(mutationFn, {
+      const mutationKey = ["test-key"];
+      const response = adapter.mutateData(mutationKey, mutationFn, {
         invalidateQueries: ["query1", "query2"],
       });
       const variables = { name: "test" };
@@ -259,7 +276,8 @@ describe("SWRMutationAdapter", () => {
 
     it("should reset state when reset is called", () => {
       const mutationFn = jest.fn();
-      const response = adapter.mutateData(mutationFn);
+      const mutationKey = ["test-key"];
+      const response = adapter.mutateData(mutationKey, mutationFn);
 
       response.reset();
 
@@ -276,7 +294,8 @@ describe("SWRMutationAdapter", () => {
         statusText: "OK",
       } as HttpClientResponse<typeof mockData>);
 
-      const response = adapter.mutateData(mutationFn);
+      const mutationKey = ["test-key"];
+      const response = adapter.mutateData(mutationKey, mutationFn);
       const variables = { name: "test" };
 
       const result = await response.mutateAsync(variables);
@@ -295,7 +314,8 @@ describe("SWRMutationAdapter", () => {
         statusText: "OK",
       } as HttpClientResponse<{ id: number }>);
 
-      const response = adapter.mutateData(mutationFn);
+      const mutationKey = ["test-key"];
+      const response = adapter.mutateData(mutationKey, mutationFn);
       const variables = { name: "test" };
 
       await expect(response.mutate(variables)).rejects.toThrow(

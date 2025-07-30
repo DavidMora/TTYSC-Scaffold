@@ -11,7 +11,7 @@ describe("MockMutationAdapter", () => {
   describe("mutateData", () => {
     it("should return mutation response with initial state", () => {
       const mutationFn = jest.fn();
-      const response = adapter.mutateData(mutationFn);
+      const response = adapter.mutateData(["test-key"], mutationFn);
 
       expect(response.data).toBeUndefined();
       expect(response.error).toBeUndefined();
@@ -32,7 +32,7 @@ describe("MockMutationAdapter", () => {
         statusText: "OK",
       } as HttpClientResponse<typeof mockData>);
 
-      const response = adapter.mutateData(mutationFn);
+      const response = adapter.mutateData(["test-key"], mutationFn);
       const variables = { name: "test" };
 
       const result = await response.mutate(variables);
@@ -45,7 +45,7 @@ describe("MockMutationAdapter", () => {
       const error = new Error("Mutation failed");
       const mutationFn = jest.fn().mockRejectedValue(error);
 
-      const response = adapter.mutateData(mutationFn);
+      const response = adapter.mutateData(["test-key"], mutationFn);
       const variables = { name: "test" };
 
       await expect(response.mutate(variables)).rejects.toThrow(error);
@@ -60,7 +60,9 @@ describe("MockMutationAdapter", () => {
         statusText: "OK",
       } as HttpClientResponse<typeof mockData>);
 
-      const response = adapter.mutateData(mutationFn, { onSuccess });
+      const response = adapter.mutateData(["test-key"], mutationFn, {
+        onSuccess,
+      });
       const variables = { name: "test" };
 
       await response.mutate(variables);
@@ -73,7 +75,9 @@ describe("MockMutationAdapter", () => {
       const onError = jest.fn();
       const mutationFn = jest.fn().mockRejectedValue(error);
 
-      const response = adapter.mutateData(mutationFn, { onError });
+      const response = adapter.mutateData(["test-key"], mutationFn, {
+        onError,
+      });
       const variables = { name: "test" };
 
       await expect(response.mutate(variables)).rejects.toThrow();
@@ -90,7 +94,9 @@ describe("MockMutationAdapter", () => {
         statusText: "OK",
       } as HttpClientResponse<typeof mockData>);
 
-      const response = adapter.mutateData(mutationFn, { onSettled });
+      const response = adapter.mutateData(["test-key"], mutationFn, {
+        onSettled,
+      });
       const variables = { name: "test" };
 
       await response.mutate(variables);
@@ -103,7 +109,9 @@ describe("MockMutationAdapter", () => {
       const onSettled = jest.fn();
       const mutationFn = jest.fn().mockRejectedValue(error);
 
-      const response = adapter.mutateData(mutationFn, { onSettled });
+      const response = adapter.mutateData(["test-key"], mutationFn, {
+        onSettled,
+      });
       const variables = { name: "test" };
 
       await expect(response.mutate(variables)).rejects.toThrow();
@@ -113,7 +121,7 @@ describe("MockMutationAdapter", () => {
 
     it("should reset state when reset is called", () => {
       const mutationFn = jest.fn();
-      const response = adapter.mutateData(mutationFn);
+      const response = adapter.mutateData(["test-key"], mutationFn);
 
       expect(typeof response.reset).toBe("function");
       expect(() => response.reset()).not.toThrow();
@@ -127,7 +135,7 @@ describe("MockMutationAdapter", () => {
         statusText: "OK",
       } as HttpClientResponse<typeof mockData>);
 
-      const response = adapter.mutateData(mutationFn);
+      const response = adapter.mutateData(["test-key"], mutationFn);
       const variables = { name: "test" };
 
       const result = await response.mutateAsync(variables);

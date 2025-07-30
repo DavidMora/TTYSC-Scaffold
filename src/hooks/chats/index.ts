@@ -37,6 +37,7 @@ export const useCreateChat = ({
   onError?: (error: Error) => void;
 }) => {
   return dataFetcher.mutateData(
+    ["create-chat-mutation"],
     (payload: CreateChatRequest) => createChat(payload),
     {
       invalidateQueries: [CHATS_KEY],
@@ -58,6 +59,7 @@ export const useUpdateChat = ({
   onError?: (error: Error) => void;
 }) => {
   return dataFetcher.mutateData(
+    ["update-chat-mutation"],
     (payload: UpdateChatRequest) => updateChat(payload),
     {
       invalidateQueries: [CHATS_KEY],
@@ -79,6 +81,7 @@ export const useSendChatMessage = ({
   onError?: (error: Error) => void;
 }) => {
   return dataFetcher.mutateData(
+    ["send-chat-message-mutation"],
     (payload: CreateChatMessageRequest) => createChatMessage(payload),
     {
       invalidateQueries: [], // No need to invalidate any queries here

@@ -42,6 +42,7 @@ export class SWRMutationAdapter implements MutationAdapter {
 
   // Expose swrMutationFn for test coverage if requested
   mutateData<TData = unknown, TVariables = unknown>(
+    mutationKey: unknown[],
     mutationFn: (variables: TVariables) => Promise<HttpClientResponse<TData>>,
     options: MutationOptions<TData, TVariables> = {},
     __testExposeInternal?: {
@@ -60,7 +61,7 @@ export class SWRMutationAdapter implements MutationAdapter {
     __testExposeInternal?.swrMutationFn?.(swrMutationFn);
 
     const { data, error, isMutating, trigger, reset } = this.useSWRMutation(
-      "mutation-key", // SWR Mutation doesn't require a specific key
+      mutationKey,
       swrMutationFn
     );
 

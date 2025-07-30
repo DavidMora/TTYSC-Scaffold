@@ -7,6 +7,7 @@ import {
 
 export class MockMutationAdapter implements MutationAdapter {
   mutateData<TData = unknown, TVariables = unknown>(
+    mutationKey: unknown[],
     mutationFn: (variables: TVariables) => Promise<HttpClientResponse<TData>>,
     options: MutationOptions<TData, TVariables> = {}
   ): MutationResponse<TData, TVariables> {
