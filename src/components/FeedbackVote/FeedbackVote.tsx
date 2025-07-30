@@ -25,6 +25,7 @@ export function FeedbackVote({
   const updateFeedbackMutation = useUpdateMessageFeedback({
     onSuccess: () => {
       activateAutosaveUI();
+      setHasVoted(true);
     },
     onError: () => {
       setHasVoted(false);
@@ -36,16 +37,11 @@ export function FeedbackVote({
 
   const handleVote = (voteType: "up" | "down" | null) => {
     if (disabled || hasVoted) return;
-    try {
-      updateFeedbackMutation.mutate({
-        messageId,
-        feedbackVote: voteType,
-      });
-      setCurrentVote(voteType);
-      setHasVoted(true);
-    } catch {
-      console.error("Error updating feedback:");
-    }
+    updateFeedbackMutation.mutate({
+      messageId,
+      feedbackVote: voteType,
+    });
+    setCurrentVote(voteType);
   };
 
   const [currentVote, setCurrentVote] = useState<VoteType>(previousVote);

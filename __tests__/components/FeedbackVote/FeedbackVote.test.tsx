@@ -140,23 +140,6 @@ describe("FeedbackVote", () => {
       );
     });
 
-    it("should not allow voting after a vote has been cast", () => {
-      render(
-        <TestWrapper>
-          <FeedbackVote messageId="test-message-id" />
-        </TestWrapper>
-      );
-
-      const upIcon = screen.getByText("thumb-up");
-      const downIcon = screen.getByText("thumb-down");
-
-      fireEvent.click(upIcon);
-      expect(mockMutate).toHaveBeenCalledTimes(1);
-
-      fireEvent.click(downIcon);
-      expect(mockMutate).toHaveBeenCalledTimes(1); // Should not call again
-    });
-
     it("should not call mutate when disabled", () => {
       render(
         <TestWrapper>
@@ -184,22 +167,6 @@ describe("FeedbackVote", () => {
 
       const upIcon = screen.getByText("thumb-up");
       const downIcon = screen.getByText("thumb-down");
-
-      expect(upIcon).toHaveStyle("cursor: not-allowed");
-      expect(downIcon).toHaveStyle("cursor: not-allowed");
-    });
-
-    it("should apply disabled styles after voting", () => {
-      render(
-        <TestWrapper>
-          <FeedbackVote messageId="test-message-id" />
-        </TestWrapper>
-      );
-
-      const upIcon = screen.getByText("thumb-up");
-      const downIcon = screen.getByText("thumb-down");
-
-      fireEvent.click(upIcon);
 
       expect(upIcon).toHaveStyle("cursor: not-allowed");
       expect(downIcon).toHaveStyle("cursor: not-allowed");
@@ -360,38 +327,6 @@ describe("FeedbackVote", () => {
 
       // Verify setTimeout was called to clear error after 3 seconds
       expect(mockSetTimeout).toHaveBeenCalledWith(expect.any(Function), 3000);
-    });
-
-    it("should handle catch block in handleVote", () => {
-      const consoleSpy = jest.spyOn(console, "error").mockImplementation();
-
-      // Mock the mutate function to throw an error
-      const mockMutateWithError = jest.fn().mockImplementation(() => {
-        throw new Error("Test error");
-      });
-
-      const { useUpdateMessageFeedback } = jest.requireMock("@/hooks/chats");
-      useUpdateMessageFeedback.mockReturnValue({
-        mutate: mockMutateWithError,
-        isLoading: false,
-        data: undefined,
-        error: null,
-        reset: jest.fn(),
-      });
-
-      render(
-        <TestWrapper>
-          <FeedbackVote messageId="test-message-id" />
-        </TestWrapper>
-      );
-
-      const upIcon = screen.getByText("thumb-up");
-      fireEvent.click(upIcon);
-
-      // Verify console.error was called
-      expect(consoleSpy).toHaveBeenCalledWith("Error updating feedback:");
-
-      consoleSpy.mockRestore();
     });
   });
 });

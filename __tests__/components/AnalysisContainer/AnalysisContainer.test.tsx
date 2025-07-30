@@ -337,6 +337,8 @@ describe("AnalysisContainer", () => {
       mutate: jest.fn(),
     });
 
+    const consoleSpy = jest.spyOn(console, "error").mockImplementation();
+
     let capturedOnError: (() => void) | undefined;
     mockUseAutoSave.mockImplementation((options) => {
       capturedOnError = options.onError;
@@ -356,5 +358,9 @@ describe("AnalysisContainer", () => {
     if (capturedOnError) {
       capturedOnError();
     }
+
+    expect(consoleSpy).toHaveBeenCalledWith("Autosave failed");
+
+    consoleSpy.mockRestore();
   });
 });
