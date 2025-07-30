@@ -1,6 +1,3 @@
-it("should cover the return path of mutateData", () => {
-  // Removed: did not increase coverage
-});
 import {
   SWRMutationAdapter,
   getIsSuccess,
@@ -28,8 +25,6 @@ describe("SWRMutationAdapter", () => {
     jest.clearAllMocks();
     adapter = new SWRMutationAdapter(mockUseSWRMutation);
   });
-
-  describe("mutateData", () => {});
 
   it("should cover swrMutationFn via adapter for coverage", () => {
     let called = false;
