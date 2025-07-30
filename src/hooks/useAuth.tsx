@@ -64,7 +64,6 @@ function useAuthInternal(): AuthContextType {
     
     // Handle session errors
     if (extendedSession?.error) {
-      console.error('[Auth] Session error detected:', extendedSession.error);
       setAuthError(extendedSession.error);
       
       // If we have a refresh token error, prevent infinite loops
@@ -84,11 +83,9 @@ function useAuthInternal(): AuthContextType {
         return res.json();
       })
       .then((config: AuthConfig) => {
-        console.log('[Auth] Config fetched successfully:', config);
         setAuthConfig(config);
       })
       .catch(err => {
-        console.error('[Auth] Failed to fetch auth config:', err);
         setAuthError(`Configuration error: ${err.message}`);
         // Fallback to default values
         setAuthConfig({
@@ -111,7 +108,6 @@ function useAuthInternal(): AuthContextType {
       !authError &&
       retryCount < maxRetries
     ) {
-      console.log('[Auth] Attempting auto-login, retry count:', retryCount);
       setHasTriedAutoLogin(true);
       setRetryCount(prev => prev + 1);
       
@@ -119,14 +115,12 @@ function useAuthInternal(): AuthContextType {
         callbackUrl: "/",
         redirect: true
       }).catch(error => {
-        console.error('[Auth] Auto-login failed:', error);
         setAuthError(`Auto-login failed: ${error.message || 'Unknown error'}`);
       });
     }
     
     // If we've exceeded max retries, stop trying
     if (retryCount >= maxRetries && !extendedSession && authConfig?.autoLogin) {
-      console.error('[Auth] Max auto-login retries exceeded');
       setAuthError('Maximum login attempts exceeded. Please try manually.');
       setHasTriedAutoLogin(true);
     }

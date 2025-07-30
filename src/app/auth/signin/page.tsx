@@ -18,42 +18,29 @@ export default function SignIn() {
   const router = useRouter();
 
   useEffect(() => {
-    console.log(
-      "[SignIn] Status:",
-      status,
-      "Session:",
-      session?.user?.name,
-      "Error:",
-      error
-    );
+    const checkSessionAndRedirect = async () => {
+      // If already authenticated and no session errors, redirect to callbackUrl
+      if (status === "authenticated" && session && !(session as ExtendedSession).error) {
+        router.push(callbackUrl);
+        return;
+      }
 
-    // If already authenticated and no session errors, redirect to callbackUrl
-    if (status === "authenticated" && session && !(session as ExtendedSession).error) {
-      console.log(
-        "[SignIn] Already authenticated, redirecting to:",
-        callbackUrl
-      );
-      router.push(callbackUrl);
-      return;
-    }
+      // If session has refresh error, force sign out and re-authenticate
+      if (
+        status === "authenticated" &&
+        (session as ExtendedSession)?.error === "RefreshAccessTokenError"
+      ) {
+        signIn("nvlogin", { callbackUrl });
+        return;
+      }
 
-    // If session has refresh error, force sign out and re-authenticate
-    if (
-      status === "authenticated" &&
-      (session as ExtendedSession)?.error === "RefreshAccessTokenError"
-    ) {
-      console.log(
-        "[SignIn] Session has refresh error, forcing re-authentication"
-      );
-      signIn("nvlogin", { callbackUrl });
-      return;
-    }
+      // If not authenticated, redirect to SSO provider
+      if (status === "unauthenticated") {
+        signIn("nvlogin", { callbackUrl });
+      }
+    };
 
-    // If not authenticated, redirect to SSO provider
-    if (status === "unauthenticated") {
-      console.log("[SignIn] Not authenticated, redirecting to SSO provider");
-      signIn("nvlogin", { callbackUrl });
-    }
+    checkSessionAndRedirect();
   }, [callbackUrl, session, status, router, error]);
 
   return (

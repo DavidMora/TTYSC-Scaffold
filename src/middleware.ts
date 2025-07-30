@@ -30,7 +30,7 @@ export async function middleware(request: NextRequest) {
 
     return NextResponse.next()
   } catch (error) {
-    console.error('Middleware error:', error)
+    // Redirect to signin on any middleware error
     const url = new URL('/auth/signin', request.url)
     url.searchParams.set('callbackUrl', request.url)
     return NextResponse.redirect(url, 307)

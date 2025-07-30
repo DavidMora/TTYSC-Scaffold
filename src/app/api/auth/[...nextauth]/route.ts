@@ -1,7 +1,6 @@
 import NextAuth, { NextAuthOptions } from 'next-auth';
 import { JWT } from 'next-auth/jwt';
 
-// OAuth configuration for Azure AD only
 export interface OAuthConfig {
   clientId: string;
   clientSecret: string;
@@ -57,26 +56,18 @@ interface ExtendedSession {
 }
 
 // Helper function to refresh the access token
-async function refreshAccessToken(
-  token: JWT & { refreshToken?: string },
-): Promise<JWT> {
-  console.log('[Auth] Starting token refresh process');
+async function refreshAccessToken(token: any) {
   try {
-    const refreshToken = token.refreshToken;
+    const refreshToken = token.refreshToken
+    
     if (!refreshToken) {
-      console.error('[Auth] No refresh token available');
-      throw new Error('No refresh token');
+      return { ...token, error: 'RefreshAccessTokenError' }
     }
 
-    const oauthConfig = getOAuthConfig();
-    const tokenEndpoint = oauthConfig.tokenEndpoint;
-
+    const tokenEndpoint = process.env.AZURE_TOKEN_ENDPOINT
     if (!tokenEndpoint) {
-      console.error('[Auth] Token endpoint not configured');
-      throw new Error('Token endpoint not configured');
+      return { ...token, error: 'RefreshAccessTokenError' }
     }
-
-    console.log('[Auth] Making refresh token request');
 
     const refreshParams = new URLSearchParams({
       grant_type: 'refresh_token',
@@ -95,11 +86,9 @@ async function refreshAccessToken(
     const refreshedTokens = await response.json();
 
     if (!response.ok) {
-      console.error('[Auth] Token refresh failed:', refreshedTokens);
       throw new Error('Failed to refresh token');
     }
 
-    console.log('[Auth] Token refresh successful');
     return {
       ...token,
       accessToken: refreshedTokens.access_token,
@@ -110,12 +99,6 @@ async function refreshAccessToken(
       user: token.user,
     };
   } catch (error) {
-    const errorMessage =
-      error instanceof Error
-        ? error.message
-        : 'Unknown error during token refresh';
-    console.error('[Auth] Token refresh error:', errorMessage);
-
     return {
       ...token,
       error: 'RefreshAccessTokenError',
