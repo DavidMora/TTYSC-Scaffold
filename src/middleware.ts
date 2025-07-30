@@ -29,7 +29,7 @@ export async function middleware(request: NextRequest) {
     }
 
     return NextResponse.next()
-  } catch (error) {
+  } catch {
     // Redirect to signin on any middleware error
     const url = new URL('/auth/signin', request.url)
     url.searchParams.set('callbackUrl', request.url)

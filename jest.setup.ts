@@ -22,6 +22,24 @@ jest.mock("next/navigation", () => ({
   },
 }));
 
+// Mock NextAuth
+jest.mock("next-auth/react", () => ({
+  useSession: () => ({
+    data: {
+      user: {
+        id: '1',
+        name: 'Test User',
+        email: 'test@example.com',
+      },
+      expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+    },
+    status: 'authenticated',
+  }),
+  SessionProvider: ({ children }: { children: React.ReactNode }) => children,
+  signIn: jest.fn(),
+  signOut: jest.fn(),
+}));
+
 // Mock UI5 WebComponents React completely
 jest.mock("@ui5/webcomponents-react", () => ({
   ThemeProvider: ({ children }: { children: React.ReactNode }) =>
@@ -234,3 +252,23 @@ global.ResizeObserver = jest.fn().mockImplementation(() => ({
   unobserve: jest.fn(),
   disconnect: jest.fn(),
 }));
+
+// Mock fetch for Node.js environment
+global.fetch = jest.fn((url) => {
+  // Mock auth config API
+  if (url.toString().includes('/api/auth/config')) {
+    return Promise.resolve({
+      ok: true,
+      json: () => Promise.resolve({
+        authProcess: 'test',
+        isAuthDisabled: false,
+        autoLogin: false,
+      }),
+    });
+  }
+  
+  return Promise.resolve({
+    ok: true,
+    json: () => Promise.resolve({}),
+  });
+}) as jest.Mock;

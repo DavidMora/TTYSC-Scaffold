@@ -56,9 +56,9 @@ interface ExtendedSession {
 }
 
 // Helper function to refresh the access token
-async function refreshAccessToken(token: any) {
+async function refreshAccessToken(token: JWT): Promise<JWT> {
   try {
-    const refreshToken = token.refreshToken
+    const refreshToken = token.refreshToken as string
     
     if (!refreshToken) {
       return { ...token, error: 'RefreshAccessTokenError' }
@@ -98,7 +98,7 @@ async function refreshAccessToken(token: any) {
       error: undefined, // Clear any previous errors
       user: token.user,
     };
-  } catch (error) {
+  } catch {
     return {
       ...token,
       error: 'RefreshAccessTokenError',

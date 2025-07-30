@@ -1,4 +1,5 @@
-import { render, screen, fireEvent } from "@testing-library/react";
+import { screen, fireEvent } from "@testing-library/react";
+import { render } from "../test-utils-internal/test-utils";
 import AppLayout from "@/components/AppLayout";
 import "@testing-library/jest-dom";
 import React from "react";
@@ -131,8 +132,8 @@ describe("AppLayout", () => {
   });
 
   it("handles profile click", () => {
-    const consoleLog = jest.spyOn(console, "log").mockImplementation(() => {});
-
+    const { signOut } = require('next-auth/react');
+    
     render(
       <AppLayout>
         <div>Test Child</div>
@@ -142,7 +143,6 @@ describe("AppLayout", () => {
     const profileButton = screen.getByTestId("profile-avatar");
     fireEvent.click(profileButton);
 
-    expect(consoleLog).toHaveBeenCalledWith("Profile clicked");
-    consoleLog.mockRestore();
+    expect(signOut).toHaveBeenCalledWith({ callbackUrl: "/" });
   });
 });

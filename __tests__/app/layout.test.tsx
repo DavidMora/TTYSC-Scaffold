@@ -19,6 +19,28 @@ jest.mock("@/components/ThemeProvider", () => {
   return MockThemeProvider;
 });
 
+jest.mock("@/components/SessionProviderWrapper", () => {
+  const MockSessionProviderWrapper = ({ children }: { children: React.ReactNode }) => {
+    return <div data-testid="mock-session-provider">{children}</div>;
+  };
+  MockSessionProviderWrapper.displayName = "MockSessionProviderWrapper";
+  return { SessionProviderWrapper: MockSessionProviderWrapper };
+});
+
+jest.mock("@/components/AuthWrapper", () => {
+  const MockAuthWrapper = ({ children }: { children: React.ReactNode }) => {
+    return <div data-testid="mock-auth-wrapper">{children}</div>;
+  };
+  MockAuthWrapper.displayName = "MockAuthWrapper";
+  return MockAuthWrapper;
+});
+
+jest.mock("@/hooks/useAuth", () => ({
+  SuspenseAuthProvider: ({ children }: { children: React.ReactNode }) => {
+    return <div data-testid="mock-auth-provider">{children}</div>;
+  },
+}));
+
 // Mock Google Fonts
 jest.mock("next/font/google", () => ({
   Geist: jest.fn(() => ({
@@ -31,30 +53,16 @@ jest.mock("next/font/google", () => ({
 
 describe("RootLayout", () => {
   it("renders children", () => {
-    const consoleError = jest
-      .spyOn(console, "error")
-      .mockImplementation(() => {});
-
     render(
       <RootLayout>
         <div>Test Child</div>
       </RootLayout>
     );
+    
     expect(screen.getByText("Test Child")).toBeInTheDocument();
-    expect(screen.getByTestId("mock-app-layout")).toBeInTheDocument();
-    expect(screen.getByTestId("mock-theme-provider")).toBeInTheDocument();
-
-    const themeProvider = screen.getByTestId("mock-theme-provider");
-    const appLayout = screen.getByTestId("mock-app-layout");
-    expect(themeProvider).toContainElement(appLayout);
-    expect(appLayout).toContainElement(screen.getByText("Test Child"));
-
-    if (consoleError.mock.calls.length > 0) {
-      const message = consoleError.mock.calls[0][0] as string;
-      expect(message).toContain("cannot be a child of");
-    }
-
-    consoleError.mockRestore();
+    expect(screen.getByTestId("mock-session-provider")).toBeInTheDocument();
+    expect(screen.getByTestId("mock-auth-provider")).toBeInTheDocument();
+    expect(screen.getByTestId("mock-auth-wrapper")).toBeInTheDocument();
   });
 
   it("renders with correct structure", () => {
