@@ -191,5 +191,29 @@ describe("TanStackMutationAdapter", () => {
       await actualOnSettled(mockData, null, {});
       expect(onSettled).toHaveBeenCalled();
     });
+
+    it("should handle mutate rejection and call mutateAsync", async () => {
+      const mutationFn = jest.fn();
+      const response = adapter.mutateData(mutationFn);
+      // Simulate mutate error path
+      const error = new Error("mutate error");
+      mockMutate.mockImplementation((variables, { onError }) => {
+        onError(error);
+      });
+      await expect(response.mutate({})).rejects.toThrow(error);
+      // Simulate mutateAsync
+      mockMutateAsync.mockResolvedValue("async result");
+      await expect(response.mutateAsync({})).resolves.toBe("async result");
+    });
+
+    it("should resolve mutate on success", async () => {
+      const mutationFn = jest.fn();
+      const response = adapter.mutateData(mutationFn);
+      const result = { foo: "bar" };
+      mockMutate.mockImplementation((variables, { onSuccess }) => {
+        onSuccess(result);
+      });
+      await expect(response.mutate({})).resolves.toEqual(result);
+    });
   });
 });
