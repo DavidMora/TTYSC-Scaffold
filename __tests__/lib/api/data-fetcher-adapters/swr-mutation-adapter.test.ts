@@ -26,25 +26,49 @@ describe("SWRMutationAdapter", () => {
     adapter = new SWRMutationAdapter(mockUseSWRMutation);
   });
 
-  it("should cover swrMutationFn via adapter for coverage", () => {
-    let called = false;
-    const mutationFn = jest.fn().mockResolvedValue({ data: "result" });
-    const adapter = new SWRMutationAdapter(mockUseSWRMutation);
-    adapter.mutateData(
-      ["test-key"],
-      mutationFn,
-      {},
-      {
-        swrMutationFn: (fn) => {
-          called = true;
-          fn("mutation-key", { arg: 123 }).then((result) => {
-            expect(mutationFn).toHaveBeenCalledWith(123);
-            expect(result).toBe("result");
-          });
-        },
-      }
-    );
-    expect(called).toBe(true);
+  it("should use default useSWRMutation when no hook is provided", () => {
+    // This test ensures the constructor coverage for the default parameter
+    const adapterWithDefault = new SWRMutationAdapter();
+    expect(adapterWithDefault).toBeInstanceOf(SWRMutationAdapter);
+  });
+
+  it("should properly transform HttpClientResponse to data via swrMutationFn", async () => {
+    const mockData = { id: 1, name: "test" };
+    const mockResponse = { data: mockData, status: 200, statusText: "OK" };
+
+    // Mock the mutation function to return a HttpClientResponse
+    const mutationFn = jest.fn().mockResolvedValue(mockResponse);
+
+    // Create a custom mock that captures the swrMutationFn behavior
+    let capturedFetcher:
+      | ((key: string, opts: { arg: unknown }) => Promise<unknown>)
+      | undefined;
+    const customMockUseSWRMutation = jest
+      .fn()
+      .mockImplementation((key, fetcher) => {
+        capturedFetcher = fetcher;
+        return {
+          data: undefined,
+          error: undefined,
+          isMutating: false,
+          trigger: mockTrigger,
+          reset: mockReset,
+        };
+      });
+
+    const adapter = new SWRMutationAdapter(customMockUseSWRMutation);
+    adapter.mutateData(["test-key"], mutationFn);
+
+    // Verify that the fetcher was captured and can transform the response
+    expect(capturedFetcher).toBeDefined();
+    expect(typeof capturedFetcher).toBe("function");
+
+    // Test the actual behavior by calling the captured fetcher
+    const result = await capturedFetcher!("test-key", {
+      arg: { name: "test" },
+    });
+    expect(mutationFn).toHaveBeenCalledWith({ name: "test" });
+    expect(result).toEqual(mockData);
   });
 
   describe("getIsSuccess, getIsError, getIsIdle", () => {

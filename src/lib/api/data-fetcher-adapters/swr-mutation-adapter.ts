@@ -40,16 +40,10 @@ export class SWRMutationAdapter implements MutationAdapter {
     this.useSWRMutation = swrMutationHook || useSWRMutation;
   }
 
-  // Expose swrMutationFn for test coverage if requested
   mutateData<TData = unknown, TVariables = unknown>(
     mutationKey: unknown[],
     mutationFn: (variables: TVariables) => Promise<HttpClientResponse<TData>>,
-    options: MutationOptions<TData, TVariables> = {},
-    __testExposeInternal?: {
-      swrMutationFn?: (
-        fn: (key: string, opts: { arg: TVariables }) => Promise<TData>
-      ) => void;
-    }
+    options: MutationOptions<TData, TVariables> = {}
   ): MutationResponse<TData, TVariables> {
     const swrMutationFn = async (
       key: string,
@@ -58,7 +52,6 @@ export class SWRMutationAdapter implements MutationAdapter {
       const response = await mutationFn(arg);
       return response.data;
     };
-    __testExposeInternal?.swrMutationFn?.(swrMutationFn);
 
     const { data, error, isMutating, trigger, reset } = this.useSWRMutation(
       mutationKey,
