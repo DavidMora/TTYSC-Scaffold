@@ -1,4 +1,11 @@
-// Standalone helpers for coverage
+import { HttpClientResponse } from "@/lib/types/api/http-client";
+import {
+  MutationAdapter,
+  MutationOptions,
+  MutationResponse,
+} from "@/lib/types/api/data-fetcher";
+import useSWRMutation from "swr/mutation";
+
 export function getIsSuccess(
   isMutating: boolean,
   error: unknown,
@@ -12,14 +19,6 @@ export function getIsError(isMutating: boolean, error: unknown) {
 export function getIsIdle(isMutating: boolean, data: unknown, error: unknown) {
   return !isMutating && data === undefined && error === undefined;
 }
-import { HttpClientResponse } from "@/lib/types/api/http-client";
-import {
-  MutationAdapter,
-  MutationOptions,
-  MutationResponse,
-} from "@/lib/types/api/data-fetcher";
-import useSWRMutation from "swr/mutation";
-
 interface SWRMutationResult<T> {
   data: T | undefined;
   error: Error | undefined;
