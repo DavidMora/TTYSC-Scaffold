@@ -15,8 +15,10 @@ const customJestConfig = {
     "<rootDir>/__tests__/test-utils-internal/",
   ],
   moduleNameMapper: {
+    "^@ui5/webcomponents-react$":
+      "<rootDir>/__mocks__/@ui5/webcomponents-react.js",
     "^@ui5/webcomponents-react-base":
-      "<rootDir>/__mocks__/@ui5/webcomponents-react-base.ts",
+      "<rootDir>/__mocks__/@ui5/webcomponents-react-base.js",
     // Handle module aliases
     "^@/(.*)$": "<rootDir>/src/$1",
   },
@@ -26,15 +28,16 @@ const customJestConfig = {
     "!src/**/*.stories.{js,jsx,ts,tsx}",
     "!src/**/*.test.{js,jsx,ts,tsx}",
     "!src/app/api/auth/\\[...nextauth\\]/route.ts",
+    "!src/lib/constants/**",
   ],
-  coverageReporters: ["text", "lcov", "html"],
+  coverageReporters: ["text", "lcov", "html", "json-summary"],
   coverageDirectory: "coverage",
 };
 
 // createJestConfig is exported this way to ensure that next/jest can load the Next.js config which is async
 // export default createJestConfig(customJestConfig);
 
-export default async () => {
+const jestConfig = async () => {
   const config = await createJestConfig(customJestConfig)();
   config.transformIgnorePatterns = [
     "node_modules/(?!(@ui5|lit|lit-html|@zxing/library)/)",
@@ -42,3 +45,5 @@ export default async () => {
   ];
   return config;
 };
+
+export default jestConfig;

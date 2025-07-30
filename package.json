@@ -14,9 +14,12 @@
     "test:coverage": "jest --coverage"
   },
   "dependencies": {
+    "@sap-theming/theming-base-content": "^11.31.1",
     "@sap-ui/common-css": "^0.39.11",
+    "@tanstack/react-query": "^5.83.0",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.3.0",
+    "@types/axios": "^0.14.4",
     "@types/jest": "^30.0.0",
     "@ui5/webcomponents": "^2.12.0",
     "@ui5/webcomponents-fiori": "^2.12.0",
@@ -25,14 +28,16 @@
     "@ui5/webcomponents-icons-tnt": "^2.12.0",
     "@ui5/webcomponents-react": "^2.12.0",
     "@ui5/webcomponents-react-base": "^2.12.0",
+    "axios": "^1.11.0",
     "dotenv": "^17.2.1",
     "dotenv-expand": "^12.0.2",
-    "jest": "^30.0.4",
-    "jest-environment-jsdom": "^30.0.4",
+    "jest": "^30.0.5",
+    "jest-environment-jsdom": "^30.0.5",
     "next": "15.3.5",
     "next-auth": "^4.24.11",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "swr": "^2.3.4"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

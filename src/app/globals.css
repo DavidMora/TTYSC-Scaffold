@@ -26,6 +26,10 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+.analysis-chat-input::part(textarea) {
+  padding-right: 2.5rem !important;
+}
+
 :not(:defined) {
   display: none;
 }

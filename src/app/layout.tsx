@@ -3,6 +3,9 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { SessionProviderWrapper } from "../components/SessionProviderWrapper";
 import { SuspenseAuthProvider } from "../hooks/useAuth";
 import AuthWrapper from "../components/AuthWrapper";
+import ThemeProvider from "../providers/ThemeProvider";
+import AppLayout from "../components/AppLayout/AppLayout";
+import { SequentialNamingProvider } from "../contexts/SequentialNamingContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -31,7 +34,13 @@ export default function RootLayout({
       >
         <SessionProviderWrapper>
           <SuspenseAuthProvider>
-            <AuthWrapper>{children}</AuthWrapper>
+            <AuthWrapper>
+              <ThemeProvider>
+                <SequentialNamingProvider>
+                  <AppLayout>{children}</AppLayout>
+                </SequentialNamingProvider>
+              </ThemeProvider>
+            </AuthWrapper>
           </SuspenseAuthProvider>
         </SessionProviderWrapper>
       </body>
