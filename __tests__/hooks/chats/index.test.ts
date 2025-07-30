@@ -5,8 +5,6 @@ import {
   useCreateChat,
   useUpdateChat,
   useSendChatMessage,
-  CHATS_KEY,
-  CHAT_KEY,
 } from "@/hooks/chats";
 import { dataFetcher } from "@/lib/api";
 import {
@@ -16,27 +14,21 @@ import {
   updateChat,
   createChatMessage,
 } from "@/lib/services/chats.service";
-import { Chat } from "@/lib/types/chats";
+import { HttpClientResponse } from "@/lib/types/api/http-client";
+import { Chat, BotResponse } from "@/lib/types/chats";
 
 // Mock the dependencies
-jest.mock("@/lib/api", () => ({
-  dataFetcher: {
-    fetchData: jest.fn(),
-    mutateData: jest.fn(),
-  },
-}));
+jest.mock("@/lib/api");
+jest.mock("@/lib/services/chats.service");
 
-jest.mock("@/lib/services/chats.service", () => ({
-  getChats: jest.fn(),
-  getChat: jest.fn(),
-  createChat: jest.fn(),
-  updateChat: jest.fn(),
-  createChatMessage: jest.fn(),
-}));
-
-const mockDataFetcher = dataFetcher as jest.Mocked<typeof dataFetcher>;
-const mockGetChats = getChats as jest.MockedFunction<typeof getChats>;
-const mockGetChat = getChat as jest.MockedFunction<typeof getChat>;
+const mockedDataFetcher = dataFetcher as jest.Mocked<typeof dataFetcher>;
+const mockedGetChats = getChats as jest.MockedFunction<typeof getChats>;
+const mockedGetChat = getChat as jest.MockedFunction<typeof getChat>;
+const mockedCreateChat = createChat as jest.MockedFunction<typeof createChat>;
+const mockedUpdateChat = updateChat as jest.MockedFunction<typeof updateChat>;
+const mockedCreateChatMessage = createChatMessage as jest.MockedFunction<
+  typeof createChatMessage
+>;
 
 describe("Chat Hooks", () => {
   beforeEach(() => {
@@ -44,395 +36,302 @@ describe("Chat Hooks", () => {
   });
 
   describe("useChats", () => {
-    it("should call dataFetcher.fetchData with correct parameters", () => {
-      const mockResponse = {
-        data: {
-          data: [],
-          success: true,
-          message: "Chats fetched successfully",
-        },
-        error: undefined,
-        isLoading: false,
-        isValidating: false,
-        mutate: jest.fn(),
-      };
-
-      mockDataFetcher.fetchData.mockReturnValue(mockResponse);
-
-      const { result } = renderHook(() => useChats());
-
-      expect(mockDataFetcher.fetchData).toHaveBeenCalledWith(
-        CHATS_KEY,
-        expect.any(Function),
-        {
-          revalidateOnFocus: false,
-        }
-      );
-
-      expect(result.current.data).toEqual({
-        data: [],
-        message: "Chats fetched successfully",
-        success: true,
-      });
-    });
-
-    it("should use getChats service function as fetcher", () => {
-      mockDataFetcher.fetchData.mockReturnValue({
-        data: [],
-        error: undefined,
-        isLoading: false,
-        isValidating: false,
-        mutate: jest.fn(),
-      });
+    it("should fetch chats with correct configuration", () => {
+      const mockData = [{ id: "1", title: "Test Chat" }];
+      const mockFetchData = jest.fn().mockReturnValue({ data: mockData });
+      mockedDataFetcher.fetchData = mockFetchData;
 
       renderHook(() => useChats());
 
-      // Get the fetcher function passed to dataFetcher.fetchData
-      const fetcherFunction = mockDataFetcher.fetchData.mock.calls[0][1];
+      expect(mockFetchData).toHaveBeenCalledWith(
+        "chatHistory",
+        expect.any(Function),
+        { revalidateOnFocus: false }
+      );
 
-      // Call the fetcher function
-      fetcherFunction();
-
-      expect(mockGetChats).toHaveBeenCalledWith();
-    });
-
-    it("should return loading state correctly", () => {
-      const mockResponse = {
-        data: undefined,
-        error: undefined,
-        isLoading: true,
-        isValidating: false,
-        mutate: jest.fn(),
-      };
-
-      mockDataFetcher.fetchData.mockReturnValue(mockResponse);
-
-      const { result } = renderHook(() => useChats());
-
-      expect(result.current.isLoading).toBe(true);
-      expect(result.current.data).toBeUndefined();
-    });
-
-    it("should return error state correctly", () => {
-      const mockError = new Error("Failed to fetch chats");
-      const mockResponse = {
-        data: undefined,
-        error: mockError,
-        isLoading: false,
-        isValidating: false,
-        mutate: jest.fn(),
-      };
-
-      mockDataFetcher.fetchData.mockReturnValue(mockResponse);
-
-      const { result } = renderHook(() => useChats());
-
-      expect(result.current.error).toBe(mockError);
-      expect(result.current.isLoading).toBe(false);
-    });
-
-    it("should return success state with data correctly", () => {
-      const mockChats: Chat[] = [
-        {
-          id: "1",
-          date: "2023-07-17",
-          title: "Test Chat",
-          messages: [],
-        },
-      ];
-
-      const mockResponse = {
-        data: { data: mockChats },
-        error: undefined,
-        isLoading: false,
-        isValidating: false,
-        mutate: jest.fn(),
-      };
-
-      mockDataFetcher.fetchData.mockReturnValue(mockResponse);
-
-      const { result } = renderHook(() => useChats());
-
-      expect(result.current.data).toEqual({ data: mockChats });
-      expect(result.current.error).toBeUndefined();
-      expect(result.current.isLoading).toBe(false);
+      const fetcherFn = mockFetchData.mock.calls[0][1];
+      fetcherFn();
+      expect(mockedGetChats).toHaveBeenCalled();
     });
   });
 
   describe("useChat", () => {
-    const testChatId = "test-chat-id";
+    it("should fetch specific chat with correct configuration", () => {
+      const chatId = "123";
+      const mockData = { id: "123", title: "Test Chat" };
+      const mockFetchData = jest.fn().mockReturnValue({ data: mockData });
+      mockedDataFetcher.fetchData = mockFetchData;
 
-    it("should call dataFetcher.fetchData with correct parameters", () => {
-      const mockResponse = {
-        data: { data: undefined },
-        error: undefined,
-        isLoading: false,
-        isValidating: false,
-        mutate: jest.fn(),
-      };
+      renderHook(() => useChat(chatId));
 
-      mockDataFetcher.fetchData.mockReturnValue(mockResponse);
-
-      const { result } = renderHook(() => useChat(testChatId));
-
-      expect(mockDataFetcher.fetchData).toHaveBeenCalledWith(
-        CHAT_KEY(testChatId),
+      expect(mockFetchData).toHaveBeenCalledWith(
+        `chat-${chatId}`,
         expect.any(Function),
-        {
-          revalidateOnFocus: false,
-        }
+        { revalidateOnFocus: false }
       );
 
-      expect(result.current.data).toEqual({ data: undefined });
-    });
-
-    it("should use getChat service function as fetcher with correct id", () => {
-      mockDataFetcher.fetchData.mockReturnValue({
-        data: undefined,
-        error: undefined,
-        isLoading: false,
-        isValidating: false,
-        mutate: jest.fn(),
-      });
-
-      renderHook(() => useChat(testChatId));
-
-      // Get the fetcher function passed to dataFetcher.fetchData
-      const fetcherFunction = mockDataFetcher.fetchData.mock.calls[0][1];
-
-      // Call the fetcher function
-      fetcherFunction();
-
-      expect(mockGetChat).toHaveBeenCalledWith(testChatId);
-    });
-
-    it("should generate correct chat key for different IDs", () => {
-      const chatId1 = "chat-1";
-      const chatId2 = "chat-2";
-
-      mockDataFetcher.fetchData.mockReturnValue({
-        data: undefined,
-        error: undefined,
-        isLoading: false,
-        isValidating: false,
-        mutate: jest.fn(),
-      });
-
-      renderHook(() => useChat(chatId1));
-      renderHook(() => useChat(chatId2));
-
-      expect(mockDataFetcher.fetchData).toHaveBeenNthCalledWith(
-        1,
-        CHAT_KEY(chatId1),
-        expect.any(Function),
-        {
-          revalidateOnFocus: false,
-        }
-      );
-
-      expect(mockDataFetcher.fetchData).toHaveBeenNthCalledWith(
-        2,
-        CHAT_KEY(chatId2),
-        expect.any(Function),
-        {
-          revalidateOnFocus: false,
-        }
-      );
-    });
-
-    it("should return loading state correctly", () => {
-      const mockResponse = {
-        data: undefined,
-        error: undefined,
-        isLoading: true,
-        isValidating: false,
-        mutate: jest.fn(),
-      };
-
-      mockDataFetcher.fetchData.mockReturnValue(mockResponse);
-
-      const { result } = renderHook(() => useChat(testChatId));
-
-      expect(result.current.isLoading).toBe(true);
-      expect(result.current.data).toBeUndefined();
-    });
-
-    it("should return error state correctly", () => {
-      const mockError = new Error("Failed to fetch chat");
-      const mockResponse = {
-        data: undefined,
-        error: mockError,
-        isLoading: false,
-        isValidating: false,
-        mutate: jest.fn(),
-      };
-
-      mockDataFetcher.fetchData.mockReturnValue(mockResponse);
-
-      const { result } = renderHook(() => useChat(testChatId));
-
-      expect(result.current.error).toBe(mockError);
-      expect(result.current.isLoading).toBe(false);
-    });
-
-    it("should return success state with chat data correctly", () => {
-      const mockChat: Chat = {
-        id: testChatId,
-        date: "2023-07-17",
-        title: "Test Chat",
-        messages: [
-          {
-            id: "msg1",
-            created: "2023-07-17T10:00:00Z",
-            content: "Hello!",
-            role: "user",
-          },
-        ],
-      };
-
-      const mockResponse = {
-        data: { data: mockChat },
-        error: undefined,
-        isLoading: false,
-        isValidating: false,
-        mutate: jest.fn(),
-      };
-
-      mockDataFetcher.fetchData.mockReturnValue(mockResponse);
-
-      const { result } = renderHook(() => useChat(testChatId));
-
-      expect(result.current.data).toEqual({ data: mockChat });
-      expect(result.current.error).toBeUndefined();
-      expect(result.current.isLoading).toBe(false);
+      const fetcherFn = mockFetchData.mock.calls[0][1];
+      fetcherFn();
+      expect(mockedGetChat).toHaveBeenCalledWith(chatId);
     });
   });
 
   describe("useCreateChat", () => {
-    it("should call dataFetcher.mutateData with correct parameters", () => {
-      const mockMutationResult = {
+    it("should create chat with correct configuration", async () => {
+      const mockChat = { id: "123", title: "New Chat" };
+      const mockMutateData = jest.fn().mockReturnValue({
         mutate: jest.fn(),
         mutateAsync: jest.fn(),
-        data: undefined,
-        error: undefined,
-        isLoading: false,
-        isSuccess: false,
-        isError: false,
-        isIdle: true,
-        reset: jest.fn(),
-      };
-
-      mockDataFetcher.mutateData.mockReturnValue(mockMutationResult);
+      });
+      mockedDataFetcher.mutateData = mockMutateData;
+      mockedCreateChat.mockResolvedValue({
+        data: mockChat,
+        status: 200,
+        statusText: "OK",
+      } as HttpClientResponse<Chat>);
 
       const onSuccess = jest.fn();
       const onError = jest.fn();
+      renderHook(() => useCreateChat({ onSuccess, onError }));
 
-      const { result } = renderHook(() =>
-        useCreateChat({ onSuccess, onError })
-      );
-
-      expect(mockDataFetcher.mutateData).toHaveBeenCalledWith(
+      expect(mockMutateData).toHaveBeenCalledWith(
         expect.any(Function),
-        {
-          invalidateQueries: [CHATS_KEY],
-          onSuccess: expect.any(Function),
-          onError: expect.any(Function),
-        }
+        expect.objectContaining({ invalidateQueries: ["chatHistory"] })
       );
 
-      expect(result.current).toBe(mockMutationResult);
+      const mutationFn = mockMutateData.mock.calls[0][0];
+      const payload = { title: "New Chat" };
+      const mutationResult = await mutationFn(payload);
+      expect(mockedCreateChat).toHaveBeenCalledWith(payload);
+      expect(mutationResult).toEqual({
+        data: mockChat,
+        status: 200,
+        statusText: "OK",
+      });
+    });
+
+    it("should work without callbacks", () => {
+      const mockMutateData = jest.fn().mockReturnValue({
+        mutate: jest.fn(),
+        mutateAsync: jest.fn(),
+      });
+      mockedDataFetcher.mutateData = mockMutateData;
+
+      renderHook(() => useCreateChat({}));
+      expect(mockMutateData).toHaveBeenCalledWith(
+        expect.any(Function),
+        expect.objectContaining({ invalidateQueries: ["chatHistory"] })
+      );
+    });
+
+    it("should call onSuccess callback when provided", () => {
+      const mockChat = { id: "123", title: "New Chat" };
+      const mockMutateData = jest.fn().mockReturnValue({
+        mutate: jest.fn(),
+        mutateAsync: jest.fn(),
+      });
+      mockedDataFetcher.mutateData = mockMutateData;
+
+      const onSuccess = jest.fn();
+      renderHook(() => useCreateChat({ onSuccess }));
+
+      const config = mockMutateData.mock.calls[0][1];
+      config.onSuccess(mockChat);
+      expect(onSuccess).toHaveBeenCalledWith(mockChat);
+    });
+
+    it("should call onError callback when provided", () => {
+      const mockError = new Error("Failed to create chat");
+      const mockMutateData = jest.fn().mockReturnValue({
+        mutate: jest.fn(),
+        mutateAsync: jest.fn(),
+      });
+      mockedDataFetcher.mutateData = mockMutateData;
+
+      const onError = jest.fn();
+      renderHook(() => useCreateChat({ onError }));
+
+      const config = mockMutateData.mock.calls[0][1];
+      config.onError(mockError);
+      expect(onError).toHaveBeenCalledWith(mockError);
     });
   });
 
   describe("useUpdateChat", () => {
-    it("should call dataFetcher.mutateData with correct parameters", () => {
-      const mockMutationResult = {
+    it("should update chat with correct configuration", async () => {
+      const mockChat = { id: "123", title: "Updated Chat" };
+      const mockMutateData = jest.fn().mockReturnValue({
         mutate: jest.fn(),
         mutateAsync: jest.fn(),
-        data: undefined,
-        error: undefined,
-        isLoading: false,
-        isSuccess: false,
-        isError: false,
-        isIdle: true,
-        reset: jest.fn(),
-      };
-
-      mockDataFetcher.mutateData.mockReturnValue(mockMutationResult);
+      });
+      mockedDataFetcher.mutateData = mockMutateData;
+      mockedUpdateChat.mockResolvedValue({
+        data: mockChat,
+        status: 200,
+        statusText: "OK",
+      } as HttpClientResponse<Chat>);
 
       const onSuccess = jest.fn();
       const onError = jest.fn();
+      renderHook(() => useUpdateChat({ onSuccess, onError }));
 
-      const { result } = renderHook(() =>
-        useUpdateChat({ onSuccess, onError })
-      );
-
-      expect(mockDataFetcher.mutateData).toHaveBeenCalledWith(
+      expect(mockMutateData).toHaveBeenCalledWith(
         expect.any(Function),
-        {
-          invalidateQueries: [CHATS_KEY],
-          onSuccess: expect.any(Function),
-          onError: expect.any(Function),
-        }
+        expect.objectContaining({ invalidateQueries: ["chatHistory"] })
       );
 
-      expect(result.current).toBe(mockMutationResult);
+      const mutationFn = mockMutateData.mock.calls[0][0];
+      const payload = { id: "123", title: "Updated Chat" };
+      const mutationResult = await mutationFn(payload);
+      expect(mockedUpdateChat).toHaveBeenCalledWith(payload);
+      expect(mutationResult).toEqual({
+        data: mockChat,
+        status: 200,
+        statusText: "OK",
+      });
+    });
+
+    it("should call onSuccess callback when provided", () => {
+      const mockChat = { id: "123", title: "Updated Chat" };
+      const mockMutateData = jest.fn().mockReturnValue({
+        mutate: jest.fn(),
+        mutateAsync: jest.fn(),
+      });
+      mockedDataFetcher.mutateData = mockMutateData;
+
+      const onSuccess = jest.fn();
+      renderHook(() => useUpdateChat({ onSuccess }));
+
+      const config = mockMutateData.mock.calls[0][1];
+      config.onSuccess(mockChat);
+      expect(onSuccess).toHaveBeenCalledWith(mockChat);
+    });
+
+    it("should call onError callback when provided", () => {
+      const mockError = new Error("Failed to update chat");
+      const mockMutateData = jest.fn().mockReturnValue({
+        mutate: jest.fn(),
+        mutateAsync: jest.fn(),
+      });
+      mockedDataFetcher.mutateData = mockMutateData;
+
+      const onError = jest.fn();
+      renderHook(() => useUpdateChat({ onError }));
+
+      const config = mockMutateData.mock.calls[0][1];
+      config.onError(mockError);
+      expect(onError).toHaveBeenCalledWith(mockError);
     });
   });
 
   describe("useSendChatMessage", () => {
-    it("should call dataFetcher.mutateData with correct parameters", () => {
-      const mockMutationResult = {
+    it("should send chat message with correct configuration", async () => {
+      const mockResponse = {
+        id: "resp123",
+        object: "chat.completion",
+        model: "gpt-4",
+        created: "2023-01-01",
+        choices: [
+          {
+            message: {
+              content: "Bot response",
+              role: "assistant" as const,
+            },
+            finish_reason: "stop",
+            index: 0,
+          },
+        ],
+        usage: {
+          prompt_tokens: 10,
+          completion_tokens: 5,
+          total_tokens: 15,
+        },
+      };
+      const mockMutateData = jest.fn().mockReturnValue({
         mutate: jest.fn(),
         mutateAsync: jest.fn(),
-        data: undefined,
-        error: undefined,
-        isLoading: false,
-        isSuccess: false,
-        isError: false,
-        isIdle: true,
-        reset: jest.fn(),
-      };
-
-      mockDataFetcher.mutateData.mockReturnValue(mockMutationResult);
+      });
+      mockedDataFetcher.mutateData = mockMutateData;
+      mockedCreateChatMessage.mockResolvedValue({
+        data: mockResponse,
+        status: 200,
+        statusText: "OK",
+        headers: {},
+        ok: true,
+      } as HttpClientResponse<BotResponse>);
 
       const onSuccess = jest.fn();
       const onError = jest.fn();
+      renderHook(() => useSendChatMessage({ onSuccess, onError }));
 
-      const { result } = renderHook(() =>
-        useSendChatMessage({ onSuccess, onError })
-      );
-
-      expect(mockDataFetcher.mutateData).toHaveBeenCalledWith(
+      expect(mockMutateData).toHaveBeenCalledWith(
         expect.any(Function),
-        {
-          invalidateQueries: [],
-          onSuccess: expect.any(Function),
-          onError: expect.any(Function),
-        }
+        expect.objectContaining({ invalidateQueries: [] })
       );
 
-      expect(result.current).toBe(mockMutationResult);
+      const mutationFn = mockMutateData.mock.calls[0][0];
+      const payload = { chatId: "123", message: "Hello" };
+      const mutationResult = await mutationFn(payload);
+      expect(mockedCreateChatMessage).toHaveBeenCalledWith(payload);
+      expect(mutationResult).toEqual({
+        data: mockResponse,
+        status: 200,
+        statusText: "OK",
+        headers: {},
+        ok: true,
+      });
     });
-  });
 
-  describe("Constants", () => {
-    it("should have correct CHATS_KEY constant", () => {
-      expect(CHATS_KEY).toBe("chatHistory");
+    it("should call onSuccess callback when provided", () => {
+      const mockResponse = {
+        id: "resp123",
+        object: "chat.completion",
+        model: "gpt-4",
+        created: "2023-01-01",
+        choices: [
+          {
+            message: {
+              content: "Bot response",
+              role: "assistant" as const,
+            },
+            finish_reason: "stop",
+            index: 0,
+          },
+        ],
+        usage: {
+          prompt_tokens: 10,
+          completion_tokens: 5,
+          total_tokens: 15,
+        },
+      };
+      const mockMutateData = jest.fn().mockReturnValue({
+        mutate: jest.fn(),
+        mutateAsync: jest.fn(),
+      });
+      mockedDataFetcher.mutateData = mockMutateData;
+
+      const onSuccess = jest.fn();
+      renderHook(() => useSendChatMessage({ onSuccess }));
+
+      const config = mockMutateData.mock.calls[0][1];
+      config.onSuccess(mockResponse);
+      expect(onSuccess).toHaveBeenCalledWith(mockResponse);
     });
 
-    it("should generate correct CHAT_KEY for given ID", () => {
-      const testId = "test-id";
-      expect(CHAT_KEY(testId)).toBe(`chat-${testId}`);
-    });
+    it("should call onError callback when provided", () => {
+      const mockError = new Error("Failed to send message");
+      const mockMutateData = jest.fn().mockReturnValue({
+        mutate: jest.fn(),
+        mutateAsync: jest.fn(),
+      });
+      mockedDataFetcher.mutateData = mockMutateData;
 
-    it("should generate unique CHAT_KEY for different IDs", () => {
-      const id1 = "id1";
-      const id2 = "id2";
+      const onError = jest.fn();
+      renderHook(() => useSendChatMessage({ onError }));
 
-      expect(CHAT_KEY(id1)).toBe("chat-id1");
-      expect(CHAT_KEY(id2)).toBe("chat-id2");
-      expect(CHAT_KEY(id1)).not.toBe(CHAT_KEY(id2));
+      const config = mockMutateData.mock.calls[0][1];
+      config.onError(mockError);
+      expect(onError).toHaveBeenCalledWith(mockError);
     });
   });
 });
