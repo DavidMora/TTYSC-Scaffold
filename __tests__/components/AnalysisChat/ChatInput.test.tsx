@@ -122,6 +122,19 @@ describe("ChatInput", () => {
       expect(mockActivateAutosaveUI).toHaveBeenCalled();
     });
 
+    it("should call onError when useAutoSave onError is triggered", () => {
+      render(
+        <ChatInput
+          onSendMessage={mockOnSendMessage}
+          isLoading={false}
+          draft=""
+        />
+      );
+
+      const useAutoSaveCall = useAutoSave.mock.calls[0][0];
+      useAutoSaveCall.onError();
+    });
+
     it("should call updateChat with correct parameters when onSave is triggered", async () => {
       render(
         <ChatInput

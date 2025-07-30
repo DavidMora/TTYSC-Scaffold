@@ -113,8 +113,8 @@ export default function AnalysisContainer() {
     onSuccess: () => {
       activateAutosaveUI();
     },
-    onError: (error) => {
-      console.error("Autosave failed:", error);
+    onError: () => {
+      console.error("Autosave failed");
     },
   });
 

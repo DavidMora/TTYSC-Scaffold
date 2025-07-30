@@ -5,6 +5,7 @@ import {
   useCreateChat,
   useUpdateChat,
   useSendChatMessage,
+  useUpdateMessageFeedback,
   CHATS_KEY,
   CHAT_KEY,
 } from "@/hooks/chats";
@@ -15,6 +16,7 @@ import {
   createChat,
   updateChat,
   createChatMessage,
+  updateMessageFeedback,
 } from "@/lib/services/chats.service";
 import { Chat, BotResponse } from "@/lib/types/chats";
 import { useMutation } from "@/hooks/useMutation";
@@ -32,6 +34,7 @@ jest.mock("@/lib/services/chats.service", () => ({
   createChat: jest.fn(),
   updateChat: jest.fn(),
   createChatMessage: jest.fn(),
+  updateMessageFeedback: jest.fn(),
 }));
 
 jest.mock("@/hooks/useMutation", () => ({
@@ -45,6 +48,9 @@ const mockCreateChat = createChat as jest.MockedFunction<typeof createChat>;
 const mockUpdateChat = updateChat as jest.MockedFunction<typeof updateChat>;
 const mockCreateChatMessage = createChatMessage as jest.MockedFunction<
   typeof createChatMessage
+>;
+const mockUpdateMessageFeedback = updateMessageFeedback as jest.MockedFunction<
+  typeof updateMessageFeedback
 >;
 const mockUseMutation = useMutation as jest.MockedFunction<typeof useMutation>;
 
@@ -361,6 +367,7 @@ describe("Chat Hooks", () => {
         status: 200,
         statusText: "OK",
         headers: {},
+        ok: true,
       };
       mockCreateChat.mockResolvedValue(mockResponse);
 
@@ -435,6 +442,7 @@ describe("Chat Hooks", () => {
         status: 200,
         statusText: "OK",
         headers: {},
+        ok: true,
       };
       mockUpdateChat.mockResolvedValue(mockResponse);
 
@@ -528,6 +536,7 @@ describe("Chat Hooks", () => {
         status: 200,
         statusText: "OK",
         headers: {},
+        ok: true,
       };
       mockCreateChatMessage.mockResolvedValue(mockResponse);
 
@@ -592,6 +601,117 @@ describe("Chat Hooks", () => {
       }
 
       expect(onError).toHaveBeenCalledWith(mockError);
+    });
+  });
+
+  describe("useUpdateMessageFeedback", () => {
+    it("should call onSuccess callback when feedback is updated successfully", async () => {
+      const mockResponse = {
+        data: undefined,
+        status: 200,
+        statusText: "OK",
+        headers: {},
+        ok: true,
+      };
+      mockUpdateMessageFeedback.mockResolvedValue(mockResponse);
+
+      const onSuccess = jest.fn();
+      const onError = jest.fn();
+
+      const mockMutationResult = {
+        mutate: jest.fn(),
+        data: undefined,
+        error: null,
+        isLoading: false,
+        reset: jest.fn(),
+      };
+
+      mockUseMutation.mockReturnValue(mockMutationResult);
+
+      renderHook(() => useUpdateMessageFeedback({ onSuccess, onError }));
+
+      const mutationFunction = mockUseMutation.mock.calls[0][0];
+      const onSuccessCallback = mockUseMutation.mock.calls[0][1]?.onSuccess;
+
+      const result = await mutationFunction({
+        messageId: "test-message-id",
+        feedbackVote: "up",
+      });
+      onSuccessCallback?.(result);
+
+      expect(onSuccess).toHaveBeenCalled();
+    });
+
+    it("should call onError callback when feedback update fails", async () => {
+      const mockError = new Error("Failed to update feedback");
+      mockUpdateMessageFeedback.mockRejectedValue(mockError);
+
+      const onSuccess = jest.fn();
+      const onError = jest.fn();
+
+      const mockMutationResult = {
+        mutate: jest.fn(),
+        data: undefined,
+        error: null,
+        isLoading: false,
+        reset: jest.fn(),
+      };
+
+      mockUseMutation.mockReturnValue(mockMutationResult);
+
+      renderHook(() => useUpdateMessageFeedback({ onSuccess, onError }));
+
+      const mutationFunction = mockUseMutation.mock.calls[0][0];
+      const onErrorCallback = mockUseMutation.mock.calls[0][1]?.onError;
+
+      try {
+        await mutationFunction({
+          messageId: "test-message-id",
+          feedbackVote: "down",
+        });
+      } catch (error) {
+        onErrorCallback?.(error as Error);
+      }
+
+      expect(onError).toHaveBeenCalledWith(mockError);
+    });
+
+    it("should call updateMessageFeedback service with correct parameters", async () => {
+      const mockResponse = {
+        data: undefined,
+        status: 200,
+        statusText: "OK",
+        headers: {},
+        ok: true,
+      };
+      mockUpdateMessageFeedback.mockResolvedValue(mockResponse);
+
+      const onSuccess = jest.fn();
+      const onError = jest.fn();
+
+      const mockMutationResult = {
+        mutate: jest.fn(),
+        data: undefined,
+        error: null,
+        isLoading: false,
+        reset: jest.fn(),
+      };
+
+      mockUseMutation.mockReturnValue(mockMutationResult);
+
+      renderHook(() => useUpdateMessageFeedback({ onSuccess, onError }));
+
+      const mutationFunction = mockUseMutation.mock.calls[0][0];
+
+      await mutationFunction({
+        messageId: "test-message-id",
+        feedbackVote: "up",
+      });
+
+      expect(mockUpdateMessageFeedback).toHaveBeenCalledWith(
+        "test-message-id",
+        "up"
+      );
     });
   });
 

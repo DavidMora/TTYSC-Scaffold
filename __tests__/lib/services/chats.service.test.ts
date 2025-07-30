@@ -1,5 +1,5 @@
 import { apiClient } from "@/lib/api";
-import { CHATS, CHAT, CHAT_MESSAGE } from "@/lib/constants/api/routes";
+import { CHATS, CHAT, CHAT_MESSAGE, MESSAGE_FEEDBACK } from "@/lib/constants/api/routes";
 import {
   getChats,
   getChat,
@@ -7,6 +7,7 @@ import {
   updateChat,
   deleteChat,
   createChatMessage,
+  updateMessageFeedback,
 } from "@/lib/services/chats.service";
 import {
   Chat,
@@ -24,6 +25,7 @@ jest.mock("@/lib/api", () => ({
     post: jest.fn(),
     patch: jest.fn(),
     delete: jest.fn(),
+    put: jest.fn(),
   },
 }));
 
@@ -517,6 +519,65 @@ describe("Chats Service", () => {
     it("should generate correct CHAT endpoint for specific ID", () => {
       const chatId = "test-id";
       expect(CHAT(chatId)).toBe(`http://localhost:5000/chats/${chatId}`);
+    });
+  });
+
+  describe("updateMessageFeedback", () => {
+    it("should call httpClient.put with correct URL and payload", async () => {
+      const messageId = "test-message-id";
+      const feedbackVote = "up" as const;
+
+      const mockResponse: HttpClientResponse<void> = {
+        data: undefined,
+        status: 200,
+        statusText: "OK",
+        headers: {},
+      };
+
+      mockHttpClient.put.mockResolvedValue(mockResponse);
+
+      const result = await updateMessageFeedback(messageId, feedbackVote);
+
+      expect(mockHttpClient.put).toHaveBeenCalledWith(
+        MESSAGE_FEEDBACK(messageId),
+        { feedbackVote }
+      );
+      expect(result).toBe(mockResponse);
+      expect(result.status).toBe(200);
+    });
+
+    it("should handle error response", async () => {
+      const messageId = "test-message-id";
+      const feedbackVote = "down" as const;
+
+      const mockError = new Error("Failed to update feedback");
+      mockHttpClient.put.mockRejectedValue(mockError);
+
+      await expect(updateMessageFeedback(messageId, feedbackVote)).rejects.toThrow(
+        "Failed to update feedback"
+      );
+    });
+
+    it("should handle null feedback vote", async () => {
+      const messageId = "test-message-id";
+      const feedbackVote = null;
+
+      const mockResponse: HttpClientResponse<void> = {
+        data: undefined,
+        status: 200,
+        statusText: "OK",
+        headers: {},
+      };
+
+      mockHttpClient.put.mockResolvedValue(mockResponse);
+
+      const result = await updateMessageFeedback(messageId, feedbackVote);
+
+      expect(mockHttpClient.put).toHaveBeenCalledWith(
+        MESSAGE_FEEDBACK(messageId),
+        { feedbackVote }
+      );
+      expect(result.status).toBe(200);
     });
   });
 });

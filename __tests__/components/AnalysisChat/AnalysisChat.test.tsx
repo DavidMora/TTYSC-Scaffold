@@ -1,5 +1,5 @@
 import React from "react";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, act } from "@testing-library/react";
 import AnalysisChat from "@/components/AnalysisChat/AnalysisChat";
 import { ChatMessage, BotResponse } from "@/lib/types/chats";
 import { useSendChatMessage } from "@/hooks/chats";
@@ -212,7 +212,9 @@ describe("AnalysisChat", () => {
       // Test the onError callback behavior
       if (capturedOnError) {
         // Call the onError callback
-        capturedOnError(new Error("Test error"));
+        act(() => {
+          capturedOnError!(new Error("Test error"));
+        });
       }
     });
 
@@ -255,7 +257,9 @@ describe("AnalysisChat", () => {
           },
         };
 
-        capturedOnSuccess(mockBotResponse);
+        act(() => {
+          capturedOnSuccess!(mockBotResponse);
+        });
       }
     });
 
@@ -289,7 +293,9 @@ describe("AnalysisChat", () => {
           },
         };
 
-        capturedOnSuccess(mockBotResponse);
+        act(() => {
+          capturedOnSuccess!(mockBotResponse);
+        });
       }
     });
 
@@ -299,6 +305,12 @@ describe("AnalysisChat", () => {
           callback();
           return 1;
         }),
+        writable: true,
+      });
+
+      const mockScrollTo = jest.fn();
+      Object.defineProperty(HTMLElement.prototype, "scrollTo", {
+        value: mockScrollTo,
         writable: true,
       });
 
@@ -314,12 +326,83 @@ describe("AnalysisChat", () => {
     });
 
     it("should not send message when input is empty", () => {
+      const mockScrollTo = jest.fn();
+      Object.defineProperty(HTMLElement.prototype, "scrollTo", {
+        value: mockScrollTo,
+        writable: true,
+      });
+
       render(<AnalysisChat {...defaultProps} draft="" />);
 
       const sendButton = screen.getByTestId("send-button");
       fireEvent.click(sendButton);
 
       expect(mockMutate).not.toHaveBeenCalled();
+    });
+
+    it("should test scrollToBottom with immediate=false (line 27)", () => {
+      const mockSetTimeout = jest.fn((callback) => {
+        callback();
+        return 1;
+      });
+      Object.defineProperty(window, "setTimeout", {
+        value: mockSetTimeout,
+        writable: true,
+      });
+
+      const mockScrollTo = jest.fn();
+      Object.defineProperty(HTMLElement.prototype, "scrollTo", {
+        value: mockScrollTo,
+        writable: true,
+      });
+
+      render(<AnalysisChat {...defaultProps} />);
+
+      // Trigger a state change that calls scrollToBottom with immediate=false
+      const input = screen.getByTestId("message-input");
+      const sendButton = screen.getByTestId("send-button");
+
+      fireEvent.change(input, { target: { value: "Test message" } });
+      fireEvent.click(sendButton);
+
+      // Verify setTimeout was called (which happens when immediate=false)
+      expect(mockSetTimeout).toHaveBeenCalledWith(expect.any(Function), 50);
+    });
+
+    it("should test onError callback with smooth scroll (line 78)", () => {
+      let capturedOnError: ((error: Error) => void) | undefined;
+      const mockScrollTo = jest.fn();
+      Object.defineProperty(HTMLElement.prototype, "scrollTo", {
+        value: mockScrollTo,
+        writable: true,
+      });
+
+      mockUseSendChatMessage.mockImplementation((options) => {
+        capturedOnError = options?.onError;
+        return {
+          mutate: mockMutate,
+          isLoading: false,
+          data: undefined,
+          error: null,
+          reset: jest.fn(),
+        };
+      });
+
+      render(<AnalysisChat {...defaultProps} />);
+
+      if (capturedOnError) {
+        // Simulate an error that would trigger the onError callback
+        const error = new Error("Test error");
+        act(() => {
+          capturedOnError!(error);
+        });
+      }
+
+      // Verify scrollTo was called with smooth behavior
+      expect(mockScrollTo).toHaveBeenCalledWith({
+        top: expect.any(Number),
+        behavior: "smooth",
+      });
     });
   });
 });
