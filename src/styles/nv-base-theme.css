@@ -1601,3 +1601,12 @@
 .table-border-bottom {
   border-bottom: #a8b3bd solid var(--sapGroup_TitleBorderWidth);
 }
+
+ui5-table-row:not(:last-child) {
+  border-bottom: 1px solid var(--sapList_BorderColor);
+}
+
+ui5-table-header-row {
+  background-color: var(--sapList_HeaderBackground);
+  border-bottom: 1px solid var(--sapList_HeaderBorderColor);
+}

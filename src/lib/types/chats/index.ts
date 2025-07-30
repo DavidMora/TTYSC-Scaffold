@@ -1,12 +1,15 @@
 import type { BaseResponse } from "@/lib/types/http/responses";
 import { FilterState } from "../analysisFilters";
 
+export type VoteType = "up" | "down" | null;
+
 export interface ChatMessage {
   id: string;
   role: "user" | "assistant";
   title?: string;
   content: string;
   created: string;
+  feedbackVote?: VoteType;
 }
 
 export interface Chat {

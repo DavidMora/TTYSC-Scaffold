@@ -84,12 +84,6 @@ describe("AppLayout", () => {
     expect(screen.getByText("Test Child")).toBeInTheDocument();
   });
 
-  it("renders loading state when analysis is loading", () => {
-  });
-
-  it("renders error state with default message when error has no message", () => {
-  });
-
   it("renders the ShellBar with correct title", () => {
     render(
       <AppLayout>
@@ -135,7 +129,7 @@ describe("AppLayout", () => {
     expect(screen.getByText("Talk to your supply chain")).toBeInTheDocument();
     expect(
       screen.getByText(
-        "Turn data into insights with advanced analytics from LLMs"
+        "Turn data into insights with advanced analytics from LLMs (Check for accuracy)"
       )
     ).toBeInTheDocument();
 

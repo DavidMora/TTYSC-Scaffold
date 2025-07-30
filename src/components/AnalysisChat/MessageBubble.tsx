@@ -2,6 +2,7 @@ import React from "react";
 import { FlexBox, Avatar, Text } from "@ui5/webcomponents-react";
 import { ChatMessage } from "@/lib/types/chats";
 import { parseDate } from "@/lib/utils/dateUtils";
+import { AIResponseBubble } from "./AIResponseBubble";
 
 interface MessageBubbleProps {
   message: ChatMessage;
@@ -17,14 +18,6 @@ export function MessageBubble({
 }: Readonly<MessageBubbleProps>) {
   const isUser = message.role === "user";
 
-  const nonUserStyle = !isUser
-    ? {
-        display: "flex",
-        flexDirection: "column" as const,
-        alignItems: "flex-start" as const,
-      }
-    : {};
-
   return (
     <div
       style={{
@@ -33,20 +26,19 @@ export function MessageBubble({
         margin: "1rem 0 0 0",
       }}
     >
-      <div
-        style={{
-          maxWidth: "70%",
-          backgroundColor: isUser
-            ? "var(--sapAccentBackgroundColor10)"
-            : "#EAF5CF",
-          borderRadius: "16px",
-          border: "1px solid #D5D7DA",
-          padding: "10px 14px",
-          color: "black",
-          ...nonUserStyle,
-        }}
-      >
-        {isUser ? (
+      {isUser ? (
+        <div
+          style={{
+            maxWidth: "70%",
+            width: "auto",
+            backgroundColor: "var(--sapAccentBackgroundColor10)",
+            borderRadius: "16px",
+            border: "1px solid #D5D7DA",
+            padding: "10px 14px",
+            color: "black",
+            position: "relative",
+          }}
+        >
           <FlexBox
             alignItems={"Center"}
             style={{ marginBottom: "7px", gap: "10px" }}
@@ -81,40 +73,19 @@ export function MessageBubble({
               </Text>
             </div>
           </FlexBox>
-        ) : (
-          <>
-            <div>
-              <Text
-                style={{
-                  fontSize: "var(--sapFontHeader5Size)",
-                  marginBottom: "4px",
-                  color: "var(--sapHighlightColor)",
-                  fontWeight: "700",
-                }}
-              >
-                {message.title}
-              </Text>
-            </div>
-            <Text
-              style={{
-                fontSize: "var(--sapFontSmallSize)",
-                marginBottom: "4px",
-              }}
-            >
-              {parseDate(message.created)}
-            </Text>
-          </>
-        )}
 
-        <Text
-          style={{
-            fontSize: "var(--sapFontSize)",
-            fontWeight: "400",
-          }}
-        >
-          {message.content}
-        </Text>
-      </div>
+          <Text
+            style={{
+              fontSize: "var(--sapFontSize)",
+              fontWeight: "400",
+            }}
+          >
+            {message.content}
+          </Text>
+        </div>
+      ) : (
+        <AIResponseBubble message={message} />
+      )}
     </div>
   );
 }
