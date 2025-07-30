@@ -11,17 +11,19 @@ export class MockMutationAdapter implements MutationAdapter {
     mutationFn: (variables: TVariables) => Promise<HttpClientResponse<TData>>,
     options: MutationOptions<TData, TVariables> = {}
   ): MutationResponse<TData, TVariables> {
-    let data: TData | undefined = undefined;
-    let error: Error | undefined = undefined;
-    let isLoading = false;
+    const state = {
+      data: undefined as TData | undefined,
+      error: undefined as Error | undefined,
+      isLoading: false,
+    };
 
     const mutate = async (variables: TVariables): Promise<TData> => {
-      isLoading = true;
-      error = undefined;
+      state.isLoading = true;
+      state.error = undefined;
 
       try {
         const response = await mutationFn(variables);
-        data = response.data;
+        state.data = response.data;
 
         if (options.onSuccess) {
           options.onSuccess(response.data, variables);
@@ -35,7 +37,7 @@ export class MockMutationAdapter implements MutationAdapter {
       } catch (err) {
         const errorObj =
           err instanceof Error ? err : new Error("Mutation failed");
-        error = errorObj;
+        state.error = errorObj;
 
         if (options.onError) {
           options.onError(errorObj, variables);
@@ -47,27 +49,43 @@ export class MockMutationAdapter implements MutationAdapter {
 
         throw errorObj;
       } finally {
-        isLoading = false;
+        state.isLoading = false;
       }
     };
 
     const mutateAsync = mutate;
 
     const reset = () => {
-      data = undefined;
-      error = undefined;
-      isLoading = false;
+      state.data = undefined;
+      state.error = undefined;
+      state.isLoading = false;
     };
 
     return {
       mutate,
       mutateAsync,
-      data,
-      error,
-      isLoading,
-      isSuccess: !isLoading && !error && data !== undefined,
-      isError: !isLoading && error !== undefined,
-      isIdle: !isLoading && data === undefined && error === undefined,
+      get data() {
+        return state.data;
+      },
+      get error() {
+        return state.error;
+      },
+      get isLoading() {
+        return state.isLoading;
+      },
+      get isSuccess() {
+        return !state.isLoading && !state.error && state.data !== undefined;
+      },
+      get isError() {
+        return !state.isLoading && state.error !== undefined;
+      },
+      get isIdle() {
+        return (
+          !state.isLoading &&
+          state.data === undefined &&
+          state.error === undefined
+        );
+      },
       reset,
     };
   }
