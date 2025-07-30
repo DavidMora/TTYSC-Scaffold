@@ -13,6 +13,8 @@ import {
 import Image from "next/image";
 import { useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
+import { useAuth } from "../hooks/useAuth";
+import { signOut } from "next-auth/react";
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -22,14 +24,15 @@ export default function AppLayout({ children }: Readonly<AppLayoutProps>) {
   const router = useRouter();
   const pathname = usePathname();
   const [sideNavCollapsed, setSideNavCollapsed] = useState(false);
+  const { session } = useAuth();
 
   const handleNavigation = (path: string) => {
     router.push(path);
   };
 
   const handleProfileClick = () => {
-    // Handle profile click
-    console.log("Profile clicked");
+    // Handle profile click - for now just logout
+    signOut({ callbackUrl: "/" });
   };
 
   return (
@@ -44,7 +47,11 @@ export default function AppLayout({ children }: Readonly<AppLayoutProps>) {
         // logo={<Image src="/next.svg" alt="Logo" width={120} height={32} />}
         profile={
           <Avatar>
-            <Image src="/vercel.svg" alt="Profile" width={32} height={32} />
+            {session?.user?.name ? (
+              session.user.name.charAt(0).toUpperCase()
+            ) : (
+              <Image src="/vercel.svg" alt="Profile" width={32} height={32} />
+            )}
           </Avatar>
         }
         onProfileClick={handleProfileClick}
