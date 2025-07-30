@@ -71,10 +71,14 @@ export class SWRMutationAdapter implements MutationAdapter {
 
         // Invalidate queries if specified
         if (options.invalidateQueries) {
-          const { mutate: swrMutate } = await import("swr");
-          await Promise.all(
-            options.invalidateQueries.map((queryKey) => swrMutate(queryKey))
-          );
+          try {
+            const { mutate: swrMutate } = await import("swr");
+            await Promise.all(
+              options.invalidateQueries.map((queryKey) => swrMutate(queryKey))
+            );
+          } catch (invalidateError) {
+            console.warn("Failed to invalidate queries:", invalidateError);
+          }
         }
 
         return result;
