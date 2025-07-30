@@ -55,6 +55,7 @@ export interface MutationResponse<TData = unknown, TVariables = unknown> {
 
 export interface MutationAdapter {
   mutateData<TData = unknown, TVariables = unknown>(
+    mutationKey: unknown[],
     mutationFn: (variables: TVariables) => Promise<HttpClientResponse<TData>>,
     options?: MutationOptions<TData, TVariables>
   ): MutationResponse<TData, TVariables>;

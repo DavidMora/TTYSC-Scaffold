@@ -33,7 +33,7 @@ describe("TanStackMutationAdapter", () => {
   describe("mutateData", () => {
     it("should return mutation response with initial state", () => {
       const mutationFn = jest.fn();
-      const response = adapter.mutateData(mutationFn);
+      const response = adapter.mutateData(["test-key"], mutationFn);
 
       expect(response.data).toBeUndefined();
       expect(response.error).toBeUndefined();
@@ -48,7 +48,7 @@ describe("TanStackMutationAdapter", () => {
 
     it("should call useMutation with correct configuration", () => {
       const mutationFn = jest.fn();
-      adapter.mutateData(mutationFn);
+      adapter.mutateData(["test-key"], mutationFn);
 
       expect(mockUseMutation).toHaveBeenCalledWith({
         mutationKey: expect.any(Array),
@@ -67,7 +67,7 @@ describe("TanStackMutationAdapter", () => {
         statusText: "OK",
       } as HttpClientResponse<typeof mockData>);
 
-      adapter.mutateData(mutationFn);
+      adapter.mutateData(["test-key"], mutationFn);
       const variables = { name: "test" };
 
       // Test the mutation function
@@ -82,7 +82,7 @@ describe("TanStackMutationAdapter", () => {
       const error = new Error("Mutation failed");
       const mutationFn = jest.fn().mockRejectedValue(error);
 
-      adapter.mutateData(mutationFn);
+      adapter.mutateData(["test-key"], mutationFn);
       const variables = { name: "test" };
 
       // Test the mutation function throws error
@@ -99,7 +99,7 @@ describe("TanStackMutationAdapter", () => {
         statusText: "OK",
       } as HttpClientResponse<typeof mockData>);
 
-      adapter.mutateData(mutationFn, {
+      adapter.mutateData(["test-key"], mutationFn, {
         invalidateQueries: ["query1", ["query2", "param"]],
       });
 
@@ -117,7 +117,7 @@ describe("TanStackMutationAdapter", () => {
 
     it("should work without callbacks", () => {
       const mutationFn = jest.fn();
-      const response = adapter.mutateData(mutationFn);
+      const response = adapter.mutateData(["test-key"], mutationFn);
 
       expect(response).toBeDefined();
       expect(mockUseMutation).toHaveBeenCalled();
@@ -131,7 +131,7 @@ describe("TanStackMutationAdapter", () => {
         statusText: "OK",
       } as HttpClientResponse<typeof mockData>);
 
-      adapter.mutateData(mutationFn, {
+      adapter.mutateData(["test-key"], mutationFn, {
         invalidateQueries: [],
       });
 
@@ -151,7 +151,7 @@ describe("TanStackMutationAdapter", () => {
       } as HttpClientResponse<typeof mockData>);
 
       const onSuccess = jest.fn();
-      adapter.mutateData(mutationFn, { onSuccess });
+      adapter.mutateData(["test-key"], mutationFn, { onSuccess });
 
       const mutationConfig = mockUseMutation.mock.calls[0][0];
       const actualOnSuccess = mutationConfig.onSuccess;
@@ -165,7 +165,7 @@ describe("TanStackMutationAdapter", () => {
       const mutationFn = jest.fn().mockRejectedValue(error);
       const onError = jest.fn();
 
-      adapter.mutateData(mutationFn, { onError });
+      adapter.mutateData(["test-key"], mutationFn, { onError });
 
       const mutationConfig = mockUseMutation.mock.calls[0][0];
       const actualOnError = mutationConfig.onError;
@@ -183,7 +183,7 @@ describe("TanStackMutationAdapter", () => {
       } as HttpClientResponse<typeof mockData>);
 
       const onSettled = jest.fn();
-      adapter.mutateData(mutationFn, { onSettled });
+      adapter.mutateData(["test-key"], mutationFn, { onSettled });
 
       const mutationConfig = mockUseMutation.mock.calls[0][0];
       const actualOnSettled = mutationConfig.onSettled;
@@ -194,7 +194,7 @@ describe("TanStackMutationAdapter", () => {
 
     it("should handle mutate rejection and call mutateAsync", async () => {
       const mutationFn = jest.fn();
-      const response = adapter.mutateData(mutationFn);
+      const response = adapter.mutateData(["test-key"], mutationFn);
       // Simulate mutate error path
       const error = new Error("mutate error");
       mockMutate.mockImplementation((variables, { onError }) => {
@@ -208,7 +208,7 @@ describe("TanStackMutationAdapter", () => {
 
     it("should resolve mutate on success", async () => {
       const mutationFn = jest.fn();
-      const response = adapter.mutateData(mutationFn);
+      const response = adapter.mutateData(["test-key"], mutationFn);
       const result = { foo: "bar" };
       mockMutate.mockImplementation((variables, { onSuccess }) => {
         onSuccess(result);

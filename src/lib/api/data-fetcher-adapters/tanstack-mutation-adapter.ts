@@ -25,11 +25,11 @@ export class TanStackMutationAdapter implements MutationAdapter {
   }
 
   mutateData<TData = unknown, TVariables = unknown>(
+    mutationKey: unknown[],
     mutationFn: (variables: TVariables) => Promise<HttpClientResponse<TData>>,
     options: MutationOptions<TData, TVariables> = {}
   ): MutationResponse<TData, TVariables> {
     const queryClient = this.useQueryClient();
-    const mutationKey = ["mutation", Math.random().toString(36).substring(7)];
 
     const tanStackMutationFn = async (
       variables: TVariables
