@@ -13,7 +13,6 @@ import {
   CreateChatRequest,
   UpdateChatRequest,
 } from "@/lib/types/chats";
-import { useMutation } from "../useMutation";
 
 export const CHATS_KEY = "chatHistory";
 export const CHAT_KEY = (id: string) => `chat-${id}`;
@@ -37,15 +36,18 @@ export const useCreateChat = ({
   onSuccess?: (data: Chat) => void;
   onError?: (error: Error) => void;
 }) => {
-  return useMutation((payload: CreateChatRequest) => createChat(payload), {
-    invalidateQueries: [CHATS_KEY],
-    onSuccess: (data) => {
-      onSuccess?.(data.data);
-    },
-    onError: (error) => {
-      onError?.(error);
-    },
-  });
+  return dataFetcher.mutateData(
+    (payload: CreateChatRequest) => createChat(payload),
+    {
+      invalidateQueries: [CHATS_KEY],
+      onSuccess: (data) => {
+        onSuccess?.(data);
+      },
+      onError: (error: Error) => {
+        onError?.(error);
+      },
+    }
+  );
 };
 
 export const useUpdateChat = ({
@@ -55,15 +57,18 @@ export const useUpdateChat = ({
   onSuccess?: (data: Chat) => void;
   onError?: (error: Error) => void;
 }) => {
-  return useMutation((payload: UpdateChatRequest) => updateChat(payload), {
-    invalidateQueries: [CHATS_KEY],
-    onSuccess: (data) => {
-      onSuccess?.(data.data);
-    },
-    onError: (error) => {
-      onError?.(error);
-    },
-  });
+  return dataFetcher.mutateData(
+    (payload: UpdateChatRequest) => updateChat(payload),
+    {
+      invalidateQueries: [CHATS_KEY],
+      onSuccess: (data) => {
+        onSuccess?.(data);
+      },
+      onError: (error: Error) => {
+        onError?.(error);
+      },
+    }
+  );
 };
 
 export const useSendChatMessage = ({
@@ -73,14 +78,14 @@ export const useSendChatMessage = ({
   onSuccess?: (data: BotResponse) => void;
   onError?: (error: Error) => void;
 }) => {
-  return useMutation<BotResponse, CreateChatMessageRequest>(
-    (payload) => createChatMessage(payload).then((res) => res.data),
+  return dataFetcher.mutateData(
+    (payload: CreateChatMessageRequest) => createChatMessage(payload),
     {
       invalidateQueries: [], // No need to invalidate any queries here
       onSuccess: (data) => {
         onSuccess?.(data);
       },
-      onError: (error) => {
+      onError: (error: Error) => {
         onError?.(error);
       },
     }
