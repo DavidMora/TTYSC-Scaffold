@@ -1,0 +1,5 @@
+.host ui5-dialog::part(content) {
+  padding: 0rem;
+  overflow: hidden;
+  position: relative;
+}

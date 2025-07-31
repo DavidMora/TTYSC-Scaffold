@@ -28,6 +28,8 @@ export interface RawDataItem {
   tableFilters: TableFilter[];
 }
 
+import { useRawDataModal } from "@/contexts/RawDataModalContext";
+
 interface RawDataNavigationItemProps {
   rawDataItems?: RawDataItem[];
   onDataSelection?: (
@@ -103,10 +105,11 @@ const defaultRawDataItems: RawDataItem[] = [
   },
 ];
 
-export default function RawDataNavigationItem({
-  rawDataItems = defaultRawDataItems,
-  onDataSelection,
-}: Readonly<RawDataNavigationItemProps>) {
+export default function RawDataNavigationItem(
+  props: Readonly<RawDataNavigationItemProps>
+) {
+  const { rawDataItems = defaultRawDataItems, onDataSelection } = props;
+  const { open } = useRawDataModal();
   const [selectedRawData, setSelectedRawData] = useState<RawDataItem | null>(
     rawDataItems.length > 0 ? rawDataItems[0] : null
   );
@@ -191,7 +194,6 @@ export default function RawDataNavigationItem({
           </FlexBox>
         ))}
         <Card
-          className="w-full"
           header={
             <CardHeader
               additionalText="view"
@@ -200,7 +202,26 @@ export default function RawDataNavigationItem({
             />
           }
         >
-          {/* <Text>Card Content</Text> */}
+          <button
+            type="button"
+            style={{
+              all: "unset",
+              textAlign: "center",
+              width: "100%",
+              height: "100%",
+              cursor: "pointer",
+              display: "block",
+            }}
+            onClick={() => {
+              console.log("Card clicked");
+              open();
+            }}
+            tabIndex={0}
+            aria-label="Expand raw data table"
+          >
+            {/* <Text>Card Content</Text> */}
+            View
+          </button>
         </Card>
       </FlexBox>
     </SideNavigationItem>
