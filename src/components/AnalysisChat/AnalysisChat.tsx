@@ -9,30 +9,54 @@ import { ChatInput } from "@/components/AnalysisChat/ChatInput";
 interface AnalysisChatProps {
   chatId: string;
   previousMessages: ChatMessage[];
+  draft?: string;
 }
 
 export default function AnalysisChat({
   chatId,
   previousMessages,
+  draft,
 }: Readonly<AnalysisChatProps>) {
   const messagesContainerRef = useRef<HTMLDivElement | null>(null);
 
-  const scrollToBottom = () => {
-    setTimeout(() => {
+  const scrollToBottom = ({
+    behavior = "smooth",
+    immediate = false,
+  }: { behavior?: "smooth" | "auto"; immediate?: boolean } = {}) => {
+    const scroll = () => {
       if (messagesContainerRef.current) {
-        messagesContainerRef.current.scrollTop =
-          messagesContainerRef.current.scrollHeight;
+        messagesContainerRef.current.scrollTo({
+          top: messagesContainerRef.current.scrollHeight,
+          behavior,
+        });
       }
-    }, 50);
+    };
+
+    if (immediate) {
+      scroll();
+    } else {
+      setTimeout(scroll, 50);
+    }
   };
 
   const [messages, setMessages] = useState<ChatMessage[]>(previousMessages);
+  const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
     setMessages(previousMessages);
   }, [previousMessages]);
 
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      scrollToBottom({ behavior: "auto", immediate: true });
+      setIsReady(true);
+    }, 10);
+
+    return () => clearTimeout(timeout);
+  }, [messages]);
+
   const addMessage = (
+    id: string,
     content: string,
     role: "user" | "assistant",
     title?: string
@@ -40,7 +64,7 @@ export default function AnalysisChat({
     setMessages((prev) => [
       ...prev,
       {
-        id: Date.now().toString(),
+        id,
         role,
         created: new Date().toLocaleString(),
         title,
@@ -51,21 +75,26 @@ export default function AnalysisChat({
 
   const { mutate, isLoading } = useSendChatMessage({
     onSuccess: (botMsg) => {
+      const id = botMsg?.id || Date.now().toString();
       const content = botMsg?.choices?.[0]?.message?.content || "";
       const role = botMsg?.choices?.[0]?.message?.role || "assistant";
       const title = botMsg?.choices?.[0]?.message?.title || "";
-      addMessage(content, role, title);
+      addMessage(id, content, role, title);
       scrollToBottom();
     },
     onError: () => {
-      addMessage("Error: There was an error sending the message.", "assistant");
-      scrollToBottom();
+      addMessage(
+        Date.now().toString(),
+        "Error: There was an error sending the message.",
+        "assistant"
+      );
+      scrollToBottom({ behavior: "smooth" });
     },
   });
 
   const handleSendMessage = (input: string) => {
     if (input.trim()) {
-      addMessage(input, "user");
+      addMessage(Date.now().toString(), input, "user");
 
       const conversationHistory: CreateChatMessageRequest["messages"] = [
         ...messages.map((msg) => ({
@@ -94,6 +123,8 @@ export default function AnalysisChat({
         maxHeight: "100vh",
         minHeight: 0,
         width: "100%",
+        opacity: isReady ? 1 : 0,
+        transition: "opacity 0.1s ease-in",
       }}
     >
       {/* Message area with overflow */}
@@ -107,7 +138,11 @@ export default function AnalysisChat({
       </div>
 
       {/* Input */}
-      <ChatInput onSendMessage={handleSendMessage} isLoading={isLoading} />
+      <ChatInput
+        draft={draft}
+        onSendMessage={handleSendMessage}
+        isLoading={isLoading}
+      />
     </div>
   );
 }

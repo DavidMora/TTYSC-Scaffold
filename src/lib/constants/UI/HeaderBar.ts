@@ -3,7 +3,8 @@ import { MenuItem, MenuItemKey, HeaderBarConfig } from "@/lib/types/HeaderBar";
 export const HEADER_BAR_CONFIG: Record<string, HeaderBarConfig> = {
   supplyChain: {
     title: "Talk to your supply chain",
-    subtitle: "Turn data into insights with advanced analytics from LLMs",
+    subtitle:
+      "Turn data into insights with advanced analytics from LLMs (Check for accuracy)",
     actions: ["RETRY", "SETTINGS", "PRINT", "RECORD_SCREENCAST", "ABOUT"],
   },
 };

@@ -11,6 +11,7 @@ import {
   Button,
 } from "@ui5/webcomponents-react";
 import { useCreateChat } from "@/hooks/chats";
+import { useSequentialNaming } from "@/contexts/SequentialNamingContext";
 
 const LoadingDisplay = () => (
   <FlexBox
@@ -103,6 +104,7 @@ const ErrorDisplay = ({
 export default function Home() {
   const router = useRouter();
   const [error, setError] = useState<Error | null>(null);
+  const { generateAnalysisName } = useSequentialNaming();
 
   const createAnalysisMutation = useCreateChat({
     onSuccess: (newChat) => {
@@ -116,11 +118,15 @@ export default function Home() {
 
   const handleRetry = () => {
     setError(null);
-    createAnalysisMutation.mutate?.();
+    createAnalysisMutation.mutate?.({
+      title: generateAnalysisName(),
+    });
   };
 
   useEffect(() => {
-    createAnalysisMutation.mutate?.();
+    createAnalysisMutation.mutate?.({
+      title: generateAnalysisName(),
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

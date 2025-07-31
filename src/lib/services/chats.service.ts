@@ -1,6 +1,11 @@
 import { apiClient } from "@/lib/api";
 import { HttpClientResponse } from "@/lib/types/api/http-client";
-import { CHATS, CHAT, CHAT_MESSAGE } from "@/lib/constants/api/routes";
+import {
+  CHATS,
+  CHAT,
+  CHAT_MESSAGE,
+  MESSAGE_FEEDBACK,
+} from "@/lib/constants/api/routes";
 import {
   ChatResponse,
   ChatsResponse,
@@ -8,6 +13,8 @@ import {
   BotResponse,
   UpdateChatRequest,
   Chat,
+  CreateChatRequest,
+  VoteType,
 } from "@/lib/types/chats";
 
 export const getChats = async (): Promise<
@@ -22,8 +29,10 @@ export const getChat = async (
   return await apiClient.get<ChatResponse>(CHAT(id));
 };
 
-export const createChat = async (): Promise<HttpClientResponse<Chat>> => {
-  return await apiClient.post<Chat>(CHATS);
+export const createChat = async (
+  payload: CreateChatRequest
+): Promise<HttpClientResponse<Chat>> => {
+  return await apiClient.post<Chat>(CHATS, payload);
 };
 
 export const updateChat = async (
@@ -42,4 +51,13 @@ export const createChatMessage = async (
   payload: CreateChatMessageRequest
 ): Promise<HttpClientResponse<BotResponse>> => {
   return await apiClient.post<BotResponse>(CHAT_MESSAGE, payload);
+};
+
+export const updateMessageFeedback = async (
+  messageId: string,
+  feedbackVote: VoteType
+): Promise<HttpClientResponse<void>> => {
+  return await apiClient.put<void>(MESSAGE_FEEDBACK(messageId), {
+    feedbackVote,
+  });
 };

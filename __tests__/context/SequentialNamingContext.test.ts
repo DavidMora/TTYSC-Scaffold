@@ -5,13 +5,36 @@ import {
   SequentialNamingProvider,
 } from "@/contexts/SequentialNamingContext";
 
+// Mock localStorage
+const localStorageMock = {
+  getItem: jest.fn(),
+  setItem: jest.fn(),
+  clear: jest.fn(),
+};
+Object.defineProperty(window, "localStorage", {
+  value: localStorageMock,
+});
+
 describe("useSequentialNaming", () => {
-  const wrapper = ({ children }: { children: React.ReactNode }) => {
-    return React.createElement(SequentialNamingProvider, null, children);
+  beforeEach(() => {
+    localStorageMock.getItem.mockClear();
+    localStorageMock.setItem.mockClear();
+    localStorageMock.clear.mockClear();
+    localStorageMock.getItem.mockReturnValue(null);
+  });
+
+  const createWrapper = () => {
+    const Wrapper = ({ children }: { children: React.ReactNode }) => {
+      return React.createElement(SequentialNamingProvider, null, children);
+    };
+    Wrapper.displayName = "TestWrapper";
+    return Wrapper;
   };
 
   it("should handle numbers beyond 20", () => {
-    const { result } = renderHook(() => useSequentialNaming(), { wrapper });
+    const { result } = renderHook(() => useSequentialNaming(), {
+      wrapper: createWrapper(),
+    });
 
     for (let i = 1; i <= 20; i++) {
       act(() => {
@@ -40,5 +63,35 @@ describe("useSequentialNaming", () => {
     );
 
     consoleSpy.mockRestore();
+  });
+
+  it("should start with counter 1 when localStorage is empty", () => {
+    localStorageMock.getItem.mockReturnValue(null);
+
+    const { result } = renderHook(() => useSequentialNaming(), {
+      wrapper: createWrapper(),
+    });
+
+    expect(result.current.currentCounter).toBe(1);
+  });
+
+  it("should start with counter 1 when localStorage returns invalid number", () => {
+    localStorageMock.getItem.mockReturnValue("invalid");
+
+    const { result } = renderHook(() => useSequentialNaming(), {
+      wrapper: createWrapper(),
+    });
+
+    expect(result.current.currentCounter).toBe(1);
+  });
+
+  it("should start with counter from localStorage when valid", () => {
+    localStorageMock.getItem.mockReturnValue("5");
+
+    const { result } = renderHook(() => useSequentialNaming(), {
+      wrapper: createWrapper(),
+    });
+
+    expect(result.current.currentCounter).toBe(5);
   });
 });

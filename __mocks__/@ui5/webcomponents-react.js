@@ -318,16 +318,27 @@ export const Option = ({ children, value, ...props }) => (
 
 Option.displayName = "Option";
 
-const Table = ({ children, className, headerRow }) => (
-  <div className={className} role="table">
+const Table = ({ children, className, features, overflowMode, headerRow }) => (
+  <div 
+    className={className} 
+    role="table" 
+    data-testid="ui5-table"
+    data-overflow-mode={overflowMode}
+  >
     {headerRow}
+    {features}
     {children}
   </div>
 );
 Table.displayName = "Table";
 
-const TableHeaderRow = ({ children, className }) => (
-  <div className={className} role="rowheader">
+const TableHeaderRow = ({ children, sticky, ...props }) => (
+  <div 
+    className={props.className} 
+    role="rowheader" 
+    data-testid="ui5-table-header-row"
+    data-sticky={sticky}
+  >
     {children}
   </div>
 );
@@ -340,6 +351,7 @@ const TableHeaderCell = ({
   minWidth,
   maxWidth,
   onClick,
+  ...props
 }) => (
   <div
     className={className}
@@ -350,27 +362,59 @@ const TableHeaderCell = ({
     }}
     onClick={onClick}
     role="columnheader"
+    data-testid="ui5-table-header-cell"
+    data-key={props.key}
   >
     {children}
   </div>
 );
 TableHeaderCell.displayName = "TableHeaderCell";
 
-const TableRow = ({ children, className, style }) => {
+const TableRow = ({ children, className, style, rowKey, ...props }) => {
   return (
-    <div className={className} role="row" style={style}>
+    <div 
+      className={className} 
+      role="row" 
+      style={style}
+      data-testid="ui5-table-row"
+      data-row-key={rowKey}
+      data-key={props.key}
+    >
       {children}
     </div>
   );
 };
 TableRow.displayName = "TableRow";
 
-const TableCell = ({ children, className }) => (
-  <div className={className} role="cell">
+const TableCell = ({ children, className, ...props }) => (
+  <div 
+    className={className} 
+    role="cell"
+    data-testid="ui5-table-cell"
+    data-key={props.key}
+  >
     {children}
   </div>
 );
 TableCell.displayName = "TableCell";
+
+const TableSelectionMulti = ({ behavior, ...props }) => (
+  <div 
+    data-testid="ui5-table-selection-multi" 
+    data-behavior={behavior} 
+    data-key={props.key} 
+  />
+);
+TableSelectionMulti.displayName = "TableSelectionMulti";
+
+const TableGrowing = ({ mode, ...props }) => (
+  <div 
+    data-testid="ui5-table-growing" 
+    data-mode={mode} 
+    data-key={props.key} 
+  />
+);
+TableGrowing.displayName = "TableGrowing";
 
 const Icon = React.forwardRef(({ name, className, ...props }, ref) => (
   <span ref={ref} className={className} data-testid="ui5-icon" {...props}>
@@ -428,6 +472,65 @@ const Switch = React.forwardRef(({ name, className, ...props }, ref) => (
   </label>
 ));
 Switch.displayName = "Switch";
+
+// Toolbar components
+const Toolbar = React.forwardRef(({ children, className, style, ...props }, ref) => (
+  <div
+    ref={ref}
+    className={className}
+    style={style}
+    data-testid="ui5-toolbar"
+    {...props}
+  >
+    {children}
+  </div>
+));
+Toolbar.displayName = "Toolbar";
+
+const ToolbarSpacer = React.forwardRef(({ ...props }, ref) => (
+  <div
+    ref={ref}
+    data-testid="ui5-toolbar-spacer"
+    style={{ flex: 1 }}
+    {...props}
+  />
+));
+ToolbarSpacer.displayName = "ToolbarSpacer";
+
+const ToolbarSeparator = React.forwardRef(({ ...props }, ref) => (
+  <div
+    ref={ref}
+    data-testid="ui5-toolbar-separator"
+    style={{
+      width: "1px",
+      backgroundColor: "var(--sapToolbar_SeparatorColor)",
+      margin: "0 8px",
+    }}
+    {...props}
+  />
+));
+ToolbarSeparator.displayName = "ToolbarSeparator";
+
+const ToolbarButton = React.forwardRef(({ design, icon, onClick, children, ...props }, ref) => (
+  <button
+    ref={ref}
+    onClick={onClick}
+    data-testid="ui5-toolbar-button"
+    data-design={design}
+    data-icon={icon}
+    style={{
+      background: "transparent",
+      border: "none",
+      padding: "8px",
+      cursor: "pointer",
+    }}
+    {...props}
+  >
+    {icon && <span data-testid="ui5-icon">{icon}</span>}
+    {children}
+  </button>
+));
+ToolbarButton.displayName = "ToolbarButton";
 
 // Improved Tab Component
 const Tab = ({ text, selected, children, onClick, "data-key": dataKey }) => (
@@ -776,7 +879,7 @@ module.exports = {
   Tag,
   Text: ({ children, className, style, ...props }) => (
     <span className={className} style={style} {...props} data-testid="ui5-text">
-      {children}
+      {children?.toString()}
     </span>
   ),
   TextArea,
@@ -788,6 +891,8 @@ module.exports = {
   TableHeaderCell,
   TableRow,
   TableCell,
+  TableSelectionMulti,
+  TableGrowing,
   List,
   ListItemCustom,
   ListItemStandard,
@@ -797,6 +902,10 @@ module.exports = {
   MultiComboBoxItem,
   RadioButton,
   Switch,
+  Toolbar,
+  ToolbarSpacer,
+  ToolbarSeparator,
+  ToolbarButton,
   CardHeader,
   Grid,
   FlexBoxDirection: {

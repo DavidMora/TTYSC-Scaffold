@@ -5,17 +5,44 @@ import {
   Ui5CustomEvent,
   TextAreaDomRef,
 } from "@ui5/webcomponents-react";
+import { useAutosaveUI } from "@/contexts/AutosaveUIProvider";
+import { useAutoSave } from "@/hooks/useAutoSave";
+import { useUpdateChat } from "@/hooks/chats";
+import { useParams } from "next/navigation";
 
 interface ChatInputProps {
   onSendMessage: (message: string) => void;
   isLoading: boolean;
+  draft?: string;
 }
 
 export function ChatInput({
   onSendMessage,
   isLoading,
+  draft,
 }: Readonly<ChatInputProps>) {
-  const [input, setInput] = useState("");
+  const [input, setInput] = useState(draft || "");
+  const { id } = useParams();
+
+  const { activateAutosaveUI } = useAutosaveUI();
+
+  const { mutate: updateChat } = useUpdateChat({});
+
+  useAutoSave({
+    valueToWatch: input,
+    onSave: async () => {
+      await updateChat({
+        id: id as string,
+        draft: input,
+      });
+    },
+    onSuccess: () => {
+      activateAutosaveUI();
+    },
+    onError: () => {
+      console.error("Autosave failed");
+    },
+  });
 
   const handleSend = () => {
     if (!input.trim()) return;
@@ -53,10 +80,12 @@ export function ChatInput({
         }}
       >
         <TextArea
+          className="analysis-chat-input"
           placeholder="Write your lines here"
           aria-label="Chat message input"
-          style={{ width: "100%", paddingRight: "0.5rem" }}
+          style={{ width: "100%" }}
           value={input}
+          rows={3}
           onKeyDown={handleKeyDown}
           onInput={handleInput}
           disabled={isLoading}
@@ -64,6 +93,9 @@ export function ChatInput({
         <Button
           icon="paper-plane"
           style={{
+            position: "absolute",
+            right: "5px",
+            top: "5px",
             width: "32px",
             height: "26px",
             color: "var(--sapButton_Emphasized_TextColor)",

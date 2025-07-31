@@ -3,6 +3,9 @@ import {
   DataFetcherAdapter,
   DataFetcherOptions,
   DataFetcherResponse,
+  MutationAdapter,
+  MutationOptions,
+  MutationResponse,
 } from "../../../src/lib/types/api/data-fetcher";
 import { HttpClientResponse } from "../../../src/lib/types/api/http-client";
 
@@ -32,14 +35,48 @@ class TestDataFetcherAdapter implements DataFetcherAdapter {
   }
 }
 
+// Mock mutation adapter for testing
+class TestMutationAdapter implements MutationAdapter {
+  private mockResponse: MutationResponse<unknown, unknown> = {
+    mutate: jest.fn(),
+    mutateAsync: jest.fn(),
+    data: undefined,
+    error: undefined,
+    isLoading: false,
+    isSuccess: false,
+    isError: false,
+    isIdle: true,
+    reset: jest.fn(),
+  };
+
+  setMockResponse<TData, TVariables>(
+    response: MutationResponse<TData, TVariables>
+  ) {
+    this.mockResponse = response as MutationResponse<unknown, unknown>;
+  }
+
+  mutateData<TData = unknown, TVariables = unknown>(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _mutationKey: unknown[],
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _mutationFn: (variables: TVariables) => Promise<HttpClientResponse<TData>>,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _options?: MutationOptions<TData, TVariables>
+  ): MutationResponse<TData, TVariables> {
+    return this.mockResponse as MutationResponse<TData, TVariables>;
+  }
+}
+
 describe("DataFetcher", () => {
   let dataFetcher: DataFetcher;
   let mockAdapter: TestDataFetcherAdapter;
+  let mockMutationAdapter: TestMutationAdapter;
   let mockFetcher: jest.Mock;
 
   beforeEach(() => {
     mockAdapter = new TestDataFetcherAdapter();
-    dataFetcher = new DataFetcher(mockAdapter);
+    mockMutationAdapter = new TestMutationAdapter();
+    dataFetcher = new DataFetcher(mockAdapter, mockMutationAdapter);
     mockFetcher = jest.fn();
   });
 
@@ -52,6 +89,19 @@ describe("DataFetcher", () => {
     it("should use provided adapter", () => {
       const customDataFetcher = new DataFetcher(mockAdapter);
       expect(customDataFetcher).toBeInstanceOf(DataFetcher);
+    });
+
+    it("should use provided mutation adapter", () => {
+      const customDataFetcher = new DataFetcher(
+        mockAdapter,
+        mockMutationAdapter
+      );
+      expect(customDataFetcher).toBeInstanceOf(DataFetcher);
+    });
+
+    it("should use default adapters when none provided", () => {
+      const defaultDataFetcher = new DataFetcher();
+      expect(defaultDataFetcher).toBeInstanceOf(DataFetcher);
     });
   });
 
@@ -133,6 +183,141 @@ describe("DataFetcher", () => {
 
       expect(spy).toHaveBeenCalledWith("test-key", mockFetcher, undefined);
       expect(result.data).toEqual([{ id: 1, name: "test" }]);
+    });
+  });
+
+  describe("mutateData", () => {
+    let mockMutationFn: jest.Mock;
+
+    beforeEach(() => {
+      mockMutationFn = jest.fn();
+    });
+
+    it("should call mutation adapter mutateData method with correct parameters", () => {
+      const spy = jest.spyOn(mockMutationAdapter, "mutateData");
+      const options = {
+        onSuccess: jest.fn(),
+        onError: jest.fn(),
+      };
+      const mutationKey = ["test-key"];
+
+      dataFetcher.mutateData(mutationKey, mockMutationFn, options);
+
+      expect(spy).toHaveBeenCalledWith(mutationKey, mockMutationFn, options);
+    });
+
+    it("should call mutation adapter mutateData method without options", () => {
+      const spy = jest.spyOn(mockMutationAdapter, "mutateData");
+      const mutationKey = ["test-key"];
+
+      dataFetcher.mutateData(mutationKey, mockMutationFn);
+
+      expect(spy).toHaveBeenCalledWith(mutationKey, mockMutationFn, undefined);
+    });
+
+    it("should return response from mutation adapter", () => {
+      const expectedResponse: MutationResponse<string, { id: number }> = {
+        mutate: jest.fn(),
+        mutateAsync: jest.fn(),
+        data: "success",
+        error: undefined,
+        isLoading: false,
+        isSuccess: true,
+        isError: false,
+        isIdle: false,
+        reset: jest.fn(),
+      };
+
+      mockMutationAdapter.setMockResponse(expectedResponse);
+      const spy = jest.spyOn(mockMutationAdapter, "mutateData");
+
+      const mutationKey = ["test-key"];
+      const result = dataFetcher.mutateData(mutationKey, mockMutationFn);
+
+      expect(spy).toHaveBeenCalledWith(mutationKey, mockMutationFn, undefined);
+      expect(result.data).toBe("success");
+      expect(result.isSuccess).toBe(true);
+    });
+
+    it("should handle error from mutation adapter", () => {
+      const expectedResponse: MutationResponse<unknown, unknown> = {
+        mutate: jest.fn(),
+        mutateAsync: jest.fn(),
+        data: undefined,
+        error: new Error("Mutation failed"),
+        isLoading: false,
+        isSuccess: false,
+        isError: true,
+        isIdle: false,
+        reset: jest.fn(),
+      };
+
+      mockMutationAdapter.setMockResponse(expectedResponse);
+      const spy = jest.spyOn(mockMutationAdapter, "mutateData");
+
+      const mutationKey = ["test-key"];
+      const result = dataFetcher.mutateData(mutationKey, mockMutationFn);
+
+      expect(spy).toHaveBeenCalledWith(mutationKey, mockMutationFn, undefined);
+      expect(result.error).toEqual(new Error("Mutation failed"));
+      expect(result.isError).toBe(true);
+      expect(result.data).toBeUndefined();
+    });
+
+    it("should pass generic types correctly for mutation", () => {
+      interface CreateUserData {
+        id: number;
+        name: string;
+        email: string;
+      }
+
+      interface CreateUserVariables {
+        name: string;
+        email: string;
+      }
+
+      const expectedResponse: MutationResponse<
+        CreateUserData,
+        CreateUserVariables
+      > = {
+        mutate: jest.fn(),
+        mutateAsync: jest.fn(),
+        data: { id: 1, name: "John Doe", email: "john@example.com" },
+        error: undefined,
+        isLoading: false,
+        isSuccess: true,
+        isError: false,
+        isIdle: false,
+        reset: jest.fn(),
+      };
+
+      mockMutationAdapter.setMockResponse(expectedResponse);
+      const spy = jest.spyOn(mockMutationAdapter, "mutateData");
+
+      const mutationKey = ["test-key"];
+      const result = dataFetcher.mutateData<
+        CreateUserData,
+        CreateUserVariables
+      >(mutationKey, mockMutationFn);
+
+      expect(spy).toHaveBeenCalledWith(mutationKey, mockMutationFn, undefined);
+      expect(result.data).toEqual({
+        id: 1,
+        name: "John Doe",
+        email: "john@example.com",
+      });
+    });
+
+    it("should handle mutation with invalidateQueries option", () => {
+      const spy = jest.spyOn(mockMutationAdapter, "mutateData");
+      const options = {
+        invalidateQueries: ["users", ["user", 123]],
+      };
+      const mutationKey = ["test-key"];
+
+      dataFetcher.mutateData(mutationKey, mockMutationFn, options);
+
+      expect(spy).toHaveBeenCalledWith(mutationKey, mockMutationFn, options);
     });
   });
 });

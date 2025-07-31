@@ -8,7 +8,8 @@ import {
   InputDomRef,
 } from "@ui5/webcomponents-react";
 import { ConfirmationModal } from "../Modal/ConfirmationModal";
-import { useRenameChat } from "@/hooks/chats";
+import { useUpdateChat } from "@/hooks/chats";
+import { useAutosaveUI } from "@/contexts/AutosaveUIProvider";
 
 interface AnalysisRenamingProps {
   analysisName: string;
@@ -29,11 +30,14 @@ export const AnalysisRenaming: React.FC<AnalysisRenamingProps> = ({
   const [editingValue, setEditingValue] = useState("");
   const [showValidationModal, setShowValidationModal] = useState(false);
 
-  const { mutate: renameAnalysis, isLoading } = useRenameChat({
+  const { activateAutosaveUI } = useAutosaveUI();
+
+  const { mutate: renameAnalysis, isLoading } = useUpdateChat({
     onSuccess: (data) => {
       onNameChange(data.title);
       setEditingValue("");
       setIsEditing(false);
+      activateAutosaveUI();
     },
     onError: () => {
       setIsEditing(false);
@@ -64,7 +68,7 @@ export const AnalysisRenaming: React.FC<AnalysisRenamingProps> = ({
       return;
     }
     if (analysisId) {
-      await renameAnalysis({ id: analysisId, data: { title: trimmedValue } });
+      await renameAnalysis({ id: analysisId, title: trimmedValue });
     }
   };
 
@@ -101,7 +105,6 @@ export const AnalysisRenaming: React.FC<AnalysisRenamingProps> = ({
             onBlur={handleSaveEdit}
             maxlength={MAX_NAME_LENGTH}
             disabled={isLoading}
-            placeholder={isLoading ? "Saving..." : undefined}
             style={{
               width: `${Math.max(
                 editingValue.length || analysisName.length,
@@ -109,7 +112,6 @@ export const AnalysisRenaming: React.FC<AnalysisRenamingProps> = ({
               )}ch`,
               minWidth: `120px`,
               transition: "width 0.2s ease",
-              opacity: isLoading ? 0.7 : 1,
             }}
           />
         ) : (

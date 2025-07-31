@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import {
   FILTER_ALL_VALUE,
   FILTER_OPTIONS,
@@ -32,8 +32,21 @@ const createFilterOptions = (items: unknown[] = []): FilterValue[] => [
   ...items.filter(Boolean).map(createFilterValue),
 ];
 
-export const useAnalysisFilters = () => {
-  const [filters, setFilters] = useState<FilterState>(INITIAL_FILTERS);
+export const useAnalysisFilters = (
+  initialFilters?: FilterState,
+  onUserChange?: () => void
+) => {
+  const [filters, setFilters] = useState<FilterState>(
+    initialFilters || INITIAL_FILTERS
+  );
+  const hasInitialized = useRef(false);
+
+  useEffect(() => {
+    if (initialFilters && !hasInitialized.current) {
+      setFilters(initialFilters);
+      hasInitialized.current = true;
+    }
+  }, [initialFilters]);
 
   const { data: analysisResponse, isLoading: isLoadingAnalysis } =
     useCasesAnalysis();
@@ -68,6 +81,8 @@ export const useAnalysisFilters = () => {
 
       if (!selectedOption) return;
 
+      onUserChange?.();
+
       setFilters((prevFilters) => {
         if (filterKey === "analysis") {
           return {
@@ -82,7 +97,7 @@ export const useAnalysisFilters = () => {
         };
       });
     },
-    [availableOptions]
+    [availableOptions, onUserChange]
   );
 
   const resetFilters = useCallback((): void => {

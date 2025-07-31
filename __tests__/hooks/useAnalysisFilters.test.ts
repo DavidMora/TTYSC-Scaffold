@@ -73,6 +73,20 @@ describe("useAnalysisFilters", () => {
       });
     });
 
+    it("should initialize with provided initial filters", () => {
+      const initialFilters = {
+        analysis: { name: "Supply Gap Analysis", key: "supply-gap" },
+        organizations: { name: "North America", key: "north-america" },
+        CM: { name: "Site 001 - New York", key: "site-001" },
+        SKU: { name: "SKU-12345", key: "sku-12345" },
+        NVPN: { name: "NVPN-001", key: "nvpn-001" },
+      };
+
+      const { result } = renderHook(() => useAnalysisFilters(initialFilters));
+
+      expect(result.current.filters).toEqual(initialFilters);
+    });
+
     it("should provide initial available options", () => {
       const { result } = renderHook(() => useAnalysisFilters());
 

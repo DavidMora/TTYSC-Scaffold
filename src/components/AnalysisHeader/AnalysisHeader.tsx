@@ -12,16 +12,15 @@ import { AnalysisRenaming } from "./AnalysisRenaming";
 import { CreateAnalysis } from "./CreateAnalysis";
 import { useRouter } from "next/navigation";
 import { useCreateChat } from "@/hooks/chats";
+import { useSequentialNaming } from "@/contexts/SequentialNamingContext";
 
 interface AnalysisHeaderProps {
-  onFiltersReset?: () => void;
   currentAnalysisId?: string;
   currentAnalysisName?: string;
   showAutoSaved?: boolean;
 }
 
 const AnalysisHeader: React.FC<AnalysisHeaderProps> = ({
-  onFiltersReset,
   currentAnalysisId,
   currentAnalysisName,
   showAutoSaved = false,
@@ -30,9 +29,10 @@ const AnalysisHeader: React.FC<AnalysisHeaderProps> = ({
   const [name, setName] = useState<string>(currentAnalysisName || "");
   const router = useRouter();
 
+  const { generateAnalysisName } = useSequentialNaming();
+
   const { mutate: createAnalysis, isLoading: isCreating } = useCreateChat({
     onSuccess: (data) => {
-      onFiltersReset?.();
       router.push(`/${data.id}`);
     },
   });
@@ -56,7 +56,9 @@ const AnalysisHeader: React.FC<AnalysisHeaderProps> = ({
         />
 
         <CreateAnalysis
-          onCreateAnalysis={createAnalysis}
+          onCreateAnalysis={() =>
+            createAnalysis({ title: generateAnalysisName() })
+          }
           isCreating={isCreating}
         />
       </FlexBox>

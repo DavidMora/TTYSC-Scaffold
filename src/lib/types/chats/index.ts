@@ -1,4 +1,7 @@
 import type { BaseResponse } from "@/lib/types/http/responses";
+import { FilterState } from "../analysisFilters";
+
+export type VoteType = "up" | "down" | null;
 
 export interface ChatMessage {
   id: string;
@@ -6,12 +9,16 @@ export interface ChatMessage {
   title?: string;
   content: string;
   created: string;
+  feedbackVote?: VoteType;
 }
+
 export interface Chat {
   id: string;
   date: string;
   title: string;
+  draft?: string;
   messages: ChatMessage[];
+  metadata?: Partial<FilterState>;
 }
 
 export type ChatsResponse = BaseResponse<Chat[]>;
@@ -19,6 +26,9 @@ export type ChatsResponse = BaseResponse<Chat[]>;
 export type ChatResponse = BaseResponse<Chat>;
 
 // Create payloads
+export interface CreateChatRequest {
+  title: string;
+}
 export type UpdateChatRequest = Partial<Chat> & { id: string };
 
 export interface CreateChatMessageRequest {
