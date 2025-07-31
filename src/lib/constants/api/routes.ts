@@ -29,3 +29,7 @@ export const CASES = `${BASE}/cases`;
 export const CASE_ANALYSIS = `${BASE}/cases/analysis`;
 export const CASES_BY_ANALYSIS = (analysisNameType: string) =>
   `${BASE}/cases?analysisNameType=${analysisNameType}`;
+
+// Export endpoints
+export const EXPORT_TABLE = (tableId: number, format: string) =>
+  `${BASE}/export/${tableId}?format=${format}`;

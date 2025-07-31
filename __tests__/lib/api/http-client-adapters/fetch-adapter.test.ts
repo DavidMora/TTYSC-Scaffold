@@ -409,6 +409,107 @@ describe("FetchAdapter", () => {
     });
   });
 
+  describe("content type handling", () => {
+    it("should handle Excel file responses (xlsx)", async () => {
+      const mockBlob = new Blob(["excel data"], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+      const mockResponse = {
+        ok: true,
+        status: 200,
+        statusText: "OK",
+        headers: new Map([
+          [
+            "content-type",
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          ],
+        ]),
+        json: jest.fn(),
+        text: jest.fn(),
+        blob: jest.fn().mockResolvedValue(mockBlob),
+      };
+      mockResponse.headers.forEach = jest.fn((callback) => {
+        callback(
+          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          "content-type",
+          mockResponse.headers
+        );
+      });
+
+      mockFetch.mockResolvedValue(mockResponse);
+
+      const result = await adapter.get("/excel-file");
+
+      expect(mockResponse.blob).toHaveBeenCalled();
+      expect(result.data).toBe(mockBlob);
+    });
+
+    it("should handle CSV file responses", async () => {
+      const mockBlob = new Blob(["csv,data"], { type: "text/csv" });
+      const mockResponse = {
+        ok: true,
+        status: 200,
+        statusText: "OK",
+        headers: new Map([["content-type", "text/csv"]]),
+        json: jest.fn(),
+        text: jest.fn(),
+        blob: jest.fn().mockResolvedValue(mockBlob),
+      };
+      mockResponse.headers.forEach = jest.fn((callback) => {
+        callback("text/csv", "content-type", mockResponse.headers);
+      });
+
+      mockFetch.mockResolvedValue(mockResponse);
+
+      const result = await adapter.get("/csv-file");
+
+      expect(mockResponse.blob).toHaveBeenCalled();
+      expect(result.data).toBe(mockBlob);
+    });
+
+    it("should handle text responses when content type is not JSON or file", async () => {
+      const mockResponse = {
+        ok: true,
+        status: 200,
+        statusText: "OK",
+        headers: new Map([["content-type", "text/plain"]]),
+        json: jest.fn(),
+        text: jest.fn().mockResolvedValue("plain text response"),
+        blob: jest.fn(),
+      };
+      mockResponse.headers.forEach = jest.fn((callback) => {
+        callback("text/plain", "content-type", mockResponse.headers);
+      });
+
+      mockFetch.mockResolvedValue(mockResponse);
+
+      const result = await adapter.get("/text-file");
+
+      expect(mockResponse.text).toHaveBeenCalled();
+      expect(result.data).toBe("plain text response");
+    });
+
+    it("should handle responses with no content-type header", async () => {
+      const mockResponse = {
+        ok: true,
+        status: 200,
+        statusText: "OK",
+        headers: new Map(),
+        json: jest.fn(),
+        text: jest.fn().mockResolvedValue("default text response"),
+        blob: jest.fn(),
+      };
+      mockResponse.headers.forEach = jest.fn();
+
+      mockFetch.mockResolvedValue(mockResponse);
+
+      const result = await adapter.get("/no-content-type");
+
+      expect(mockResponse.text).toHaveBeenCalled();
+      expect(result.data).toBe("default text response");
+    });
+  });
+
   describe("header merging", () => {
     it("should merge headers correctly with all levels", async () => {
       const config = {
