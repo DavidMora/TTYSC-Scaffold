@@ -3,7 +3,7 @@ import fs from "fs";
 import path from "path";
 
 // Default values if no file exists or parsing fails
-const DEFAULT_FLAGS: FeatureFlags = {
+export const DEFAULT_FLAGS: FeatureFlags = {
   enableAuthentication: true,
 };
 

@@ -9,9 +9,14 @@ if [ -f "feature-flags.json" ]; then
     echo "If you want to reset it, delete the file and run this script again."
 else
     # Copy the example file
-    cp feature-flags.example.json feature-flags.json
-    echo "Created feature-flags.json from template"
-    echo "You can now edit feature-flags.json to customize your feature flags"
+    if cp feature-flags.example.json feature-flags.json 2>/dev/null; then
+        echo "Created feature-flags.json from template"
+        echo "You can now edit feature-flags.json to customize your feature flags"
+    else
+        echo "Error: Could not find feature-flags.example.json or failed to copy"
+        echo "Please ensure feature-flags.example.json exists in the current directory"
+        exit 1
+    fi
 fi
 
 echo "Feature flags setup complete!"

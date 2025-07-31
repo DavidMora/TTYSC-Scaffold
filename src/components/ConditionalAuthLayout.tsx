@@ -18,10 +18,37 @@ export default function ConditionalAuthLayout({ children }: ConditionalAuthLayou
   const pathname = usePathname();
   const isAuthRoute = pathname.startsWith('/auth/');
 
-  // Show loading state while feature flags are being fetched
-  if (loading) {
+  // Common provider wrapper with optional auth inclusion
+  const wrapWithProviders = (content: React.ReactNode, includeAuth: boolean = false) => {
+    const wrappedContent = (
+      <ThemeProvider>
+        {content}
+      </ThemeProvider>
+    );
+
     return (
       <SessionProviderWrapper>
+        {includeAuth ? (
+          <SuspenseAuthProvider>
+            {wrappedContent}
+          </SuspenseAuthProvider>
+        ) : (
+          wrappedContent
+        )}
+      </SessionProviderWrapper>
+    );
+  };
+
+  const appContent = (
+    <SequentialNamingProvider>
+      {isAuthRoute ? children : <AppLayout>{children}</AppLayout>}
+    </SequentialNamingProvider>
+  );
+
+  // Show loading state while feature flags are being fetched
+  if (loading) {
+    return wrapWithProviders(
+      <SequentialNamingProvider>
         <div style={{ 
           display: 'flex', 
           justifyContent: 'center', 
@@ -31,53 +58,28 @@ export default function ConditionalAuthLayout({ children }: ConditionalAuthLayou
         }}>
           Loading...
         </div>
-      </SessionProviderWrapper>
+      </SequentialNamingProvider>
     );
   }
 
   // Handle error state - fallback to no authentication but keep SessionProvider
   if (error || !flags) {
     console.warn('Feature flags failed to load, defaulting to no authentication:', error);
-    return (
-      <SessionProviderWrapper>
-        <ThemeProvider>
-          <SequentialNamingProvider>
-            {isAuthRoute ? children : <AppLayout>{children}</AppLayout>}
-          </SequentialNamingProvider>
-        </ThemeProvider>
-      </SessionProviderWrapper>
-    );
+    return wrapWithProviders(appContent);
   }
 
   const isAuthEnabled = flags.enableAuthentication;
 
   if (!isAuthEnabled) {
     // Authentication is disabled, render directly without AuthWrapper
-    return (
-      <SessionProviderWrapper>
-        <SuspenseAuthProvider>
-          <ThemeProvider>
-            <SequentialNamingProvider>
-              {isAuthRoute ? children : <AppLayout>{children}</AppLayout>}
-            </SequentialNamingProvider>
-          </ThemeProvider>
-        </SuspenseAuthProvider>
-      </SessionProviderWrapper>
-    );
+    return wrapWithProviders(appContent, true);
   }
 
   // Authentication is enabled, use AuthWrapper to control rendering
-  return (
-    <SessionProviderWrapper>
-      <SuspenseAuthProvider>
-        <ThemeProvider>
-          <AuthWrapper>
-            <SequentialNamingProvider>
-              {isAuthRoute ? children : <AppLayout>{children}</AppLayout>}
-            </SequentialNamingProvider>
-          </AuthWrapper>
-        </ThemeProvider>
-      </SuspenseAuthProvider>
-    </SessionProviderWrapper>
+  return wrapWithProviders(
+    <AuthWrapper>
+      {appContent}
+    </AuthWrapper>,
+    true
   );
 }

@@ -6,7 +6,7 @@ import { ReactNode } from 'react'
 export function SessionProviderWrapper({ 
   children 
 }: { 
-  children: ReactNode 
+  readonly children: ReactNode 
 }) {
   return (
     <SessionProvider refetchInterval={60} refetchOnWindowFocus={true} refetchWhenOffline={false}>

@@ -10,6 +10,9 @@ interface ExtendedSession extends Session {
   error?: string;
 }
 
+// Use consistent provider ID across the application
+const DEFAULT_AUTH_PROVIDER = "nvlogin";
+
 export default function SignIn() {
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/";
@@ -18,29 +21,42 @@ export default function SignIn() {
   const router = useRouter();
 
   useEffect(() => {
+    let isMounted = true;
     const checkSessionAndRedirect = async () => {
-      // If already authenticated and no session errors, redirect to callbackUrl
-      if (status === "authenticated" && session && !(session as ExtendedSession).error) {
-        router.push(callbackUrl);
-        return;
-      }
+      try {
+        // If already authenticated and no session errors, redirect to callbackUrl
+        if (status === "authenticated" && session && !(session as ExtendedSession).error) {
+          if (isMounted) {
+            router.push(callbackUrl);
+          }
+          return;
+        }
 
-      // If session has refresh error, force sign out and re-authenticate
-      if (
-        status === "authenticated" &&
-        (session as ExtendedSession)?.error === "RefreshAccessTokenError"
-      ) {
-        signIn("nvlogin", { callbackUrl });
-        return;
-      }
+        // If session has refresh error, force sign out and re-authenticate
+        if (
+          status === "authenticated" &&
+          (session as ExtendedSession)?.error === "RefreshAccessTokenError"
+        ) {
+          if (isMounted) {
+            await signIn(DEFAULT_AUTH_PROVIDER, { callbackUrl });
+          }
+          return;
+        }
 
-      // If not authenticated, redirect to SSO provider
-      if (status === "unauthenticated") {
-        signIn("nvlogin", { callbackUrl });
+        // If not authenticated, redirect to SSO provider
+        if (status === "unauthenticated" && isMounted) {
+          await signIn(DEFAULT_AUTH_PROVIDER, { callbackUrl });
+        }
+      } catch (error) {
+        console.error("Authentication error:", error);
+        // Could show user-friendly error message
       }
     };
 
     checkSessionAndRedirect();
+    return () => {
+      isMounted = false;
+    };
   }, [callbackUrl, session, status, router, error]);
 
   return (

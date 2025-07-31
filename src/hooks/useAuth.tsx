@@ -75,7 +75,9 @@ function useAuthInternal(): AuthContextType {
 
   // Fetch auth configuration from API
   useEffect(() => {
-    fetch('/api/auth/config')
+    const controller = new AbortController();
+    
+    fetch('/api/auth/config', { signal: controller.signal })
       .then(res => {
         if (!res.ok) {
           throw new Error(`HTTP ${res.status}: ${res.statusText}`);
@@ -83,17 +85,25 @@ function useAuthInternal(): AuthContextType {
         return res.json();
       })
       .then((config: AuthConfig) => {
-        setAuthConfig(config);
+        if (!controller.signal.aborted) {
+          setAuthConfig(config);
+        }
       })
       .catch(err => {
-        setAuthError(`Configuration error: ${err.message}`);
-        // Fallback to default values
-        setAuthConfig({
-          authProcess: 'azure',
-          isAuthDisabled: false,
-          autoLogin: false
-        });
+        if (!controller.signal.aborted) {
+          setAuthError(`Configuration error: ${err.message}`);
+          // Fallback to default values
+          setAuthConfig({
+            authProcess: 'azure',
+            isAuthDisabled: false,
+            autoLogin: false
+          });
+        }
       });
+      
+    return () => {
+      controller.abort();
+    };
   }, []);
 
   // Auto-login logic with error handling and retry limits
@@ -111,22 +121,23 @@ function useAuthInternal(): AuthContextType {
       setHasTriedAutoLogin(true);
       setRetryCount(prev => prev + 1);
       
-      signIn("nvlogin", { 
+      // Map auth process to provider ID - 'azure' maps to 'nvlogin' provider
+      const providerId = authConfig.authProcess === 'azure' ? 'nvlogin' : authConfig.authProcess;
+      
+      signIn(providerId, { 
         callbackUrl: "/",
         redirect: true
       }).catch(error => {
         setAuthError(`Auto-login failed: ${error.message || 'Unknown error'}`);
       });
     }
-    
+
     // If we've exceeded max retries, stop trying
     if (retryCount >= maxRetries && !extendedSession && authConfig?.autoLogin) {
       setAuthError('Maximum login attempts exceeded. Please try manually.');
       setHasTriedAutoLogin(true);
     }
-  }, [authConfig, extendedSession, isSessionLoading, hasTriedAutoLogin, authError, retryCount]);
-
-  // Debug logging for troubleshooting
+  }, [authConfig, extendedSession, isSessionLoading, hasTriedAutoLogin, authError, retryCount]);  // Debug logging for troubleshooting
   useEffect(() => {
     if (authConfig) {
       console.log('[Auth] Current state:', {
@@ -152,7 +163,7 @@ function useAuthInternal(): AuthContextType {
   };
 }
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
+export function AuthProvider({ children }: { readonly children: React.ReactNode }) {
   const auth = useAuthInternal();
 
   return <AuthContext.Provider value={auth}>{children}</AuthContext.Provider>;
@@ -161,7 +172,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 export function SuspenseAuthProvider({
   children,
 }: {
-  children: React.ReactNode;
+  readonly children: React.ReactNode;
 }) {
   return (
     <Suspense fallback={null}>

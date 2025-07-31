@@ -3,9 +3,9 @@ import { FeatureFlagKey } from "@/lib/types/feature-flags";
 import { useFeatureFlag } from "@/hooks/useFeatureFlags";
 
 interface FeatureGateProps {
-  flag: FeatureFlagKey;
-  fallback?: React.ReactNode;
-  children: React.ReactNode;
+  readonly flag: FeatureFlagKey;
+  readonly fallback?: React.ReactNode;
+  readonly children: React.ReactNode;
 }
 
 /**
@@ -18,9 +18,9 @@ export function FeatureGate({ flag, fallback = null, children }: FeatureGateProp
 }
 
 interface ConditionalFeatureProps {
-  flag: FeatureFlagKey;
-  enabled?: React.ReactNode;
-  disabled?: React.ReactNode;
+  readonly flag: FeatureFlagKey;
+  readonly enabled?: React.ReactNode;
+  readonly disabled?: React.ReactNode;
 }
 
 /**

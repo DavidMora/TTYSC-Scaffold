@@ -1,10 +1,13 @@
 import { NextRequest } from "next/server";
 import { GET } from "@/app/api/feature-flags/route";
-import { getAllFeatureFlags } from "@/lib/utils/feature-flags";
+import { getAllFeatureFlags, DEFAULT_FLAGS } from "@/lib/utils/feature-flags";
 
 // Mock the feature flags utility
 jest.mock("@/lib/utils/feature-flags", () => ({
   getAllFeatureFlags: jest.fn(),
+  DEFAULT_FLAGS: {
+    enableAuthentication: true,
+  },
 }));
 
 // Mock NextResponse
@@ -97,12 +100,10 @@ describe("/api/feature-flags GET", () => {
         throw error;
       });
 
-      const response = await GET(mockRequest);
+      const response = await GET(mockRequest) as any;
 
       expect(mockConsoleError).toHaveBeenCalledWith("Error serving feature flags:", error);
-      expect(response.data).toEqual({
-        enableAuthentication: true,
-      });
+      expect(response.data).toEqual(DEFAULT_FLAGS);
       expect(response.status).toBe(200);
     });
 
@@ -112,12 +113,10 @@ describe("/api/feature-flags GET", () => {
         throw error;
       });
 
-      const response = await GET(mockRequest);
+      const response = await GET(mockRequest) as any;
 
       expect(mockConsoleError).toHaveBeenCalledWith("Error serving feature flags:", error);
-      expect(response.data).toEqual({
-        enableAuthentication: true,
-      });
+      expect(response.data).toEqual(DEFAULT_FLAGS);
       expect(response.status).toBe(200);
     });
 
@@ -127,12 +126,10 @@ describe("/api/feature-flags GET", () => {
         throw error;
       });
 
-      const response = await GET(mockRequest);
+      const response = await GET(mockRequest) as any;
 
       expect(mockConsoleError).toHaveBeenCalledWith("Error serving feature flags:", error);
-      expect(response.data).toEqual({
-        enableAuthentication: true,
-      });
+      expect(response.data).toEqual(DEFAULT_FLAGS);
       expect(response.status).toBe(200);
     });
 
@@ -142,12 +139,10 @@ describe("/api/feature-flags GET", () => {
         throw error;
       });
 
-      const response = await GET(mockRequest);
+      const response = await GET(mockRequest) as any;
 
       expect(mockConsoleError).toHaveBeenCalledWith("Error serving feature flags:", error);
-      expect(response.data).toEqual({
-        enableAuthentication: true,
-      });
+      expect(response.data).toEqual(DEFAULT_FLAGS);
       expect(response.status).toBe(200);
     });
   });

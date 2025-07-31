@@ -107,9 +107,7 @@ describe('middleware', () => {
       expect(mockGetToken).toHaveBeenCalledWith({
         req: mockRequest,
         secret: process.env.NEXTAUTH_SECRET,
-        cookieName: process.env.NODE_ENV === 'production' 
-          ? '__Secure-next-auth.session-token' 
-          : 'next-auth.session-token'
+        // Cookie name is now auto-detected by next-auth
       });
       expect(mockNextResponse.next).toHaveBeenCalled();
       expect(mockNextResponse.redirect).not.toHaveBeenCalled();
@@ -146,7 +144,7 @@ describe('middleware', () => {
       expect(mockGetToken).toHaveBeenCalledWith({
         req: mockRequest,
         secret: process.env.NEXTAUTH_SECRET,
-        cookieName: '__Secure-next-auth.session-token'
+        // Cookie name is now auto-detected by next-auth
       });
 
       Object.defineProperty(process.env, 'NODE_ENV', {
@@ -170,7 +168,7 @@ describe('middleware', () => {
       expect(mockGetToken).toHaveBeenCalledWith({
         req: mockRequest,
         secret: process.env.NEXTAUTH_SECRET,
-        cookieName: 'next-auth.session-token'
+        // Cookie name is now auto-detected by next-auth
       });
 
       Object.defineProperty(process.env, 'NODE_ENV', {
