@@ -22,34 +22,51 @@ This project uses [`next/font`](https://nextjs.org/docs/app/building-your-applic
 
 ## Feature Flags
 
-This project uses a simple JSON-based feature flag system that allows you to enable/disable features without code changes.
+This project implements a robust feature flag system with multiple configuration sources and priority-based loading.
 
-### Setup Feature Flags
+### Configuration Priority
 
-1. Run the setup script to create your feature flags file:
-```bash
-./scripts/setup-feature-flags.sh
-```
+1. **Generated File** (`feature-flags.json`) - Highest priority for local development
+2. **Environment Variables** - Used in production and as fallback
+3. **Defaults** - Built-in safe fallback values
 
-2. Or manually copy the example file:
+### Local Development Setup
+
+1. Create your feature flags file from the template:
 ```bash
 cp feature-flags.example.json feature-flags.json
 ```
 
-3. Edit `feature-flags.json` to enable/disable features:
+2. Edit `feature-flags.json` to customize features:
 ```json
 {
   "enableAuthentication": true
 }
 ```
 
+### Production Configuration
+
+For production deployments, use environment variables:
+
+```bash
+# Environment variable format: FEATURE_FLAG_<FLAG_NAME>
+export FEATURE_FLAG_ENABLE_AUTHENTICATION=true
+```
+
+For edge runtime contexts (middleware), use simplified variables:
+```bash
+export ENABLE_AUTHENTICATION=true
+```
+
 ### Available Feature Flags
 
-- **enableAuthentication**: Controls whether authentication is required to access the app
+| Flag Name | Description | Default Value | Environment Variable |
+|-----------|-------------|---------------|---------------------|
+| `enableAuthentication` | Enable/disable authentication system | `true` | `FEATURE_FLAG_ENABLE_AUTHENTICATION` |
 
-### Using Feature Flags in Code
+### Usage in Code
 
-#### React Hooks
+#### React Components & Hooks
 ```tsx
 import { useFeatureFlag, useAuthenticationEnabled } from '@/hooks/useFeatureFlags';
 
@@ -64,38 +81,109 @@ function MyComponent() {
 }
 ```
 
-#### Feature Gate Component
+#### Feature Gate Components
 ```tsx
-import { FeatureGate } from '@/components/FeatureGate';
+import { FeatureGate, ConditionalFeature } from '@/components/FeatureGate';
 
 function App() {
   return (
-    <FeatureGate flag="enableAuthentication" fallback={<div>Authentication disabled</div>}>
+    <FeatureGate 
+      flag="enableAuthentication" 
+      fallback={<div>Authentication disabled</div>}
+    >
       <AuthenticatedContent />
     </FeatureGate>
   );
 }
+
+// Alternative conditional rendering
+function Header() {
+  return (
+    <ConditionalFeature 
+      flag="enableAuthentication"
+      enabled={<UserMenu />}
+      disabled={<GuestMenu />}
+    />
+  );
+}
 ```
 
-#### Server-side (API Routes, Server Components)
+#### Server-side Usage
 ```tsx
-import { isFeatureEnabled } from '@/lib/utils/feature-flags';
+// Regular server components and API routes
+import { isFeatureEnabled, getFeatureFlags } from '@/lib/utils/feature-flags';
 
 export async function GET() {
-  if (isFeatureEnabled('enableAuthentication')) {
+  if (await isFeatureEnabled('enableAuthentication')) {
     // Check authentication logic
   }
   
   return Response.json({ data: 'response' });
 }
+
+// For edge runtime (middleware)
+import { isFeatureEnabledEdge } from '@/lib/utils/feature-flags-edge';
+
+export function middleware(request: NextRequest) {
+  if (isFeatureEnabledEdge('enableAuthentication')) {
+    // Handle authentication
+  }
+}
 ```
 
-### Notes
+#### Synchronous Usage
+```tsx
+import { isFeatureEnabledSync, getFeatureFlagsSync } from '@/lib/utils/feature-flags';
 
-- The `feature-flags.json` file is git-ignored to allow different configurations per environment
-- The system falls back to safe defaults if the file doesn't exist or is malformed
-- Changes to feature flags require a server restart in production
-- Feature flags are cached on the server for performance
+// When you need synchronous access
+function ComponentWithSync() {
+  const isEnabled = isFeatureEnabledSync('enableAuthentication');
+  // ...
+}
+```
+
+### API Endpoints
+
+The system provides REST API endpoints for dynamic access:
+
+- `GET /api/feature-flags` - Get current feature flags (cached)
+- `POST /api/feature-flags/reload` - Clear cache and reload flags
+
+### Key Features
+
+- **Caching**: Flags are cached for performance, avoiding repeated file reads
+- **Fallback Strategy**: Graceful degradation through multiple configuration sources
+- **TypeScript Support**: Full type safety with `FeatureFlags` interface and `FeatureFlagKey` type
+- **Edge Runtime Compatible**: Separate utilities for middleware and edge contexts
+- **Hot Reload**: Cache clearing API for dynamic updates
+- **Error Handling**: Robust error handling with console warnings and safe defaults
+
+### Adding New Feature Flags
+
+1. Update the `FeatureFlags` interface in `src/lib/types/feature-flags.ts`:
+```tsx
+export interface FeatureFlags {
+  enableAuthentication: boolean;
+  enableNewFeature: boolean; // Add new flag
+}
+```
+
+2. Add default value in `src/lib/utils/feature-flags.ts`:
+```tsx
+export const DEFAULT_FLAGS: FeatureFlags = {
+  enableAuthentication: true,
+  enableNewFeature: false, // Add default
+};
+```
+
+3. Update your local `feature-flags.json` and environment variables as needed.
+
+### Troubleshooting
+
+- Check browser console for feature flag loading errors
+- Verify environment variables are set correctly in your deployment platform
+- Ensure `feature-flags.json` exists for local development
+- Use `POST /api/feature-flags/reload` to clear cache if flags seem stale
 
 ## Learn More
 

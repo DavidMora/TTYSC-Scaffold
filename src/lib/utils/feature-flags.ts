@@ -1,71 +1,122 @@
 import { FeatureFlags, FeatureFlagKey } from "@/lib/types/feature-flags";
-import fs from "fs";
-import path from "path";
 
 // Default values if no file exists or parsing fails
 export const DEFAULT_FLAGS: FeatureFlags = {
   enableAuthentication: true,
 };
 
+/**
+ * Cache for feature flags to avoid re-evaluation
+ */
 let cachedFlags: FeatureFlags | null = null;
 
 /**
- * Loads feature flags from the feature-flags.json file
- * Falls back to defaults if file doesn't exist or is invalid
+ * Load feature flags from the generated JSON file
+ * This is the primary source of truth when available
  */
-export function loadFeatureFlags(): FeatureFlags {
+const loadFromGeneratedFile = async (): Promise<FeatureFlags | null> => {
+  try {
+    // Use dynamic import to load the JSON file
+    const featureFlags = await import('@/feature-flags.json');
+    return featureFlags.default as FeatureFlags;
+  } catch {
+    return null;
+  }
+};
+
+/**
+ * Load feature flags from environment variables
+ * Uses FEATURE_FLAG_ENABLE_AUTHENTICATION as the primary variable
+ */
+const loadFromEnvironment = (): FeatureFlags => {
+  // Use FEATURE_FLAG_ENABLE_AUTHENTICATION or fall back to default
+  let enableAuth = DEFAULT_FLAGS.enableAuthentication;
+  
+  if (process.env.FEATURE_FLAG_ENABLE_AUTHENTICATION !== undefined) {
+    enableAuth = process.env.FEATURE_FLAG_ENABLE_AUTHENTICATION.toLowerCase() === 'true';
+  }
+  
+  const flags: FeatureFlags = {
+    enableAuthentication: enableAuth,
+  };
+  
+  return flags;
+};
+
+/**
+ * Main function to get feature flags (async version)
+ * Priority: 1. Generated File -> 2. Environment Variables -> 3. Defaults
+ */
+export const getFeatureFlags = async (): Promise<FeatureFlags> => {
   // Return cached flags if available
   if (cachedFlags) {
     return cachedFlags;
   }
 
-  try {
-    const flagsPath = path.join(process.cwd(), "feature-flags.json");
-    
-    // Check if file exists
-    if (!fs.existsSync(flagsPath)) {
-      console.log("Feature flags file not found, using defaults");
-      cachedFlags = DEFAULT_FLAGS;
-      return cachedFlags;
-    }
-
-    // Read and parse the file
-    const flagsContent = fs.readFileSync(flagsPath, "utf8");
-    const loadedFlags = JSON.parse(flagsContent) as Partial<FeatureFlags>;
-
-    // Merge with defaults to ensure all flags are present
-    cachedFlags = {
-      ...DEFAULT_FLAGS,
-      ...loadedFlags,
-    };
-
-    console.log("Feature flags loaded successfully");
-    return cachedFlags;
-  } catch (error) {
-    console.error("Error loading feature flags, using defaults:", error);
-    cachedFlags = DEFAULT_FLAGS;
+  // Try to load from generated file first
+  const fileFlags = await loadFromGeneratedFile();
+  if (fileFlags) {
+    cachedFlags = fileFlags;
     return cachedFlags;
   }
-}
+
+  // Fallback to environment variables
+  const envFlags = loadFromEnvironment();
+  cachedFlags = envFlags;
+  return cachedFlags;
+};
 
 /**
- * Checks if a specific feature flag is enabled
+ * Synchronous version for compatibility
+ * Uses environment variables and defaults only
  */
-export function isFeatureEnabled(key: FeatureFlagKey): boolean {
-  const flags = loadFeatureFlags();
-  return flags[key] ?? DEFAULT_FLAGS[key];
+export const getFeatureFlagsSync = (): FeatureFlags => {
+  // Return cached flags if available
+  if (cachedFlags) {
+    return cachedFlags;
+  }
+
+  // Load from environment variables synchronously
+  const envFlags = loadFromEnvironment();
+  cachedFlags = envFlags;
+  return cachedFlags;
+};
+
+/**
+ * Checks if a specific feature flag is enabled (async)
+ */
+export const isFeatureEnabled = async (flag: FeatureFlagKey): Promise<boolean> => {
+  const flags = await getFeatureFlags();
+  return flags[flag];
+};
+
+/**
+ * Checks if a specific feature flag is enabled (sync)
+ */
+export const isFeatureEnabledSync = (flag: FeatureFlagKey): boolean => {
+  const flags = getFeatureFlagsSync();
+  return flags[flag];
+};
+
+/**
+ * Clears the feature flags cache
+ * Useful for testing or when you want to reload flags
+ */
+export const clearFeatureFlagsCache = (): void => {
+  cachedFlags = null;
+};
+
+/**
+ * Load feature flags (legacy function for backward compatibility)
+ * Uses synchronous loading only
+ */
+export function loadFeatureFlags(): FeatureFlags {
+  return getFeatureFlagsSync();
 }
 
 /**
- * Gets all feature flags
+ * Gets all feature flags (legacy function)
  */
 export function getAllFeatureFlags(): FeatureFlags {
   return loadFeatureFlags();
-}
-
-/**
- * Clears the cache (useful for testing or when flags change)
- */
-export function clearFeatureFlagsCache(): void {
-  cachedFlags = null;
 }

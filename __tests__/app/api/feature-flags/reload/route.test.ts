@@ -1,189 +1,160 @@
 import { POST } from "@/app/api/feature-flags/reload/route";
 
-// Mock NextResponse first
+// Mock the feature flags module
+jest.mock("@/lib/utils/feature-flags", () => ({
+  clearFeatureFlagsCache: jest.fn(),
+  getFeatureFlags: jest.fn(),
+}));
+
+// Mock NextResponse
 jest.mock("next/server", () => ({
   NextResponse: {
-    json: jest.fn((data: any) => ({
+    json: jest.fn((data: any, options?: any) => ({
       json: () => Promise.resolve(data),
-      status: 200,
+      status: options?.status || 200,
       ok: true,
     })),
   },
+  NextRequest: jest.fn(),
 }));
 
-// Mock the feature flags utility
-jest.mock("@/lib/utils/feature-flags", () => ({
-  clearFeatureFlagsCache: jest.fn(),
-  getAllFeatureFlags: jest.fn(),
-}));
+import { NextResponse, NextRequest } from "next/server";
+import { clearFeatureFlagsCache, getFeatureFlags } from "@/lib/utils/feature-flags";
 
-// Import after mocking
-import { clearFeatureFlagsCache, getAllFeatureFlags } from "@/lib/utils/feature-flags";
-import { NextResponse } from "next/server";
-
+const mockNextResponse = NextResponse as jest.Mocked<typeof NextResponse>;
 const mockClearFeatureFlagsCache = clearFeatureFlagsCache as jest.MockedFunction<typeof clearFeatureFlagsCache>;
-const mockGetAllFeatureFlags = getAllFeatureFlags as jest.MockedFunction<typeof getAllFeatureFlags>;
-const mockNextResponseJson = NextResponse.json as jest.MockedFunction<typeof NextResponse.json>;
+const mockGetFeatureFlags = getFeatureFlags as jest.MockedFunction<typeof getFeatureFlags>;
 
-// Mock console.error to avoid noise in tests
-const mockConsoleError = jest.spyOn(console, "error").mockImplementation(() => {});
-
-describe("/api/feature-flags/reload POST", () => {
-  const mockRequest = {} as any;
-
+describe("/api/feature-flags/reload", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    // Reset mock implementations
-    mockClearFeatureFlagsCache.mockImplementation(() => {});
-    mockGetAllFeatureFlags.mockImplementation(() => ({ enableAuthentication: true }));
+    mockClearFeatureFlagsCache.mockReset();
+    mockGetFeatureFlags.mockReset();
   });
 
-  afterAll(() => {
-    mockConsoleError.mockRestore();
-  });
+  it("should clear cache and return fresh flags successfully", async () => {
+    // Arrange
+    const mockFlags = {
+      enableAuthentication: false,
+    };
+    
+    mockGetFeatureFlags.mockResolvedValue(mockFlags);
+    const mockRequest = {} as NextRequest;
 
-  describe("successful requests", () => {
-    it("clears cache and returns fresh flags successfully", async () => {
-      const mockFlags = {
-        enableAuthentication: true,
-      };
+    // Act
+    await POST(mockRequest);
 
-      mockGetAllFeatureFlags.mockReturnValue(mockFlags);
-
-      await POST(mockRequest);
-
-      expect(mockClearFeatureFlagsCache).toHaveBeenCalledTimes(1);
-      expect(mockGetAllFeatureFlags).toHaveBeenCalledTimes(1);
-      expect(mockNextResponseJson).toHaveBeenCalledWith({
+    // Assert
+    expect(mockClearFeatureFlagsCache).toHaveBeenCalledTimes(1);
+    expect(mockGetFeatureFlags).toHaveBeenCalledTimes(1);
+    expect(mockNextResponse.json).toHaveBeenCalledWith(
+      {
         message: "Feature flags cache cleared successfully",
         flags: mockFlags,
-      }, { status: 200 });
-    });
-
-    it("clears cache and returns minimal flags", async () => {
-      const mockFlags = {
-        enableAuthentication: false,
-      };
-
-      mockGetAllFeatureFlags.mockReturnValue(mockFlags);
-
-      await POST(mockRequest);
-
-      expect(mockClearFeatureFlagsCache).toHaveBeenCalledTimes(1);
-      expect(mockGetAllFeatureFlags).toHaveBeenCalledTimes(1);
-      expect(mockNextResponseJson).toHaveBeenCalledWith({
-        message: "Feature flags cache cleared successfully",
-        flags: mockFlags,
-      }, { status: 200 });
-    });
-
-    it("calls functions in correct order", async () => {
-      const mockFlags = { enableAuthentication: true };
-      const callOrder: string[] = [];
-      
-      mockClearFeatureFlagsCache.mockImplementation(() => {
-        callOrder.push("clearCache");
-      });
-      mockGetAllFeatureFlags.mockImplementation(() => {
-        callOrder.push("getAllFlags");
-        return mockFlags;
-      });
-
-      await POST(mockRequest);
-
-      expect(callOrder).toEqual(["clearCache", "getAllFlags"]);
-    });
+      },
+      { status: 200 }
+    );
   });
 
-  describe("error handling", () => {
-    it("returns 500 error when clearFeatureFlagsCache throws an error", async () => {
-      const error = new Error("Failed to clear cache");
-      mockClearFeatureFlagsCache.mockImplementation(() => {
-        throw error;
-      });
-
-      await POST(mockRequest);
-
-      expect(mockConsoleError).toHaveBeenCalledWith("Error clearing feature flags cache:", error);
-      expect(mockNextResponseJson).toHaveBeenCalledWith({
-        error: "Failed to clear feature flags cache",
-      }, { status: 500 });
+  it("should return error when clearFeatureFlagsCache throws an error", async () => {
+    // Arrange
+    mockClearFeatureFlagsCache.mockImplementation(() => {
+      throw new Error("Cache clear failed");
     });
+    const mockRequest = {} as NextRequest;
 
-    it("returns 500 error when getAllFeatureFlags throws an error", async () => {
-      const error = new Error("Failed to read feature flags");
-      // Reset clearFeatureFlagsCache to not throw
-      mockClearFeatureFlagsCache.mockImplementation(() => {});
-      mockGetAllFeatureFlags.mockImplementation(() => {
-        throw error;
-      });
+    // Act
+    await POST(mockRequest);
 
-      await POST(mockRequest);
-
-      expect(mockConsoleError).toHaveBeenCalledWith("Error clearing feature flags cache:", error);
-      expect(mockNextResponseJson).toHaveBeenCalledWith({
-        error: "Failed to clear feature flags cache",
-      }, { status: 500 });
-      // Clear cache should still be called even if getAllFeatureFlags fails
-      expect(mockClearFeatureFlagsCache).toHaveBeenCalledTimes(1);
-    });
-
-    it("handles file system errors gracefully", async () => {
-      const error = new Error("ENOENT: no such file or directory");
-      mockClearFeatureFlagsCache.mockImplementation(() => {
-        throw error;
-      });
-
-      await POST(mockRequest);
-
-      expect(mockConsoleError).toHaveBeenCalledWith("Error clearing feature flags cache:", error);
-      expect(mockNextResponseJson).toHaveBeenCalledWith({
-        error: "Failed to clear feature flags cache",
-      }, { status: 500 });
-    });
-
-    it("handles unknown errors gracefully", async () => {
-      const error = "Unknown error string";
-      mockClearFeatureFlagsCache.mockImplementation(() => {
-        throw error;
-      });
-
-      await POST(mockRequest);
-
-      expect(mockConsoleError).toHaveBeenCalledWith("Error clearing feature flags cache:", error);
-      expect(mockNextResponseJson).toHaveBeenCalledWith({
-        error: "Failed to clear feature flags cache",
-      }, { status: 500 });
-    });
+    // Assert
+    expect(mockClearFeatureFlagsCache).toHaveBeenCalledTimes(1);
+    expect(mockGetFeatureFlags).not.toHaveBeenCalled();
+    expect(mockNextResponse.json).toHaveBeenCalledWith(
+      { error: "Failed to clear feature flags cache" },
+      { status: 500 }
+    );
   });
 
-  describe("cache behavior", () => {
-    it("always clears cache before getting fresh flags", async () => {
-      const mockFlags = { enableAuthentication: true };
-      // Ensure clean mock implementations
-      mockClearFeatureFlagsCache.mockImplementation(() => {});
-      mockGetAllFeatureFlags.mockImplementation(() => mockFlags);
+  it("should return error when getFeatureFlags throws an error", async () => {
+    // Arrange
+    mockGetFeatureFlags.mockRejectedValue(new Error("Failed to fetch flags"));
+    const mockRequest = {} as NextRequest;
 
-      await POST(mockRequest);
+    // Act
+    await POST(mockRequest);
 
-      expect(mockClearFeatureFlagsCache).toHaveBeenCalledTimes(1);
-      expect(mockGetAllFeatureFlags).toHaveBeenCalledTimes(1);
-    });
+    // Assert
+    expect(mockClearFeatureFlagsCache).toHaveBeenCalledTimes(1);
+    expect(mockGetFeatureFlags).toHaveBeenCalledTimes(1);
+    expect(mockNextResponse.json).toHaveBeenCalledWith(
+      { error: "Failed to clear feature flags cache" },
+      { status: 500 }
+    );
+  });
 
-    it("provides success message and fresh flags in response", async () => {
-      const mockFlags = {
-        enableAuthentication: false,
-      };
-      // Ensure clean mock implementations
-      mockClearFeatureFlagsCache.mockImplementation(() => {});
-      mockGetAllFeatureFlags.mockImplementation(() => mockFlags);
+  it("should handle non-Error exceptions from getFeatureFlags", async () => {
+    // Arrange
+    mockGetFeatureFlags.mockRejectedValue("String error");
+    const mockRequest = {} as NextRequest;
 
-      await POST(mockRequest);
+    // Act
+    await POST(mockRequest);
 
-      expect(mockNextResponseJson).toHaveBeenCalledWith({
+    // Assert
+    expect(mockClearFeatureFlagsCache).toHaveBeenCalledTimes(1);
+    expect(mockGetFeatureFlags).toHaveBeenCalledTimes(1);
+    expect(mockNextResponse.json).toHaveBeenCalledWith(
+      { error: "Failed to clear feature flags cache" },
+      { status: 500 }
+    );
+  });
+
+  it("should handle successful cache clear with different flag values", async () => {
+    // Arrange
+    const mockFlags = {
+      enableAuthentication: true,
+    };
+    
+    mockGetFeatureFlags.mockResolvedValue(mockFlags);
+    const mockRequest = {} as NextRequest;
+
+    // Act
+    await POST(mockRequest);
+
+    // Assert
+    expect(mockClearFeatureFlagsCache).toHaveBeenCalledTimes(1);
+    expect(mockGetFeatureFlags).toHaveBeenCalledTimes(1);
+    expect(mockNextResponse.json).toHaveBeenCalledWith(
+      {
         message: "Feature flags cache cleared successfully",
         flags: mockFlags,
-      }, { status: 200 });
-    });
+      },
+      { status: 200 }
+    );
+  });
+
+  it("should handle cache clear when clearFeatureFlagsCache returns void", async () => {
+    // Arrange
+    const mockFlags = {
+      enableAuthentication: false,
+    };
+    
+    mockClearFeatureFlagsCache.mockReturnValue(undefined);
+    mockGetFeatureFlags.mockResolvedValue(mockFlags);
+    const mockRequest = {} as NextRequest;
+
+    // Act
+    await POST(mockRequest);
+
+    // Assert
+    expect(mockClearFeatureFlagsCache).toHaveBeenCalledTimes(1);
+    expect(mockGetFeatureFlags).toHaveBeenCalledTimes(1);
+    expect(mockNextResponse.json).toHaveBeenCalledWith(
+      {
+        message: "Feature flags cache cleared successfully",
+        flags: mockFlags,
+      },
+      { status: 200 }
+    );
   });
 });

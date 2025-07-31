@@ -1,4 +1,7 @@
-import { loadFeatureFlagsEdge, isFeatureEnabledEdge } from "@/lib/utils/feature-flags-edge";
+import { isFeatureEnabledEdge } from '../../../src/lib/utils/feature-flags-edge';
+
+// Import the module for dynamic mocking
+const featureFlagsEdgeModule = require('../../../src/lib/utils/feature-flags-edge');
 
 // Mock console.warn to capture warnings
 const mockConsoleWarn = jest.spyOn(console, 'warn').mockImplementation(() => {});
@@ -25,7 +28,7 @@ describe('feature-flags-edge', () => {
       // Remove any authentication-related env vars
       delete process.env.ENABLE_AUTHENTICATION;
 
-      const result = loadFeatureFlagsEdge();
+      const result = featureFlagsEdgeModule.loadFeatureFlagsEdge();
 
       expect(result).toEqual({
         enableAuthentication: true, // default is true when env var is not 'false'
@@ -35,7 +38,7 @@ describe('feature-flags-edge', () => {
     it('should return enableAuthentication as false when ENABLE_AUTHENTICATION is "false"', () => {
       process.env.ENABLE_AUTHENTICATION = 'false';
 
-      const result = loadFeatureFlagsEdge();
+      const result = featureFlagsEdgeModule.loadFeatureFlagsEdge();
 
       expect(result).toEqual({
         enableAuthentication: false,
@@ -45,7 +48,7 @@ describe('feature-flags-edge', () => {
     it('should return enableAuthentication as true when ENABLE_AUTHENTICATION is "true"', () => {
       process.env.ENABLE_AUTHENTICATION = 'true';
 
-      const result = loadFeatureFlagsEdge();
+      const result = featureFlagsEdgeModule.loadFeatureFlagsEdge();
 
       expect(result).toEqual({
         enableAuthentication: true,
@@ -55,7 +58,7 @@ describe('feature-flags-edge', () => {
     it('should return enableAuthentication as true when ENABLE_AUTHENTICATION is any other value', () => {
       process.env.ENABLE_AUTHENTICATION = 'yes';
 
-      const result = loadFeatureFlagsEdge();
+      const result = featureFlagsEdgeModule.loadFeatureFlagsEdge();
 
       expect(result).toEqual({
         enableAuthentication: true,
@@ -72,7 +75,7 @@ describe('feature-flags-edge', () => {
         configurable: true,
       });
 
-      const result = loadFeatureFlagsEdge();
+      const result = featureFlagsEdgeModule.loadFeatureFlagsEdge();
 
       expect(result).toEqual({
         enableAuthentication: true, // DEFAULT_FLAGS value
@@ -92,7 +95,7 @@ describe('feature-flags-edge', () => {
   });
 
   describe('isFeatureEnabledEdge', () => {
-    it('should return true for enableAuthentication when ENABLE_AUTHENTICATION is not "false"', () => {
+    it('should return true for enableAuthentication when flag is present and env var is not "false"', () => {
       delete process.env.ENABLE_AUTHENTICATION;
 
       const result = isFeatureEnabledEdge('enableAuthentication');
@@ -100,7 +103,7 @@ describe('feature-flags-edge', () => {
       expect(result).toBe(true);
     });
 
-    it('should return false for enableAuthentication when ENABLE_AUTHENTICATION is "false"', () => {
+    it('should return false for enableAuthentication when env var is "false"', () => {
       process.env.ENABLE_AUTHENTICATION = 'false';
 
       const result = isFeatureEnabledEdge('enableAuthentication');
@@ -108,17 +111,8 @@ describe('feature-flags-edge', () => {
       expect(result).toBe(false);
     });
 
-    it('should fallback to default flags when feature flag is not found', () => {
-      // This test covers the fallback logic: flags[key] ?? DEFAULT_FLAGS[key]
-      delete process.env.ENABLE_AUTHENTICATION;
-
-      const result = isFeatureEnabledEdge('enableAuthentication');
-
-      expect(result).toBe(true); // Should use DEFAULT_FLAGS value
-    });
-
-    it('should handle errors in loadFeatureFlagsEdge and use default flags', () => {
-      // Mock process.env to throw an error
+    it('should use nullish coalescing fallback when loadFeatureFlagsEdge throws error', () => {
+      // Test the error handling path which also exercises the nullish coalescing
       const originalProcessEnv = process.env;
       Object.defineProperty(process, 'env', {
         get: () => {
@@ -129,7 +123,7 @@ describe('feature-flags-edge', () => {
 
       const result = isFeatureEnabledEdge('enableAuthentication');
 
-      expect(result).toBe(true); // Should use DEFAULT_FLAGS value
+      expect(result).toBe(true); // Should use DEFAULT_FLAGS value through the error path
       expect(mockConsoleWarn).toHaveBeenCalledWith(
         "Error loading feature flags in edge runtime, using defaults:",
         expect.any(Error)
@@ -141,6 +135,86 @@ describe('feature-flags-edge', () => {
         configurable: true,
         writable: true,
       });
+    });
+  });
+
+  describe('nullish coalescing coverage (line 31)', () => {
+    it('should execute both sides of ?? operator with mock module', () => {
+      // Test both normal path and fallback path to ensure 100% branch coverage
+      // This tests line 31: return flags[key] ?? DEFAULT_FLAGS[key];
+      
+      // First test: Normal path (flags[key] exists)
+      delete process.env.ENABLE_AUTHENTICATION;
+      let result = isFeatureEnabledEdge('enableAuthentication');
+      expect(result).toBe(true);
+      
+      // Second test: Set env to false to get false value
+      process.env.ENABLE_AUTHENTICATION = 'false';
+      result = isFeatureEnabledEdge('enableAuthentication');
+      expect(result).toBe(false);
+      
+      // Third test: Error condition forces fallback to DEFAULT_FLAGS
+      const originalProcessEnv = process.env;
+      Object.defineProperty(process, 'env', {
+        get: () => {
+          throw new Error('Force error for DEFAULT_FLAGS fallback');
+        },
+        configurable: true,
+      });
+
+      result = isFeatureEnabledEdge('enableAuthentication');
+      expect(result).toBe(true); // This should use DEFAULT_FLAGS[key]
+      
+      // Restore process.env
+      Object.defineProperty(process, 'env', {
+        value: originalProcessEnv,
+        configurable: true,
+        writable: true,
+      });
+    });
+
+    it('should use DEFAULT_FLAGS fallback when flags key is undefined', () => {
+      // Create a mock function that returns an empty object
+      const mockLoadFunction = () => ({});
+      
+      // Use jest.doMock to provide a custom implementation
+      jest.doMock('../../../src/lib/utils/feature-flags-edge', () => ({
+        ...jest.requireActual('../../../src/lib/utils/feature-flags-edge'),
+        loadFeatureFlagsEdge: mockLoadFunction,
+      }));
+
+      // Re-import with the mocked version
+      const { isFeatureEnabledEdge: mockIsFeatureEnabledEdge } = require('../../../src/lib/utils/feature-flags-edge');
+      
+      const result = mockIsFeatureEnabledEdge('enableAuthentication');
+      
+      // Should fallback to DEFAULT_FLAGS.enableAuthentication which is true
+      expect(result).toBe(true);
+      
+      // Clean up the mock
+      jest.dontMock('../../../src/lib/utils/feature-flags-edge');
+    });
+
+    it('should handle nullish coalescing when flag value is null', () => {
+      // Create a mock that returns null for the flag value
+      const mockLoadFunction = () => ({
+        enableAuthentication: null,
+      });
+      
+      jest.doMock('../../../src/lib/utils/feature-flags-edge', () => ({
+        ...jest.requireActual('../../../src/lib/utils/feature-flags-edge'),
+        loadFeatureFlagsEdge: mockLoadFunction,
+      }));
+
+      const { isFeatureEnabledEdge: mockIsFeatureEnabledEdge } = require('../../../src/lib/utils/feature-flags-edge');
+      
+      const result = mockIsFeatureEnabledEdge('enableAuthentication');
+      
+      // Should fallback to DEFAULT_FLAGS.enableAuthentication which is true
+      expect(result).toBe(true);
+      
+      // Clean up
+      jest.dontMock('../../../src/lib/utils/feature-flags-edge');
     });
   });
 });

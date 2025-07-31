@@ -5,13 +5,15 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "dev:no-turbo": "next dev",
+    "prebuild": "node scripts/generate-feature-flags.js",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:ci": "jest --ci",
-    "test:coverage": "jest --coverage"
+    "test:coverage": "jest --coverage",
+    "generate:flags": "node scripts/generate-feature-flags.js"
   },
   "dependencies": {
     "@sap-theming/theming-base-content": "^11.31.1",

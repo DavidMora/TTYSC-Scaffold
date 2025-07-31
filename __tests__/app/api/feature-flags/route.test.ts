@@ -1,10 +1,8 @@
-import { NextRequest } from "next/server";
 import { GET } from "@/app/api/feature-flags/route";
-import { getAllFeatureFlags, DEFAULT_FLAGS } from "@/lib/utils/feature-flags";
 
-// Mock the feature flags utility
+// Mock the feature flags module
 jest.mock("@/lib/utils/feature-flags", () => ({
-  getAllFeatureFlags: jest.fn(),
+  getFeatureFlags: jest.fn(),
   DEFAULT_FLAGS: {
     enableAuthentication: true,
   },
@@ -12,170 +10,139 @@ jest.mock("@/lib/utils/feature-flags", () => ({
 
 // Mock NextResponse
 jest.mock("next/server", () => ({
-  NextRequest: jest.fn(),
   NextResponse: {
-    json: jest.fn((data, init) => ({
-      data,
-      init,
-      status: init?.status || 200,
-      headers: init?.headers || {},
+    json: jest.fn((data: any, options?: any) => ({
+      json: () => Promise.resolve(data),
+      status: options?.status || 200,
+      ok: true,
     })),
   },
+  NextRequest: jest.fn(),
 }));
 
-const mockGetAllFeatureFlags = getAllFeatureFlags as jest.MockedFunction<typeof getAllFeatureFlags>;
+import { NextResponse, NextRequest } from "next/server";
+import { getFeatureFlags, DEFAULT_FLAGS } from "@/lib/utils/feature-flags";
 
-// Mock console.error to avoid noise in tests
-const mockConsoleError = jest.spyOn(console, "error").mockImplementation(() => {});
+const mockNextResponse = NextResponse as jest.Mocked<typeof NextResponse>;
+const mockGetFeatureFlags = getFeatureFlags as jest.MockedFunction<typeof getFeatureFlags>;
 
-describe("/api/feature-flags GET", () => {
-  let mockRequest: NextRequest;
-
+describe("/api/feature-flags", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    mockRequest = {} as NextRequest;
   });
 
-  afterAll(() => {
-    mockConsoleError.mockRestore();
+  it("should return feature flags successfully", async () => {
+    // Arrange
+    const mockFlags = {
+      enableAuthentication: true,
+    };
+    
+    mockGetFeatureFlags.mockResolvedValue(mockFlags);
+    const mockRequest = {} as NextRequest;
+
+    // Act
+    await GET(mockRequest);
+
+    // Assert
+    expect(mockGetFeatureFlags).toHaveBeenCalledTimes(1);
+    expect(mockNextResponse.json).toHaveBeenCalledWith(
+      mockFlags,
+      {
+        status: 200,
+        headers: {
+          "Cache-Control": "public, max-age=300",
+        },
+      }
+    );
   });
 
-  describe("successful requests", () => {
-    it("returns feature flags successfully", async () => {
-      const mockFlags = {
-        enableAuthentication: true,
-        enableNewFeature: false,
-        enableBetaFeatures: true,
-      };
+  it("should return default flags when getFeatureFlags throws an error", async () => {
+    // Arrange
+    mockGetFeatureFlags.mockRejectedValue(new Error("Failed to fetch flags"));
+    const mockRequest = {} as NextRequest;
 
-      mockGetAllFeatureFlags.mockReturnValue(mockFlags);
+    // Act
+    await GET(mockRequest);
 
-      const response = await GET(mockRequest);
-
-      expect(mockGetAllFeatureFlags).toHaveBeenCalledTimes(1);
-      expect(response.data).toEqual(mockFlags);
-      expect(response.status).toBe(200);
-      expect(response.headers["Cache-Control"]).toBe("public, max-age=300");
-    });
-
-    it("returns default flags when getAllFeatureFlags returns minimal flags", async () => {
-      const mockFlags = {
-        enableAuthentication: false,
-      };
-
-      mockGetAllFeatureFlags.mockReturnValue(mockFlags);
-
-      const response = await GET(mockRequest);
-
-      expect(mockGetAllFeatureFlags).toHaveBeenCalledTimes(1);
-      expect(response.data).toEqual(mockFlags);
-      expect(response.status).toBe(200);
-      expect(response.headers["Cache-Control"]).toBe("public, max-age=300");
-    });
-
-    it("includes correct cache headers", async () => {
-      const mockFlags = { enableAuthentication: true };
-      mockGetAllFeatureFlags.mockReturnValue(mockFlags);
-
-      const response = await GET(mockRequest);
-
-      expect(response.headers["Cache-Control"]).toBe("public, max-age=300");
-    });
-
-    it("handles empty flags object", async () => {
-      const mockFlags = {};
-      mockGetAllFeatureFlags.mockReturnValue(mockFlags);
-
-      const response = await GET(mockRequest);
-
-      expect(response.data).toEqual({});
-      expect(response.status).toBe(200);
-    });
+    // Assert
+    expect(mockGetFeatureFlags).toHaveBeenCalledTimes(1);
+    expect(mockNextResponse.json).toHaveBeenCalledWith(
+      DEFAULT_FLAGS,
+      { status: 200 }
+    );
   });
 
-  describe("error handling", () => {
-    it("returns default flags when getAllFeatureFlags throws an error", async () => {
-      const error = new Error("Failed to read feature flags file");
-      mockGetAllFeatureFlags.mockImplementation(() => {
-        throw error;
-      });
+  it("should return default flags when getFeatureFlags throws non-Error", async () => {
+    // Arrange
+    mockGetFeatureFlags.mockRejectedValue("String error");
+    const mockRequest = {} as NextRequest;
 
-      const response = await GET(mockRequest) as any;
+    // Act
+    await GET(mockRequest);
 
-      expect(mockConsoleError).toHaveBeenCalledWith("Error serving feature flags:", error);
-      expect(response.data).toEqual(DEFAULT_FLAGS);
-      expect(response.status).toBe(200);
-    });
+    // Assert
+    expect(mockGetFeatureFlags).toHaveBeenCalledTimes(1);
+    expect(mockNextResponse.json).toHaveBeenCalledWith(
+      DEFAULT_FLAGS,
+      { status: 200 }
+    );
+  });
 
-    it("handles file system errors gracefully", async () => {
-      const error = new Error("ENOENT: no such file or directory");
-      mockGetAllFeatureFlags.mockImplementation(() => {
-        throw error;
-      });
+  it("should include proper cache headers on successful response", async () => {
+    // Arrange
+    const mockFlags = { enableAuthentication: false };
+    mockGetFeatureFlags.mockResolvedValue(mockFlags);
+    const mockRequest = {} as NextRequest;
 
-      const response = await GET(mockRequest) as any;
+    // Act
+    await GET(mockRequest);
 
-      expect(mockConsoleError).toHaveBeenCalledWith("Error serving feature flags:", error);
-      expect(response.data).toEqual(DEFAULT_FLAGS);
-      expect(response.status).toBe(200);
-    });
-
-    it("handles JSON parsing errors gracefully", async () => {
-      const error = new SyntaxError("Unexpected token in JSON");
-      mockGetAllFeatureFlags.mockImplementation(() => {
-        throw error;
-      });
-
-      const response = await GET(mockRequest) as any;
-
-      expect(mockConsoleError).toHaveBeenCalledWith("Error serving feature flags:", error);
-      expect(response.data).toEqual(DEFAULT_FLAGS);
-      expect(response.status).toBe(200);
-    });
-
-    it("handles unknown errors gracefully", async () => {
-      const error = "Unknown error string";
-      mockGetAllFeatureFlags.mockImplementation(() => {
-        throw error;
-      });
-
-      const response = await GET(mockRequest) as any;
-
-      expect(mockConsoleError).toHaveBeenCalledWith("Error serving feature flags:", error);
-      expect(response.data).toEqual(DEFAULT_FLAGS);
-      expect(response.status).toBe(200);
+    // Assert
+    const call = mockNextResponse.json.mock.calls[0];
+    const [data, options] = call;
+    
+    expect(data).toBe(mockFlags);
+    expect(options).toEqual({
+      status: 200,
+      headers: {
+        "Cache-Control": "public, max-age=300",
+      },
     });
   });
 
-  describe("request handling", () => {
-    it("ignores request parameter as expected", async () => {
-      const mockFlags = { enableAuthentication: true };
-      mockGetAllFeatureFlags.mockReturnValue(mockFlags);
+  it("should handle minimal flags object", async () => {
+    // Arrange
+    const minimalFlags = { enableAuthentication: true };
+    mockGetFeatureFlags.mockResolvedValue(minimalFlags);
+    const mockRequest = {} as NextRequest;
 
-      // The function should work the same regardless of request content
-      const mockRequestWithData = {
-        url: "http://localhost:3000/api/feature-flags",
-        method: "GET",
-        headers: new Headers(),
-      } as NextRequest;
+    // Act
+    await GET(mockRequest);
 
-      const response = await GET(mockRequestWithData);
-
-      expect(response.data).toEqual(mockFlags);
-      expect(response.status).toBe(200);
-    });
+    // Assert
+    expect(mockNextResponse.json).toHaveBeenCalledWith(
+      minimalFlags,
+      {
+        status: 200,
+        headers: {
+          "Cache-Control": "public, max-age=300",
+        },
+      }
+    );
   });
 
-  describe("caching behavior", () => {
-    it("sets appropriate cache control headers for client caching", async () => {
-      const mockFlags = { enableAuthentication: true };
-      mockGetAllFeatureFlags.mockReturnValue(mockFlags);
+  it("should handle timeout or network errors", async () => {
+    // Arrange
+    mockGetFeatureFlags.mockRejectedValue(new Error("Network timeout"));
+    const mockRequest = {} as NextRequest;
 
-      const response = await GET(mockRequest);
+    // Act
+    await GET(mockRequest);
 
-      // Should cache for 5 minutes (300 seconds)
-      expect(response.headers["Cache-Control"]).toBe("public, max-age=300");
-      expect(response.status).toBe(200);
-    });
+    // Assert
+    expect(mockNextResponse.json).toHaveBeenCalledWith(
+      DEFAULT_FLAGS,
+      { status: 200 }
+    );
   });
 });
