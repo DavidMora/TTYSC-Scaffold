@@ -3,16 +3,21 @@ import {
   DataFetcherKey,
   DataFetcherOptions,
   DataFetcherResponse,
+  MutationAdapter,
+  MutationOptions,
+  MutationResponse,
 } from "@/lib/types/api/data-fetcher";
 import { HttpClientResponse } from "../types/api/http-client";
-import MockAdapter from "./data-fetcher-adapters/mock-adapter";
 import SWRAdapter from "./data-fetcher-adapters/swr-adapter";
+import SWRMutationAdapter from "./data-fetcher-adapters/swr-mutation-adapter";
 
 class DataFetcher {
   private readonly adapter: DataFetcherAdapter;
+  private readonly mutationAdapter: MutationAdapter;
 
-  constructor(adapter?: DataFetcherAdapter) {
-    this.adapter = adapter || new MockAdapter();
+  constructor(adapter?: DataFetcherAdapter, mutationAdapter?: MutationAdapter) {
+    this.adapter = adapter || new SWRAdapter();
+    this.mutationAdapter = mutationAdapter || new SWRMutationAdapter();
   }
 
   fetchData<T = unknown>(
@@ -22,10 +27,18 @@ class DataFetcher {
   ): DataFetcherResponse<T> {
     return this.adapter.fetchData(key, fetcher, options);
   }
+
+  mutateData<TData = unknown, TVariables = unknown>(
+    mutationKey: unknown[],
+    mutationFn: (variables: TVariables) => Promise<HttpClientResponse<TData>>,
+    options?: MutationOptions<TData, TVariables>
+  ): MutationResponse<TData, TVariables> {
+    return this.mutationAdapter.mutateData(mutationKey, mutationFn, options);
+  }
 }
 
-// Default instance using SWRAdapter
-const dataFetcher = new DataFetcher(new SWRAdapter());
+// Default instance using SWR adapters
+const dataFetcher = new DataFetcher(new SWRAdapter(), new SWRMutationAdapter());
 
 export default dataFetcher;
 export { DataFetcher };
@@ -34,4 +47,7 @@ export type {
   DataFetcherResponse,
   DataFetcherOptions,
   DataFetcherKey,
+  MutationAdapter,
+  MutationResponse,
+  MutationOptions,
 };

@@ -16,25 +16,69 @@ import {
 } from "@/lib/constants/api/routes";
 
 describe("API Routes", () => {
+  it("should export BASE URL", () => {
+    expect(BASE).toBeDefined();
+    expect(typeof BASE).toBe("string");
+  });
+
+  it("should have correct settings route", () => {
+    expect(SETTINGS).toBe(`${BASE}/settings`);
+  });
+
+  it("should have correct definitions routes", () => {
+    expect(DEFINITIONS).toBe(`${BASE}/definitions`);
+    expect(DEFINITION("test-id")).toBe(`${BASE}/definitions/test-id`);
+    expect(DEFINITION_DETAILS("test-id")).toBe(
+      `${BASE}/definitions/test-id/details`
+    );
+  });
+
+  it("should have correct feedback routes", () => {
+    expect(FEEDBACKS).toBe(`${BASE}/feedback`);
+    expect(FEEDBACK("test-id")).toBe(`${BASE}/feedback/test-id`);
+  });
+
+  it("should have correct chat routes", () => {
+    expect(CHATS).toBe(`${BASE}/chats`);
+    expect(CHAT("test-id")).toBe(`${BASE}/chats/test-id`);
+    expect(CHAT_MESSAGES("test-id")).toBe(`${BASE}/chats/test-id/messages`);
+    expect(CHAT_MESSAGE).toBe(`${BASE}/chat`);
+  });
+
+  it("should have correct cases routes", () => {
+    expect(CASES).toBe(`${BASE}/cases`);
+    expect(CASE_ANALYSIS).toBe(`${BASE}/cases/analysis`);
+    expect(CASES_BY_ANALYSIS("test-type")).toBe(
+      `${BASE}/cases?analysisNameType=test-type`
+    );
+  });
+
+  it("should encode URI components in routes", () => {
+    expect(DEFINITION("test id with spaces")).toBe(
+      `${BASE}/definitions/test%20id%20with%20spaces`
+    );
+    expect(FEEDBACK("test/id")).toBe(`${BASE}/feedback/test%2Fid`);
+  });
+
   beforeEach(() => {
     // Reset environment variable
     delete process.env.NEXT_PUBLIC_API_BASE_URL;
   });
 
   describe("BASE route", () => {
-    it("uses default localhost when NEXT_PUBLIC_API_BASE_URL is not set", () => {
+    it("uses default localhost when NEXT_PUBLIC_API_BASE_URL is not set", async () => {
       delete process.env.NEXT_PUBLIC_API_BASE_URL;
-      const routes = require("@/lib/constants/api/routes");
+      const routes = await import("@/lib/constants/api/routes");
       expect(routes.BASE).toBe("http://localhost:5000");
     });
 
-    it("uses NEXT_PUBLIC_API_BASE_URL when set", () => {
+    it("uses NEXT_PUBLIC_API_BASE_URL when set", async () => {
       const customUrl = "https://api.example.com";
       process.env.NEXT_PUBLIC_API_BASE_URL = customUrl;
-      
+
       // Re-import the module to get updated BASE value
       jest.resetModules();
-      const routes = require("@/lib/constants/api/routes");
+      const routes = await import("@/lib/constants/api/routes");
       expect(routes.BASE).toBe(customUrl);
     });
   });
@@ -71,7 +115,9 @@ describe("API Routes", () => {
     it("DEFINITION_DETAILS function creates correct route with ID", () => {
       const testId = "test-definition-456";
       const route = DEFINITION_DETAILS(testId);
-      expect(route).toBe(`${BASE}/definitions/${encodeURIComponent(testId)}/details`);
+      expect(route).toBe(
+        `${BASE}/definitions/${encodeURIComponent(testId)}/details`
+      );
     });
 
     it("FEEDBACK function creates correct route with ID", () => {
@@ -89,7 +135,9 @@ describe("API Routes", () => {
     it("CHAT_MESSAGES function creates correct route with ID", () => {
       const testId = "chat-def";
       const route = CHAT_MESSAGES(testId);
-      expect(route).toBe(`${BASE}/chats/${encodeURIComponent(testId)}/messages`);
+      expect(route).toBe(
+        `${BASE}/chats/${encodeURIComponent(testId)}/messages`
+      );
     });
 
     it("CASES_BY_ANALYSIS function creates correct route with analysis type", () => {
@@ -106,9 +154,13 @@ describe("API Routes", () => {
       const chatRoute = CHAT(specialId);
       const feedbackRoute = FEEDBACK(specialId);
 
-      expect(definitionRoute).toBe(`${BASE}/definitions/${encodeURIComponent(specialId)}`);
+      expect(definitionRoute).toBe(
+        `${BASE}/definitions/${encodeURIComponent(specialId)}`
+      );
       expect(chatRoute).toBe(`${BASE}/chats/${encodeURIComponent(specialId)}`);
-      expect(feedbackRoute).toBe(`${BASE}/feedback/${encodeURIComponent(specialId)}`);
+      expect(feedbackRoute).toBe(
+        `${BASE}/feedback/${encodeURIComponent(specialId)}`
+      );
     });
 
     it("handles empty IDs gracefully", () => {

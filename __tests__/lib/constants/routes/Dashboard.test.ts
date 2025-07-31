@@ -29,6 +29,16 @@ describe("Dashboard Routes", () => {
     expect(MORE_SUB_ITEM_2).toBeDefined();
   });
 
+  it("should have correct route values", () => {
+    expect(HOME).toBe("/");
+    expect(ABOUT).toBe("/about");
+    expect(PROFILE).toBe("/profile");
+    expect(SETTINGS).toBe("/settings");
+    expect(MORE).toBe("/more");
+    expect(MORE_SUB_ITEM_1).toBe("/more/sub-item-1");
+    expect(MORE_SUB_ITEM_2).toBe("/more/sub-item-2");
+  });
+
   it("routes have expected types", () => {
     expect(typeof HOME).toBe("string");
     expect(typeof ABOUT).toBe("string");

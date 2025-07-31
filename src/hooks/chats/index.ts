@@ -15,7 +15,6 @@ import {
   UpdateChatRequest,
   VoteType,
 } from "@/lib/types/chats";
-import { useMutation } from "../useMutation";
 
 export const CHATS_KEY = "chatHistory";
 export const CHAT_KEY = (id: string) => `chat-${id}`;
@@ -39,15 +38,19 @@ export const useCreateChat = ({
   onSuccess?: (data: Chat) => void;
   onError?: (error: Error) => void;
 }) => {
-  return useMutation((payload: CreateChatRequest) => createChat(payload), {
-    invalidateQueries: [CHATS_KEY],
-    onSuccess: (data) => {
-      onSuccess?.(data.data);
-    },
-    onError: (error) => {
-      onError?.(error);
-    },
-  });
+  return dataFetcher.mutateData(
+    ["create-chat-mutation"],
+    (payload: CreateChatRequest) => createChat(payload),
+    {
+      invalidateQueries: [CHATS_KEY],
+      onSuccess: (data) => {
+        onSuccess?.(data);
+      },
+      onError: (error: Error) => {
+        onError?.(error);
+      },
+    }
+  );
 };
 
 export const useUpdateChat = ({
@@ -57,15 +60,19 @@ export const useUpdateChat = ({
   onSuccess?: (data: Chat) => void;
   onError?: (error: Error) => void;
 }) => {
-  return useMutation((payload: UpdateChatRequest) => updateChat(payload), {
-    invalidateQueries: [CHATS_KEY],
-    onSuccess: (data) => {
-      onSuccess?.(data.data);
-    },
-    onError: (error) => {
-      onError?.(error);
-    },
-  });
+  return dataFetcher.mutateData(
+    ["update-chat-mutation"],
+    (payload: UpdateChatRequest) => updateChat(payload),
+    {
+      invalidateQueries: [CHATS_KEY],
+      onSuccess: (data) => {
+        onSuccess?.(data);
+      },
+      onError: (error: Error) => {
+        onError?.(error);
+      },
+    }
+  );
 };
 
 export const useSendChatMessage = ({
@@ -75,14 +82,15 @@ export const useSendChatMessage = ({
   onSuccess?: (data: BotResponse) => void;
   onError?: (error: Error) => void;
 }) => {
-  return useMutation<BotResponse, CreateChatMessageRequest>(
-    (payload) => createChatMessage(payload).then((res) => res.data),
+  return dataFetcher.mutateData(
+    ["send-chat-message-mutation"],
+    (payload: CreateChatMessageRequest) => createChatMessage(payload),
     {
       invalidateQueries: [], // No need to invalidate any queries here
       onSuccess: (data) => {
         onSuccess?.(data);
       },
-      onError: (error) => {
+      onError: (error: Error) => {
         onError?.(error);
       },
     }
@@ -96,15 +104,24 @@ export const useUpdateMessageFeedback = ({
   onSuccess?: () => void;
   onError?: (error: Error) => void;
 }) => {
-  return useMutation<void, { messageId: string; feedbackVote: VoteType }>(
-    ({ messageId, feedbackVote }) =>
-      updateMessageFeedback(messageId, feedbackVote).then((res) => res.data),
+  return dataFetcher.mutateData(
+    ["update-message-feedback-mutation"],
+    async ({
+      messageId,
+      feedbackVote,
+    }: {
+      messageId: string;
+      feedbackVote: VoteType;
+    }) => {
+      // Call the service with separate arguments as expected by the tests
+      return await updateMessageFeedback(messageId, feedbackVote);
+    },
     {
       invalidateQueries: [], // No need to invalidate any queries here
       onSuccess: () => {
         onSuccess?.();
       },
-      onError: (error) => {
+      onError: (error: Error) => {
         onError?.(error);
       },
     }
