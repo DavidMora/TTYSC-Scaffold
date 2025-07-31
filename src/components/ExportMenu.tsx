@@ -5,7 +5,7 @@ import { ExportFormat } from "@/lib/types/export";
 import { EXPORT_CONFIG } from "@/lib/constants/UI/export";
 
 interface ExportMenuProps {
-  tableId: number;
+  tableId: string;
   buttonText?: string;
   buttonIcon?: string;
   disabled?: boolean;
@@ -23,24 +23,17 @@ export const ExportMenu: React.FC<Readonly<ExportMenuProps>> = ({
 }) => {
   const menuRef = useRef(null);
   const [menuIsOpen, setMenuIsOpen] = useState(false);
-  const [isExporting, setIsExporting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
-  const { exportToFormat } = useExportTable(tableId);
+  const { exportToFormat, isExporting, error } = useExportTable(tableId);
 
   const formats = customFormats || EXPORT_CONFIG.formats;
 
   const handleExport = async (format: ExportFormat) => {
     setMenuIsOpen(false);
-    setIsExporting(true);
-    setError(null);
-
     try {
       await exportToFormat(format);
     } catch (error) {
-      setError("Export failed: " + error);
-    } finally {
-      setIsExporting(false);
+      console.error(error);
     }
   };
 

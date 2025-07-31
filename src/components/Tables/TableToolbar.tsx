@@ -18,18 +18,22 @@ import { ExportMenu } from "@/components/ExportMenu";
 interface TableToolbarProps {
   className?: string;
   title?: string;
-  tableId?: number;
+  tableId?: string;
+  onSearch?: (searchTerm: string) => void;
 }
 
 const TableToolbar: React.FC<Readonly<TableToolbarProps>> = ({
   className,
   title = "Final Summary",
   tableId,
+  onSearch,
 }) => {
   const [search, setSearch] = useState("");
 
   const handleSearch = (event: Ui5CustomEvent<InputDomRef, never>) => {
-    setSearch(event.target.value);
+    const searchTerm = event.target.value;
+    setSearch(searchTerm);
+    onSearch?.(searchTerm);
   };
 
   const handleShare = () => {
@@ -64,7 +68,7 @@ const TableToolbar: React.FC<Readonly<TableToolbarProps>> = ({
         placeholder="Search..."
         valueState="None"
         value={search}
-        onChange={handleSearch}
+        onInput={handleSearch}
       />
       <ToolbarButton design="Transparent" icon="action" onClick={handleShare} />
       <ToolbarSeparator />
@@ -75,7 +79,7 @@ const TableToolbar: React.FC<Readonly<TableToolbarProps>> = ({
       />
       <ToolbarSeparator />
       <ExportMenu
-        tableId={tableId || 1}
+        tableId={tableId || "1"}
         buttonText="Export"
         buttonIcon="excel-attachment"
       />
