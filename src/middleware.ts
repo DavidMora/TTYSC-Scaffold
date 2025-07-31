@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getToken } from 'next-auth/jwt'
+import { isFeatureEnabledEdge } from '@/lib/utils/feature-flags-edge'
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
@@ -12,6 +13,19 @@ export async function middleware(request: NextRequest) {
     pathname.includes('.')
   ) {
     return NextResponse.next()
+  }
+
+  // Check if authentication is enabled via feature flag
+  try {
+    const isAuthEnabled = isFeatureEnabledEdge('enableAuthentication');
+    
+    if (!isAuthEnabled) {
+      // Authentication is disabled, allow all requests to pass through
+      return NextResponse.next()
+    }
+  } catch (error) {
+    console.warn('Failed to check feature flag in middleware, defaulting to auth enabled:', error);
+    // On error, default to requiring authentication for safety
   }
 
   try {

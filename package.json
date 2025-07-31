@@ -40,6 +40,7 @@
     "swr": "^2.3.4"
   },
   "devDependencies": {
+    "@edge-runtime/jest-environment": "^4.0.0",
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
     "@testing-library/dom": "^10.4.0",

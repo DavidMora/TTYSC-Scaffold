@@ -20,6 +20,83 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Feature Flags
+
+This project uses a simple JSON-based feature flag system that allows you to enable/disable features without code changes.
+
+### Setup Feature Flags
+
+1. Run the setup script to create your feature flags file:
+```bash
+./scripts/setup-feature-flags.sh
+```
+
+2. Or manually copy the example file:
+```bash
+cp feature-flags.example.json feature-flags.json
+```
+
+3. Edit `feature-flags.json` to enable/disable features:
+```json
+{
+  "enableAuthentication": true
+}
+```
+
+### Available Feature Flags
+
+- **enableAuthentication**: Controls whether authentication is required to access the app
+
+### Using Feature Flags in Code
+
+#### React Hooks
+```tsx
+import { useFeatureFlag, useAuthenticationEnabled } from '@/hooks/useFeatureFlags';
+
+function MyComponent() {
+  const isAuthEnabled = useAuthenticationEnabled();
+  
+  return (
+    <div>
+      {isAuthEnabled && <LoginButton />}
+    </div>
+  );
+}
+```
+
+#### Feature Gate Component
+```tsx
+import { FeatureGate } from '@/components/FeatureGate';
+
+function App() {
+  return (
+    <FeatureGate flag="enableAuthentication" fallback={<div>Authentication disabled</div>}>
+      <AuthenticatedContent />
+    </FeatureGate>
+  );
+}
+```
+
+#### Server-side (API Routes, Server Components)
+```tsx
+import { isFeatureEnabled } from '@/lib/utils/feature-flags';
+
+export async function GET() {
+  if (isFeatureEnabled('enableAuthentication')) {
+    // Check authentication logic
+  }
+  
+  return Response.json({ data: 'response' });
+}
+```
+
+### Notes
+
+- The `feature-flags.json` file is git-ignored to allow different configurations per environment
+- The system falls back to safe defaults if the file doesn't exist or is malformed
+- Changes to feature flags require a server restart in production
+- Feature flags are cached on the server for performance
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:

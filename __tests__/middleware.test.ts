@@ -1,10 +1,16 @@
 import { NextResponse } from 'next/server';
 import { getToken } from 'next-auth/jwt';
+import { isFeatureEnabledEdge } from '@/lib/utils/feature-flags-edge';
 import { middleware } from '@/middleware';
 
 // Mock next-auth/jwt
 jest.mock('next-auth/jwt', () => ({
   getToken: jest.fn(),
+}));
+
+// Mock feature-flags-edge
+jest.mock('@/lib/utils/feature-flags-edge', () => ({
+  isFeatureEnabledEdge: jest.fn(),
 }));
 
 // Mock NextResponse
@@ -17,6 +23,7 @@ jest.mock('next/server', () => ({
 }));
 
 const mockGetToken = getToken as jest.MockedFunction<typeof getToken>;
+const mockIsFeatureEnabledEdge = isFeatureEnabledEdge as jest.MockedFunction<typeof isFeatureEnabledEdge>;
 const mockNextResponse = NextResponse as jest.Mocked<typeof NextResponse>;
 
 describe('middleware', () => {
@@ -35,6 +42,8 @@ describe('middleware', () => {
     // Reset mocks
     mockNextResponse.next.mockReturnValue({} as any);
     mockNextResponse.redirect.mockReturnValue({} as any);
+    // Default to authentication enabled
+    mockIsFeatureEnabledEdge.mockReturnValue(true);
   });
 
   describe('route skipping', () => {
@@ -261,6 +270,85 @@ describe('middleware', () => {
         }),
         307
       );
+    });
+  });
+
+  describe('feature flags', () => {
+    it('allows access when authentication is disabled via feature flag', async () => {
+      mockRequest.nextUrl.pathname = '/dashboard';
+      mockIsFeatureEnabledEdge.mockReturnValue(false);
+
+      await middleware(mockRequest);
+
+      expect(mockIsFeatureEnabledEdge).toHaveBeenCalledWith('enableAuthentication');
+      expect(mockNextResponse.next).toHaveBeenCalled();
+      expect(mockGetToken).not.toHaveBeenCalled();
+      expect(mockNextResponse.redirect).not.toHaveBeenCalled();
+    });
+
+    it('proceeds with authentication when feature flag is enabled', async () => {
+      mockRequest.nextUrl.pathname = '/dashboard';
+      mockIsFeatureEnabledEdge.mockReturnValue(true);
+      mockGetToken.mockResolvedValue({ sub: '123' });
+
+      await middleware(mockRequest);
+
+      expect(mockIsFeatureEnabledEdge).toHaveBeenCalledWith('enableAuthentication');
+      expect(mockGetToken).toHaveBeenCalled();
+      expect(mockNextResponse.next).toHaveBeenCalled();
+    });
+
+    it('defaults to requiring authentication when feature flag check fails', async () => {
+      const mockConsoleWarn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+      
+      mockRequest.nextUrl.pathname = '/dashboard';
+      mockRequest.url = 'http://localhost:3000/dashboard';
+      mockIsFeatureEnabledEdge.mockImplementation(() => {
+        throw new Error('Feature flag service unavailable');
+      });
+      mockGetToken.mockResolvedValue(null);
+
+      await middleware(mockRequest);
+
+      expect(mockIsFeatureEnabledEdge).toHaveBeenCalledWith('enableAuthentication');
+      expect(mockConsoleWarn).toHaveBeenCalledWith(
+        'Failed to check feature flag in middleware, defaulting to auth enabled:',
+        expect.any(Error)
+      );
+      // Should proceed with authentication check despite feature flag error
+      expect(mockGetToken).toHaveBeenCalled();
+      expect(mockNextResponse.redirect).toHaveBeenCalledWith(
+        expect.objectContaining({
+          href: 'http://localhost:3000/auth/signin?callbackUrl=http%3A%2F%2Flocalhost%3A3000%2Fdashboard'
+        }),
+        307
+      );
+
+      mockConsoleWarn.mockRestore();
+    });
+
+    it('handles feature flag error but still allows access with valid token', async () => {
+      const mockConsoleWarn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+      
+      mockRequest.nextUrl.pathname = '/dashboard';
+      mockIsFeatureEnabledEdge.mockImplementation(() => {
+        throw new Error('Feature flag service error');
+      });
+      mockGetToken.mockResolvedValue({ sub: '123', name: 'Test User' });
+
+      await middleware(mockRequest);
+
+      expect(mockIsFeatureEnabledEdge).toHaveBeenCalledWith('enableAuthentication');
+      expect(mockConsoleWarn).toHaveBeenCalledWith(
+        'Failed to check feature flag in middleware, defaulting to auth enabled:',
+        expect.any(Error)
+      );
+      // Should proceed with authentication check and allow access with valid token
+      expect(mockGetToken).toHaveBeenCalled();
+      expect(mockNextResponse.next).toHaveBeenCalled();
+      expect(mockNextResponse.redirect).not.toHaveBeenCalled();
+
+      mockConsoleWarn.mockRestore();
     });
   });
 });

@@ -41,6 +41,9 @@ yarn-error.log*
 # include .env.example
 !.env.example
 
+# feature flags
+feature-flags.json
+
 # vercel
 .vercel
 

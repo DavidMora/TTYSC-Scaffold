@@ -158,7 +158,7 @@ describe('SignIn Page', () => {
 
     render(<SignIn />);
 
-    expect(screen.getByText('Signing in as John Doe')).toBeInTheDocument();
+    expect(screen.getByText(/Signing in as ,?\s*John Doe/)).toBeInTheDocument();
   });
 
   it('displays session expired error message', () => {

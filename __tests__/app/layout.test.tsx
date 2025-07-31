@@ -3,6 +3,15 @@ import RootLayout, { metadata } from "@/app/layout";
 import "@testing-library/jest-dom";
 import React from "react";
 
+// Mock the useFeatureFlags hook
+jest.mock("@/hooks/useFeatureFlags", () => ({
+  useFeatureFlags: () => ({
+    flags: { enableAuthentication: true },
+    loading: false,
+    error: null,
+  }),
+}));
+
 jest.mock("@/components/AppLayout/AppLayout", () => {
   const MockAppLayout = ({ children }: { children: React.ReactNode }) => {
     return <div data-testid="mock-app-layout">{children}</div>;

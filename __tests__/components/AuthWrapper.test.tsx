@@ -13,20 +13,20 @@ jest.mock('next/navigation', () => ({
 }));
 
 // Mock the components
-jest.mock('@/components/AppLayout', () => {
+jest.mock('@/components/AppLayout/AppLayout', () => {
   const MockAppLayout = ({ children }: { children: React.ReactNode }) => (
     <div data-testid="app-layout">{children}</div>
   );
   MockAppLayout.displayName = 'MockAppLayout';
-  return MockAppLayout;
+  return { default: MockAppLayout };
 });
 
-jest.mock('@/components/ThemeProvider', () => {
+jest.mock('@/providers/ThemeProvider', () => {
   const MockThemeProvider = ({ children }: { children: React.ReactNode }) => (
     <div data-testid="theme-provider">{children}</div>
   );
   MockThemeProvider.displayName = 'MockThemeProvider';
-  return MockThemeProvider;
+  return { default: MockThemeProvider };
 });
 
 const mockUseAuth = useAuth as jest.MockedFunction<typeof useAuth>;
@@ -97,7 +97,7 @@ describe('AuthWrapper', () => {
     expect(container.firstChild).toBeNull();
   });
 
-  it('renders with ThemeProvider only when on auth route', async () => {
+  it('renders children directly when on auth route', async () => {
     mockUseAuth.mockReturnValue({
       session: null,
       isLoading: false,
@@ -116,13 +116,11 @@ describe('AuthWrapper', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByTestId('theme-provider')).toBeInTheDocument();
       expect(screen.getByText('Auth Content')).toBeInTheDocument();
-      expect(screen.queryByTestId('app-layout')).not.toBeInTheDocument();
     });
   });
 
-  it('renders with AppLayout when authenticated', async () => {
+  it('renders children directly when authenticated', async () => {
     const mockSession = {
       user: { id: '1', name: 'Test User', email: 'test@example.com' },
       expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
@@ -146,8 +144,6 @@ describe('AuthWrapper', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByTestId('theme-provider')).toBeInTheDocument();
-      expect(screen.getByTestId('app-layout')).toBeInTheDocument();
       expect(screen.getByText('Dashboard Content')).toBeInTheDocument();
     });
   });
@@ -198,7 +194,6 @@ describe('AuthWrapper', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Content')).toBeInTheDocument();
-      expect(screen.getByTestId('app-layout')).toBeInTheDocument();
     });
   });
 

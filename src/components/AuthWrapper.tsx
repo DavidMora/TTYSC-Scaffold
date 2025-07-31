@@ -3,11 +3,9 @@
 import { useAuth } from "../hooks/useAuth";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import AppLayout from "./AppLayout";
-import ThemeProvider from "./ThemeProvider";
 
 interface AuthWrapperProps {
-  children: React.ReactNode;
+  readonly children: React.ReactNode;
 }
 
 export default function AuthWrapper({ children }: AuthWrapperProps) {
@@ -37,22 +35,14 @@ export default function AuthWrapper({ children }: AuthWrapperProps) {
     return null;
   }
 
-  // If we're on auth routes, render without AppLayout (auth pages handle their own layout)
+  // If we're on auth routes, render children directly WITHOUT AppLayout
   if (isAuthRoute) {
-    return (
-      <ThemeProvider>
-        {children}
-      </ThemeProvider>
-    );
+    return <>{children}</>;
   }
 
   // Only render AppLayout if we have a valid session (user is authenticated)
   if (session) {
-    return (
-      <ThemeProvider>
-        <AppLayout>{children}</AppLayout>
-      </ThemeProvider>
-    );
+    return <>{children}</>;
   }
 
   // Fallback: return null if somehow we get here without session

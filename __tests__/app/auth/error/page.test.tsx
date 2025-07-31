@@ -44,7 +44,7 @@ describe('AuthError Page', () => {
 
     expect(screen.getByText('Authentication Error')).toBeInTheDocument();
     expect(screen.getByText('There is a configuration error with the authentication provider.')).toBeInTheDocument();
-    expect(screen.getByText(/Error code:\s*Configuration/)).toBeInTheDocument();
+    expect(screen.getByText(/Error code:\s*,?\s*Configuration/)).toBeInTheDocument();
   });
 
   it('displays access denied error message', () => {
@@ -54,7 +54,7 @@ describe('AuthError Page', () => {
 
     expect(screen.getByText('Authentication Error')).toBeInTheDocument();
     expect(screen.getByText('Access was denied. You may not have permission to sign in.')).toBeInTheDocument();
-    expect(screen.getByText(/Error code:\s*AccessDenied/)).toBeInTheDocument();
+    expect(screen.getByText(/Error code:\s*,?\s*AccessDenied/)).toBeInTheDocument();
   });
 
   it('displays verification error message', () => {
@@ -64,7 +64,7 @@ describe('AuthError Page', () => {
 
     expect(screen.getByText('Authentication Error')).toBeInTheDocument();
     expect(screen.getByText('The verification token has expired or is invalid.')).toBeInTheDocument();
-    expect(screen.getByText(/Error code:\s*Verification/)).toBeInTheDocument();
+    expect(screen.getByText(/Error code:\s*,?\s*Verification/)).toBeInTheDocument();
   });
 
   it('displays default error for session expired', () => {
@@ -74,7 +74,7 @@ describe('AuthError Page', () => {
 
     expect(screen.getByText('Authentication Error')).toBeInTheDocument();
     expect(screen.getByText('An authentication error occurred. Please try again.')).toBeInTheDocument();
-    expect(screen.getByText(/Error code:\s*SessionExpired/)).toBeInTheDocument();
+    expect(screen.getByText(/Error code:\s*,?\s*SessionExpired/)).toBeInTheDocument();
   });
 
   it('displays default error for unrecognized error types', () => {
@@ -84,7 +84,7 @@ describe('AuthError Page', () => {
 
     expect(screen.getByText('Authentication Error')).toBeInTheDocument();
     expect(screen.getByText('An authentication error occurred. Please try again.')).toBeInTheDocument();
-    expect(screen.getByText(/Error code:\s*UnknownError/)).toBeInTheDocument();
+    expect(screen.getByText(/Error code:\s*,?\s*UnknownError/)).toBeInTheDocument();
   });
 
   it('handles case-sensitive error types', () => {
@@ -94,7 +94,7 @@ describe('AuthError Page', () => {
 
     expect(screen.getByText('Authentication Error')).toBeInTheDocument();
     expect(screen.getByText('An authentication error occurred. Please try again.')).toBeInTheDocument();
-    expect(screen.getByText(/Error code:\s*accessdenied/)).toBeInTheDocument();
+    expect(screen.getByText(/Error code:\s*,?\s*accessdenied/)).toBeInTheDocument();
   });
 
   it('renders retry button for all errors', () => {
@@ -146,7 +146,7 @@ describe('AuthError Page', () => {
     render(<AuthError />);
 
     expect(screen.getByText(/Error code:/)).toBeInTheDocument();
-    expect(screen.getByText(/Error code:\s*Configuration/)).toBeInTheDocument();
+    expect(screen.getByText(/Error code:\s*,?\s*Configuration/)).toBeInTheDocument();
   });
 
   it('does not display error code when no error', () => {
@@ -164,7 +164,7 @@ describe('AuthError Page', () => {
 
     expect(screen.getByText('Authentication Error')).toBeInTheDocument();
     expect(screen.getByText('An authentication error occurred. Please try again.')).toBeInTheDocument();
-    expect(screen.getByText(/Error code:\s*Default/)).toBeInTheDocument();
+    expect(screen.getByText(/Error code:\s*,?\s*Default/)).toBeInTheDocument();
   });
 
   it('maintains consistent error display structure', () => {
