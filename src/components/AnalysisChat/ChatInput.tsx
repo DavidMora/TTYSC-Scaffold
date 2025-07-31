@@ -39,8 +39,8 @@ export function ChatInput({
     onSuccess: () => {
       activateAutosaveUI();
     },
-    onError: (error) => {
-      console.error("Autosave failed:", error);
+    onError: () => {
+      console.error("Autosave failed");
     },
   });
 

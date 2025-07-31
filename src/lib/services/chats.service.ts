@@ -1,6 +1,11 @@
 import { apiClient } from "@/lib/api";
 import { HttpClientResponse } from "@/lib/types/api/http-client";
-import { CHATS, CHAT, CHAT_MESSAGE } from "@/lib/constants/api/routes";
+import {
+  CHATS,
+  CHAT,
+  CHAT_MESSAGE,
+  MESSAGE_FEEDBACK,
+} from "@/lib/constants/api/routes";
 import {
   ChatResponse,
   ChatsResponse,
@@ -9,6 +14,7 @@ import {
   UpdateChatRequest,
   Chat,
   CreateChatRequest,
+  VoteType,
 } from "@/lib/types/chats";
 
 export const getChats = async (): Promise<
@@ -45,4 +51,13 @@ export const createChatMessage = async (
   payload: CreateChatMessageRequest
 ): Promise<HttpClientResponse<BotResponse>> => {
   return await apiClient.post<BotResponse>(CHAT_MESSAGE, payload);
+};
+
+export const updateMessageFeedback = async (
+  messageId: string,
+  feedbackVote: VoteType
+): Promise<HttpClientResponse<void>> => {
+  return await apiClient.put<void>(MESSAGE_FEEDBACK(messageId), {
+    feedbackVote,
+  });
 };

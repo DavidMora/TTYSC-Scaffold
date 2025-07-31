@@ -19,6 +19,8 @@ export const CHAT = (id: string) => `${BASE}/chats/${encodeURIComponent(id)}`;
 export const CHAT_MESSAGES = (id: string) =>
   `${BASE}/chats/${encodeURIComponent(id)}/messages`;
 export const CHAT_MESSAGE = `${BASE}/chat`;
+export const MESSAGE_FEEDBACK = (messageId: string) =>
+  `${BASE}/messages/${encodeURIComponent(messageId)}/feedback`;
 
 // Cases endpoints
 export const CASES = `${BASE}/cases`;
