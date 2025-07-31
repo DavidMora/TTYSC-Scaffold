@@ -18,16 +18,6 @@
  */
 
 // -----------------------------------------------------------------------------
-// UI5 SCOPING CONFIGURATION
-// -----------------------------------------------------------------------------
-
-/**
- * Apply UI5 Web Components scoping to prevent runtime conflicts.
- * This must be imported before any UI5 components are loaded.
- */
-import "./ui5-scoping";
-
-// -----------------------------------------------------------------------------
 // IMPORTS
 // -----------------------------------------------------------------------------
 
@@ -40,10 +30,7 @@ import { setTheme } from "@ui5/webcomponents-base/dist/config/Theme.js";
  * Core UI5 Web Components assets (icons, fonts, base styles).
  */
 import "@ui5/webcomponents/dist/Assets.js";
-import "@ui5/webcomponents-fiori/dist/Assets.js";
-import "@ui5/webcomponents-react/dist/Assets.js";
 import "@ui5/webcomponents-icons/dist/AllIcons.js";
-import "@ui5/webcomponents-icons/dist/Assets.js";
 
 /**
  * Fallback/direct CSS import for the custom theme (optional).
