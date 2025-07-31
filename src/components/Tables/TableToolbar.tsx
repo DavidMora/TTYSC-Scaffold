@@ -13,15 +13,18 @@ import {
   Ui5CustomEvent,
   InputDomRef,
 } from "@ui5/webcomponents-react";
+import { ExportMenu } from "@/components/ExportMenu";
 
 interface TableToolbarProps {
   className?: string;
   title?: string;
+  tableId?: number;
 }
 
 const TableToolbar: React.FC<Readonly<TableToolbarProps>> = ({
   className,
   title = "Final Summary",
+  tableId,
 }) => {
   const [search, setSearch] = useState("");
 
@@ -31,10 +34,6 @@ const TableToolbar: React.FC<Readonly<TableToolbarProps>> = ({
 
   const handleShare = () => {
     console.log("share");
-  };
-
-  const handleExport = () => {
-    console.log("export");
   };
 
   const handleSettings = () => {
@@ -75,10 +74,10 @@ const TableToolbar: React.FC<Readonly<TableToolbarProps>> = ({
         onClick={handleSettings}
       />
       <ToolbarSeparator />
-      <ToolbarButton
-        design="Transparent"
-        icon="excel-attachment"
-        onClick={handleExport}
+      <ExportMenu
+        tableId={tableId || 1}
+        buttonText="Export"
+        buttonIcon="excel-attachment"
       />
       <ToolbarSeparator />
       <ToolbarButton

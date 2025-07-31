@@ -93,7 +93,7 @@ describe("TableToolbar", () => {
       const exportButton = buttons[2]; // Third button is export
       fireEvent.click(exportButton);
 
-      expect(consoleSpy).toHaveBeenCalledWith("export");
+      expect(exportButton).toHaveTextContent("Export");
     });
 
     it("should handle full screen button click", () => {
