@@ -67,4 +67,9 @@ describe("MessageBubble", () => {
     expect(screen.queryByTestId("ui5-avatar")).not.toBeInTheDocument();
     expect(screen.queryByText("Daniel Alferez")).not.toBeInTheDocument();
   });
+
+  it("should show default user name when user name is not provided", () => {
+    render(<MessageBubble message={baseMessage} user={undefined} />);
+    expect(screen.getByText("Unknown")).toBeInTheDocument();
+  });
 });

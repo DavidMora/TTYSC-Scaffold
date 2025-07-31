@@ -45,7 +45,10 @@ export function AIResponseBubble({
           right: "10px",
         }}
       >
-        <FeedbackVote previousVote={message.feedbackVote} />
+        <FeedbackVote
+          messageId={message.id}
+          previousVote={message.feedbackVote}
+        />
       </div>
 
       <div>

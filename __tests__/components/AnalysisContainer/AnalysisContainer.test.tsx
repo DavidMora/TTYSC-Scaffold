@@ -322,4 +322,45 @@ describe("AnalysisContainer", () => {
 
     expect(mockActivateAutosaveUI).toHaveBeenCalled();
   });
+
+  it("should call onError when useAutoSave onError is triggered", () => {
+    const mockAnalysisData = {
+      id: "test-analysis-id",
+      title: "Test Analysis Title",
+    };
+
+    mockUseChat.mockReturnValue({
+      isLoading: false,
+      isValidating: false,
+      error: null,
+      data: { data: mockAnalysisData },
+      mutate: jest.fn(),
+    });
+
+    const consoleSpy = jest.spyOn(console, "error").mockImplementation();
+
+    let capturedOnError: (() => void) | undefined;
+    mockUseAutoSave.mockImplementation((options) => {
+      capturedOnError = options.onError;
+      return {
+        isSaving: false,
+        lastSaved: null,
+        error: null,
+        executeAutosave: jest.fn(),
+      };
+    });
+
+    renderWithProviders(<AnalysisContainer />);
+
+    expect(capturedOnError).toBeDefined();
+    expect(typeof capturedOnError).toBe("function");
+
+    if (capturedOnError) {
+      capturedOnError();
+    }
+
+    expect(consoleSpy).toHaveBeenCalledWith("Autosave failed");
+
+    consoleSpy.mockRestore();
+  });
 });

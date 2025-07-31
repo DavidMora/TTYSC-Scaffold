@@ -5,6 +5,7 @@ import {
   createChat,
   updateChat,
   createChatMessage,
+  updateMessageFeedback,
 } from "@/lib/services/chats.service";
 import {
   BotResponse,
@@ -12,6 +13,7 @@ import {
   CreateChatMessageRequest,
   CreateChatRequest,
   UpdateChatRequest,
+  VoteType,
 } from "@/lib/types/chats";
 
 export const CHATS_KEY = "chatHistory";
@@ -89,6 +91,28 @@ export const useSendChatMessage = ({
         onSuccess?.(data);
       },
       onError: (error: Error) => {
+        onError?.(error);
+      },
+    }
+  );
+};
+
+export const useUpdateMessageFeedback = ({
+  onSuccess,
+  onError,
+}: {
+  onSuccess?: () => void;
+  onError?: (error: Error) => void;
+}) => {
+  return useMutation<void, { messageId: string; feedbackVote: VoteType }>(
+    ({ messageId, feedbackVote }) =>
+      updateMessageFeedback(messageId, feedbackVote).then((res) => res.data),
+    {
+      invalidateQueries: [], // No need to invalidate any queries here
+      onSuccess: () => {
+        onSuccess?.();
+      },
+      onError: (error) => {
         onError?.(error);
       },
     }

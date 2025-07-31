@@ -5,6 +5,9 @@ import {
   useCreateChat,
   useUpdateChat,
   useSendChatMessage,
+  useUpdateMessageFeedback,
+  CHATS_KEY,
+  CHAT_KEY,
 } from "@/hooks/chats";
 import { dataFetcher } from "@/lib/api";
 import {
@@ -13,6 +16,7 @@ import {
   createChat,
   updateChat,
   createChatMessage,
+  updateMessageFeedback,
 } from "@/lib/services/chats.service";
 import { HttpClientResponse } from "@/lib/types/api/http-client";
 import { Chat, BotResponse } from "@/lib/types/chats";
@@ -29,6 +33,16 @@ const mockedUpdateChat = updateChat as jest.MockedFunction<typeof updateChat>;
 const mockedCreateChatMessage = createChatMessage as jest.MockedFunction<
   typeof createChatMessage
 >;
+const mockedUpdateMessageFeedback = updateMessageFeedback;
+
+jest.mock("@/lib/services/chats.service", () => ({
+  getChats: jest.fn(),
+  getChat: jest.fn(),
+  createChat: jest.fn(),
+  updateChat: jest.fn(),
+  createChatMessage: jest.fn(),
+  updateMessageFeedback: jest.fn(),
+}));
 
 describe("Chat Hooks", () => {
   beforeEach(() => {
@@ -93,6 +107,8 @@ describe("Chat Hooks", () => {
         data: mockChat,
         status: 200,
         statusText: "OK",
+        headers: {},
+        ok: true,
       } as HttpClientResponse<Chat>);
 
       const onSuccess = jest.fn();
@@ -181,6 +197,8 @@ describe("Chat Hooks", () => {
         data: mockChat,
         status: 200,
         statusText: "OK",
+        headers: {},
+        ok: true,
       } as HttpClientResponse<Chat>);
 
       const onSuccess = jest.fn();
@@ -351,6 +369,96 @@ describe("Chat Hooks", () => {
       const config = mockMutateData.mock.calls[0][2];
       config.onError(mockError);
       expect(onError).toHaveBeenCalledWith(mockError);
+    });
+  });
+  describe("useUpdateMessageFeedback", () => {
+    it("should call onSuccess callback when feedback is updated successfully", async () => {
+      const mockResponse = {
+        data: undefined,
+        status: 200,
+        statusText: "OK",
+        headers: {},
+        ok: true,
+      };
+      (mockedUpdateMessageFeedback as jest.Mock).mockResolvedValue(
+        mockResponse
+      );
+
+      const onSuccess = jest.fn();
+      const onError = jest.fn();
+
+      // Simula el hook y llama directamente a la función de feedback
+      const { result } = renderHook(() =>
+        useUpdateMessageFeedback({ onSuccess, onError })
+      );
+      const payload = { messageId: "test-message-id", feedbackVote: "up" };
+      await result.current.mutateAsync(payload);
+      expect(mockedUpdateMessageFeedback).toHaveBeenCalledWith(
+        "test-message-id",
+        "up"
+      );
+      expect(onSuccess).toHaveBeenCalled();
+    });
+
+    it("should call onError callback when feedback update fails", async () => {
+      const mockError = new Error("Failed to update feedback");
+      (mockedUpdateMessageFeedback as jest.Mock).mockRejectedValue(mockError);
+
+      const onSuccess = jest.fn();
+      const onError = jest.fn();
+
+      const { result } = renderHook(() =>
+        useUpdateMessageFeedback({ onSuccess, onError })
+      );
+      const payload = { messageId: "test-message-id", feedbackVote: "down" };
+      await expect(result.current.mutateAsync(payload)).rejects.toThrow();
+      expect(onError).toHaveBeenCalledWith(mockError);
+    });
+
+    it("should call updateMessageFeedback service with correct parameters", async () => {
+      const mockResponse = {
+        data: undefined,
+        status: 200,
+        statusText: "OK",
+        headers: {},
+        ok: true,
+      };
+      (mockedUpdateMessageFeedback as jest.Mock).mockResolvedValue(
+        mockResponse
+      );
+
+      const onSuccess = jest.fn();
+      const onError = jest.fn();
+
+      const { result } = renderHook(() =>
+        useUpdateMessageFeedback({ onSuccess, onError })
+      );
+      const payload = { messageId: "test-message-id", feedbackVote: "up" };
+      await result.current.mutateAsync(payload);
+      expect(mockedUpdateMessageFeedback).toHaveBeenCalledWith(
+        "test-message-id",
+        "up"
+      );
+    });
+  });
+
+  describe("Constants", () => {
+    it("should have correct CHATS_KEY constant", () => {
+      expect(CHATS_KEY).toBe("chatHistory");
+    });
+
+    it("should generate correct CHAT_KEY for given ID", () => {
+      const testId = "test-id";
+      expect(CHAT_KEY(testId)).toBe(`chat-${testId}`);
+    });
+
+    it("should generate unique CHAT_KEY for different IDs", () => {
+      const id1 = "id1";
+      const id2 = "id2";
+
+      expect(CHAT_KEY(id1)).toBe("chat-id1");
+      expect(CHAT_KEY(id2)).toBe("chat-id2");
+      expect(CHAT_KEY(id1)).not.toBe(CHAT_KEY(id2));
     });
   });
 });

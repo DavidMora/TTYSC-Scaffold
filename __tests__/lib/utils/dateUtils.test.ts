@@ -75,6 +75,30 @@ describe("parseDate", () => {
     expect(["AM", "PM"]).toContain(result.split(" ").pop());
   });
 
+  test("should handle midnight time showing 12 AM (not 0 AM)", () => {
+    // Create a Date object for midnight (00:00) in UTC
+    const date = new Date("2024-01-15T00:00:00.000Z");
+    const input = date.toISOString();
+    const result = parseDate(input, true); // Use UTC to ensure consistent behavior
+
+    expect(result).toMatch(
+      /^\d{1,2}\/\d{1,2}\/\d{4} at \d{1,2}:\d{2} (AM|PM)$/
+    );
+    expect(result).toContain("12:00 AM");
+  });
+
+  test("should handle noon time showing 12 PM (not 0 PM)", () => {
+    // Create a Date object for noon (12:00) in UTC
+    const date = new Date("2024-01-15T12:00:00.000Z");
+    const input = date.toISOString();
+    const result = parseDate(input, true); // Use UTC to ensure consistent behavior
+
+    expect(result).toMatch(
+      /^\d{1,2}\/\d{1,2}\/\d{4} at \d{1,2}:\d{2} (AM|PM)$/
+    );
+    expect(result).toContain("12:00 PM");
+  });
+
   test("should handle edge case of 11:59 AM", () => {
     const input = "2024-01-15T11:59:00Z";
     const result = parseDate(input);

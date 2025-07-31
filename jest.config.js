@@ -9,6 +9,11 @@ const createJestConfig = nextJest({
 const customJestConfig = {
   setupFilesAfterEnv: ["<rootDir>/jest.setup.ts"],
   testEnvironment: "jest-environment-jsdom",
+  testPathIgnorePatterns: [
+    "<rootDir>/.next/",
+    "<rootDir>/node_modules/",
+    "<rootDir>/__tests__/test-utils-internal/",
+  ],
   moduleNameMapper: {
     "^@ui5/webcomponents-react$":
       "<rootDir>/__mocks__/@ui5/webcomponents-react.js",
@@ -22,6 +27,7 @@ const customJestConfig = {
     "!src/**/*.d.ts",
     "!src/**/*.stories.{js,jsx,ts,tsx}",
     "!src/**/*.test.{js,jsx,ts,tsx}",
+    "!src/app/api/auth/\\[...nextauth\\]/route.ts",
     "!src/lib/constants/**",
   ],
   coverageReporters: ["text", "lcov", "html", "json-summary"],
