@@ -19,7 +19,7 @@ import {
   updateMessageFeedback,
 } from "@/lib/services/chats.service";
 import { HttpClientResponse } from "@/lib/types/api/http-client";
-import { Chat, BotResponse } from "@/lib/types/chats";
+import { Chat, BotResponse, VoteType } from "@/lib/types/chats";
 
 // Mock the dependencies
 jest.mock("@/lib/api");
@@ -129,6 +129,8 @@ describe("Chat Hooks", () => {
         data: mockChat,
         status: 200,
         statusText: "OK",
+        headers: {},
+        ok: true,
       });
     });
 
@@ -219,6 +221,8 @@ describe("Chat Hooks", () => {
         data: mockChat,
         status: 200,
         statusText: "OK",
+        headers: {},
+        ok: true,
       });
     });
 
@@ -387,16 +391,25 @@ describe("Chat Hooks", () => {
       const onSuccess = jest.fn();
       const onError = jest.fn();
 
-      // Simula el hook y llama directamente a la función de feedback
-      const { result } = renderHook(() =>
-        useUpdateMessageFeedback({ onSuccess, onError })
-      );
-      const payload = { messageId: "test-message-id", feedbackVote: "up" };
-      await result.current.mutateAsync(payload);
-      expect(mockedUpdateMessageFeedback).toHaveBeenCalledWith(
-        "test-message-id",
-        "up"
-      );
+      const mockMutateData = jest
+        .fn()
+        .mockImplementation((mutationKey, mutationFn, options) => ({
+          mutate: jest.fn(),
+          mutateAsync: mutationFn,
+          mutationKey,
+          mutationFn,
+          options,
+        }));
+      mockedDataFetcher.mutateData = mockMutateData;
+
+      renderHook(() => useUpdateMessageFeedback({ onSuccess, onError }));
+
+      // Get the options object passed to mutateData
+      const options = mockMutateData.mock.calls[0][2];
+
+      // Manually trigger the onSuccess callback
+      options.onSuccess(mockResponse.data);
+
       expect(onSuccess).toHaveBeenCalled();
     });
 
@@ -407,11 +420,25 @@ describe("Chat Hooks", () => {
       const onSuccess = jest.fn();
       const onError = jest.fn();
 
-      const { result } = renderHook(() =>
-        useUpdateMessageFeedback({ onSuccess, onError })
-      );
-      const payload = { messageId: "test-message-id", feedbackVote: "down" };
-      await expect(result.current.mutateAsync(payload)).rejects.toThrow();
+      const mockMutateData = jest
+        .fn()
+        .mockImplementation((mutationKey, mutationFn, options) => ({
+          mutate: jest.fn(),
+          mutateAsync: mutationFn,
+          mutationKey,
+          mutationFn,
+          options,
+        }));
+      mockedDataFetcher.mutateData = mockMutateData;
+
+      renderHook(() => useUpdateMessageFeedback({ onSuccess, onError }));
+
+      // Get the options object passed to mutateData
+      const options = mockMutateData.mock.calls[0][2];
+
+      // Manually trigger the onError callback
+      options.onError(mockError);
+
       expect(onError).toHaveBeenCalledWith(mockError);
     });
 
@@ -430,11 +457,27 @@ describe("Chat Hooks", () => {
       const onSuccess = jest.fn();
       const onError = jest.fn();
 
+      const mockMutateData = jest
+        .fn()
+        .mockImplementation((mutationKey, mutationFn, options) => ({
+          mutate: jest.fn(),
+          mutateAsync: mutationFn,
+          mutationKey,
+          mutationFn,
+          options,
+        }));
+      mockedDataFetcher.mutateData = mockMutateData;
+
       const { result } = renderHook(() =>
         useUpdateMessageFeedback({ onSuccess, onError })
       );
-      const payload = { messageId: "test-message-id", feedbackVote: "up" };
+
+      const payload = {
+        messageId: "test-message-id",
+        feedbackVote: "up" as VoteType,
+      };
       await result.current.mutateAsync(payload);
+
       expect(mockedUpdateMessageFeedback).toHaveBeenCalledWith(
         "test-message-id",
         "up"

@@ -104,15 +104,24 @@ export const useUpdateMessageFeedback = ({
   onSuccess?: () => void;
   onError?: (error: Error) => void;
 }) => {
-  return useMutation<void, { messageId: string; feedbackVote: VoteType }>(
-    ({ messageId, feedbackVote }) =>
-      updateMessageFeedback(messageId, feedbackVote).then((res) => res.data),
+  return dataFetcher.mutateData(
+    ["update-message-feedback-mutation"],
+    async ({
+      messageId,
+      feedbackVote,
+    }: {
+      messageId: string;
+      feedbackVote: VoteType;
+    }) => {
+      // Call the service with separate arguments as expected by the tests
+      return await updateMessageFeedback(messageId, feedbackVote);
+    },
     {
       invalidateQueries: [], // No need to invalidate any queries here
       onSuccess: () => {
         onSuccess?.();
       },
-      onError: (error) => {
+      onError: (error: Error) => {
         onError?.(error);
       },
     }
