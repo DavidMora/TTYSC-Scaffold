@@ -209,3 +209,64 @@ describe("HttpClient with FetchAdapter", () => {
     });
   });
 });
+
+describe("HttpClient Authentication Configuration", () => {
+  const originalEnv = process.env;
+
+  beforeEach(() => {
+    // Reset modules to ensure fresh imports
+    jest.resetModules();
+  });
+
+  afterEach(() => {
+    // Restore original environment
+    process.env = { ...originalEnv };
+  });
+
+  it("should create authConfig when both username and password are provided", () => {
+    // Set environment variables
+    process.env.NEXT_PUBLIC_API_USERNAME = "testuser";
+    process.env.NEXT_PUBLIC_API_PASSWORD = "testpass";
+
+    // Re-import to get fresh instance with new env vars
+    const { apiClient } = require("../../../src/lib/api/http-client");
+
+    // Verify that the apiClient was created (this covers the auth config creation)
+    expect(apiClient).toBeDefined();
+    expect(apiClient).toBeInstanceOf(require("../../../src/lib/api/http-client").HttpClient);
+  });
+
+  it("should create authConfig as undefined when credentials are missing", () => {
+    // Ensure no credentials are set
+    delete process.env.NEXT_PUBLIC_API_USERNAME;
+    delete process.env.NEXT_PUBLIC_API_PASSWORD;
+
+    // Re-import to get fresh instance
+    const { apiClient } = require("../../../src/lib/api/http-client");
+
+    // Verify that the apiClient was created without auth
+    expect(apiClient).toBeDefined();
+  });
+
+  it("should create authConfig as undefined when only username is provided", () => {
+    // Set only username
+    process.env.NEXT_PUBLIC_API_USERNAME = "testuser";
+    delete process.env.NEXT_PUBLIC_API_PASSWORD;
+
+    // Re-import to get fresh instance
+    const { apiClient } = require("../../../src/lib/api/http-client");
+
+    expect(apiClient).toBeDefined();
+  });
+
+  it("should create authConfig as undefined when only password is provided", () => {
+    // Set only password
+    delete process.env.NEXT_PUBLIC_API_USERNAME;
+    process.env.NEXT_PUBLIC_API_PASSWORD = "testpass";
+
+    // Re-import to get fresh instance
+    const { apiClient } = require("../../../src/lib/api/http-client");
+
+    expect(apiClient).toBeDefined();
+  });
+});

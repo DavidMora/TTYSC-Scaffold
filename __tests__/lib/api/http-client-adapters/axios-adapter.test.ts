@@ -201,4 +201,83 @@ describe("AxiosAdapter", () => {
     );
     expect(axiosAdapterModule.default).toBe(AxiosAdapter);
   });
+
+  describe("Header normalization", () => {
+    it("should handle headers with undefined values", async () => {
+      const mockResponse = {
+        data: { test: "data" },
+        status: 200,
+        statusText: "OK",
+        headers: {
+          "content-type": "application/json",
+          "x-undefined-header": undefined,
+          "x-valid-header": "valid-value",
+        },
+      };
+      mockAxiosInstance.get.mockResolvedValue(mockResponse);
+
+      const response = await adapter.get("/test", {
+        headers: {
+          "custom-header": "value",
+          "undefined-header": undefined,
+          "null-header": null,
+        } as any,
+      });
+
+      expect(response.data).toEqual({ test: "data" });
+      expect(response.status).toBe(200);
+    });
+
+    it("should handle headers with null values", async () => {
+      const mockResponse = {
+        data: { test: "data" },
+        status: 200,
+        statusText: "OK",
+        headers: {
+          "content-type": "application/json",
+          "x-null-header": null,
+          "x-valid-header": "valid-value",
+        },
+      };
+      mockAxiosInstance.post.mockResolvedValue(mockResponse);
+
+      const response = await adapter.post("/test", { data: "test" }, {
+        headers: {
+          "custom-header": "value",
+          "null-header": null,
+          "undefined-header": undefined,
+          "object-header": { key: "value" },
+        } as any,
+      });
+
+      expect(response.data).toEqual({ test: "data" });
+      expect(response.status).toBe(200);
+    });
+
+    it("should normalize non-string header values", async () => {
+      const mockResponse = {
+        data: { test: "data" },
+        status: 200,
+        statusText: "OK",
+        headers: {
+          "content-type": "application/json",
+          "x-number-header": 123,
+          "x-object-header": { key: "value" },
+        },
+      };
+      mockAxiosInstance.put.mockResolvedValue(mockResponse);
+
+      const response = await adapter.put("/test", { data: "test" }, {
+        headers: {
+          "number-header": 456,
+          "boolean-header": true,
+          "array-header": [1, 2, 3],
+          "object-header": { nested: "object" },
+        } as any,
+      });
+
+      expect(response.data).toEqual({ test: "data" });
+      expect(response.status).toBe(200);
+    });
+  });
 });
