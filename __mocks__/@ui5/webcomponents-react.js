@@ -532,6 +532,92 @@ const ToolbarButton = React.forwardRef(({ design, icon, onClick, children, ...pr
 ));
 ToolbarButton.displayName = "ToolbarButton";
 
+// Menu components
+const Menu = React.forwardRef(({ 
+  children, 
+  open, 
+  onClose, 
+  opener, 
+  horizontalAlign, 
+  ...props 
+}, ref) => {
+  const [isOpen, setIsOpen] = React.useState(open);
+
+  React.useEffect(() => {
+    setIsOpen(open);
+  }, [open]);
+
+  const handleClose = () => {
+    setIsOpen(false);
+    onClose?.();
+  };
+
+  return isOpen ? (
+    <div
+      ref={ref}
+      data-testid="ui5-menu"
+      data-horizontal-align={horizontalAlign}
+      onClick={handleClose}
+      style={{
+        position: "absolute",
+        backgroundColor: "white",
+        border: "1px solid #ccc",
+        borderRadius: "4px",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+        zIndex: 1000,
+        minWidth: "120px",
+      }}
+      {...props}
+    >
+      {children}
+    </div>
+  ) : null;
+});
+Menu.displayName = "Menu";
+
+const MenuItem = React.forwardRef(({ 
+  children, 
+  icon, 
+  text, 
+  onClick, 
+  disabled, 
+  ...props 
+}, ref) => {
+  const handleClick = (e) => {
+    if (!disabled && onClick) {
+      onClick(e);
+    }
+  };
+
+  return (
+    <button
+      ref={ref}
+      onClick={handleClick}
+      disabled={disabled}
+      data-testid="ui5-menu-item"
+      data-icon={icon}
+      data-text={text}
+      style={{
+        width: "100%",
+        padding: "8px 12px",
+        border: "none",
+        background: "transparent",
+        textAlign: "left",
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.5 : 1,
+        display: "flex",
+        alignItems: "center",
+        gap: "8px",
+      }}
+      {...props}
+    >
+      {icon && <span data-testid="ui5-icon">{icon}</span>}
+      {text || children}
+    </button>
+  );
+});
+MenuItem.displayName = "MenuItem";
+
 // Improved Tab Component
 const Tab = ({ text, selected, children, onClick, "data-key": dataKey }) => (
   <div
@@ -906,6 +992,8 @@ module.exports = {
   ToolbarSpacer,
   ToolbarSeparator,
   ToolbarButton,
+  Menu,
+  MenuItem,
   CardHeader,
   Grid,
   FlexBoxDirection: {

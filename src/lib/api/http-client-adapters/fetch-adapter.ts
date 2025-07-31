@@ -66,9 +66,20 @@ export class FetchAdapter implements HttpClientAdapter {
 
       const contentType = response.headers.get("content-type");
 
-      const data = contentType?.includes("application/json")
-        ? await response.json()
-        : await response.text();
+      let data: T;
+      if (contentType?.includes("application/json")) {
+        data = await response.json();
+      } else if (
+        contentType?.includes(
+          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        ) ||
+        contentType?.includes("application/vnd.ms-excel") ||
+        contentType?.includes("text/csv")
+      ) {
+        data = (await response.blob()) as T;
+      } else {
+        data = (await response.text()) as T;
+      }
 
       const responseHeaders: Record<string, string> = {};
 
