@@ -27,7 +27,7 @@ jobs:
           echo "labels=$LABELS" >> $GITHUB_OUTPUT
 
       - name: Validate PR Size
-        if: github.event_name == 'pull_request' && !contains(steps.pr-labels.outputs.labels, 'DEMO')
+        if: github.event_name == 'pull_request' && !contains(steps.pr-labels.outputs.labels, 'BYPASS-MAX-LINES')
         run: |
           echo "PR labels: ${{ steps.pr-labels.outputs.labels }}"
           # yarn.lock is excluido para evitar contarlo como líneas cambiadas
