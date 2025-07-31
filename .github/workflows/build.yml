@@ -18,12 +18,22 @@ jobs:
         with:
           fetch-depth: 0 # Needed for SonarCloud
 
-      - name: Check PR size
+      - name: Get PR labels
         if: github.event_name == 'pull_request'
+        id: pr-labels
         run: |
-          LINES_CHANGED=$(git diff --stat origin/${{ github.base_ref }} | tail -n 1 | awk '{print $4}' || echo "0")
-          if [ "$LINES_CHANGED" -gt 10000 ]; then
-            echo "❌ PR is too large! Contains $LINES_CHANGED lines changed. Maximum allowed is 10000 lines."
+          LABELS=$(echo '${{ toJson(github.event.pull_request.labels) }}' | jq -r '.[].name' | tr '\n' ',' | sed 's/,$//')
+          echo "Labels found: $LABELS"
+          echo "labels=$LABELS" >> $GITHUB_OUTPUT
+
+      - name: Validate PR Size
+        if: github.event_name == 'pull_request' && !contains(steps.pr-labels.outputs.labels, 'DEMO')
+        run: |
+          echo "PR labels: ${{ steps.pr-labels.outputs.labels }}"
+          # yarn.lock is excluido para evitar contarlo como líneas cambiadas
+          LINES_CHANGED=$(git diff --stat origin/${{ github.base_ref }} -- . ':!yarn.lock' | tail -n 1 | awk '{print $4}' || echo "0")
+          if [ "$LINES_CHANGED" -gt 1000 ]; then
+            echo "❌ PR is too large! Contains $LINES_CHANGED lines changed. Maximum allowed is 1000 lines."
             echo "Please split this PR into smaller ones for better review."
             exit 1
           else
