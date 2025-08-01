@@ -56,29 +56,44 @@ const ComboBox = React.forwardRef(({ children, ...props }, ref) => (
 ComboBox.displayName = "ComboBox";
 
 const DatePicker = React.forwardRef(
-  ({ placeholder, maxDate, minDate, ...props }, ref) => (
-    <input
-      ref={ref}
-      type="date"
-      placeholder={placeholder}
-      data-testid="ui5-datepicker"
-      min={minDate}
-      max={maxDate}
-      {...props}
-    />
-  )
+  ({ placeholder, maxDate, minDate, onChange, value, ...props }, ref) => {
+    const handleChange = (event) => {
+      const value = event.target.value;
+      if (onChange) {
+        // Create the UI5-style event structure that the component expects
+        onChange({ detail: { value } });
+      }
+    };
+
+    return (
+      <input
+        ref={ref}
+        type="date"
+        placeholder={placeholder}
+        data-testid="ui5-datepicker"
+        min={minDate}
+        max={maxDate}
+        value={value}
+        onChange={handleChange}
+        {...props}
+      />
+    );
+  }
 );
 DatePicker.displayName = "DatePicker";
 
 const Dialog = React.forwardRef(
-  ({ open, header, children, className, style, footer, onClose }, ref) =>
+  (
+    { open, header, children, className, style, footer, onClose, ...props },
+    ref
+  ) =>
     open ? (
       <div
         ref={ref}
         data-testid="ui5-dialog"
         className={className}
         style={style}
-        onClick={() => onClose?.()}
+        {...props}
       >
         <div>{header}</div>
         <div>{children}</div>

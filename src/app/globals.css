@@ -41,3 +41,10 @@ body {
 :not(:defined) {
   display: none;
 }
+
+/* RawDataModal Shadow DOM styles */
+ui5-dialog.paddingless-content::part(content) {
+  padding: 0rem;
+  overflow: hidden;
+  position: relative;
+}

@@ -958,4 +958,46 @@ describe("RawDataNavigationItem", () => {
     const options = screen.getAllByRole("option");
     expect(options.length).toBeGreaterThan(0);
   });
+
+  describe("Card button interaction", () => {
+    const consoleSpy = jest.spyOn(console, "log").mockImplementation(() => {});
+
+    afterEach(() => {
+      consoleSpy.mockClear();
+    });
+
+    afterAll(() => {
+      consoleSpy.mockRestore();
+    });
+
+    it("should log when card button is clicked", () => {
+      render(
+        <RawDataModalProvider>
+          <RawDataNavigationItem />
+        </RawDataModalProvider>
+      );
+
+      const cardButton = screen.getByRole("button", {
+        name: /expand raw data table/i,
+      });
+      fireEvent.click(cardButton);
+
+      expect(consoleSpy).toHaveBeenCalledWith("Card clicked");
+    });
+
+    it("should have proper accessibility attributes on card button", () => {
+      render(
+        <RawDataModalProvider>
+          <RawDataNavigationItem />
+        </RawDataModalProvider>
+      );
+
+      const cardButton = screen.getByRole("button", {
+        name: /expand raw data table/i,
+      });
+      expect(cardButton).toHaveAttribute("tabIndex", "0");
+      expect(cardButton).toHaveAttribute("aria-label", "Expand raw data table");
+      expect(cardButton).toHaveTextContent("View");
+    });
+  });
 });

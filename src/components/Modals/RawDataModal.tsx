@@ -3,7 +3,8 @@ import { Button, Dialog, FlexBox } from "@ui5/webcomponents-react";
 import type { DialogPropTypes, DialogDomRef } from "@ui5/webcomponents-react";
 import BaseDataTable from "@/components/Tables/BaseDataTable";
 import { tableData } from "@/lib/constants/mocks/dataTable";
-import styles from "./RawDataModal.module.css";
+import { twMerge } from "tailwind-merge";
+// import styles from "./RawDataModal.module.css";
 
 type RawDataDialogProps = DialogPropTypes & {
   data: {
@@ -40,7 +41,7 @@ export const RawDataModal = (props: RawDataDialogProps) => {
           />
         </FlexBox>
       }
-      className={`${props.className || ""} ${styles.rawDataModal}`}
+      className={twMerge("paddingless-content", props.className)}
       data-component="raw-data-modal"
     >
       <div className="overflow-hidden bg-[var(--sapBackgroundColor)] p-4">
