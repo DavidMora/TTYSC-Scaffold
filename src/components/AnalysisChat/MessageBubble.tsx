@@ -2,7 +2,7 @@ import React from "react";
 import { FlexBox, Avatar, Text } from "@ui5/webcomponents-react";
 import { ChatMessage } from "@/lib/types/chats";
 import { parseDate } from "@/lib/utils/dateUtils";
-import { AIResponseBubble } from "./AIResponseBubble";
+import { AIResponseBubble } from "@/components/AnalysisChat/AIResponseBubble";
 
 interface MessageBubbleProps {
   message: ChatMessage;

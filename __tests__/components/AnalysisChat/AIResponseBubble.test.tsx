@@ -60,17 +60,18 @@ describe("AIResponseBubble", () => {
     expect(screen.getByTestId("feedback-vote")).toBeInTheDocument();
   });
 
-  it("renders data table when message ID meets condition", () => {
+  it("renders data table when [SHOW_TABLE] is in message content", () => {
+    const messageWithTable = { ...baseMessage, content: "This is a message with a table.\n[SHOW_TABLE]" };
     render(
       <TestWrapper>
-        <AIResponseBubble message={baseMessage} />
+        <AIResponseBubble message={messageWithTable} />
       </TestWrapper>
     );
     expect(screen.getByTestId("base-data-table")).toBeInTheDocument();
   });
 
-  it("does not render data table when message ID doesn't meet condition", () => {
-    const messageWithoutTable = { ...baseMessage, id: "5" };
+  it("does not render data table when [SHOW_TABLE] is not in message content", () => {
+    const messageWithoutTable = { ...baseMessage, content: "This is a message without a table." };
     render(
       <TestWrapper>
         <AIResponseBubble message={messageWithoutTable} />
@@ -86,13 +87,12 @@ describe("AIResponseBubble", () => {
       </TestWrapper>
     );
 
-    const bubble = screen
-      .getByText("This is an AI response message.")
-      .closest("div");
+    // Find the outer container div that has the styling
+    const bubble = screen.getByText("This is an AI response message.").closest("div")?.parentElement;
     expect(bubble).toHaveStyle({
-      backgroundColor: "#EAF5CF",
+      backgroundColor: "rgb(234, 245, 207)",
       borderRadius: "16px",
-      border: "1px solid #D5D7DA",
+      border: "1px solid rgb(213, 215, 218)",
     });
   });
 
