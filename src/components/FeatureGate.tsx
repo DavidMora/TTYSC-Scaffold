@@ -5,16 +5,30 @@ import { useFeatureFlag } from "@/hooks/useFeatureFlags";
 interface FeatureGateProps {
   readonly flag: FeatureFlagKey;
   readonly fallback?: React.ReactNode;
+  readonly loadingFallback?: React.ReactNode;
   readonly children: React.ReactNode;
 }
 
 /**
  * Component that conditionally renders children based on a feature flag
  */
-export function FeatureGate({ flag, fallback = null, children }: FeatureGateProps) {
-  const isEnabled = useFeatureFlag(flag);
-  
-  return isEnabled ? <>{children}</> : <>{fallback}</>;
+export function FeatureGate({
+  flag,
+  fallback = null,
+  children,
+  loadingFallback = null,
+}: FeatureGateProps) {
+  const { flag: isEnabled, loading } = useFeatureFlag(flag);
+
+  if (isEnabled) {
+    return <>{children}</>;
+  }
+
+  if (!loading) {
+    return <>{fallback}</>;
+  }
+
+  return <>{loadingFallback}</>;
 }
 
 interface ConditionalFeatureProps {
@@ -26,8 +40,12 @@ interface ConditionalFeatureProps {
 /**
  * Component that renders different content based on feature flag state
  */
-export function ConditionalFeature({ flag, enabled = null, disabled = null }: ConditionalFeatureProps) {
-  const isEnabled = useFeatureFlag(flag);
-  
+export function ConditionalFeature({
+  flag,
+  enabled = null,
+  disabled = null,
+}: ConditionalFeatureProps) {
+  const { flag: isEnabled } = useFeatureFlag(flag);
+
   return <>{isEnabled ? enabled : disabled}</>;
 }

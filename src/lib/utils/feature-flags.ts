@@ -3,6 +3,7 @@ import { FeatureFlags, FeatureFlagKey } from "@/lib/types/feature-flags";
 // Default values if no file exists or parsing fails
 export const DEFAULT_FLAGS: FeatureFlags = {
   enableAuthentication: true,
+  FF_Chat_Analysis_Screen: true,
 };
 
 /**
