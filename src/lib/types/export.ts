@@ -7,7 +7,7 @@ export interface ExportFormat {
 }
 
 export interface ExportTableParams {
-  tableId: number;
+  tableId: string;
   format: string;
   mimeType: string;
 }

@@ -4,7 +4,7 @@ import { EXPORT_CONFIG } from "../constants/UI/export";
 export function downloadFile(response: ExportTableResponse): void {
   try {
     if (
-      EXPORT_CONFIG.maxFileSize &&
+      EXPORT_CONFIG.maxFileSize != null &&
       response.blob.size > EXPORT_CONFIG.maxFileSize
     ) {
       throw new Error();
