@@ -13,8 +13,14 @@ import {
 } from "@ui5/webcomponents-react";
 import { TableDataRow, TableDataProps } from "@/lib/types/datatable";
 import TableToolbar from "@/components/Tables/TableToolbar";
+import { useTableSearch } from "@/hooks/useTableSearch";
 
 const BaseDataTable: React.FC<Readonly<TableDataProps>> = (props) => {
+  const { filteredRows, handleSearch, hasResults } = useTableSearch({
+    rows: props.data.rows,
+    headers: props.data.headers,
+  });
+
   const getRowKey = (row: TableDataRow): string => {
     const value = row[props.data.rowIdentifier ?? "id"];
     if (value === null || value === undefined) return "";
@@ -30,25 +36,34 @@ const BaseDataTable: React.FC<Readonly<TableDataProps>> = (props) => {
         props.mainClassName
       }
     >
-      <TableToolbar className={props.toolbarClassName} />
+      <TableToolbar
+        className={props.toolbarClassName}
+        onSearch={handleSearch}
+      />
       <Table
         features={[
-          <TableSelectionMulti behavior="RowSelector" key="selection" />,
+          ...(hasResults
+            ? [<TableSelectionMulti behavior="RowSelector" key="selection" />]
+            : []),
           <TableGrowing mode="Scroll" key="growing" />,
         ]}
         className={props.tableClassName}
+        noDataText="No results found"
         overflowMode="Scroll"
         headerRow={
           <TableHeaderRow sticky>
             {props.data.headers.map((column) => (
-              <TableHeaderCell key={column.accessorKey}>
+              <TableHeaderCell
+                key={column.accessorKey}
+                className={!hasResults ? "pl-11" : undefined}
+              >
                 <Text>{column.text}</Text>
               </TableHeaderCell>
             ))}
           </TableHeaderRow>
         }
       >
-        {props.data.rows.map((row) => {
+        {filteredRows.map((row) => {
           const rowKey = getRowKey(row);
           return (
             <TableRow key={rowKey} rowKey={rowKey}>

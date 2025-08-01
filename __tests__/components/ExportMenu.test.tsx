@@ -36,7 +36,7 @@ const mockUseExportTable = useExportTable as jest.MockedFunction<
 
 describe("ExportMenu", () => {
   const defaultProps = {
-    tableId: 1,
+    tableId: "1",
   };
 
   const mockExportToFormat = jest.fn();
@@ -45,6 +45,8 @@ describe("ExportMenu", () => {
     jest.clearAllMocks();
     mockUseExportTable.mockReturnValue({
       exportToFormat: mockExportToFormat,
+      isExporting: false,
+      error: null,
     });
   });
 
@@ -110,8 +112,33 @@ describe("ExportMenu", () => {
     expect(screen.getByText("Export to Excel")).toBeInTheDocument();
   });
 
-  it("handles export error and displays error message", async () => {
-    mockExportToFormat.mockRejectedValue(new Error("Network error"));
+  it("handles export when menu item is clicked", async () => {
+    render(<ExportMenu {...defaultProps} />);
+
+    const button = screen.getByTestId("ui5-toolbar-button");
+    fireEvent.click(button);
+
+    const csvMenuItem = screen.getByText("Export to CSV");
+    fireEvent.click(csvMenuItem);
+
+    await waitFor(() => {
+      expect(mockExportToFormat).toHaveBeenCalledWith({
+        id: "csv",
+        name: "CSV",
+        icon: "add-document",
+        mimeType: "text/csv",
+        fileExtension: ".csv",
+      });
+    });
+
+    expect(screen.queryByTestId("ui5-menu")).not.toBeInTheDocument();
+  });
+
+  it("handles export error and logs to console", async () => {
+    const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation();
+    const exportError = new Error("Export failed");
+
+    mockExportToFormat.mockRejectedValueOnce(exportError);
 
     render(<ExportMenu {...defaultProps} />);
 
@@ -122,9 +149,11 @@ describe("ExportMenu", () => {
     fireEvent.click(csvMenuItem);
 
     await waitFor(() => {
-      expect(
-        screen.getByText("Export failed: Error: Network error")
-      ).toBeInTheDocument();
+      expect(consoleErrorSpy).toHaveBeenCalledWith(exportError);
     });
+
+    expect(screen.queryByTestId("ui5-menu")).not.toBeInTheDocument();
+
+    consoleErrorSpy.mockRestore();
   });
 });
