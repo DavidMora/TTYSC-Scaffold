@@ -1,7 +1,10 @@
 import React from "react";
 import {
+  DatePicker,
   Icon,
   Input,
+  Option,
+  Select,
   Table,
   TableCell,
   TableGrowing,
@@ -260,6 +263,28 @@ export function RawDataTable(props: Readonly<TableDataProps>) {
         <Title level="H2" className="px-1">
           Final summary
         </Title>
+        <DatePicker
+          onChange={function Xs() {}}
+          onClose={function Xs() {}}
+          onInput={function Xs() {}}
+          onOpen={function Xs() {}}
+          onValueStateChange={function Xs() {}}
+          primaryCalendarType="Gregorian"
+          valueState="None"
+        />
+        <Select
+          onChange={function Xs() {}}
+          onClose={function Xs() {}}
+          onLiveChange={function Xs() {}}
+          onOpen={function Xs() {}}
+          valueState="None"
+        >
+          <Option>Option 1</Option>
+          <Option>Option 2</Option>
+          <Option>Option 3</Option>
+          <Option>Option 4</Option>
+          <Option>Option 5</Option>
+        </Select>
         <ToolbarSpacer />
         <Input
           icon={<Icon name="search" />}

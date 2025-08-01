@@ -1,4 +1,12 @@
-.host ui5-dialog::part(content) {
+/* Direct styling for UI5 Dialog content part - this works best with Shadow DOM */
+ui5-dialog::part(content) {
+  padding: 0rem;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Scoped version if you need more specificity */
+:global([data-component="raw-data-modal"]) ui5-dialog::part(content) {
   padding: 0rem;
   overflow: hidden;
   position: relative;

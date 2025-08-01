@@ -3,7 +3,6 @@ import { Button, Dialog, FlexBox } from "@ui5/webcomponents-react";
 import type { DialogPropTypes, DialogDomRef } from "@ui5/webcomponents-react";
 import { RawDataTable } from "../Tables/RawDataTable";
 import styles from "./RawDataModal.module.css";
-import { twMerge } from "tailwind-merge";
 
 type RawDataDialogProps = DialogPropTypes & {
   data: {
@@ -40,8 +39,8 @@ export const RawDataModal = (props: RawDataDialogProps) => {
           />
         </FlexBox>
       }
-      className={twMerge(styles["host"], props.className)}
-      style={undefined}
+      className={`${props.className || ""} ${styles.rawDataModal}`}
+      data-component="raw-data-modal"
     >
       <div className="overflow-hidden bg-[var(--sapBackgroundColor)] p-4">
         <RawDataTable
@@ -49,6 +48,11 @@ export const RawDataModal = (props: RawDataDialogProps) => {
           tableClassName="h-[calc(100vh-16rem)] w-full"
           data={{ headers: [], rows: [] }}
         />
+        <FlexBox>
+          <Button design="Emphasized" className="mt-4">
+            Download full data
+          </Button>
+        </FlexBox>
       </div>
     </Dialog>
   );

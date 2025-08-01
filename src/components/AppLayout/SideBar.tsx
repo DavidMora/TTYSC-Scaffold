@@ -72,8 +72,8 @@ const SideBarMenu: React.FC<SideBarProps> = ({
       collapsed={sideNavCollapsed}
       onSelectionChange={handleNavSelection}
       header={
-        <div className="flex items-center p-8">
-          <NvidiaLogo className="w-full" />
+        <div className="flex justify-center items-center p-8">
+          <NvidiaLogo className="w-full max-w-[7.5rem]" />
         </div>
       }
       fixedItems={
