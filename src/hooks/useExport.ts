@@ -11,27 +11,33 @@ export const useExportTable = (tableId: string) => {
     setIsExporting(true);
     setError(null);
 
-    const response = await getExportTable({
-      tableId,
-      format: formatConfig.id,
-      mimeType: formatConfig.mimeType,
-    });
+    try {
+      const response = await getExportTable({
+        tableId,
+        format: formatConfig.id,
+        mimeType: formatConfig.mimeType,
+      });
 
-    if (!response.data) {
-      throw new Error("Error getting export table");
+      if (!response.data) {
+        throw new Error("Error getting export table");
+      }
+
+      const now = new Date();
+      const timeString = now.toLocaleDateString();
+      const filename = `table_${tableId}_${timeString}`;
+
+      downloadFile({
+        blob: response.data,
+        filename: `${filename}${formatConfig.fileExtension}`,
+        contentType: response.headers["content-type"] || formatConfig.mimeType,
+      });
+    } catch (error) {
+      setError(
+        error instanceof Error ? error.message : "An unknown error occurred"
+      );
+    } finally {
+      setIsExporting(false);
     }
-
-    const now = new Date();
-    const timeString = now.toLocaleDateString();
-    const filename = `table_${tableId}_${timeString}`;
-
-    downloadFile({
-      blob: response.data,
-      filename: `${filename}${formatConfig.fileExtension}`,
-      contentType: response.headers["content-type"] || formatConfig.mimeType,
-    });
-
-    setIsExporting(false);
   };
 
   return {
