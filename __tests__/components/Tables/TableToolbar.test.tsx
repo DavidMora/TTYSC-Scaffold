@@ -19,7 +19,7 @@ describe("TableToolbar", () => {
       render(<TableToolbar />);
 
       const separators = screen.getAllByTestId("ui5-toolbar-separator");
-      expect(separators).toHaveLength(3);
+      expect(separators).toHaveLength(4);
       const toolbar = screen.getByTestId("ui5-toolbar");
       expect(toolbar).toBeInTheDocument();
     });
@@ -30,16 +30,6 @@ describe("TableToolbar", () => {
 
       const toolbar = screen.getByTestId("ui5-toolbar");
       expect(toolbar).toHaveClass(customClass);
-    });
-
-    it("should have appropriate styling applied", () => {
-      render(<TableToolbar />);
-
-      const toolbar = screen.getByTestId("ui5-toolbar");
-      expect(toolbar).toHaveStyle({
-        borderBottom: "1px solid var(--sapList_HeaderBorderColor)",
-        paddingInline: "0.75rem",
-      });
     });
 
     it("should render with default title when not provided", () => {

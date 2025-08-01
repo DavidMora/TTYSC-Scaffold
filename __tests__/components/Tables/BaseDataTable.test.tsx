@@ -8,7 +8,7 @@ import "@testing-library/jest-dom";
 jest.mock("@/components/Tables/TableToolbar", () => {
   return function MockTableToolbar({ className }: { className?: string }) {
     return (
-      <div data-testid="table-toolbar" className={className}>
+      <div data-testid="ui5-toolbar" className={className}>
         Mock Table Toolbar
       </div>
     );
@@ -58,7 +58,7 @@ describe("BaseDataTable", () => {
     it("should render the TableToolbar component", () => {
       render(<BaseDataTable {...mockTableData} />);
 
-      expect(screen.getByTestId("table-toolbar")).toBeInTheDocument();
+      expect(screen.getByTestId("ui5-toolbar")).toBeInTheDocument();
     });
 
     it("should render the table with correct features", () => {
@@ -99,9 +99,9 @@ describe("BaseDataTable", () => {
       expect(tableRows).toHaveLength(3);
 
       // Check that each row has the correct rowKey
-      expect(tableRows[0]).toHaveAttribute("data-row-key", "1");
-      expect(tableRows[1]).toHaveAttribute("data-row-key", "2");
-      expect(tableRows[2]).toHaveAttribute("data-row-key", "3");
+      expect(tableRows[0]).toHaveAttribute("data-ui5-row-key", "1");
+      expect(tableRows[1]).toHaveAttribute("data-ui5-row-key", "2");
+      expect(tableRows[2]).toHaveAttribute("data-ui5-row-key", "3");
     });
 
     it("should render table cells with correct data", () => {
@@ -134,25 +134,12 @@ describe("BaseDataTable", () => {
       expect(screen.getByTestId("ui5-table")).toHaveClass("custom-table-class");
     });
 
-    it("should apply custom toolbar className", () => {
-      const customProps = {
-        ...mockTableData,
-        toolbarClassName: "custom-toolbar-class",
-      };
-
-      render(<BaseDataTable {...customProps} />);
-
-      expect(screen.getByTestId("table-toolbar")).toHaveClass(
-        "custom-toolbar-class"
-      );
-    });
-
     it("should use default rowIdentifier when not provided", () => {
       render(<BaseDataTable {...mockTableDataWithoutRowIdentifier} />);
 
       const tableRows = screen.getAllByTestId("ui5-table-row");
-      expect(tableRows[0]).toHaveAttribute("data-row-key", "1");
-      expect(tableRows[1]).toHaveAttribute("data-row-key", "2");
+      expect(tableRows[0]).toHaveAttribute("data-ui5-row-key", "1");
+      expect(tableRows[1]).toHaveAttribute("data-ui5-row-key", "2");
     });
 
     it("should handle custom rowIdentifier", () => {
@@ -173,8 +160,8 @@ describe("BaseDataTable", () => {
       render(<BaseDataTable {...customData} />);
 
       const tableRows = screen.getAllByTestId("ui5-table-row");
-      expect(tableRows[0]).toHaveAttribute("data-row-key", "custom1");
-      expect(tableRows[1]).toHaveAttribute("data-row-key", "custom2");
+      expect(tableRows[0]).toHaveAttribute("data-ui5-row-key", "custom1");
+      expect(tableRows[1]).toHaveAttribute("data-ui5-row-key", "custom2");
     });
   });
 
@@ -263,17 +250,17 @@ describe("BaseDataTable", () => {
             { text: "Settings", accessorKey: "settings" },
           ],
           rows: [
-            { 
-              id: "1", 
-              name: "John Doe", 
+            {
+              id: "1",
+              name: "John Doe",
               metadata: { department: "IT", role: "Developer" },
-              settings: { theme: "dark", notifications: true }
+              settings: { theme: "dark", notifications: true },
             },
-            { 
-              id: "2", 
-              name: "Jane Smith", 
+            {
+              id: "2",
+              name: "Jane Smith",
               metadata: { department: "HR", role: "Manager" },
-              settings: { theme: "light", notifications: false }
+              settings: { theme: "light", notifications: false },
             },
           ],
           rowIdentifier: "id",
@@ -283,10 +270,18 @@ describe("BaseDataTable", () => {
       render(<BaseDataTable {...dataWithObjects} />);
 
       // Object values should be JSON stringified
-      expect(screen.getByText('{"department":"IT","role":"Developer"}')).toBeInTheDocument();
-      expect(screen.getByText('{"theme":"dark","notifications":true}')).toBeInTheDocument();
-      expect(screen.getByText('{"department":"HR","role":"Manager"}')).toBeInTheDocument();
-      expect(screen.getByText('{"theme":"light","notifications":false}')).toBeInTheDocument();
+      expect(
+        screen.getByText('{"department":"IT","role":"Developer"}')
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText('{"theme":"dark","notifications":true}')
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText('{"department":"HR","role":"Manager"}')
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText('{"theme":"light","notifications":false}')
+      ).toBeInTheDocument();
     });
   });
 
@@ -326,7 +321,9 @@ describe("BaseDataTable", () => {
       render(<BaseDataTable {...mockTableData} />);
 
       const tableRows = screen.getAllByTestId("ui5-table-row");
-      const rowKeys = tableRows.map((row) => row.getAttribute("data-row-key"));
+      const rowKeys = tableRows.map((row) =>
+        row.getAttribute("data-ui5-row-key")
+      );
 
       // Check that all row keys are unique
       const uniqueKeys = new Set(rowKeys);

@@ -89,20 +89,15 @@ const Dialog = React.forwardRef(
 Dialog.displayName = "Dialog";
 
 const Label = ({ children, className }) => (
-  <label className={className} data-testid="ui5-label">{children}</label>
+  <label className={className} data-testid="ui5-label">
+    {children}
+  </label>
 );
 Label.displayName = "Label";
 
 const FlexBox = React.forwardRef(
   (
-    {
-      children,
-      className,
-      direction,
-      alignItems,
-      justifyContent,
-      ...props
-    },
+    { children, className, direction, alignItems, justifyContent, ...props },
     ref
   ) => (
     <div
@@ -166,7 +161,9 @@ const List = ({ children, className }) => (
 List.displayName = "List";
 
 const ListItem = ({ children, onClick, ...props }) => (
-  <li onClick={onClick} data-testid="ui5-list-item" {...props}>{children}</li>
+  <li onClick={onClick} data-testid="ui5-list-item" {...props}>
+    {children}
+  </li>
 );
 ListItem.displayName = "ListItem";
 
@@ -319,9 +316,9 @@ export const Option = ({ children, value, ...props }) => (
 Option.displayName = "Option";
 
 const Table = ({ children, className, features, overflowMode, headerRow }) => (
-  <div 
-    className={className} 
-    role="table" 
+  <div
+    className={className}
+    role="table"
     data-testid="ui5-table"
     data-overflow-mode={overflowMode}
   >
@@ -333,9 +330,9 @@ const Table = ({ children, className, features, overflowMode, headerRow }) => (
 Table.displayName = "Table";
 
 const TableHeaderRow = ({ children, sticky, ...props }) => (
-  <div 
-    className={props.className} 
-    role="rowheader" 
+  <div
+    className={props.className}
+    role="rowheader"
     data-testid="ui5-table-header-row"
     data-sticky={sticky}
   >
@@ -371,13 +368,14 @@ const TableHeaderCell = ({
 TableHeaderCell.displayName = "TableHeaderCell";
 
 const TableRow = ({ children, className, style, rowKey, ...props }) => {
+  const uiRowKey = props["data-ui5-row-key"] || rowKey;
   return (
-    <div 
-      className={className} 
-      role="row" 
+    <div
+      className={className}
+      role="row"
       style={style}
       data-testid="ui5-table-row"
-      data-row-key={rowKey}
+      data-ui5-row-key={uiRowKey}
       data-key={props.key}
     >
       {children}
@@ -387,8 +385,8 @@ const TableRow = ({ children, className, style, rowKey, ...props }) => {
 TableRow.displayName = "TableRow";
 
 const TableCell = ({ children, className, ...props }) => (
-  <div 
-    className={className} 
+  <div
+    className={className}
     role="cell"
     data-testid="ui5-table-cell"
     data-key={props.key}
@@ -399,20 +397,16 @@ const TableCell = ({ children, className, ...props }) => (
 TableCell.displayName = "TableCell";
 
 const TableSelectionMulti = ({ behavior, ...props }) => (
-  <div 
-    data-testid="ui5-table-selection-multi" 
-    data-behavior={behavior} 
-    data-key={props.key} 
+  <div
+    data-testid="ui5-table-selection-multi"
+    data-behavior={behavior}
+    data-key={props.key}
   />
 );
 TableSelectionMulti.displayName = "TableSelectionMulti";
 
 const TableGrowing = ({ mode, ...props }) => (
-  <div 
-    data-testid="ui5-table-growing" 
-    data-mode={mode} 
-    data-key={props.key} 
-  />
+  <div data-testid="ui5-table-growing" data-mode={mode} data-key={props.key} />
 );
 TableGrowing.displayName = "TableGrowing";
 
@@ -474,17 +468,19 @@ const Switch = React.forwardRef(({ name, className, ...props }, ref) => (
 Switch.displayName = "Switch";
 
 // Toolbar components
-const Toolbar = React.forwardRef(({ children, className, style, ...props }, ref) => (
-  <div
-    ref={ref}
-    className={className}
-    style={style}
-    data-testid="ui5-toolbar"
-    {...props}
-  >
-    {children}
-  </div>
-));
+const Toolbar = React.forwardRef(
+  ({ children, className, style, ...props }, ref) => (
+    <div
+      ref={ref}
+      className={className}
+      style={style}
+      data-testid="ui5-toolbar"
+      {...props}
+    >
+      {children}
+    </div>
+  )
+);
 Toolbar.displayName = "Toolbar";
 
 const ToolbarSpacer = React.forwardRef(({ ...props }, ref) => (
@@ -511,111 +507,103 @@ const ToolbarSeparator = React.forwardRef(({ ...props }, ref) => (
 ));
 ToolbarSeparator.displayName = "ToolbarSeparator";
 
-const ToolbarButton = React.forwardRef(({ design, icon, onClick, children, ...props }, ref) => (
-  <button
-    ref={ref}
-    onClick={onClick}
-    data-testid="ui5-toolbar-button"
-    data-design={design}
-    data-icon={icon}
-    style={{
-      background: "transparent",
-      border: "none",
-      padding: "8px",
-      cursor: "pointer",
-    }}
-    {...props}
-  >
-    {icon && <span data-testid="ui5-icon">{icon}</span>}
-    {children}
-  </button>
-));
-ToolbarButton.displayName = "ToolbarButton";
-
-// Menu components
-const Menu = React.forwardRef(({ 
-  children, 
-  open, 
-  onClose, 
-  opener, 
-  horizontalAlign, 
-  ...props 
-}, ref) => {
-  const [isOpen, setIsOpen] = React.useState(open);
-
-  React.useEffect(() => {
-    setIsOpen(open);
-  }, [open]);
-
-  const handleClose = () => {
-    setIsOpen(false);
-    onClose?.();
-  };
-
-  return isOpen ? (
-    <div
-      ref={ref}
-      data-testid="ui5-menu"
-      data-horizontal-align={horizontalAlign}
-      onClick={handleClose}
-      style={{
-        position: "absolute",
-        backgroundColor: "white",
-        border: "1px solid #ccc",
-        borderRadius: "4px",
-        boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-        zIndex: 1000,
-        minWidth: "120px",
-      }}
-      {...props}
-    >
-      {children}
-    </div>
-  ) : null;
-});
-Menu.displayName = "Menu";
-
-const MenuItem = React.forwardRef(({ 
-  children, 
-  icon, 
-  text, 
-  onClick, 
-  disabled, 
-  ...props 
-}, ref) => {
-  const handleClick = (e) => {
-    if (!disabled && onClick) {
-      onClick(e);
-    }
-  };
-
-  return (
+const ToolbarButton = React.forwardRef(
+  ({ design, icon, onClick, children, ...props }, ref) => (
     <button
       ref={ref}
-      onClick={handleClick}
-      disabled={disabled}
-      data-testid="ui5-menu-item"
+      onClick={onClick}
+      data-testid="ui5-toolbar-button"
+      data-design={design}
       data-icon={icon}
-      data-text={text}
       style={{
-        width: "100%",
-        padding: "8px 12px",
-        border: "none",
         background: "transparent",
-        textAlign: "left",
-        cursor: disabled ? "not-allowed" : "pointer",
-        opacity: disabled ? 0.5 : 1,
-        display: "flex",
-        alignItems: "center",
-        gap: "8px",
+        border: "none",
+        padding: "8px",
+        cursor: "pointer",
       }}
       {...props}
     >
       {icon && <span data-testid="ui5-icon">{icon}</span>}
-      {text || children}
+      {children}
     </button>
-  );
-});
+  )
+);
+ToolbarButton.displayName = "ToolbarButton";
+
+// Menu components
+const Menu = React.forwardRef(
+  ({ children, open, onClose, opener, horizontalAlign, ...props }, ref) => {
+    const [isOpen, setIsOpen] = React.useState(open);
+
+    React.useEffect(() => {
+      setIsOpen(open);
+    }, [open]);
+
+    const handleClose = () => {
+      setIsOpen(false);
+      onClose?.();
+    };
+
+    return isOpen ? (
+      <div
+        ref={ref}
+        data-testid="ui5-menu"
+        data-horizontal-align={horizontalAlign}
+        onClick={handleClose}
+        style={{
+          position: "absolute",
+          backgroundColor: "white",
+          border: "1px solid #ccc",
+          borderRadius: "4px",
+          boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+          zIndex: 1000,
+          minWidth: "120px",
+        }}
+        {...props}
+      >
+        {children}
+      </div>
+    ) : null;
+  }
+);
+Menu.displayName = "Menu";
+
+const MenuItem = React.forwardRef(
+  ({ children, icon, text, onClick, disabled, ...props }, ref) => {
+    const handleClick = (e) => {
+      if (!disabled && onClick) {
+        onClick(e);
+      }
+    };
+
+    return (
+      <button
+        ref={ref}
+        onClick={handleClick}
+        disabled={disabled}
+        data-testid="ui5-menu-item"
+        data-icon={icon}
+        data-text={text}
+        style={{
+          width: "100%",
+          padding: "8px 12px",
+          border: "none",
+          background: "transparent",
+          textAlign: "left",
+          cursor: disabled ? "not-allowed" : "pointer",
+          opacity: disabled ? 0.5 : 1,
+          display: "flex",
+          alignItems: "center",
+          gap: "8px",
+        }}
+        {...props}
+      >
+        {icon && <span data-testid="ui5-icon">{icon}</span>}
+        {text || children}
+      </button>
+    );
+  }
+);
 MenuItem.displayName = "MenuItem";
 
 // Improved Tab Component
