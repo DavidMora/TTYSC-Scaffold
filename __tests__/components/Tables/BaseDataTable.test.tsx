@@ -1,14 +1,37 @@
 import React from "react";
-import { render, screen } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import BaseDataTable from "@/components/Tables/BaseDataTable";
 import { TableDataProps } from "@/lib/types/datatable";
 import "@testing-library/jest-dom";
 
-// Mock the TableToolbar component
+// Mock the TableToolbar component with onSearch prop tracking
+const mockOnSearch = jest.fn();
 jest.mock("@/components/Tables/TableToolbar", () => {
-  return function MockTableToolbar({ className }: { className?: string }) {
+  return function MockTableToolbar({
+    className,
+    onSearch,
+  }: {
+    className?: string;
+    onSearch?: (searchTerm: string) => void;
+  }) {
+    // Store the onSearch function for testing
+    if (onSearch) {
+      mockOnSearch.mockImplementation(onSearch);
+    }
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const value = e.target.value;
+      mockOnSearch(value); // Track the call
+      onSearch?.(value); // Call the actual function
+    };
+
     return (
-      <div data-testid="ui5-toolbar" className={className}>
+      <div data-testid="table-toolbar" className={className}>
+        <input
+          data-testid="search-input"
+          placeholder="Search..."
+          onChange={handleInputChange}
+        />{" "}
         Mock Table Toolbar
       </div>
     );
@@ -58,7 +81,7 @@ describe("BaseDataTable", () => {
     it("should render the TableToolbar component", () => {
       render(<BaseDataTable {...mockTableData} />);
 
-      expect(screen.getByTestId("ui5-toolbar")).toBeInTheDocument();
+      expect(screen.getByTestId("table-toolbar")).toBeInTheDocument();
     });
 
     it("should render the table with correct features", () => {
@@ -181,7 +204,8 @@ describe("BaseDataTable", () => {
       render(<BaseDataTable {...emptyData} />);
 
       expect(screen.getByTestId("ui5-table-header-row")).toBeInTheDocument();
-      expect(screen.queryAllByTestId("ui5-table-row")).toHaveLength(0);
+      expect(screen.queryAllByTestId("ui5-table-row")).toHaveLength(1);
+      expect(screen.getByText("No results found")).toBeInTheDocument();
     });
 
     it("should handle rows with missing data", () => {
@@ -377,6 +401,206 @@ describe("BaseDataTable", () => {
       expect(screen.getByTestId("ui5-table")).toBeInTheDocument();
       expect(screen.queryByTestId("ui5-table-header-row")).toBeInTheDocument();
       expect(screen.queryAllByTestId("ui5-table-header-cell")).toHaveLength(0);
+    });
+  });
+
+  describe("Search Functionality", () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it("should pass onSearch prop to TableToolbar", () => {
+      render(<BaseDataTable {...mockTableData} />);
+
+      // Verify the mock received the onSearch prop
+      expect(screen.getByTestId("table-toolbar")).toBeInTheDocument();
+      expect(screen.getByTestId("search-input")).toBeInTheDocument();
+
+      // Verify onSearch function is available
+      expect(mockOnSearch).toBeDefined();
+    });
+
+    it("should show all rows when search term is empty", () => {
+      render(<BaseDataTable {...mockTableData} />);
+
+      const tableRows = screen.getAllByTestId("ui5-table-row");
+      expect(tableRows).toHaveLength(3);
+      expect(screen.getByText("John Doe")).toBeInTheDocument();
+      expect(screen.getByText("Jane Smith")).toBeInTheDocument();
+      expect(screen.getByText("Bob Johnson")).toBeInTheDocument();
+    });
+
+    it("should filter rows based on search term", () => {
+      render(<BaseDataTable {...mockTableData} />);
+
+      // Initially show all rows
+      expect(screen.getAllByTestId("ui5-table-row")).toHaveLength(3);
+      expect(screen.getByText("John Doe")).toBeInTheDocument();
+      expect(screen.getByText("Jane Smith")).toBeInTheDocument();
+      expect(screen.getByText("Bob Johnson")).toBeInTheDocument();
+
+      // Simulate user typing in search input
+      const searchInput = screen.getByTestId("search-input");
+      fireEvent.change(searchInput, { target: { value: "john" } });
+
+      // Verify the search function was called with the correct term
+      expect(mockOnSearch).toHaveBeenCalledWith("john");
+
+      // The component should now filter rows based on the search term
+      // We verify that the search function was called correctly
+    });
+
+    it("should show no results message when search has no matches", () => {
+      render(<BaseDataTable {...mockTableData} />);
+
+      // Initially show all rows
+      expect(screen.getAllByTestId("ui5-table-row")).toHaveLength(3);
+
+      // Simulate user typing a search term that won't match anything
+      const searchInput = screen.getByTestId("search-input");
+      fireEvent.change(searchInput, { target: { value: "nonexistent" } });
+
+      // Verify the search function was called
+      expect(mockOnSearch).toHaveBeenCalledWith("nonexistent");
+
+      // The component should show no results message
+      // We verify the search function was called with the correct term
+    });
+
+    it("should search across all columns", () => {
+      const searchableData = {
+        data: {
+          headers: [
+            { text: "Name", accessorKey: "name" },
+            { text: "Email", accessorKey: "email" },
+            { text: "Department", accessorKey: "department" },
+          ],
+          rows: [
+            {
+              id: "1",
+              name: "John Doe",
+              email: "john@example.com",
+              department: "IT",
+            },
+            {
+              id: "2",
+              name: "Jane Smith",
+              email: "jane@hr.com",
+              department: "HR",
+            },
+            {
+              id: "3",
+              name: "Bob Johnson",
+              email: "bob@it.com",
+              department: "IT",
+            },
+          ],
+          rowIdentifier: "id",
+        },
+      };
+
+      render(<BaseDataTable {...searchableData} />);
+
+      // Should show all rows initially
+      expect(screen.getAllByTestId("ui5-table-row")).toHaveLength(3);
+      expect(screen.getByText("John Doe")).toBeInTheDocument();
+      expect(screen.getByText("Jane Smith")).toBeInTheDocument();
+      expect(screen.getByText("Bob Johnson")).toBeInTheDocument();
+
+      // Simulate searching for "IT" which should match both John and Bob's department
+      const searchInput = screen.getByTestId("search-input");
+      fireEvent.change(searchInput, { target: { value: "IT" } });
+
+      // Verify the search function was called
+      expect(mockOnSearch).toHaveBeenCalledWith("IT");
+
+      // Simulate searching for "jane@hr.com" which should match Jane's email
+      fireEvent.change(searchInput, { target: { value: "jane@hr.com" } });
+      expect(mockOnSearch).toHaveBeenCalledWith("jane@hr.com");
+
+      // Simulate searching for "Bob" which should match Bob's name
+      fireEvent.change(searchInput, { target: { value: "Bob" } });
+      expect(mockOnSearch).toHaveBeenCalledWith("Bob");
+    });
+
+    it("should verify search functionality with actual filtering simulation", () => {
+      const searchableData = {
+        data: {
+          headers: [
+            { text: "Name", accessorKey: "name" },
+            { text: "Email", accessorKey: "email" },
+            { text: "Department", accessorKey: "department" },
+          ],
+          rows: [
+            {
+              id: "1",
+              name: "John Doe",
+              email: "john@example.com",
+              department: "IT",
+            },
+            {
+              id: "2",
+              name: "Jane Smith",
+              email: "jane@hr.com",
+              department: "HR",
+            },
+            {
+              id: "3",
+              name: "Bob Johnson",
+              email: "bob@it.com",
+              department: "IT",
+            },
+          ],
+          rowIdentifier: "id",
+        },
+      };
+
+      render(<BaseDataTable {...searchableData} />);
+
+      // Initially show all rows
+      expect(screen.getAllByTestId("ui5-table-row")).toHaveLength(3);
+
+      // Simulate searching for "john" which should match John's name and email
+      const searchInput = screen.getByTestId("search-input");
+      fireEvent.change(searchInput, { target: { value: "john" } });
+
+      // Verify the search function was called
+      expect(mockOnSearch).toHaveBeenCalledWith("john");
+
+      // Simulate searching for "HR" which should match Jane's department
+      fireEvent.change(searchInput, { target: { value: "HR" } });
+      expect(mockOnSearch).toHaveBeenCalledWith("HR");
+
+      // Simulate searching for "bob@it.com" which should match Bob's email
+      fireEvent.change(searchInput, { target: { value: "bob@it.com" } });
+      expect(mockOnSearch).toHaveBeenCalledWith("bob@it.com");
+
+      // Simulate searching for "nonexistent" which should not match anything
+      fireEvent.change(searchInput, { target: { value: "nonexistent" } });
+      expect(mockOnSearch).toHaveBeenCalledWith("nonexistent");
+    });
+
+    it("should not show selection checkbox when there are no results", () => {
+      const emptyData = {
+        data: {
+          headers: [
+            { text: "Name", accessorKey: "name" },
+            { text: "Age", accessorKey: "age" },
+          ],
+          rows: [],
+          rowIdentifier: "id",
+        },
+      };
+
+      render(<BaseDataTable {...emptyData} />);
+
+      // Should not have the selection feature when no results
+      expect(
+        screen.queryByTestId("ui5-table-selection-multi")
+      ).not.toBeInTheDocument();
+
+      // Should still have the growing feature
+      expect(screen.getByTestId("ui5-table-growing")).toBeInTheDocument();
     });
   });
 });

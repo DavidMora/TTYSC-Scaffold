@@ -17,6 +17,7 @@ import "@ui5/webcomponents/dist/TableHeaderRow.js";
 import "@ui5/webcomponents/dist/TableHeaderCell.js";
 import { twMerge } from "tailwind-merge";
 import TableToolbar from "@/components/Tables/TableToolbar";
+import { useTableSearch } from "@/hooks/useTableSearch";
 import {
   Filter,
   FilterOption,
@@ -119,10 +120,13 @@ function getValueByAccessor(
 }
 
 const BaseDataTable: React.FC<Readonly<TableDataProps>> = (props) => {
-  const currentData = props.data || { headers: [], rows: [] };
+  const { filteredRows, handleSearch, hasResults } = useTableSearch({
+    rows: props.data?.rows || [],
+    headers: props.data?.headers || [],
+  });
 
-  const processedFilters = currentData.filters
-    ? processFilters(currentData.filters, currentData.rows)
+  const processedFilters = props.data?.filters
+    ? processFilters(props.data.filters, props.data.rows)
     : [];
 
   return (
@@ -136,48 +140,49 @@ const BaseDataTable: React.FC<Readonly<TableDataProps>> = (props) => {
         title="Final Summary"
         tableId={1}
         filters={processedFilters}
-        className="py-8 px-4"
+        // className="py-8 px-4"
+        className={props.toolbarClassName}
         onFilterChange={handleFilterChange}
+        onSearch={handleSearch}
       />
       <Table
+        features={[
+          ...(hasResults
+            ? [<TableSelectionMulti behavior="RowSelector" key="selection" />]
+            : []),
+          <TableGrowing mode="Scroll" key="growing" />,
+        ]}
         className={twMerge("h-auto", props.tableClassName)}
+        noDataText="No results found"
         overflowMode="Scroll"
-        features={
-          <>
-            <TableSelectionMulti behavior="RowSelector" />
-            <TableGrowing mode="Scroll" onLoadMore={function Xs() {}} />
-          </>
-        }
         headerRow={
           <TableHeaderRow sticky>
-            {currentData.headers.map((header) => (
-              <TableHeaderCell key={header.accessorKey}>
-                {header.text}
+            {props.data?.headers.map((column) => (
+              <TableHeaderCell key={column.accessorKey}>
+                {column.text}
               </TableHeaderCell>
             ))}
           </TableHeaderRow>
         }
-        onMove={function Xs() {}}
-        onMoveOver={function Xs() {}}
-        onRowActionClick={function Xs() {}}
-        onRowClick={function Xs() {}}
-        rowActionCount={3}
       >
-        {currentData.rows.map((row) => (
-          <TableRow
-            key={getRowKey(row, currentData)}
-            data-ui5-row-key={getRowKey(row, currentData)}
-          >
-            {currentData.headers.map((header) => {
-              const value = getValueByAccessor(row, header.accessorKey);
-              return (
-                <TableCell key={header.accessorKey}>
-                  <span>{value}</span>
-                </TableCell>
-              );
-            })}
-          </TableRow>
-        ))}
+        {filteredRows.map((row) => {
+          const rowKey = getRowKey(
+            row,
+            props.data || { rows: [], headers: [] }
+          );
+          return (
+            <TableRow key={rowKey} rowKey={rowKey}>
+              {props.data?.headers.map((column) => {
+                const value = getValueByAccessor(row, column.accessorKey);
+                return (
+                  <TableCell key={column.accessorKey}>
+                    <span>{value}</span>
+                  </TableCell>
+                );
+              })}
+            </TableRow>
+          );
+        })}
       </Table>
     </div>
   );

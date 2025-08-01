@@ -25,6 +25,7 @@ const TableToolbar: React.FC<Readonly<TableToolbarProps>> = ({
   tableId,
   filters = [],
   onFilterChange,
+  onSearch,
 }) => {
   const [search, setSearch] = useState("");
   const [filterValues, setFilterValues] = useState<Record<string, string>>(
@@ -41,7 +42,9 @@ const TableToolbar: React.FC<Readonly<TableToolbarProps>> = ({
   );
 
   const handleSearch = (event: Ui5CustomEvent<InputDomRef, never>) => {
-    setSearch(event.target.value);
+    const searchTerm = event.target.value;
+    setSearch(searchTerm);
+    onSearch?.(searchTerm);
   };
 
   const handleFilterChange = (filterKey: string, value: string) => {
@@ -137,7 +140,7 @@ const TableToolbar: React.FC<Readonly<TableToolbarProps>> = ({
         value={search}
         onChange={handleSearch}
         onClose={function Xs() {}}
-        onInput={function Xs() {}}
+        onInput={handleSearch}
         onOpen={function Xs() {}}
         onSelect={function Xs() {}}
         onSelectionChange={function Xs() {}}
@@ -155,7 +158,7 @@ const TableToolbar: React.FC<Readonly<TableToolbarProps>> = ({
       />
       <ToolbarSeparator />
       <ExportMenu
-        tableId={tableId || 1}
+        tableId={tableId?.toString() || "1"}
         buttonText="Export"
         buttonIcon="excel-attachment"
       />

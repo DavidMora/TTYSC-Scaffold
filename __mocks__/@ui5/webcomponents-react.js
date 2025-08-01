@@ -142,15 +142,29 @@ const Form = React.forwardRef(({ children, className }, ref) => (
 ));
 Form.displayName = "Form";
 
-const Input = React.forwardRef(({ placeholder, maxlength, ...props }, ref) => (
-  <input
-    ref={ref}
-    placeholder={placeholder}
-    maxLength={maxlength}
-    data-testid="ui5-input"
-    {...props}
-  />
-));
+const Input = React.forwardRef(
+  ({ placeholder, maxlength, onInput, onChange, ...props }, ref) => {
+    const handleInput = (event) => {
+      if (onInput) {
+        onInput({ target: { value: event.target.value } });
+      }
+      if (onChange) {
+        onChange({ target: { value: event.target.value } });
+      }
+    };
+
+    return (
+      <input
+        ref={ref}
+        placeholder={placeholder}
+        maxLength={maxlength}
+        data-testid="ui5-input"
+        onChange={handleInput}
+        {...props}
+      />
+    );
+  }
+);
 Input.displayName = "Input";
 
 const List = ({ children, className }) => (
@@ -315,18 +329,42 @@ export const Option = ({ children, value, ...props }) => (
 
 Option.displayName = "Option";
 
-const Table = ({ children, className, features, overflowMode, headerRow }) => (
-  <div
-    className={className}
-    role="table"
-    data-testid="ui5-table"
-    data-overflow-mode={overflowMode}
-  >
-    {headerRow}
-    {features}
-    {children}
-  </div>
-);
+const Table = ({
+  children,
+  className,
+  features,
+  overflowMode,
+  headerRow,
+  noDataText,
+}) => {
+  // Check if there are any table rows in children
+  const hasTableRows = React.Children.toArray(children).some(
+    (child) =>
+      React.isValidElement(child) && child.type?.displayName === "TableRow"
+  );
+
+  return (
+    <div
+      className={className}
+      role="table"
+      data-testid="ui5-table"
+      data-overflow-mode={overflowMode}
+    >
+      {headerRow}
+      {features}
+      {children}
+      {!hasTableRows && noDataText && (
+        <div data-testid="ui5-table-row">
+          <div data-testid="ui5-table-cell">
+            <span data-testid="ui5-text">{noDataText}</span>
+            <br />
+            <span data-testid="ui5-text">Try adjusting your search terms</span>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
 Table.displayName = "Table";
 
 const TableHeaderRow = ({ children, sticky, ...props }) => (

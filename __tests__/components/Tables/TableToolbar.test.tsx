@@ -56,6 +56,37 @@ describe("TableToolbar", () => {
       expect(searchInput).toHaveValue("test search");
     });
 
+    it("should call onSearch callback when search input changes", () => {
+      const mockOnSearch = jest.fn();
+      render(<TableToolbar onSearch={mockOnSearch} />);
+
+      const searchInput = screen.getByTestId("ui5-input");
+      fireEvent.change(searchInput, { target: { value: "test search" } });
+
+      expect(mockOnSearch).toHaveBeenCalledWith("test search");
+    });
+
+    it("should call onSearch callback with empty string when search is cleared", () => {
+      const mockOnSearch = jest.fn();
+      render(<TableToolbar onSearch={mockOnSearch} />);
+
+      const searchInput = screen.getByTestId("ui5-input");
+      fireEvent.change(searchInput, { target: { value: "test search" } });
+      fireEvent.change(searchInput, { target: { value: "" } });
+
+      expect(mockOnSearch).toHaveBeenCalledWith("");
+    });
+
+    it("should not call onSearch callback when onSearch is not provided", () => {
+      render(<TableToolbar />);
+
+      const searchInput = screen.getByTestId("ui5-input");
+      fireEvent.change(searchInput, { target: { value: "test search" } });
+
+      // Should not throw any errors
+      expect(searchInput).toHaveValue("test search");
+    });
+
     it("should handle share button click", () => {
       render(<TableToolbar />);
 

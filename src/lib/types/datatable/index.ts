@@ -36,6 +36,7 @@ export interface TableToolbarProps {
   tableId?: number;
   filters?: Filter[];
   onFilterChange?: (event: FilterChangeEvent) => void;
+  onSearch?: (searchTerm: string) => void;
 }
 
 export interface TableDataHeader {

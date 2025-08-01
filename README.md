@@ -33,11 +33,13 @@ This project implements a robust feature flag system with multiple configuration
 ### Local Development Setup
 
 1. Create your feature flags file from the template:
+
 ```bash
 cp feature-flags.example.json feature-flags.json
 ```
 
 2. Edit `feature-flags.json` to customize features:
+
 ```json
 {
   "enableAuthentication": true
@@ -54,41 +56,43 @@ export FEATURE_FLAG_ENABLE_AUTHENTICATION=true
 ```
 
 For edge runtime contexts (middleware), use simplified variables:
+
 ```bash
 export ENABLE_AUTHENTICATION=true
 ```
 
 ### Available Feature Flags
 
-| Flag Name | Description | Default Value | Environment Variable |
-|-----------|-------------|---------------|---------------------|
-| `enableAuthentication` | Enable/disable authentication system | `true` | `FEATURE_FLAG_ENABLE_AUTHENTICATION` |
+| Flag Name              | Description                          | Default Value | Environment Variable                 |
+| ---------------------- | ------------------------------------ | ------------- | ------------------------------------ |
+| `enableAuthentication` | Enable/disable authentication system | `true`        | `FEATURE_FLAG_ENABLE_AUTHENTICATION` |
 
 ### Usage in Code
 
 #### React Components & Hooks
+
 ```tsx
-import { useFeatureFlag, useAuthenticationEnabled } from '@/hooks/useFeatureFlags';
+import {
+  useFeatureFlag,
+  useAuthenticationEnabled,
+} from "@/hooks/useFeatureFlags";
 
 function MyComponent() {
   const isAuthEnabled = useAuthenticationEnabled();
-  
-  return (
-    <div>
-      {isAuthEnabled && <LoginButton />}
-    </div>
-  );
+
+  return <div>{isAuthEnabled && <LoginButton />}</div>;
 }
 ```
 
 #### Feature Gate Components
+
 ```tsx
-import { FeatureGate, ConditionalFeature } from '@/components/FeatureGate';
+import { FeatureGate, ConditionalFeature } from "@/components/FeatureGate";
 
 function App() {
   return (
-    <FeatureGate 
-      flag="enableAuthentication" 
+    <FeatureGate
+      flag="enableAuthentication"
       fallback={<div>Authentication disabled</div>}
     >
       <AuthenticatedContent />
@@ -99,7 +103,7 @@ function App() {
 // Alternative conditional rendering
 function Header() {
   return (
-    <ConditionalFeature 
+    <ConditionalFeature
       flag="enableAuthentication"
       enabled={<UserMenu />}
       disabled={<GuestMenu />}
@@ -109,35 +113,40 @@ function Header() {
 ```
 
 #### Server-side Usage
+
 ```tsx
 // Regular server components and API routes
-import { isFeatureEnabled, getFeatureFlags } from '@/lib/utils/feature-flags';
+import { isFeatureEnabled, getFeatureFlags } from "@/lib/utils/feature-flags";
 
 export async function GET() {
-  if (await isFeatureEnabled('enableAuthentication')) {
+  if (await isFeatureEnabled("enableAuthentication")) {
     // Check authentication logic
   }
-  
-  return Response.json({ data: 'response' });
+
+  return Response.json({ data: "response" });
 }
 
 // For edge runtime (middleware)
-import { isFeatureEnabledEdge } from '@/lib/utils/feature-flags-edge';
+import { isFeatureEnabledEdge } from "@/lib/utils/feature-flags-edge";
 
 export function middleware(request: NextRequest) {
-  if (isFeatureEnabledEdge('enableAuthentication')) {
+  if (isFeatureEnabledEdge("enableAuthentication")) {
     // Handle authentication
   }
 }
 ```
 
 #### Synchronous Usage
+
 ```tsx
-import { isFeatureEnabledSync, getFeatureFlagsSync } from '@/lib/utils/feature-flags';
+import {
+  isFeatureEnabledSync,
+  getFeatureFlagsSync,
+} from "@/lib/utils/feature-flags";
 
 // When you need synchronous access
 function ComponentWithSync() {
-  const isEnabled = isFeatureEnabledSync('enableAuthentication');
+  const isEnabled = isFeatureEnabledSync("enableAuthentication");
   // ...
 }
 ```
@@ -161,6 +170,7 @@ The system provides REST API endpoints for dynamic access:
 ### Adding New Feature Flags
 
 1. Update the `FeatureFlags` interface in `src/lib/types/feature-flags.ts`:
+
 ```tsx
 export interface FeatureFlags {
   enableAuthentication: boolean;
@@ -169,6 +179,7 @@ export interface FeatureFlags {
 ```
 
 2. Add default value in `src/lib/utils/feature-flags.ts`:
+
 ```tsx
 export const DEFAULT_FLAGS: FeatureFlags = {
   enableAuthentication: true,
