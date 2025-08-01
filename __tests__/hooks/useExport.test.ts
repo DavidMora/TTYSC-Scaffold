@@ -168,11 +168,8 @@ describe("useExportTable", () => {
     });
 
     it("should generate filename with current date", async () => {
-      const mockDate = new Date("2024-01-15");
-      jest
-        .spyOn(global, "Date")
-        .mockImplementation(() => mockDate as unknown as Date);
-      jest.spyOn(mockDate, "toLocaleDateString").mockReturnValue("1/15/2024");
+      jest.useFakeTimers();
+      jest.setSystemTime(new Date("2024-01-16"));
 
       const { result } = renderHook(() => useExportTable(mockTableId));
 
@@ -187,7 +184,7 @@ describe("useExportTable", () => {
       });
 
       // Restore original Date implementation
-      jest.restoreAllMocks();
+      jest.useRealTimers();
     });
   });
 
