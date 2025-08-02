@@ -32,9 +32,6 @@ function getRowKey(row: TableDataRow, identifier: string | undefined): string {
   const value = getIdentifier(row, identifier);
 
   if (value === undefined || value === null) {
-    if (process.env.NODE_ENV === "development") {
-      console.warn(`Row identifier "${identifier}" not found in row data`);
-    }
     return "";
   }
 

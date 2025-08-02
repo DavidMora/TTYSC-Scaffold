@@ -428,19 +428,6 @@ describe("BaseDataTable", () => {
       // Should still render the table
       expect(screen.getByTestId("ui5-table")).toBeInTheDocument();
       expect(screen.getAllByTestId("ui5-table-row")).toHaveLength(2);
-
-      // Should log warnings for missing identifier
-      expect(consoleSpy).toHaveBeenCalledWith(
-        'Row identifier "id" not found in row data'
-      );
-      expect(consoleSpy).toHaveBeenCalledWith("Row data:", {
-        name: "John Doe",
-        age: 30,
-      });
-      expect(consoleSpy).toHaveBeenCalledWith("identifier:", "id");
-      expect(consoleSpy).toHaveBeenCalledWith("value:", undefined);
-
-      consoleSpy.mockRestore();
     });
 
     it("should handle object values as row identifiers", () => {
