@@ -1,4 +1,4 @@
-import { TableDataRow, TableDataRowPrimitive } from "@/lib/types/datatable";
+import { TableDataRow } from "@/lib/types/datatable";
 
 /**
  * Helper function to get value by accessor path from a table row.
@@ -35,15 +35,19 @@ export function getFormattedValueByAccessor(
   obj: TableDataRow,
   accessor: string
 ): string {
-  const value = getValueByAccessor(obj, accessor) as
-    | TableDataRowPrimitive
-    | undefined;
+  const value = getValueByAccessor(obj, accessor);
 
   if (value === null || value === undefined) {
     return "";
   } else if (typeof value === "object") {
     return JSON.stringify(value);
-  } else {
+  } else if (
+    typeof value === "string" ||
+    typeof value === "number" ||
+    typeof value === "boolean"
+  ) {
     return String(value);
+  } else {
+    return "";
   }
 }

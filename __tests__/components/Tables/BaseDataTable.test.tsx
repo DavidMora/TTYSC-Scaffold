@@ -404,11 +404,6 @@ describe("BaseDataTable", () => {
     });
 
     it("should handle missing row identifier gracefully", () => {
-      // Spy on console.warn to verify warnings are logged
-      const consoleSpy = jest
-        .spyOn(console, "warn")
-        .mockImplementation(() => {});
-
       const dataWithMissingIdentifier = {
         data: {
           headers: [
