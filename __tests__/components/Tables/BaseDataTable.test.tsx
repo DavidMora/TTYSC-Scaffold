@@ -405,7 +405,9 @@ describe("BaseDataTable", () => {
 
     it("should handle missing row identifier gracefully", () => {
       // Spy on console.warn to verify warnings are logged
-      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+      const consoleSpy = jest
+        .spyOn(console, "warn")
+        .mockImplementation(() => {});
 
       const dataWithMissingIdentifier = {
         data: {
@@ -428,8 +430,13 @@ describe("BaseDataTable", () => {
       expect(screen.getAllByTestId("ui5-table-row")).toHaveLength(2);
 
       // Should log warnings for missing identifier
-      expect(consoleSpy).toHaveBeenCalledWith('Row identifier "id" not found in row data');
-      expect(consoleSpy).toHaveBeenCalledWith("Row data:", { name: "John Doe", age: 30 });
+      expect(consoleSpy).toHaveBeenCalledWith(
+        'Row identifier "id" not found in row data'
+      );
+      expect(consoleSpy).toHaveBeenCalledWith("Row data:", {
+        name: "John Doe",
+        age: 30,
+      });
       expect(consoleSpy).toHaveBeenCalledWith("identifier:", "id");
       expect(consoleSpy).toHaveBeenCalledWith("value:", undefined);
 
@@ -444,15 +451,15 @@ describe("BaseDataTable", () => {
             { text: "Age", accessorKey: "age" },
           ],
           rows: [
-            { 
-              id: { type: "user", value: "123" }, 
-              name: "John Doe", 
-              age: 30 
+            {
+              id: { type: "user", value: "123" },
+              name: "John Doe",
+              age: 30,
             },
-            { 
-              id: { type: "user", value: "456" }, 
-              name: "Jane Smith", 
-              age: 25 
+            {
+              id: { type: "user", value: "456" },
+              name: "Jane Smith",
+              age: 25,
             },
           ],
           rowIdentifier: "id",
@@ -462,14 +469,14 @@ describe("BaseDataTable", () => {
       render(<BaseDataTable {...dataWithObjectIdentifier} />);
 
       const tableRows = screen.getAllByTestId("ui5-table-row");
-      
+
       // Object identifiers should be JSON stringified
       expect(tableRows[0]).toHaveAttribute(
-        "data-ui5-row-key", 
+        "data-ui5-row-key",
         '{"type":"user","value":"123"}'
       );
       expect(tableRows[1]).toHaveAttribute(
-        "data-ui5-row-key", 
+        "data-ui5-row-key",
         '{"type":"user","value":"456"}'
       );
     });
@@ -483,21 +490,21 @@ describe("BaseDataTable", () => {
             { text: "Settings", accessorKey: "user.settings.theme" },
           ],
           rows: [
-            { 
+            {
               id: "1",
               user: {
                 name: "John Doe",
                 department: { name: "Engineering" },
-                settings: { theme: "dark" }
-              }
+                settings: { theme: "dark" },
+              },
             },
-            { 
+            {
               id: "2",
               user: {
-                name: "Jane Smith", 
+                name: "Jane Smith",
                 department: { name: "Marketing" },
-                settings: { theme: "light" }
-              }
+                settings: { theme: "light" },
+              },
             },
           ],
           rowIdentifier: "id",
@@ -533,15 +540,15 @@ describe("BaseDataTable", () => {
             { text: "Primitive Chain", accessorKey: "primitive.value" },
           ],
           rows: [
-            { 
+            {
               id: "1",
               level1: {
                 level2: {
-                  level3: { value: "deep-value" }
+                  level3: { value: "deep-value" },
                 },
-                null: null
+                null: null,
               },
-              primitive: "not-an-object"
+              primitive: "not-an-object",
             },
           ],
           rowIdentifier: "id",
@@ -552,12 +559,12 @@ describe("BaseDataTable", () => {
 
       // Should handle deep nesting correctly
       expect(screen.getByText("deep-value")).toBeInTheDocument();
-      
+
       // Should handle null in chain gracefully (empty string)
       const cells = screen.getAllByTestId("ui5-table-cell");
       // The null chain should result in empty string
       expect(cells[1]).toHaveTextContent("");
-      
+
       // Should handle primitive in chain gracefully (empty string)
       expect(cells[2]).toHaveTextContent("");
     });
