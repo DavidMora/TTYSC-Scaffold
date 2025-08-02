@@ -137,7 +137,7 @@ function applyFilters(
     return filters.every((filter) => {
       const filterValue = activeFilters[filter.key];
 
-      // Si no hay valor en el filtro, no filtramos
+      // If there's no filter value, don't filter
       if (
         !filterValue ||
         filterValue === "" ||
@@ -149,7 +149,7 @@ function applyFilters(
       const rowValue = getValueByAccessor(row, filter.key);
 
       if (filter.type === "select") {
-        // Para filtros select, comparamos valores exactos
+        // For select filters, we compare exact values
         let rowValueStr = "";
         if (rowValue !== null && rowValue !== undefined) {
           if (typeof rowValue === "object") {
@@ -167,7 +167,7 @@ function applyFilters(
           typeof filterValue === "string" ? filterValue : "";
         return rowValueStr === filterValueStr;
       } else if (filter.type === "date") {
-        // Para filtros de fecha, puedes implementar lógica específica
+        // For date filters, you can implement specific logic
         try {
           const rowDate = new Date(rowValue as string);
           const filterDate = new Date(filterValue as string);
