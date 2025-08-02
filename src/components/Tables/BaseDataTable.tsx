@@ -17,75 +17,12 @@ import "@ui5/webcomponents/dist/TableHeaderRow.js";
 import "@ui5/webcomponents/dist/TableHeaderCell.js";
 import { twMerge } from "tailwind-merge";
 import TableToolbar from "@/components/Tables/TableToolbar";
-import { useTableSearch } from "@/hooks/useTableSearch";
+import { useTableData } from "@/hooks/useTableData";
 import {
-  Filter,
-  FilterOption,
   TableDataProps,
   TableDataRow,
   TableDataRowPrimitive,
-  TableToolbarFilter,
 } from "@/lib/types/datatable";
-
-const processFilters = (
-  filters: TableToolbarFilter[],
-  tableRows: TableDataRow[]
-): Filter[] => {
-  return filters.map((filter) => {
-    if (filter.type === "select" && filter.accessorKey && !filter.options) {
-      const processedFilter = {
-        ...filter,
-        options: getUniqueValuesFromData(tableRows, filter.accessorKey),
-      };
-      return convertToTableToolbarFilter(processedFilter);
-    }
-    return convertToTableToolbarFilter(filter);
-  });
-};
-
-const getUniqueValuesFromData = (
-  rows: TableDataRow[],
-  accessorKey: string
-): FilterOption[] => {
-  const uniqueValues = new Set<string>();
-
-  rows.forEach((row) => {
-    const value = getValueByAccessor(row, accessorKey);
-    if (value !== undefined && value !== null) {
-      uniqueValues.add(String(value));
-    }
-  });
-
-  return Array.from(uniqueValues)
-    .sort((a, b) => a.localeCompare(b))
-    .map((value) => ({ value, text: value }));
-};
-
-const convertToTableToolbarFilter = (filter: TableToolbarFilter): Filter => {
-  if (filter.type === "select") {
-    return {
-      type: "select" as const,
-      key: filter.key,
-      label: filter.label,
-      placeholder: filter.placeholder,
-      options: filter.options || [],
-      value: filter.value,
-    };
-  } else {
-    return {
-      type: "date" as const,
-      key: filter.key,
-      label: filter.label,
-      placeholder: filter.placeholder,
-      value: filter.value,
-    };
-  }
-};
-
-// Manejador para cambios en los filtros
-const handleFilterChange = () => {
-  // TODO: Implement actual filter logic
-};
 
 function getIdentifier(
   row: TableDataRow,
@@ -136,14 +73,17 @@ function getValueByAccessor(
 }
 
 const BaseDataTable: React.FC<Readonly<TableDataProps>> = (props) => {
-  const { filteredRows, handleSearch, hasResults } = useTableSearch({
+  const {
+    filteredRows,
+    processedFilters,
+    handleSearch,
+    handleFilterChange,
+    hasResults,
+  } = useTableData({
     rows: props.data?.rows || [],
     headers: props.data?.headers || [],
+    filters: props.data?.filters || [],
   });
-
-  const processedFilters = props.data?.filters
-    ? processFilters(props.data.filters, props.data.rows)
-    : [];
 
   return (
     <div

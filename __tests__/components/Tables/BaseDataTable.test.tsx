@@ -1,7 +1,7 @@
 import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
 import BaseDataTable from "@/components/Tables/BaseDataTable";
-import { TableDataProps } from "@/lib/types/datatable";
+import { TableDataProps, TableDataRow } from "@/lib/types/datatable";
 import "@testing-library/jest-dom";
 
 // Mock the TableToolbar component with onSearch prop tracking
@@ -402,185 +402,186 @@ describe("BaseDataTable", () => {
       expect(screen.queryByTestId("ui5-table-header-row")).toBeInTheDocument();
       expect(screen.queryAllByTestId("ui5-table-header-cell")).toHaveLength(0);
     });
+
+    it("should handle missing row identifier gracefully", () => {
+      // Spy on console.warn to verify warnings are logged
+      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+
+      const dataWithMissingIdentifier = {
+        data: {
+          headers: [
+            { text: "Name", accessorKey: "name" },
+            { text: "Age", accessorKey: "age" },
+          ],
+          rows: [
+            { name: "John Doe", age: 30 } as { name: string; age: number }, // Missing 'id' field
+            { id: "2", name: "Jane Smith", age: 25 },
+          ] as TableDataRow[],
+          rowIdentifier: "id",
+        },
+      };
+
+      render(<BaseDataTable {...dataWithMissingIdentifier} />);
+
+      // Should still render the table
+      expect(screen.getByTestId("ui5-table")).toBeInTheDocument();
+      expect(screen.getAllByTestId("ui5-table-row")).toHaveLength(2);
+
+      // Should log warnings for missing identifier
+      expect(consoleSpy).toHaveBeenCalledWith('Row identifier "id" not found in row data');
+      expect(consoleSpy).toHaveBeenCalledWith("Row data:", { name: "John Doe", age: 30 });
+      expect(consoleSpy).toHaveBeenCalledWith("identifier:", "id");
+      expect(consoleSpy).toHaveBeenCalledWith("value:", undefined);
+
+      consoleSpy.mockRestore();
+    });
+
+    it("should handle object values as row identifiers", () => {
+      const dataWithObjectIdentifier = {
+        data: {
+          headers: [
+            { text: "Name", accessorKey: "name" },
+            { text: "Age", accessorKey: "age" },
+          ],
+          rows: [
+            { 
+              id: { type: "user", value: "123" }, 
+              name: "John Doe", 
+              age: 30 
+            },
+            { 
+              id: { type: "user", value: "456" }, 
+              name: "Jane Smith", 
+              age: 25 
+            },
+          ],
+          rowIdentifier: "id",
+        },
+      };
+
+      render(<BaseDataTable {...dataWithObjectIdentifier} />);
+
+      const tableRows = screen.getAllByTestId("ui5-table-row");
+      
+      // Object identifiers should be JSON stringified
+      expect(tableRows[0]).toHaveAttribute(
+        "data-ui5-row-key", 
+        '{"type":"user","value":"123"}'
+      );
+      expect(tableRows[1]).toHaveAttribute(
+        "data-ui5-row-key", 
+        '{"type":"user","value":"456"}'
+      );
+    });
+
+    it("should handle nested accessor keys", () => {
+      const dataWithNestedKeys = {
+        data: {
+          headers: [
+            { text: "Name", accessorKey: "user.name" },
+            { text: "Department", accessorKey: "user.department.name" },
+            { text: "Settings", accessorKey: "user.settings.theme" },
+          ],
+          rows: [
+            { 
+              id: "1",
+              user: {
+                name: "John Doe",
+                department: { name: "Engineering" },
+                settings: { theme: "dark" }
+              }
+            },
+            { 
+              id: "2",
+              user: {
+                name: "Jane Smith", 
+                department: { name: "Marketing" },
+                settings: { theme: "light" }
+              }
+            },
+          ],
+          rowIdentifier: "id",
+        },
+      };
+
+      render(<BaseDataTable {...dataWithNestedKeys} />);
+
+      // Should render nested data correctly
+      expect(screen.getByText("John Doe")).toBeInTheDocument();
+      expect(screen.getByText("Jane Smith")).toBeInTheDocument();
+      expect(screen.getByText("Engineering")).toBeInTheDocument();
+      expect(screen.getByText("Marketing")).toBeInTheDocument();
+      expect(screen.getByText("dark")).toBeInTheDocument();
+      expect(screen.getByText("light")).toBeInTheDocument();
+    });
+
+    it("should handle undefined props gracefully", () => {
+      const dataWithUndefinedProps = {} as TableDataProps;
+
+      render(<BaseDataTable {...dataWithUndefinedProps} />);
+
+      // Should still render table structure with empty data
+      expect(screen.getByTestId("ui5-table")).toBeInTheDocument();
+    });
+
+    it("should handle complex nested accessor edge cases", () => {
+      const dataWithComplexNesting = {
+        data: {
+          headers: [
+            { text: "Deep Value", accessorKey: "level1.level2.level3.value" },
+            { text: "Null Chain", accessorKey: "level1.null.value" },
+            { text: "Primitive Chain", accessorKey: "primitive.value" },
+          ],
+          rows: [
+            { 
+              id: "1",
+              level1: {
+                level2: {
+                  level3: { value: "deep-value" }
+                },
+                null: null
+              },
+              primitive: "not-an-object"
+            },
+          ],
+          rowIdentifier: "id",
+        },
+      };
+
+      render(<BaseDataTable {...dataWithComplexNesting} />);
+
+      // Should handle deep nesting correctly
+      expect(screen.getByText("deep-value")).toBeInTheDocument();
+      
+      // Should handle null in chain gracefully (empty string)
+      const cells = screen.getAllByTestId("ui5-table-cell");
+      // The null chain should result in empty string
+      expect(cells[1]).toHaveTextContent("");
+      
+      // Should handle primitive in chain gracefully (empty string)
+      expect(cells[2]).toHaveTextContent("");
+    });
   });
 
-  describe("Search Functionality", () => {
+  describe("UI Integration", () => {
     beforeEach(() => {
       jest.clearAllMocks();
     });
 
-    it("should pass onSearch prop to TableToolbar", () => {
+    it("should render TableToolbar with search functionality", () => {
       render(<BaseDataTable {...mockTableData} />);
 
-      // Verify the mock received the onSearch prop
+      // Verify the TableToolbar is rendered
       expect(screen.getByTestId("table-toolbar")).toBeInTheDocument();
       expect(screen.getByTestId("search-input")).toBeInTheDocument();
 
-      // Verify onSearch function is available
-      expect(mockOnSearch).toBeDefined();
-    });
-
-    it("should show all rows when search term is empty", () => {
-      render(<BaseDataTable {...mockTableData} />);
-
-      const tableRows = screen.getAllByTestId("ui5-table-row");
-      expect(tableRows).toHaveLength(3);
-      expect(screen.getByText("John Doe")).toBeInTheDocument();
-      expect(screen.getByText("Jane Smith")).toBeInTheDocument();
-      expect(screen.getByText("Bob Johnson")).toBeInTheDocument();
-    });
-
-    it("should filter rows based on search term", () => {
-      render(<BaseDataTable {...mockTableData} />);
-
-      // Initially show all rows
-      expect(screen.getAllByTestId("ui5-table-row")).toHaveLength(3);
-      expect(screen.getByText("John Doe")).toBeInTheDocument();
-      expect(screen.getByText("Jane Smith")).toBeInTheDocument();
-      expect(screen.getByText("Bob Johnson")).toBeInTheDocument();
-
-      // Simulate user typing in search input
+      // Verify search input interaction works
       const searchInput = screen.getByTestId("search-input");
-      fireEvent.change(searchInput, { target: { value: "john" } });
-
-      // Verify the search function was called with the correct term
-      expect(mockOnSearch).toHaveBeenCalledWith("john");
-
-      // The component should now filter rows based on the search term
-      // We verify that the search function was called correctly
+      fireEvent.change(searchInput, { target: { value: "test" } });
+      expect(mockOnSearch).toHaveBeenCalledWith("test");
     });
 
-    it("should show no results message when search has no matches", () => {
-      render(<BaseDataTable {...mockTableData} />);
-
-      // Initially show all rows
-      expect(screen.getAllByTestId("ui5-table-row")).toHaveLength(3);
-
-      // Simulate user typing a search term that won't match anything
-      const searchInput = screen.getByTestId("search-input");
-      fireEvent.change(searchInput, { target: { value: "nonexistent" } });
-
-      // Verify the search function was called
-      expect(mockOnSearch).toHaveBeenCalledWith("nonexistent");
-
-      // The component should show no results message
-      // We verify the search function was called with the correct term
-    });
-
-    it("should search across all columns", () => {
-      const searchableData = {
-        data: {
-          headers: [
-            { text: "Name", accessorKey: "name" },
-            { text: "Email", accessorKey: "email" },
-            { text: "Department", accessorKey: "department" },
-          ],
-          rows: [
-            {
-              id: "1",
-              name: "John Doe",
-              email: "john@example.com",
-              department: "IT",
-            },
-            {
-              id: "2",
-              name: "Jane Smith",
-              email: "jane@hr.com",
-              department: "HR",
-            },
-            {
-              id: "3",
-              name: "Bob Johnson",
-              email: "bob@it.com",
-              department: "IT",
-            },
-          ],
-          rowIdentifier: "id",
-        },
-      };
-
-      render(<BaseDataTable {...searchableData} />);
-
-      // Should show all rows initially
-      expect(screen.getAllByTestId("ui5-table-row")).toHaveLength(3);
-      expect(screen.getByText("John Doe")).toBeInTheDocument();
-      expect(screen.getByText("Jane Smith")).toBeInTheDocument();
-      expect(screen.getByText("Bob Johnson")).toBeInTheDocument();
-
-      // Simulate searching for "IT" which should match both John and Bob's department
-      const searchInput = screen.getByTestId("search-input");
-      fireEvent.change(searchInput, { target: { value: "IT" } });
-
-      // Verify the search function was called
-      expect(mockOnSearch).toHaveBeenCalledWith("IT");
-
-      // Simulate searching for "jane@hr.com" which should match Jane's email
-      fireEvent.change(searchInput, { target: { value: "jane@hr.com" } });
-      expect(mockOnSearch).toHaveBeenCalledWith("jane@hr.com");
-
-      // Simulate searching for "Bob" which should match Bob's name
-      fireEvent.change(searchInput, { target: { value: "Bob" } });
-      expect(mockOnSearch).toHaveBeenCalledWith("Bob");
-    });
-
-    it("should verify search functionality with actual filtering simulation", () => {
-      const searchableData = {
-        data: {
-          headers: [
-            { text: "Name", accessorKey: "name" },
-            { text: "Email", accessorKey: "email" },
-            { text: "Department", accessorKey: "department" },
-          ],
-          rows: [
-            {
-              id: "1",
-              name: "John Doe",
-              email: "john@example.com",
-              department: "IT",
-            },
-            {
-              id: "2",
-              name: "Jane Smith",
-              email: "jane@hr.com",
-              department: "HR",
-            },
-            {
-              id: "3",
-              name: "Bob Johnson",
-              email: "bob@it.com",
-              department: "IT",
-            },
-          ],
-          rowIdentifier: "id",
-        },
-      };
-
-      render(<BaseDataTable {...searchableData} />);
-
-      // Initially show all rows
-      expect(screen.getAllByTestId("ui5-table-row")).toHaveLength(3);
-
-      // Simulate searching for "john" which should match John's name and email
-      const searchInput = screen.getByTestId("search-input");
-      fireEvent.change(searchInput, { target: { value: "john" } });
-
-      // Verify the search function was called
-      expect(mockOnSearch).toHaveBeenCalledWith("john");
-
-      // Simulate searching for "HR" which should match Jane's department
-      fireEvent.change(searchInput, { target: { value: "HR" } });
-      expect(mockOnSearch).toHaveBeenCalledWith("HR");
-
-      // Simulate searching for "bob@it.com" which should match Bob's email
-      fireEvent.change(searchInput, { target: { value: "bob@it.com" } });
-      expect(mockOnSearch).toHaveBeenCalledWith("bob@it.com");
-
-      // Simulate searching for "nonexistent" which should not match anything
-      fireEvent.change(searchInput, { target: { value: "nonexistent" } });
-      expect(mockOnSearch).toHaveBeenCalledWith("nonexistent");
-    });
-
-    it("should not show selection checkbox when there are no results", () => {
+    it("should handle empty data gracefully", () => {
       const emptyData = {
         data: {
           headers: [
