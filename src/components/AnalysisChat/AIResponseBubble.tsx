@@ -3,24 +3,13 @@ import { Text } from "@ui5/webcomponents-react";
 import { ChatMessage } from "@/lib/types/chats";
 import { parseDate } from "@/lib/utils/dateUtils";
 import { FeedbackVote } from "@/components/FeedbackVote/FeedbackVote";
-import { tableData } from "@/lib/constants/mocks/dataTable";
-import BaseDataTable from "@/components/Tables/BaseDataTable";
+import { AIResponseRenderer } from "@/components/AnalysisChat/AIResponseRenderer";
 
 interface AIResponseBubbleProps {
   message: ChatMessage;
-  showTable?: boolean;
 }
 
-export function AIResponseBubble({
-  message,
-  showTable,
-}: Readonly<AIResponseBubbleProps>) {
-  
-  // Mocking the table to show 20% of the time
-  const mockTableDisplayFrequency = 0.2;
-  const shouldShowTable =
-    showTable ?? parseInt(message.id) % 10 < mockTableDisplayFrequency * 10;
-
+export function AIResponseBubble({ message }: Readonly<AIResponseBubbleProps>) {
   return (
     <div
       style={{
@@ -73,20 +62,7 @@ export function AIResponseBubble({
         {parseDate(message.created)}
       </Text>
 
-      <Text
-        style={{
-          fontSize: "var(--sapFontSize)",
-          fontWeight: "400",
-        }}
-      >
-        {message.content}
-      </Text>
-
-      {shouldShowTable && (
-        <div style={{ marginTop: "1rem", width: "100%" }}>
-          <BaseDataTable data={tableData} tableClassName="h-96" />
-        </div>
-      )}
+      <AIResponseRenderer content={message.content} />
     </div>
   );
 }
