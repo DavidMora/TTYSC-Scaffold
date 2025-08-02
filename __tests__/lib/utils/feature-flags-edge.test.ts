@@ -1,7 +1,4 @@
-import { isFeatureEnabledEdge } from '../../../src/lib/utils/feature-flags-edge';
-
-// Import the module for dynamic mocking
-const featureFlagsEdgeModule = require('../../../src/lib/utils/feature-flags-edge');
+import { isFeatureEnabledEdge, loadFeatureFlagsEdge } from '../../../src/lib/utils/feature-flags-edge';
 
 // Mock console.warn to capture warnings
 const mockConsoleWarn = jest.spyOn(console, 'warn').mockImplementation(() => {});
@@ -13,6 +10,7 @@ describe('feature-flags-edge', () => {
   beforeEach(() => {
     // Reset process.env for each test
     jest.resetModules();
+    // Properly restore the original env
     process.env = { ...originalEnv };
     mockConsoleWarn.mockClear();
   });
@@ -27,41 +25,49 @@ describe('feature-flags-edge', () => {
     it('should return feature flags with default values when no environment variables are set', () => {
       // Remove any authentication-related env vars
       delete process.env.ENABLE_AUTHENTICATION;
+      delete process.env.FF_Chat_Analysis_Screen;
 
-      const result = featureFlagsEdgeModule.loadFeatureFlagsEdge();
+      const result = loadFeatureFlagsEdge();
 
       expect(result).toEqual({
         enableAuthentication: true, // default is true when env var is not 'false'
+        FF_Chat_Analysis_Screen: true, // default is true when env var is not 'false'
       });
     });
 
     it('should return enableAuthentication as false when ENABLE_AUTHENTICATION is "false"', () => {
       process.env.ENABLE_AUTHENTICATION = 'false';
+      delete process.env.FF_Chat_Analysis_Screen;
 
-      const result = featureFlagsEdgeModule.loadFeatureFlagsEdge();
+      const result = loadFeatureFlagsEdge();
 
       expect(result).toEqual({
         enableAuthentication: false,
+        FF_Chat_Analysis_Screen: true,
       });
     });
 
     it('should return enableAuthentication as true when ENABLE_AUTHENTICATION is "true"', () => {
       process.env.ENABLE_AUTHENTICATION = 'true';
+      delete process.env.FF_Chat_Analysis_Screen;
 
-      const result = featureFlagsEdgeModule.loadFeatureFlagsEdge();
+      const result = loadFeatureFlagsEdge();
 
       expect(result).toEqual({
         enableAuthentication: true,
+        FF_Chat_Analysis_Screen: true,
       });
     });
 
     it('should return enableAuthentication as true when ENABLE_AUTHENTICATION is any other value', () => {
       process.env.ENABLE_AUTHENTICATION = 'yes';
+      delete process.env.FF_Chat_Analysis_Screen;
 
-      const result = featureFlagsEdgeModule.loadFeatureFlagsEdge();
+      const result = loadFeatureFlagsEdge();
 
       expect(result).toEqual({
         enableAuthentication: true,
+        FF_Chat_Analysis_Screen: true,
       });
     });
 
@@ -75,10 +81,11 @@ describe('feature-flags-edge', () => {
         configurable: true,
       });
 
-      const result = featureFlagsEdgeModule.loadFeatureFlagsEdge();
+      const result = loadFeatureFlagsEdge();
 
       expect(result).toEqual({
         enableAuthentication: true, // DEFAULT_FLAGS value
+        FF_Chat_Analysis_Screen: true, // DEFAULT_FLAGS value
       });
       expect(mockConsoleWarn).toHaveBeenCalledWith(
         "Error loading feature flags in edge runtime, using defaults:",
@@ -97,6 +104,7 @@ describe('feature-flags-edge', () => {
   describe('isFeatureEnabledEdge', () => {
     it('should return true for enableAuthentication when flag is present and env var is not "false"', () => {
       delete process.env.ENABLE_AUTHENTICATION;
+      delete process.env.FF_Chat_Analysis_Screen;
 
       const result = isFeatureEnabledEdge('enableAuthentication');
 
@@ -105,6 +113,7 @@ describe('feature-flags-edge', () => {
 
     it('should return false for enableAuthentication when env var is "false"', () => {
       process.env.ENABLE_AUTHENTICATION = 'false';
+      delete process.env.FF_Chat_Analysis_Screen;
 
       const result = isFeatureEnabledEdge('enableAuthentication');
 
@@ -145,6 +154,7 @@ describe('feature-flags-edge', () => {
       
       // First test: Normal path (flags[key] exists)
       delete process.env.ENABLE_AUTHENTICATION;
+      delete process.env.FF_Chat_Analysis_Screen;
       let result = isFeatureEnabledEdge('enableAuthentication');
       expect(result).toBe(true);
       
@@ -173,48 +183,32 @@ describe('feature-flags-edge', () => {
       });
     });
 
-    it('should use DEFAULT_FLAGS fallback when flags key is undefined', () => {
-      // Create a mock function that returns an empty object
-      const mockLoadFunction = () => ({});
+    it('should test FF_Chat_Analysis_Screen flag behavior', () => {
+      // Test the FF_Chat_Analysis_Screen flag to ensure it works correctly
+      delete process.env.ENABLE_AUTHENTICATION;
+      delete process.env.FF_Chat_Analysis_Screen;
       
-      // Use jest.doMock to provide a custom implementation
-      jest.doMock('../../../src/lib/utils/feature-flags-edge', () => ({
-        ...jest.requireActual('../../../src/lib/utils/feature-flags-edge'),
-        loadFeatureFlagsEdge: mockLoadFunction,
-      }));
-
-      // Re-import with the mocked version
-      const { isFeatureEnabledEdge: mockIsFeatureEnabledEdge } = require('../../../src/lib/utils/feature-flags-edge');
-      
-      const result = mockIsFeatureEnabledEdge('enableAuthentication');
-      
-      // Should fallback to DEFAULT_FLAGS.enableAuthentication which is true
+      let result = isFeatureEnabledEdge('FF_Chat_Analysis_Screen');
       expect(result).toBe(true);
       
-      // Clean up the mock
-      jest.dontMock('../../../src/lib/utils/feature-flags-edge');
+      process.env.FF_Chat_Analysis_Screen = 'false';
+      result = isFeatureEnabledEdge('FF_Chat_Analysis_Screen');
+      expect(result).toBe(false);
+      
+      process.env.FF_Chat_Analysis_Screen = 'true';
+      result = isFeatureEnabledEdge('FF_Chat_Analysis_Screen');
+      expect(result).toBe(true);
     });
 
-    it('should handle nullish coalescing when flag value is null', () => {
-      // Create a mock that returns null for the flag value
-      const mockLoadFunction = () => ({
-        enableAuthentication: null,
-      });
+    it('should handle unknown flag keys gracefully', () => {
+      // Test with an unknown flag key to ensure the nullish coalescing works
+      delete process.env.ENABLE_AUTHENTICATION;
+      delete process.env.FF_Chat_Analysis_Screen;
       
-      jest.doMock('../../../src/lib/utils/feature-flags-edge', () => ({
-        ...jest.requireActual('../../../src/lib/utils/feature-flags-edge'),
-        loadFeatureFlagsEdge: mockLoadFunction,
-      }));
-
-      const { isFeatureEnabledEdge: mockIsFeatureEnabledEdge } = require('../../../src/lib/utils/feature-flags-edge');
-      
-      const result = mockIsFeatureEnabledEdge('enableAuthentication');
-      
-      // Should fallback to DEFAULT_FLAGS.enableAuthentication which is true
-      expect(result).toBe(true);
-      
-      // Clean up
-      jest.dontMock('../../../src/lib/utils/feature-flags-edge');
+      // This should return undefined for the flag, then fallback to DEFAULT_FLAGS
+      // Since DEFAULT_FLAGS doesn't have 'unknownFlag', it should return undefined
+      const result = isFeatureEnabledEdge('unknownFlag' as 'enableAuthentication' | 'FF_Chat_Analysis_Screen');
+      expect(result).toBeUndefined();
     });
   });
 });
