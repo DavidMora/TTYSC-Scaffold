@@ -52,6 +52,7 @@ describe('useFeatureFlags hooks', () => {
       expect(result.current.error).toBe('Network error');
       expect(result.current.flags).toEqual({
         enableAuthentication: true,
+        FF_Chat_Analysis_Screen: true,
       });
     });
 
@@ -84,6 +85,7 @@ describe('useFeatureFlags hooks', () => {
       expect(result.current.error).toBe('Unknown error');
       expect(result.current.flags).toEqual({
         enableAuthentication: true,
+        FF_Chat_Analysis_Screen: true,
       });
     });
 
@@ -151,7 +153,7 @@ describe('useFeatureFlags hooks', () => {
       const { result } = renderHook(() => useFeatureFlag('enableAuthentication'));
 
       await waitFor(() => {
-        expect(result.current).toBe(true);
+        expect(result.current).toEqual({ flag: true, loading: false, error: null });
       });
     });
 
@@ -164,7 +166,7 @@ describe('useFeatureFlags hooks', () => {
       const { result } = renderHook(() => useFeatureFlag('enableAuthentication'));
 
       await waitFor(() => {
-        expect(result.current).toBe(false);
+        expect(result.current).toEqual({ flag: false, loading: false, error: null });
       });
     });
   });

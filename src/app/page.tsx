@@ -12,6 +12,8 @@ import {
 } from "@ui5/webcomponents-react";
 import { useCreateChat } from "@/hooks/chats";
 import { useSequentialNaming } from "@/contexts/SequentialNamingContext";
+import { useFeatureFlag } from "@/hooks/useFeatureFlags";
+import { FeatureNotAvailable } from "@/components/FeatureNotAvailable";
 
 const LoadingDisplay = () => (
   <FlexBox
@@ -101,7 +103,7 @@ const ErrorDisplay = ({
   </FlexBox>
 );
 
-export default function Home() {
+const AnalysisCreation = () => {
   const router = useRouter();
   const [error, setError] = useState<Error | null>(null);
   const { generateAnalysisName } = useSequentialNaming();
@@ -135,4 +137,25 @@ export default function Home() {
   ) : (
     <LoadingDisplay />
   );
+};
+
+export default function Home() {
+  const { flag: isEnabled, loading } = useFeatureFlag(
+    "FF_Chat_Analysis_Screen"
+  );
+
+  if (loading) {
+    return <LoadingDisplay />;
+  }
+
+  if (!isEnabled) {
+    return (
+      <FeatureNotAvailable
+        title="Feature Not Available"
+        message="Chat analysis functionality is currently disabled."
+      />
+    );
+  }
+
+  return <AnalysisCreation />;
 }

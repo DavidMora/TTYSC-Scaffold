@@ -1,3 +1,4 @@
 {
-  "enableAuthentication": true
+  "enableAuthentication": true,
+  "FF_Chat_Analysis_Screen": true
 }

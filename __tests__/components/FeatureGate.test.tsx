@@ -17,7 +17,7 @@ describe("FeatureGate", () => {
 
   describe("when feature flag is enabled", () => {
     beforeEach(() => {
-      mockUseFeatureFlag.mockReturnValue(true);
+      mockUseFeatureFlag.mockReturnValue({ flag: true, loading: false, error: null });
     });
 
     it("renders children when flag is enabled", () => {
@@ -55,11 +55,22 @@ describe("FeatureGate", () => {
       expect(mockUseFeatureFlag).toHaveBeenCalledWith("enableAuthentication");
       expect(mockUseFeatureFlag).toHaveBeenCalledTimes(1);
     });
+
+    it("works with FF_Chat_Analysis_Screen feature flag", () => {
+      render(
+        <FeatureGate flag="FF_Chat_Analysis_Screen">
+          <div data-testid="chat-analysis">Chat Analysis Content</div>
+        </FeatureGate>
+      );
+
+      expect(mockUseFeatureFlag).toHaveBeenCalledWith("FF_Chat_Analysis_Screen");
+      expect(screen.getByTestId("chat-analysis")).toBeInTheDocument();
+    });
   });
 
   describe("when feature flag is disabled", () => {
     beforeEach(() => {
-      mockUseFeatureFlag.mockReturnValue(false);
+      mockUseFeatureFlag.mockReturnValue({ flag: false, loading: false, error: null });
     });
 
     it("renders fallback when flag is disabled and fallback is provided", () => {
@@ -101,9 +112,47 @@ describe("FeatureGate", () => {
     });
   });
 
+  describe("when feature flag is loading", () => {
+    beforeEach(() => {
+      mockUseFeatureFlag.mockReturnValue({ flag: false, loading: true, error: null });
+    });
+
+    it("renders loadingFallback when flag is loading and loadingFallback is provided", () => {
+      render(
+        <FeatureGate 
+          flag="enableAuthentication" 
+          fallback={<div data-testid="fallback">Fallback content</div>}
+          loadingFallback={<div data-testid="loading-fallback">Loading...</div>}
+        >
+          <div data-testid="feature-content">Feature is enabled</div>
+        </FeatureGate>
+      );
+
+      expect(screen.getByTestId("loading-fallback")).toBeInTheDocument();
+      expect(screen.getByText("Loading...")).toBeInTheDocument();
+      expect(screen.queryByTestId("fallback")).not.toBeInTheDocument();
+      expect(screen.queryByTestId("feature-content")).not.toBeInTheDocument();
+    });
+
+    it("renders null when flag is loading and no loadingFallback is provided", () => {
+      const { container } = render(
+        <FeatureGate 
+          flag="enableAuthentication"
+          fallback={<div data-testid="fallback">Fallback content</div>}
+        >
+          <div data-testid="feature-content">Feature is enabled</div>
+        </FeatureGate>
+      );
+
+      expect(screen.queryByTestId("fallback")).not.toBeInTheDocument();
+      expect(screen.queryByTestId("feature-content")).not.toBeInTheDocument();
+      expect(container.firstChild).toBeNull();
+    });
+  });
+
   describe("with complex children", () => {
     it("renders multiple children when enabled", () => {
-      mockUseFeatureFlag.mockReturnValue(true);
+      mockUseFeatureFlag.mockReturnValue({ flag: true, loading: false, error: null });
 
       render(
         <FeatureGate flag="enableAuthentication">
@@ -119,7 +168,7 @@ describe("FeatureGate", () => {
     });
 
     it("renders complex fallback when disabled", () => {
-      mockUseFeatureFlag.mockReturnValue(false);
+      mockUseFeatureFlag.mockReturnValue({ flag: false, loading: false, error: null });
 
       render(
         <FeatureGate 
@@ -150,7 +199,7 @@ describe("ConditionalFeature", () => {
 
   describe("when feature flag is enabled", () => {
     beforeEach(() => {
-      mockUseFeatureFlag.mockReturnValue(true);
+      mockUseFeatureFlag.mockReturnValue({ flag: true, loading: false, error: null });
     });
 
     it("renders enabled content when flag is enabled", () => {
@@ -194,7 +243,7 @@ describe("ConditionalFeature", () => {
 
   describe("when feature flag is disabled", () => {
     beforeEach(() => {
-      mockUseFeatureFlag.mockReturnValue(false);
+      mockUseFeatureFlag.mockReturnValue({ flag: false, loading: false, error: null });
     });
 
     it("renders disabled content when flag is disabled", () => {
@@ -239,7 +288,7 @@ describe("ConditionalFeature", () => {
 
   describe("with complex content", () => {
     it("renders complex enabled content", () => {
-      mockUseFeatureFlag.mockReturnValue(true);
+      mockUseFeatureFlag.mockReturnValue({ flag: true, loading: false, error: null });
 
       render(
         <ConditionalFeature 
@@ -263,7 +312,7 @@ describe("ConditionalFeature", () => {
     });
 
     it("renders complex disabled content", () => {
-      mockUseFeatureFlag.mockReturnValue(false);
+      mockUseFeatureFlag.mockReturnValue({ flag: false, loading: false, error: null });
 
       render(
         <ConditionalFeature 
@@ -289,7 +338,7 @@ describe("ConditionalFeature", () => {
 
   describe("edge cases", () => {
     it("handles both enabled and disabled as null", () => {
-      mockUseFeatureFlag.mockReturnValue(true);
+      mockUseFeatureFlag.mockReturnValue({ flag: true, loading: false, error: null });
 
       const { container } = render(
         <ConditionalFeature 
@@ -303,7 +352,7 @@ describe("ConditionalFeature", () => {
     });
 
     it("handles both enabled and disabled as undefined (default)", () => {
-      mockUseFeatureFlag.mockReturnValue(false);
+      mockUseFeatureFlag.mockReturnValue({ flag: false, loading: false, error: null });
 
       const { container } = render(
         <ConditionalFeature flag="enableAuthentication" />
