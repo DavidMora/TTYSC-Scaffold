@@ -18,6 +18,7 @@ import {
 } from "@ui5/webcomponents-react";
 import { ExportMenu } from "@/components/ExportMenu";
 import { Filter, TableToolbarProps } from "@/lib/types/datatable";
+import { twMerge } from "tailwind-merge";
 
 const TableToolbar: React.FC<Readonly<TableToolbarProps>> = ({
   className,
@@ -127,7 +128,7 @@ const TableToolbar: React.FC<Readonly<TableToolbarProps>> = ({
   };
 
   return (
-    <Toolbar alignContent="Start" className={className}>
+    <Toolbar alignContent="Start" className={twMerge("py-6 px-4", className)}>
       <Title level="H2">{title}</Title>
       {filters.map((filter) => renderFilter(filter))}
       <ToolbarSpacer />

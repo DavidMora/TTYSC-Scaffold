@@ -9,7 +9,7 @@ export const tableData: TableData = {
     { text: "Region", accessorKey: "region" },
     { text: "Created Date", accessorKey: "created_date" },
     { text: "Demand Units", accessorKey: "demandUnits" },
-    { text: "Fullfilled Demand Units", accessorKey: "fulfilledDemandUnits" },
+    { text: "Fulfilled Demand Units", accessorKey: "fulfilledDemandUnits" },
   ],
   rows: [
     {

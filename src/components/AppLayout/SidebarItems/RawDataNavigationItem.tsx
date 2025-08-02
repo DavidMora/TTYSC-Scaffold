@@ -197,7 +197,7 @@ export default function RawDataNavigationItem(
           header={
             <CardHeader
               additionalText="view"
-              titleText="Demand During Lead Time"
+              titleText={selectedRawData.tableName}
               subtitleText="Here you can expand the table for you to see the full display of it "
             />
           }

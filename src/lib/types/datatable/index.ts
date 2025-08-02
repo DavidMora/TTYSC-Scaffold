@@ -33,7 +33,7 @@ export interface FilterChangeEvent {
 export interface TableToolbarProps {
   className?: string;
   title?: string;
-  tableId?: number;
+  tableId?: number | string;
   filters?: Filter[];
   onFilterChange?: (event: FilterChangeEvent) => void;
   onSearch?: (searchTerm: string) => void;
@@ -80,4 +80,10 @@ export interface TableDataProps {
   toolbarClassName?: string;
   style?: CSSProperties;
   data?: TableData;
+  title?: string;
+  tableId?: string;
+  onFilterChange?: (event: FilterChangeEvent) => void;
+  onSearch?: (searchTerm: string) => void;
+  onRowClick?: (row: TableDataRow) => void;
+  onCellClick?: (row: TableDataRow, columnKey: string) => void;
 }

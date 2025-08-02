@@ -21,7 +21,6 @@ import { useTableSearch } from "@/hooks/useTableSearch";
 import {
   Filter,
   FilterOption,
-  TableData,
   TableDataProps,
   TableDataRow,
   TableDataRowPrimitive,
@@ -84,16 +83,33 @@ const convertToTableToolbarFilter = (filter: TableToolbarFilter): Filter => {
 };
 
 // Manejador para cambios en los filtros
-const handleFilterChange = (event: { filterKey: string; value: string }) => {
-  console.log(`Filter triggered: ${event.filterKey} = ${event.value}`);
+const handleFilterChange = () => {
+  // TODO: Implement actual filter logic
 };
 
-function getIdentifier(row: TableDataRow, data: TableData): string {
-  return row[data.rowIdentifier || "id"] as string;
+function getIdentifier(
+  row: TableDataRow,
+  identifier: string | undefined
+): string {
+  return row[identifier || "id"] as string;
 }
 
-function getRowKey(row: TableDataRow, data: TableData): string {
-  return getIdentifier(row, data);
+function getRowKey(row: TableDataRow, identifier: string | undefined): string {
+  const value = getIdentifier(row, identifier);
+
+  if (value === undefined || value === null) {
+    console.warn(`Row identifier "${identifier}" not found in row data`);
+    console.warn("Row data:", row);
+    console.warn("identifier:", identifier);
+    console.warn("value:", value);
+    return "";
+  }
+
+  if (typeof value === "object") {
+    return JSON.stringify(value);
+  }
+
+  return String(value);
 }
 
 function getValueByAccessor(
@@ -137,10 +153,9 @@ const BaseDataTable: React.FC<Readonly<TableDataProps>> = (props) => {
       )}
     >
       <TableToolbar
-        title="Final Summary"
-        tableId={1}
+        title={props.title || "Table Data"}
+        tableId={props.tableId || "table-1"}
         filters={processedFilters}
-        // className="py-8 px-4"
         className={props.toolbarClassName}
         onFilterChange={handleFilterChange}
         onSearch={handleSearch}
@@ -166,10 +181,7 @@ const BaseDataTable: React.FC<Readonly<TableDataProps>> = (props) => {
         }
       >
         {filteredRows.map((row) => {
-          const rowKey = getRowKey(
-            row,
-            props.data || { rows: [], headers: [] }
-          );
+          const rowKey = getRowKey(row, props.data?.rowIdentifier);
           return (
             <TableRow key={rowKey} rowKey={rowKey}>
               {props.data?.headers.map((column) => {
