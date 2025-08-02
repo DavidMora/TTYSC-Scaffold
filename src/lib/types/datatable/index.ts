@@ -1,20 +1,76 @@
 import type { CSSProperties } from "react";
 
+// Interfaces para definir la estructura de filtros
+export interface FilterOption {
+  value: string;
+  text: string;
+}
+
+export interface SelectFilter {
+  type: "select";
+  key: string;
+  label?: string;
+  placeholder?: string;
+  options: FilterOption[];
+  value?: string;
+}
+
+export interface DateFilter {
+  type: "date";
+  key: string;
+  label?: string;
+  placeholder?: string;
+  value?: string;
+}
+
+export type Filter = SelectFilter | DateFilter;
+
+export interface FilterChangeEvent {
+  filterKey: string;
+  value: string;
+}
+
+export interface TableToolbarProps {
+  className?: string;
+  title?: string;
+  tableId?: number | string;
+  filters?: Filter[];
+  onFilterChange?: (event: FilterChangeEvent) => void;
+  onSearch?: (searchTerm: string) => void;
+}
+
+export interface TableDataHeader {
+  text: string;
+  accessorKey: string;
+}
+
 export type TableDataRowPrimitive = string | number | boolean | null;
 
 export type TableDataRowComplex =
   | TableDataRowPrimitive
   | TableDataRow
-  | TableDataRow[];
+  | TableDataRow[]
+  | null;
 
 export interface TableDataRow {
   [key: string]: TableDataRowComplex;
 }
 
+export interface TableToolbarFilter {
+  type: "select" | "date";
+  key: string;
+  label?: string;
+  placeholder?: string;
+  options?: FilterOption[];
+  accessorKey?: string;
+  value?: string;
+}
+
 export interface TableData {
-  headers: { text: string; accessorKey: string }[];
+  headers: TableDataHeader[];
   rows: TableDataRow[];
   rowIdentifier?: string;
+  filters?: TableToolbarFilter[];
 }
 
 export interface TableDataProps {
@@ -23,5 +79,11 @@ export interface TableDataProps {
   tableClassName?: string;
   toolbarClassName?: string;
   style?: CSSProperties;
-  data: TableData;
+  data?: TableData;
+  title?: string;
+  tableId?: string;
+  onFilterChange?: (event: FilterChangeEvent) => void;
+  onSearch?: (searchTerm: string) => void;
+  onRowClick?: (row: TableDataRow) => void;
+  onCellClick?: (row: TableDataRow, columnKey: string) => void;
 }

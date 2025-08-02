@@ -27,13 +27,13 @@ jest.mock("next-auth/react", () => ({
   useSession: () => ({
     data: {
       user: {
-        id: '1',
-        name: 'Test User',
-        email: 'test@example.com',
+        id: "1",
+        name: "Test User",
+        email: "test@example.com",
       },
       expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
     },
-    status: 'authenticated',
+    status: "authenticated",
   }),
   SessionProvider: ({ children }: { children: React.ReactNode }) => children,
   signIn: jest.fn(),
@@ -56,19 +56,53 @@ global.ResizeObserver = jest.fn().mockImplementation(() => ({
 // Mock fetch for Node.js environment
 global.fetch = jest.fn((url) => {
   // Mock auth config API
-  if (url.toString().includes('/api/auth/config')) {
+  if (url.toString().includes("/api/auth/config")) {
     return Promise.resolve({
       ok: true,
-      json: () => Promise.resolve({
-        authProcess: 'test',
-        isAuthDisabled: false,
-        autoLogin: false,
-      }),
+      json: () =>
+        Promise.resolve({
+          authProcess: "test",
+          isAuthDisabled: false,
+          autoLogin: false,
+        }),
     });
   }
-  
+
   return Promise.resolve({
     ok: true,
     json: () => Promise.resolve({}),
   });
 }) as jest.Mock;
+
+// Mock adoptedStyleSheets for UI5 WebComponents
+Object.defineProperty(document, "adoptedStyleSheets", {
+  value: [],
+  writable: true,
+});
+
+// Mock CSSStyleSheet for UI5 WebComponents
+global.CSSStyleSheet = class {
+  cssRules: string[] = [];
+  rules: string[] = [];
+
+  insertRule(rule: string, index?: number) {
+    this.cssRules.splice(index ?? 0, 0, rule);
+    this.rules = this.cssRules;
+    return index ?? 0;
+  }
+
+  deleteRule(index: number) {
+    this.cssRules.splice(index, 1);
+    this.rules = this.cssRules;
+  }
+
+  replaceSync(text: string) {
+    this.cssRules = text.split("\n").filter(Boolean);
+    this.rules = this.cssRules;
+  }
+
+  get cssText() {
+    return this.cssRules.join("\n");
+  }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+} as any;

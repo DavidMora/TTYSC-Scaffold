@@ -15,7 +15,6 @@ export function AIResponseBubble({
   message,
   showTable,
 }: Readonly<AIResponseBubbleProps>) {
-  
   // Mocking the table to show 20% of the time
   const mockTableDisplayFrequency = 0.2;
   const shouldShowTable =
@@ -83,7 +82,10 @@ export function AIResponseBubble({
       </Text>
 
       {shouldShowTable && (
-        <div style={{ marginTop: "1rem", width: "100%" }}>
+        <div
+          style={{ marginTop: "1rem", width: "100%" }}
+          data-testid="base-data-table"
+        >
           <BaseDataTable data={tableData} tableClassName="h-96" />
         </div>
       )}

@@ -7,7 +7,7 @@ import {
   Input,
   InputDomRef,
 } from "@ui5/webcomponents-react";
-import { ConfirmationModal } from "../Modal/ConfirmationModal";
+import { ConfirmationModal } from "@/components/Modals/ConfirmationModal";
 import { useUpdateChat } from "@/hooks/chats";
 import { useAutosaveUI } from "@/contexts/AutosaveUIProvider";
 

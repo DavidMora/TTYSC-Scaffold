@@ -6,6 +6,8 @@ import {
   Select,
   Option,
   Label,
+  Card,
+  CardHeader,
 } from "@ui5/webcomponents-react";
 import { useState } from "react";
 
@@ -25,6 +27,8 @@ export interface RawDataItem {
   tableName: string;
   tableFilters: TableFilter[];
 }
+
+import { useRawDataModal } from "@/contexts/RawDataModalContext";
 
 interface RawDataNavigationItemProps {
   rawDataItems?: RawDataItem[];
@@ -101,10 +105,11 @@ const defaultRawDataItems: RawDataItem[] = [
   },
 ];
 
-export default function RawDataNavigationItem({
-  rawDataItems = defaultRawDataItems,
-  onDataSelection,
-}: Readonly<RawDataNavigationItemProps>) {
+export default function RawDataNavigationItem(
+  props: Readonly<RawDataNavigationItemProps>
+) {
+  const { rawDataItems = defaultRawDataItems, onDataSelection } = props;
+  const { open } = useRawDataModal();
   const [selectedRawData, setSelectedRawData] = useState<RawDataItem | null>(
     rawDataItems.length > 0 ? rawDataItems[0] : null
   );
@@ -188,6 +193,36 @@ export default function RawDataNavigationItem({
             </Select>
           </FlexBox>
         ))}
+        <Card
+          header={
+            <CardHeader
+              additionalText="view"
+              titleText={selectedRawData.tableName}
+              subtitleText="Here you can expand the table for you to see the full display of it "
+            />
+          }
+        >
+          <button
+            type="button"
+            style={{
+              all: "unset",
+              textAlign: "center",
+              width: "100%",
+              height: "100%",
+              cursor: "pointer",
+              display: "block",
+            }}
+            onClick={() => {
+              console.log("Card clicked");
+              open();
+            }}
+            tabIndex={0}
+            aria-label="Expand raw data table"
+          >
+            {/* <Text>Card Content</Text> */}
+            View
+          </button>
+        </Card>
       </FlexBox>
     </SideNavigationItem>
   );

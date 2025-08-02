@@ -9,6 +9,8 @@ export const DEFINITION = (id: string) =>
 export const DEFINITION_DETAILS = (id: string) =>
   `${BASE}/definitions/${encodeURIComponent(id)}/details`;
 
+export const TABLES = `${BASE}/options/tables`;
+
 export const FEEDBACKS = `${BASE}/feedback`;
 export const FEEDBACK = (id: string) =>
   `${BASE}/feedback/${encodeURIComponent(id)}`;

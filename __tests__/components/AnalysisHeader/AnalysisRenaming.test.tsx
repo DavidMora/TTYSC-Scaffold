@@ -20,7 +20,7 @@ jest.mock("@/contexts/AutosaveUIProvider", () => ({
   }),
 }));
 
-jest.mock("@/components/Modal/ConfirmationModal", () => ({
+jest.mock("@/components/Modals/ConfirmationModal", () => ({
   ConfirmationModal: function MockConfirmationModal({
     isOpen,
     title,

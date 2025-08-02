@@ -2,42 +2,72 @@
 
 import React from "react";
 import {
-  Text,
   Table,
-  TableRow,
   TableCell,
-  TableSelectionMulti,
-  TableHeaderRow,
-  TableHeaderCell,
   TableGrowing,
+  TableHeaderCell,
+  TableHeaderRow,
+  TableRow,
+  TableSelectionMulti,
 } from "@ui5/webcomponents-react";
-import { TableDataRow, TableDataProps } from "@/lib/types/datatable";
+import "@ui5/webcomponents-icons/dist/add.js";
+import "@ui5/webcomponents/dist/TableRow.js";
+import "@ui5/webcomponents/dist/TableCell.js";
+import "@ui5/webcomponents/dist/TableHeaderRow.js";
+import "@ui5/webcomponents/dist/TableHeaderCell.js";
+import { twMerge } from "tailwind-merge";
 import TableToolbar from "@/components/Tables/TableToolbar";
-import { useTableSearch } from "@/hooks/useTableSearch";
+import { useTableData } from "@/hooks/useTableData";
+import { TableDataProps, TableDataRow } from "@/lib/types/datatable";
+import { getFormattedValueByAccessor } from "@/lib/utils/tableHelpers";
+
+function getIdentifier(
+  row: TableDataRow,
+  identifier: string | undefined
+): string {
+  return row[identifier || "id"] as string;
+}
+
+function getRowKey(row: TableDataRow, identifier: string | undefined): string {
+  const value = getIdentifier(row, identifier);
+
+  if (value === undefined || value === null) {
+    return "";
+  }
+
+  if (typeof value === "object") {
+    return JSON.stringify(value);
+  }
+
+  return String(value);
+}
 
 const BaseDataTable: React.FC<Readonly<TableDataProps>> = (props) => {
-  const { filteredRows, handleSearch, hasResults } = useTableSearch({
-    rows: props.data.rows,
-    headers: props.data.headers,
+  const {
+    filteredRows,
+    processedFilters,
+    handleSearch,
+    handleFilterChange,
+    hasResults,
+  } = useTableData({
+    rows: props.data?.rows || [],
+    headers: props.data?.headers || [],
+    filters: props.data?.filters || [],
   });
-
-  const getRowKey = (row: TableDataRow): string => {
-    const value = row[props.data.rowIdentifier ?? "id"];
-    if (value === null || value === undefined) return "";
-    if (typeof value === "object") return JSON.stringify(value);
-    return String(value);
-  };
 
   return (
     <div
-      data-testid="base-data-table"
-      className={
-        "w-full rounded-xl overflow-hidden outline outline-gray-300 bg-[var(--sapBaseColor)] " +
+      className={twMerge(
+        "w-full rounded-xl overflow-hidden outline outline-gray-300 bg-[var(--sapBaseColor)]",
         props.mainClassName
-      }
+      )}
     >
       <TableToolbar
+        title={props.title || "Table Data"}
+        tableId={props.tableId || "table-1"}
+        filters={processedFilters}
         className={props.toolbarClassName}
+        onFilterChange={handleFilterChange}
         onSearch={handleSearch}
       />
       <Table
@@ -47,39 +77,34 @@ const BaseDataTable: React.FC<Readonly<TableDataProps>> = (props) => {
             : []),
           <TableGrowing mode="Scroll" key="growing" />,
         ]}
-        className={props.tableClassName}
+        className={twMerge("h-auto", props.tableClassName)}
         noDataText="No results found"
         overflowMode="Scroll"
         headerRow={
           <TableHeaderRow sticky>
-            {props.data.headers.map((column) => (
-              <TableHeaderCell
-                key={column.accessorKey}
-                className={!hasResults ? "pl-11" : undefined}
-              >
-                <Text>{column.text}</Text>
+            {props.data?.headers.map((column) => (
+              <TableHeaderCell key={column.accessorKey}>
+                {column.text}
               </TableHeaderCell>
             ))}
           </TableHeaderRow>
         }
       >
         {filteredRows.map((row) => {
-          const rowKey = getRowKey(row);
+          const rowKey = getRowKey(row, props.data?.rowIdentifier);
           return (
             <TableRow key={rowKey} rowKey={rowKey}>
-              {props.data.headers.map((column) => (
-                <TableCell key={column.accessorKey}>
-                  <Text>
-                    {(() => {
-                      const value = row[column.accessorKey];
-                      if (value === null || value === undefined) return "";
-                      if (typeof value === "object")
-                        return JSON.stringify(value);
-                      return String(value);
-                    })()}
-                  </Text>
-                </TableCell>
-              ))}
+              {props.data?.headers.map((column) => {
+                const value = getFormattedValueByAccessor(
+                  row,
+                  column.accessorKey
+                );
+                return (
+                  <TableCell key={column.accessorKey}>
+                    <span>{value}</span>
+                  </TableCell>
+                );
+              })}
             </TableRow>
           );
         })}

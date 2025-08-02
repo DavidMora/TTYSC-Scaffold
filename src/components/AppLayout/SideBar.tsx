@@ -14,16 +14,18 @@ import RawDataNavigationItem, {
 } from "./SidebarItems/RawDataNavigationItem";
 import ChatHistoryNavigationItem from "./SidebarItems/ChatHistoryNavigationItem";
 import { useChats } from "@/hooks/chats";
+import "@ui5/webcomponents-icons/dist/inspect.js";
 
 interface SideBarProps {
   sideNavCollapsed?: boolean;
   navItems: Array<NavBarItem>;
+  onShowRawDataModal?: () => void;
 }
 
-export default function SideBarMenu({
+const SideBarMenu: React.FC<SideBarProps> = ({
   sideNavCollapsed,
   navItems,
-}: Readonly<SideBarProps>) {
+}) => {
   const pathname = usePathname();
   const router = useRouter();
 
@@ -70,8 +72,8 @@ export default function SideBarMenu({
       collapsed={sideNavCollapsed}
       onSelectionChange={handleNavSelection}
       header={
-        <div style={{ display: "flex", alignItems: "center", padding: "2rem" }}>
-          <NvidiaLogo style={{ width: "100%" }} />
+        <div className="flex justify-center items-center p-8">
+          <NvidiaLogo className="w-full max-w-[7.5rem]" />
         </div>
       }
       fixedItems={
@@ -117,4 +119,6 @@ export default function SideBarMenu({
       ))}
     </SideNavigation>
   );
-}
+};
+
+export default SideBarMenu;

@@ -3,7 +3,7 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { CreateAnalysis } from "@/components/AnalysisHeader/CreateAnalysis";
 
 // Mock AppModal component
-jest.mock("@/components/Modal/ConfirmationModal", () => ({
+jest.mock("@/components/Modals/ConfirmationModal", () => ({
   ConfirmationModal: function MockConfirmationModal({
     isOpen,
     onClose,
@@ -17,7 +17,12 @@ jest.mock("@/components/Modal/ConfirmationModal", () => ({
     title: string;
     message: string;
     width?: string;
-    actions: Array<{ label: string; design?: string; disabled?: boolean; onClick: () => void }>;
+    actions: Array<{
+      label: string;
+      design?: string;
+      disabled?: boolean;
+      onClick: () => void;
+    }>;
   }) {
     if (!isOpen) return null;
     return (
@@ -56,7 +61,12 @@ describe("CreateAnalysis", () => {
   });
 
   it("should close modal when close button is clicked", () => {
-    render(<CreateAnalysis onCreateAnalysis={mockOnCreateAnalysis} isCreating={false} />);
+    render(
+      <CreateAnalysis
+        onCreateAnalysis={mockOnCreateAnalysis}
+        isCreating={false}
+      />
+    );
 
     fireEvent.click(screen.getByTestId("ui5-flexbox"));
     expect(screen.getByTestId("app-modal")).toBeInTheDocument();
@@ -66,7 +76,12 @@ describe("CreateAnalysis", () => {
   });
 
   it("should call onCreateAnalysis and close modal when start new is clicked", async () => {
-    render(<CreateAnalysis onCreateAnalysis={mockOnCreateAnalysis} isCreating={false} />);
+    render(
+      <CreateAnalysis
+        onCreateAnalysis={mockOnCreateAnalysis}
+        isCreating={false}
+      />
+    );
 
     fireEvent.click(screen.getByTestId("ui5-flexbox"));
 
@@ -79,7 +94,12 @@ describe("CreateAnalysis", () => {
   });
 
   it("should handle mouse enter and leave events for hover effect", () => {
-    render(<CreateAnalysis onCreateAnalysis={mockOnCreateAnalysis} isCreating={false} />);
+    render(
+      <CreateAnalysis
+        onCreateAnalysis={mockOnCreateAnalysis}
+        isCreating={false}
+      />
+    );
 
     const flexbox = screen.getByTestId("ui5-flexbox");
 
@@ -91,12 +111,17 @@ describe("CreateAnalysis", () => {
   });
 
   it("should disable buttons and show creating state when isCreating is true", () => {
-    render(<CreateAnalysis onCreateAnalysis={mockOnCreateAnalysis} isCreating={true} />);
+    render(
+      <CreateAnalysis
+        onCreateAnalysis={mockOnCreateAnalysis}
+        isCreating={true}
+      />
+    );
 
     fireEvent.click(screen.getByTestId("ui5-flexbox"));
-    
+
     expect(screen.getByTestId("app-modal")).toBeInTheDocument();
-    
+
     expect(screen.getByTestId("modal-action-cancel")).toBeDisabled();
     expect(screen.getByTestId("modal-action-creating...")).toBeDisabled();
     expect(screen.getByText("Creating...")).toBeInTheDocument();

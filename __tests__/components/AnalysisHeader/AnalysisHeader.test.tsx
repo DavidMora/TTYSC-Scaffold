@@ -61,7 +61,7 @@ jest.mock("@/components/AnalysisHeader/CreateAnalysis", () => ({
   },
 }));
 
-jest.mock("@/components/Modal/ConfirmationModal", () => {
+jest.mock("@/components/Modals/ConfirmationModal", () => {
   return function MockConfirmationModal({
     isOpen,
     title,
