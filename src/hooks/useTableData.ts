@@ -6,6 +6,7 @@ import {
   TableToolbarFilter,
   FilterOption,
 } from "@/lib/types/datatable";
+import { getValueByAccessor } from "@/lib/utils/tableHelpers";
 
 interface UseTableDataProps {
   rows: TableDataRow[];
@@ -112,19 +113,6 @@ function buildSearchText(
     })
     .join(" ")
     .toLowerCase();
-}
-
-// Helper function to get value by accessor path
-function getValueByAccessor(obj: TableDataRow, accessor: string): unknown {
-  return accessor
-    .split(".")
-    .reduce(
-      (acc: unknown, key) =>
-        acc && typeof acc === "object" && acc !== null && key in acc
-          ? (acc as Record<string, unknown>)[key]
-          : undefined,
-      obj
-    );
 }
 
 // Apply filters to rows

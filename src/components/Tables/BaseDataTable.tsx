@@ -18,11 +18,8 @@ import "@ui5/webcomponents/dist/TableHeaderCell.js";
 import { twMerge } from "tailwind-merge";
 import TableToolbar from "@/components/Tables/TableToolbar";
 import { useTableData } from "@/hooks/useTableData";
-import {
-  TableDataProps,
-  TableDataRow,
-  TableDataRowPrimitive,
-} from "@/lib/types/datatable";
+import { TableDataProps, TableDataRow } from "@/lib/types/datatable";
+import { getFormattedValueByAccessor } from "@/lib/utils/tableHelpers";
 
 function getIdentifier(
   row: TableDataRow,
@@ -35,10 +32,9 @@ function getRowKey(row: TableDataRow, identifier: string | undefined): string {
   const value = getIdentifier(row, identifier);
 
   if (value === undefined || value === null) {
-    console.warn(`Row identifier "${identifier}" not found in row data`);
-    console.warn("Row data:", row);
-    console.warn("identifier:", identifier);
-    console.warn("value:", value);
+    if (process.env.NODE_ENV === "development") {
+      console.warn(`Row identifier "${identifier}" not found in row data`);
+    }
     return "";
   }
 
@@ -47,29 +43,6 @@ function getRowKey(row: TableDataRow, identifier: string | undefined): string {
   }
 
   return String(value);
-}
-
-function getValueByAccessor(
-  obj: TableDataRow,
-  accessor: string
-): TableDataRowPrimitive | undefined {
-  const value = accessor
-    .split(".")
-    .reduce(
-      (acc: TableDataRowPrimitive | TableDataRow | undefined, key) =>
-        acc && typeof acc === "object"
-          ? (acc[key] as TableDataRowPrimitive | TableDataRow | undefined)
-          : undefined,
-      obj
-    ) as TableDataRowPrimitive | undefined;
-
-  if (value === null || value === undefined) {
-    return "";
-  } else if (typeof value === "object") {
-    return JSON.stringify(value);
-  } else {
-    return String(value);
-  }
 }
 
 const BaseDataTable: React.FC<Readonly<TableDataProps>> = (props) => {
@@ -125,7 +98,10 @@ const BaseDataTable: React.FC<Readonly<TableDataProps>> = (props) => {
           return (
             <TableRow key={rowKey} rowKey={rowKey}>
               {props.data?.headers.map((column) => {
-                const value = getValueByAccessor(row, column.accessorKey);
+                const value = getFormattedValueByAccessor(
+                  row,
+                  column.accessorKey
+                );
                 return (
                   <TableCell key={column.accessorKey}>
                     <span>{value}</span>
