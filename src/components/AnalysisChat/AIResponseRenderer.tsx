@@ -8,7 +8,7 @@ interface AIResponseRendererProps {
   content: string;
 }
 
-const BLOCK_REGEX = /```(\w+)?\n([\s\S]*?)```|\[SHOW_TABLE\]/gi;
+const BLOCK_REGEX = /```(\w+)?\n?([\s\S]*?)```|\[SHOW_TABLE\]/gi;
 
 const textStyle = {
   fontSize: "var(--sapFontSize)",
@@ -24,9 +24,8 @@ export function AIResponseRenderer({
 
     let lastIndex = 0;
     const parts = [];
-    let match;
 
-    while ((match = BLOCK_REGEX.exec(content)) !== null) {
+    for (const match of content.matchAll(BLOCK_REGEX)) {
       if (match.index > lastIndex) {
         parts.push({
           type: "text",
