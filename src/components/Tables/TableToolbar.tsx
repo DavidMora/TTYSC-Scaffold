@@ -12,28 +12,107 @@ import {
   FlexBox,
   Ui5CustomEvent,
   InputDomRef,
+  Select,
+  DatePicker,
+  Option,
 } from "@ui5/webcomponents-react";
 import { ExportMenu } from "@/components/ExportMenu";
-
-interface TableToolbarProps {
-  className?: string;
-  title?: string;
-  tableId?: string;
-  onSearch?: (searchTerm: string) => void;
-}
+import { Filter, TableToolbarProps } from "@/lib/types/datatable";
+import { twMerge } from "tailwind-merge";
 
 const TableToolbar: React.FC<Readonly<TableToolbarProps>> = ({
   className,
   title = "Final Summary",
   tableId,
+  filters = [],
+  onFilterChange,
   onSearch,
 }) => {
   const [search, setSearch] = useState("");
+  const [filterValues, setFilterValues] = useState<Record<string, string>>(
+    () => {
+      // Inicializar valores de filtros con los valores por defecto
+      const initialValues: Record<string, string> = {};
+      filters.forEach((filter) => {
+        if (filter.value) {
+          initialValues[filter.key] = filter.value;
+        }
+      });
+      return initialValues;
+    }
+  );
 
   const handleSearch = (event: Ui5CustomEvent<InputDomRef, never>) => {
     const searchTerm = event.target.value;
     setSearch(searchTerm);
     onSearch?.(searchTerm);
+  };
+
+  const handleFilterChange = (filterKey: string, value: string) => {
+    setFilterValues((prev) => ({
+      ...prev,
+      [filterKey]: value,
+    }));
+
+    if (onFilterChange) {
+      onFilterChange({ filterKey, value });
+    }
+  };
+
+  const handleSelectChange =
+    (filterKey: string) =>
+    (
+      event: Ui5CustomEvent<
+        HTMLElement,
+        { selectedOption?: { value?: string } }
+      >
+    ) => {
+      const value = event.detail.selectedOption?.value || "";
+      handleFilterChange(filterKey, value);
+    };
+
+  const handleDateChange =
+    (filterKey: string) =>
+    (event: Ui5CustomEvent<HTMLElement, { value?: string }>) => {
+      const value = event.detail.value || "";
+      handleFilterChange(filterKey, value);
+    };
+
+  const renderFilter = (filter: Filter) => {
+    const currentValue = filterValues[filter.key] || "";
+
+    if (filter.type === "select") {
+      return (
+        <Select
+          key={filter.key}
+          onChange={handleSelectChange(filter.key)}
+          valueState="None"
+          value={currentValue}
+        >
+          {filter.placeholder && <Option value="">{filter.placeholder}</Option>}
+          {filter.options.map((option) => (
+            <Option key={option.value} value={option.value}>
+              {option.text}
+            </Option>
+          ))}
+        </Select>
+      );
+    }
+
+    if (filter.type === "date") {
+      return (
+        <DatePicker
+          key={filter.key}
+          onChange={handleDateChange(filter.key)}
+          primaryCalendarType="Gregorian"
+          valueState="None"
+          value={currentValue}
+          placeholder={filter.placeholder}
+        />
+      );
+    }
+
+    return null;
   };
 
   const handleShare = () => {
@@ -49,14 +128,9 @@ const TableToolbar: React.FC<Readonly<TableToolbarProps>> = ({
   };
 
   return (
-    <Toolbar
-      className={className}
-      style={{
-        borderBottom: "1px solid var(--sapList_HeaderBorderColor)",
-        paddingInline: "0.75rem",
-      }}
-    >
+    <Toolbar alignContent="Start" className={twMerge("py-6 px-4", className)}>
       <Title level="H2">{title}</Title>
+      {filters.map((filter) => renderFilter(filter))}
       <ToolbarSpacer />
       <Input
         icon={
@@ -64,12 +138,18 @@ const TableToolbar: React.FC<Readonly<TableToolbarProps>> = ({
             <Icon name="search" />
           </FlexBox>
         }
+        value={search}
+        onChange={handleSearch}
+        onClose={function Xs() {}}
+        onInput={handleSearch}
+        onOpen={function Xs() {}}
+        onSelect={function Xs() {}}
+        onSelectionChange={function Xs() {}}
         type="Text"
         placeholder="Search..."
         valueState="None"
-        value={search}
-        onInput={handleSearch}
       />
+      <ToolbarSeparator />
       <ToolbarButton design="Transparent" icon="action" onClick={handleShare} />
       <ToolbarSeparator />
       <ToolbarButton
@@ -79,7 +159,7 @@ const TableToolbar: React.FC<Readonly<TableToolbarProps>> = ({
       />
       <ToolbarSeparator />
       <ExportMenu
-        tableId={tableId || "1"}
+        tableId={tableId?.toString() || "1"}
         buttonText="Export"
         buttonIcon="excel-attachment"
       />

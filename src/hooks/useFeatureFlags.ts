@@ -49,14 +49,22 @@ export function useFeatureFlags() {
 /**
  * Hook to check if a specific feature is enabled
  */
-export function useFeatureFlag(key: FeatureFlagKey): boolean {
-  const { flags } = useFeatureFlags();
-  return flags?.[key] ?? false;
+export function useFeatureFlag(key: FeatureFlagKey): {
+  flag: boolean;
+  loading: boolean;
+  error: string | null;
+} {
+  const { flags, loading, error } = useFeatureFlags();
+  return {
+    flag: flags?.[key] ?? false,
+    loading,
+    error,
+  };
 }
 
 /**
  * Hook specifically for authentication feature flag
  */
 export function useAuthenticationEnabled(): boolean {
-  return useFeatureFlag("enableAuthentication");
+  return useFeatureFlag("enableAuthentication").flag;
 }

@@ -5,7 +5,7 @@ import {
   Text,
   Icon,
 } from "@ui5/webcomponents-react";
-import { ConfirmationModal } from "../Modal/ConfirmationModal";
+import { ConfirmationModal } from "../Modals/ConfirmationModal";
 interface CreateAnalysisProps {
   onCreateAnalysis: () => Promise<unknown>;
   isCreating: boolean;
