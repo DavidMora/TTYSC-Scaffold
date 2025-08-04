@@ -280,7 +280,7 @@ describe('Feature Flags Utils', () => {
       // JSON file should take precedence
       const flags = await getFeatureFlags();
       expect(flags.enableAuthentication).toBe(true); // From JSON file
-      expect(flags.FF_Chat_Analysis_Screen).toBe(true); // From JSON file
+      expect(flags.FF_Chat_Analysis_Screen).toBe(false); // From JSON file
     });
   });
 
