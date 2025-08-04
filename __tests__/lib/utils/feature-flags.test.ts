@@ -9,13 +9,6 @@ import {
   DEFAULT_FLAGS 
 } from '@/lib/utils/feature-flags';
 
-// Mock the dynamic import of feature-flags.json
-jest.mock('@/feature-flags.json', () => ({
-  default: {
-    enableAuthentication: false,
-    FF_Chat_Analysis_Screen: true,
-  },
-}), { virtual: true });
 
 describe('Feature Flags Utils', () => {
   beforeEach(() => {
@@ -269,7 +262,7 @@ describe('Feature Flags Utils', () => {
       const flags = await getFeatureFlags();
       
       // Should return the actual JSON file values
-      expect(flags.enableAuthentication).toBe(false);
+      expect(flags.enableAuthentication).toBe(true);
       expect(flags.FF_Chat_Analysis_Screen).toBe(true);
       
       // Should be cached
@@ -286,7 +279,7 @@ describe('Feature Flags Utils', () => {
       
       // JSON file should take precedence
       const flags = await getFeatureFlags();
-      expect(flags.enableAuthentication).toBe(false); // From JSON file
+      expect(flags.enableAuthentication).toBe(true); // From JSON file
       expect(flags.FF_Chat_Analysis_Screen).toBe(true); // From JSON file
     });
   });
