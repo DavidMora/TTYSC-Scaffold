@@ -9,6 +9,14 @@ import {
   DEFAULT_FLAGS 
 } from '@/lib/utils/feature-flags';
 
+// Mock the dynamic import of feature-flags.json
+jest.mock('@/feature-flags.json', () => ({
+  default: {
+    enableAuthentication: false,
+    FF_Chat_Analysis_Screen: true,
+  },
+}), { virtual: true });
+
 describe('Feature Flags Utils', () => {
   beforeEach(() => {
     // Clear cache before each test

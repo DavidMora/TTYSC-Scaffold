@@ -20,15 +20,15 @@ export function FeatureGate({
 }: FeatureGateProps) {
   const { flag: isEnabled, loading } = useFeatureFlag(flag);
 
+  if (loading) {
+    return <>{loadingFallback}</>;
+  }
+
   if (isEnabled) {
     return <>{children}</>;
   }
 
-  if (!loading) {
-    return <>{fallback}</>;
-  }
-
-  return <>{loadingFallback}</>;
+  return <>{fallback}</>;
 }
 
 interface ConditionalFeatureProps {
