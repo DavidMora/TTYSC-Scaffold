@@ -8,7 +8,7 @@ interface AIResponseRendererProps {
   content: string;
 }
 
-const BLOCK_REGEX = /```(\w+)?\n([\s\S]*?)```|\[SHOW_TABLE\]/gi;
+const BLOCK_REGEX = /```(\w+)?\n?((?:(?!```)[\s\S])*?)```|\[SHOW_TABLE\]/gi;
 
 const textStyle = {
   fontSize: "var(--sapFontSize)",
