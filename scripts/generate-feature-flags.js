@@ -16,6 +16,7 @@ require('dotenv').config({ path: '.env.local' });
 // Define default flags (must match DEFAULT_FLAGS in feature-flags.ts)
 const DEFAULT_FLAGS = {
   enableAuthentication: true,
+  FF_Chat_Analysis_Screen: true,
 };
 
 // Generate flags from environment variables
