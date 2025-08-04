@@ -1,7 +1,8 @@
 import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom";
-import RawDataNavigationItem from "../../../../src/components/AppLayout/SidebarItems/RawDataNavigationItem";
+import { RawDataModalProvider } from "@/contexts/RawDataModalContext";
+import RawDataNavigationItem from "@/components/AppLayout/SidebarItems/RawDataNavigationItem";
 
 // Mock UI5 components
 interface SideNavigationItemProps {
@@ -109,6 +110,27 @@ jest.mock("@ui5/webcomponents-react", () => ({
   Icon: ({ name, slot }: IconProps) => (
     <span data-testid="icon" data-name={name} data-slot={slot} />
   ),
+  Card: ({ children, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
+    <div data-testid="card" {...props}>
+      {children}
+    </div>
+  ),
+  CardHeader: ({
+    titleText,
+    subtitleText,
+    additionalText,
+    ...props
+  }: React.HTMLAttributes<HTMLDivElement> & {
+    titleText?: React.ReactNode;
+    subtitleText?: React.ReactNode;
+    additionalText?: React.ReactNode;
+  }) => (
+    <div data-testid="card-header" {...props}>
+      <span data-testid="card-header-title">{titleText}</span>
+      <span data-testid="card-header-subtitle">{subtitleText}</span>
+      <span data-testid="card-header-additional">{additionalText}</span>
+    </div>
+  ),
 }));
 
 describe("RawDataNavigationItem", () => {
@@ -157,8 +179,12 @@ describe("RawDataNavigationItem", () => {
     jest.clearAllMocks();
   });
 
+  const renderWithProvider = (component: React.ReactElement) => {
+    return render(<RawDataModalProvider>{component}</RawDataModalProvider>);
+  };
+
   it("renders with default props", () => {
-    render(<RawDataNavigationItem />);
+    renderWithProvider(<RawDataNavigationItem />);
 
     expect(screen.getByTestId("side-navigation-item")).toBeInTheDocument();
     expect(screen.getByTestId("side-navigation-item")).toHaveAttribute(
@@ -176,7 +202,9 @@ describe("RawDataNavigationItem", () => {
   });
 
   it("renders with custom rawDataItems", () => {
-    render(<RawDataNavigationItem rawDataItems={mockRawDataItems} />);
+    renderWithProvider(
+      <RawDataNavigationItem rawDataItems={mockRawDataItems} />
+    );
 
     expect(screen.getByText("Select a table to explore")).toBeInTheDocument();
     expect(screen.getByText("Test Table 1")).toBeInTheDocument();
@@ -184,7 +212,9 @@ describe("RawDataNavigationItem", () => {
   });
 
   it("displays the correct initial table information", () => {
-    render(<RawDataNavigationItem rawDataItems={mockRawDataItems} />);
+    renderWithProvider(
+      <RawDataNavigationItem rawDataItems={mockRawDataItems} />
+    );
 
     expect(
       screen.getByText("Showing data from Test Table 1 (Top 100 rows):")
@@ -192,14 +222,18 @@ describe("RawDataNavigationItem", () => {
   });
 
   it("renders all filters for the selected table", () => {
-    render(<RawDataNavigationItem rawDataItems={mockRawDataItems} />);
+    renderWithProvider(
+      <RawDataNavigationItem rawDataItems={mockRawDataItems} />
+    );
 
     expect(screen.getByText("Filter 1")).toBeInTheDocument();
     expect(screen.getByText("Filter 2")).toBeInTheDocument();
   });
 
   it("renders filter options correctly", () => {
-    render(<RawDataNavigationItem rawDataItems={mockRawDataItems} />);
+    renderWithProvider(
+      <RawDataNavigationItem rawDataItems={mockRawDataItems} />
+    );
 
     // Check that "All" options are present
     const allOptions = screen.getAllByText("All");
@@ -213,7 +247,7 @@ describe("RawDataNavigationItem", () => {
   });
 
   it("handles table selection change", async () => {
-    render(
+    renderWithProvider(
       <RawDataNavigationItem
         rawDataItems={mockRawDataItems}
         onDataSelection={mockOnDataSelection}
@@ -233,7 +267,7 @@ describe("RawDataNavigationItem", () => {
   });
 
   it("resets filter selections when changing table", async () => {
-    render(
+    renderWithProvider(
       <RawDataNavigationItem
         rawDataItems={mockRawDataItems}
         onDataSelection={mockOnDataSelection}
@@ -259,7 +293,7 @@ describe("RawDataNavigationItem", () => {
   });
 
   it("handles filter selection change", () => {
-    render(
+    renderWithProvider(
       <RawDataNavigationItem
         rawDataItems={mockRawDataItems}
         onDataSelection={mockOnDataSelection}
@@ -277,7 +311,7 @@ describe("RawDataNavigationItem", () => {
   });
 
   it("handles multiple filter selections", () => {
-    render(
+    renderWithProvider(
       <RawDataNavigationItem
         rawDataItems={mockRawDataItems}
         onDataSelection={mockOnDataSelection}
@@ -301,7 +335,7 @@ describe("RawDataNavigationItem", () => {
   });
 
   it("handles invalid table selection gracefully", () => {
-    render(
+    renderWithProvider(
       <RawDataNavigationItem
         rawDataItems={mockRawDataItems}
         onDataSelection={mockOnDataSelection}
@@ -319,7 +353,7 @@ describe("RawDataNavigationItem", () => {
   });
 
   it("handles filter change with empty value gracefully", () => {
-    render(
+    renderWithProvider(
       <RawDataNavigationItem
         rawDataItems={mockRawDataItems}
         onDataSelection={mockOnDataSelection}
@@ -337,7 +371,7 @@ describe("RawDataNavigationItem", () => {
   });
 
   it("renders with default data when no rawDataItems provided", () => {
-    render(<RawDataNavigationItem />);
+    renderWithProvider(<RawDataNavigationItem />);
 
     expect(screen.getByText("Demand During Lead Time")).toBeInTheDocument();
     expect(screen.getByText("Another Table")).toBeInTheDocument();
@@ -348,7 +382,9 @@ describe("RawDataNavigationItem", () => {
   });
 
   it("works without onDataSelection callback", () => {
-    render(<RawDataNavigationItem rawDataItems={mockRawDataItems} />);
+    renderWithProvider(
+      <RawDataNavigationItem rawDataItems={mockRawDataItems} />
+    );
 
     const tableSelect = screen.getAllByTestId("select")[0];
 
@@ -359,7 +395,9 @@ describe("RawDataNavigationItem", () => {
   });
 
   it("applies correct CSS classes", () => {
-    render(<RawDataNavigationItem rawDataItems={mockRawDataItems} />);
+    renderWithProvider(
+      <RawDataNavigationItem rawDataItems={mockRawDataItems} />
+    );
 
     const flexBoxes = screen.getAllByTestId("flex-box");
     const mainFlexBox = flexBoxes[0];
@@ -372,7 +410,7 @@ describe("RawDataNavigationItem", () => {
   });
 
   it("handles NaN conversion gracefully", () => {
-    render(
+    renderWithProvider(
       <RawDataNavigationItem
         rawDataItems={mockRawDataItems}
         onDataSelection={mockOnDataSelection}
@@ -389,7 +427,7 @@ describe("RawDataNavigationItem", () => {
   });
 
   it("updates filter selections state correctly", () => {
-    render(
+    renderWithProvider(
       <RawDataNavigationItem
         rawDataItems={mockRawDataItems}
         onDataSelection={mockOnDataSelection}
@@ -410,7 +448,7 @@ describe("RawDataNavigationItem", () => {
   });
 
   it("handles undefined or null values in event detail gracefully", () => {
-    render(
+    renderWithProvider(
       <RawDataNavigationItem
         rawDataItems={mockRawDataItems}
         onDataSelection={mockOnDataSelection}
@@ -428,7 +466,7 @@ describe("RawDataNavigationItem", () => {
   });
 
   it("handles filter change when event detail selectedOption value is undefined", () => {
-    render(
+    renderWithProvider(
       <RawDataNavigationItem
         rawDataItems={mockRawDataItems}
         onDataSelection={mockOnDataSelection}
@@ -448,7 +486,7 @@ describe("RawDataNavigationItem", () => {
   });
 
   it("handles NaN value in handleRawDataChange (covers else branch)", () => {
-    render(
+    renderWithProvider(
       <RawDataNavigationItem
         rawDataItems={mockRawDataItems}
         onDataSelection={mockOnDataSelection}
@@ -469,7 +507,7 @@ describe("RawDataNavigationItem", () => {
   });
 
   it("covers nullish coalescing operator on line 141", () => {
-    render(
+    renderWithProvider(
       <RawDataNavigationItem
         rawDataItems={mockRawDataItems}
         onDataSelection={mockOnDataSelection}
@@ -491,7 +529,7 @@ describe("RawDataNavigationItem", () => {
   });
 
   it("covers nullish coalescing operator with undefined value", () => {
-    render(
+    renderWithProvider(
       <RawDataNavigationItem
         rawDataItems={mockRawDataItems}
         onDataSelection={mockOnDataSelection}
@@ -513,7 +551,7 @@ describe("RawDataNavigationItem", () => {
   });
 
   it("tests both branches of nullish coalescing operator", () => {
-    render(
+    renderWithProvider(
       <RawDataNavigationItem
         rawDataItems={mockRawDataItems}
         onDataSelection={mockOnDataSelection}
@@ -548,7 +586,7 @@ describe("RawDataNavigationItem", () => {
   });
 
   it("handles table change with undefined detail selectedOption value", () => {
-    render(
+    renderWithProvider(
       <RawDataNavigationItem
         rawDataItems={mockRawDataItems}
         onDataSelection={mockOnDataSelection}
@@ -567,7 +605,7 @@ describe("RawDataNavigationItem", () => {
   });
 
   it("handles filter change with undefined detail selectedOption value", () => {
-    render(
+    renderWithProvider(
       <RawDataNavigationItem
         rawDataItems={mockRawDataItems}
         onDataSelection={mockOnDataSelection}
@@ -617,14 +655,14 @@ describe("RawDataNavigationItem", () => {
       return <div>test</div>;
     };
 
-    render(<TestComponent />);
+    renderWithProvider(<TestComponent />);
 
     // The parseInt(null ?? "") will result in NaN, but the function should still be called
     expect(mockOnDataSelection).toHaveBeenCalled();
   });
 
   it("renders 'No data available' when rawDataItems is empty array", () => {
-    render(<RawDataNavigationItem rawDataItems={[]} />);
+    renderWithProvider(<RawDataNavigationItem rawDataItems={[]} />);
 
     expect(screen.getByText("No data available")).toBeInTheDocument();
     expect(screen.getByTestId("side-navigation-item")).toHaveAttribute(
@@ -643,7 +681,7 @@ describe("RawDataNavigationItem", () => {
 
   it("handles filter change when selectedRawData is null", () => {
     // First render with empty array to get null selectedRawData
-    render(<RawDataNavigationItem rawDataItems={[]} />);
+    renderWithProvider(<RawDataNavigationItem rawDataItems={[]} />);
 
     // Verify we're in the "No data available" state
     expect(screen.getByText("No data available")).toBeInTheDocument();
@@ -658,7 +696,7 @@ describe("RawDataNavigationItem", () => {
   it("covers the case where rawDataItems.length is 0 in useState initialization", () => {
     // This test specifically covers the ternary operator in useState initialization
     // rawDataItems.length > 0 ? rawDataItems[0] : null
-    render(<RawDataNavigationItem rawDataItems={[]} />);
+    renderWithProvider(<RawDataNavigationItem rawDataItems={[]} />);
 
     // When rawDataItems is empty, selectedRawData should be null
     // and we should see the "No data available" fallback
@@ -693,7 +731,7 @@ describe("RawDataNavigationItem", () => {
       return <div data-testid="test-wrapper">Test</div>;
     };
 
-    render(<TestWrapper />);
+    renderWithProvider(<TestWrapper />);
 
     expect(screen.getByTestId("test-wrapper")).toBeInTheDocument();
     // Verify that mockOnDataSelection was not called due to early return
@@ -702,7 +740,7 @@ describe("RawDataNavigationItem", () => {
 
   it("covers edge case with dynamic rawDataItems that become empty", () => {
     // Test the component with empty array from the start to ensure proper initialization
-    render(
+    renderWithProvider(
       <RawDataNavigationItem
         rawDataItems={[]}
         onDataSelection={mockOnDataSelection}
@@ -757,7 +795,7 @@ describe("RawDataNavigationItem", () => {
       );
     };
 
-    render(<TestComponent />);
+    renderWithProvider(<TestComponent />);
 
     // Verify initial state
     expect(screen.getByText("no data")).toBeInTheDocument();
@@ -773,7 +811,7 @@ describe("RawDataNavigationItem", () => {
   });
 
   it("exercises complete onChange handler paths", () => {
-    render(
+    renderWithProvider(
       <RawDataNavigationItem
         rawDataItems={mockRawDataItems}
         onDataSelection={mockOnDataSelection}
@@ -807,7 +845,7 @@ describe("RawDataNavigationItem", () => {
   });
 
   it("covers Select onChange handler with complex event structure", () => {
-    render(
+    renderWithProvider(
       <RawDataNavigationItem
         rawDataItems={mockRawDataItems}
         onDataSelection={mockOnDataSelection}
@@ -826,7 +864,7 @@ describe("RawDataNavigationItem", () => {
     expect(mockOnDataSelection).toHaveBeenCalledWith(mockRawDataItems[0], {});
   });
 
-  it("achieves 100% coverage by testing all remaining edge cases", () => {
+  it("covers edge cases for filters with empty values array and all/empty selections", () => {
     // Test with a custom mock to force specific branches
     const customMockRawDataItems = [
       {
@@ -842,7 +880,7 @@ describe("RawDataNavigationItem", () => {
       },
     ];
 
-    render(
+    renderWithProvider(
       <RawDataNavigationItem
         rawDataItems={customMockRawDataItems}
         onDataSelection={mockOnDataSelection}
@@ -878,7 +916,7 @@ describe("RawDataNavigationItem", () => {
       },
     ];
 
-    render(
+    renderWithProvider(
       <RawDataNavigationItem
         rawDataItems={edgeCaseData}
         onDataSelection={mockOnDataSelection}
@@ -897,7 +935,9 @@ describe("RawDataNavigationItem", () => {
   });
 
   it("covers filter values mapping in the render method", () => {
-    render(<RawDataNavigationItem rawDataItems={mockRawDataItems} />);
+    renderWithProvider(
+      <RawDataNavigationItem rawDataItems={mockRawDataItems} />
+    );
 
     // This test ensures all the filter values are rendered for the first table,
     // covering the map function and the Option creation for each filter value
@@ -917,5 +957,47 @@ describe("RawDataNavigationItem", () => {
     // Verify the key and value attributes are set correctly
     const options = screen.getAllByRole("option");
     expect(options.length).toBeGreaterThan(0);
+  });
+
+  describe("Card button interaction", () => {
+    const consoleSpy = jest.spyOn(console, "log").mockImplementation(() => {});
+
+    afterEach(() => {
+      consoleSpy.mockClear();
+    });
+
+    afterAll(() => {
+      consoleSpy.mockRestore();
+    });
+
+    it("should log when card button is clicked", () => {
+      render(
+        <RawDataModalProvider>
+          <RawDataNavigationItem />
+        </RawDataModalProvider>
+      );
+
+      const cardButton = screen.getByRole("button", {
+        name: /expand raw data table/i,
+      });
+      fireEvent.click(cardButton);
+
+      expect(consoleSpy).toHaveBeenCalledWith("Card clicked");
+    });
+
+    it("should have proper accessibility attributes on card button", () => {
+      render(
+        <RawDataModalProvider>
+          <RawDataNavigationItem />
+        </RawDataModalProvider>
+      );
+
+      const cardButton = screen.getByRole("button", {
+        name: /expand raw data table/i,
+      });
+      expect(cardButton).toHaveAttribute("tabIndex", "0");
+      expect(cardButton).toHaveAttribute("aria-label", "Expand raw data table");
+      expect(cardButton).toHaveTextContent("View");
+    });
   });
 });

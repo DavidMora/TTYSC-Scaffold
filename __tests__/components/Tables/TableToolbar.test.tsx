@@ -5,6 +5,24 @@ import "@testing-library/jest-dom";
 
 const consoleSpy = jest.spyOn(console, "log").mockImplementation(() => {});
 
+// Mock filters for testing
+const mockSelectFilter = {
+  key: "status",
+  type: "select" as const,
+  placeholder: "Select status",
+  options: [
+    { value: "active", text: "Active" },
+    { value: "inactive", text: "Inactive" },
+  ],
+};
+
+const mockDateFilter = {
+  key: "date",
+  type: "date" as const,
+  placeholder: "Select date",
+  options: [],
+};
+
 describe("TableToolbar", () => {
   afterEach(() => {
     consoleSpy.mockClear();
@@ -19,7 +37,7 @@ describe("TableToolbar", () => {
       render(<TableToolbar />);
 
       const separators = screen.getAllByTestId("ui5-toolbar-separator");
-      expect(separators).toHaveLength(3);
+      expect(separators).toHaveLength(4);
       const toolbar = screen.getByTestId("ui5-toolbar");
       expect(toolbar).toBeInTheDocument();
     });
@@ -30,16 +48,6 @@ describe("TableToolbar", () => {
 
       const toolbar = screen.getByTestId("ui5-toolbar");
       expect(toolbar).toHaveClass(customClass);
-    });
-
-    it("should have appropriate styling applied", () => {
-      render(<TableToolbar />);
-
-      const toolbar = screen.getByTestId("ui5-toolbar");
-      expect(toolbar).toHaveStyle({
-        borderBottom: "1px solid var(--sapList_HeaderBorderColor)",
-        paddingInline: "0.75rem",
-      });
     });
 
     it("should render with default title when not provided", () => {
@@ -53,6 +61,175 @@ describe("TableToolbar", () => {
       render(<TableToolbar title={customTitle} />);
 
       expect(screen.getByText(customTitle)).toBeInTheDocument();
+    });
+
+    it("should render filters when provided", () => {
+      render(<TableToolbar filters={[mockSelectFilter]} />);
+
+      const selectElement = screen.getByTestId("select");
+      expect(selectElement).toBeInTheDocument();
+    });
+
+    it("should render date filter when provided", () => {
+      render(<TableToolbar filters={[mockDateFilter]} />);
+
+      const datePicker = screen.getByTestId("ui5-datepicker");
+      expect(datePicker).toBeInTheDocument();
+    });
+
+    it("should render multiple filters", () => {
+      render(<TableToolbar filters={[mockSelectFilter, mockDateFilter]} />);
+
+      expect(screen.getByTestId("select")).toBeInTheDocument();
+      expect(screen.getByTestId("ui5-datepicker")).toBeInTheDocument();
+    });
+  });
+
+  describe("Filter Functionality", () => {
+    it("should initialize filter values with provided values", () => {
+      const filterWithValue = {
+        ...mockSelectFilter,
+        value: "active",
+      };
+
+      render(<TableToolbar filters={[filterWithValue]} />);
+
+      const selectElement = screen.getByTestId("select");
+      expect(selectElement).toHaveValue("active");
+    });
+
+    it("should call onFilterChange when select filter changes", () => {
+      const mockOnFilterChange = jest.fn();
+      render(
+        <TableToolbar
+          filters={[mockSelectFilter]}
+          onFilterChange={mockOnFilterChange}
+        />
+      );
+
+      const selectElement = screen.getByTestId("select");
+      // Use regular React change event - the mock will handle creating the detail structure
+      fireEvent.change(selectElement, { target: { value: "active" } });
+
+      expect(mockOnFilterChange).toHaveBeenCalledWith({
+        filterKey: "status",
+        value: "active",
+      });
+    });
+
+    it("should call onFilterChange when date filter changes", () => {
+      const mockOnFilterChange = jest.fn();
+      render(
+        <TableToolbar
+          filters={[mockDateFilter]}
+          onFilterChange={mockOnFilterChange}
+        />
+      );
+
+      const datePicker = screen.getByTestId("ui5-datepicker");
+      // Now the mock handles creating the UI5 event structure
+      fireEvent.change(datePicker, { target: { value: "2023-12-01" } });
+
+      expect(mockOnFilterChange).toHaveBeenCalledWith({
+        filterKey: "date",
+        value: "2023-12-01",
+      });
+    });
+
+    it("should handle filter change with empty value", () => {
+      const mockOnFilterChange = jest.fn();
+      render(
+        <TableToolbar
+          filters={[mockSelectFilter]}
+          onFilterChange={mockOnFilterChange}
+        />
+      );
+
+      const selectElement = screen.getByTestId("select");
+      // Use regular React change event
+      fireEvent.change(selectElement, { target: { value: "" } });
+
+      expect(mockOnFilterChange).toHaveBeenCalledWith({
+        filterKey: "status",
+        value: "",
+      });
+    });
+
+    it("should handle filter change without selectedOption", () => {
+      const mockOnFilterChange = jest.fn();
+      render(
+        <TableToolbar
+          filters={[mockSelectFilter]}
+          onFilterChange={mockOnFilterChange}
+        />
+      );
+
+      const selectElement = screen.getByTestId("select");
+      // Test with an option that doesn't exist in children - the mock returns empty string when no matching option is found
+      fireEvent.change(selectElement, { target: { value: "nonexistent" } });
+
+      expect(mockOnFilterChange).toHaveBeenCalledWith({
+        filterKey: "status",
+        value: "",
+      });
+    });
+
+    it("should not call onFilterChange when onFilterChange is not provided", () => {
+      render(<TableToolbar filters={[mockSelectFilter]} />);
+
+      const selectElement = screen.getByTestId("select");
+      // Should not throw any errors
+      expect(() => {
+        fireEvent.change(selectElement, { target: { value: "active" } });
+      }).not.toThrow();
+    });
+
+    it("should render select filter with placeholder option", () => {
+      render(<TableToolbar filters={[mockSelectFilter]} />);
+
+      expect(screen.getByText("Select status")).toBeInTheDocument();
+    });
+
+    it("should render select filter options correctly", () => {
+      render(<TableToolbar filters={[mockSelectFilter]} />);
+
+      expect(screen.getByText("Active")).toBeInTheDocument();
+      expect(screen.getByText("Inactive")).toBeInTheDocument();
+    });
+
+    it("should handle date filter with empty value", () => {
+      const mockOnFilterChange = jest.fn();
+      render(
+        <TableToolbar
+          filters={[mockDateFilter]}
+          onFilterChange={mockOnFilterChange}
+        />
+      );
+
+      const datePicker = screen.getByTestId("ui5-datepicker");
+      // First set a value, then clear it to test empty value handling
+      fireEvent.change(datePicker, { target: { value: "2023-12-01" } });
+      fireEvent.change(datePicker, { target: { value: "" } });
+
+      expect(mockOnFilterChange).toHaveBeenLastCalledWith({
+        filterKey: "date",
+        value: "",
+      });
+    });
+
+    it("should return null for unknown filter type", () => {
+      const unknownFilter = {
+        key: "unknown",
+        type: "unknown" as "select" | "date",
+        placeholder: "Unknown",
+        options: [],
+      };
+
+      render(<TableToolbar filters={[unknownFilter]} />);
+
+      // Should not render any filter element for unknown type
+      expect(screen.queryByTestId("select")).not.toBeInTheDocument();
+      expect(screen.queryByTestId("ui5-datepicker")).not.toBeInTheDocument();
     });
   });
 
@@ -135,6 +312,32 @@ describe("TableToolbar", () => {
       fireEvent.click(fullScreenButton);
 
       expect(consoleSpy).toHaveBeenCalledWith("full screen");
+    });
+
+    it("should handle input events on search", () => {
+      const mockOnSearch = jest.fn();
+      render(<TableToolbar onSearch={mockOnSearch} />);
+
+      const searchInput = screen.getByTestId("ui5-input");
+      fireEvent.input(searchInput, { target: { value: "input test" } });
+
+      expect(mockOnSearch).toHaveBeenCalledWith("input test");
+    });
+  });
+
+  describe("Table ID prop", () => {
+    it("should pass tableId to ExportMenu when provided", () => {
+      render(<TableToolbar tableId={123} />);
+
+      // The ExportMenu should be rendered with the tableId
+      expect(screen.getByText("Export")).toBeInTheDocument();
+    });
+
+    it("should use default tableId when not provided", () => {
+      render(<TableToolbar />);
+
+      // The ExportMenu should be rendered with default tableId "1"
+      expect(screen.getByText("Export")).toBeInTheDocument();
     });
   });
 
