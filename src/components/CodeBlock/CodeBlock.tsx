@@ -16,7 +16,6 @@ import "prismjs/components/prism-sql";
 interface CodeBlockProps {
   code: string;
   language?: string;
-  title?: string;
   showLineNumbers?: boolean;
 }
 
