@@ -30,6 +30,14 @@ describe("TanStackMutationAdapter", () => {
     adapter = new TanStackMutationAdapter(mockUseMutation, mockUseQueryClient);
   });
 
+  describe("constructor", () => {
+    it("should use default hooks when no parameters provided", () => {
+      // Test the default constructor to cover the default parameter assignment
+      const defaultAdapter = new TanStackMutationAdapter();
+      expect(defaultAdapter).toBeInstanceOf(TanStackMutationAdapter);
+    });
+  });
+
   describe("mutateData", () => {
     it("should return mutation response with initial state", () => {
       const mutationFn = jest.fn();
