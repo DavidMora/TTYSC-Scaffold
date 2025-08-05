@@ -61,7 +61,6 @@ export function AIResponseBubble({ message }: Readonly<AIResponseBubbleProps>) {
       >
         {parseDate(message.created)}
       </Text>
-
       <AIResponseRenderer content={message.content} />
     </div>
   );
