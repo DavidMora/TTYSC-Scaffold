@@ -35,7 +35,7 @@ const TableToolbar: React.FC<Readonly<TableToolbarProps>> = ({
   const [search, setSearch] = useState("");
   const [filterValues, setFilterValues] = useState<Record<string, string>>(
     () => {
-      // Inicializar valores de filtros con los valores por defecto
+      // Initialize filter values with default values
       const initialValues: Record<string, string> = {};
       filters.forEach((filter) => {
         if (filter.value) {
@@ -146,11 +146,7 @@ const TableToolbar: React.FC<Readonly<TableToolbarProps>> = ({
         }
         value={search}
         onChange={handleSearch}
-        onClose={function Xs() {}}
         onInput={handleSearch}
-        onOpen={function Xs() {}}
-        onSelect={function Xs() {}}
-        onSelectionChange={function Xs() {}}
         type="Text"
         placeholder="Search..."
         valueState="None"
