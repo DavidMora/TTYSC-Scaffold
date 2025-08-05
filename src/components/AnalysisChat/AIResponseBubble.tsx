@@ -5,6 +5,8 @@ import { parseDate } from "@/lib/utils/dateUtils";
 import { FeedbackVote } from "@/components/FeedbackVote/FeedbackVote";
 import { tableData } from "@/lib/constants/mocks/dataTable";
 import BaseDataTable from "@/components/Tables/BaseDataTable";
+import { AIChart } from "../AIChart/AIChart";
+import { AIChartExamples } from "@/lib/constants/mocks/aiChart";
 
 interface AIResponseBubbleProps {
   message: ChatMessage;
@@ -15,11 +17,6 @@ export function AIResponseBubble({
   message,
   showTable,
 }: Readonly<AIResponseBubbleProps>) {
-  // Mocking the table to show 20% of the time
-  const mockTableDisplayFrequency = 0.2;
-  const shouldShowTable =
-    showTable ?? parseInt(message.id) % 10 < mockTableDisplayFrequency * 10;
-
   return (
     <div
       style={{
@@ -81,7 +78,20 @@ export function AIResponseBubble({
         {message.content}
       </Text>
 
-      {shouldShowTable && (
+      <div style={{ marginTop: "1rem", width: "100%" }}>
+        <AIChart data={AIChartExamples.bar} />
+        <AIChart data={AIChartExamples.line} />
+        <AIChart data={AIChartExamples.area} />
+        <AIChart data={AIChartExamples.pie} />
+        <AIChart data={AIChartExamples.doughnut} />
+        <AIChart data={AIChartExamples.column} />
+        <AIChart data={AIChartExamples.bullet} />
+        <AIChart data={AIChartExamples.columnWithTrend} />
+        <AIChart data={AIChartExamples.composed} />
+        <AIChart data={AIChartExamples.radar} />
+      </div>
+
+      {showTable && (
         <div
           style={{ marginTop: "1rem", width: "100%" }}
           data-testid="base-data-table"
