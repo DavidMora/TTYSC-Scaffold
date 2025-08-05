@@ -7,9 +7,9 @@ import "@ui5/webcomponents-icons/dist/arrow-left.js";
 
 export default function FullscreenLayout({
   children,
-}: {
-  children: Readonly<React.ReactNode>;
-}) {
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
   const router = useRouter();
 
   const handleBack = () => {
