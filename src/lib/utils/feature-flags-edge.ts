@@ -1,11 +1,7 @@
 import { FeatureFlags, FeatureFlagKey } from "@/lib/types/feature-flags";
+import { DEFAULT_FLAGS } from "./feature-flags";
 
 // Default values if no configuration exists
-const DEFAULT_FLAGS: FeatureFlags = {
-  enableAuthentication: true,
-  FF_Chat_Analysis_Screen: true,
-};
-
 /**
  * Edge-compatible version that reads feature flags from environment variables
  * Used in middleware and other edge contexts
@@ -17,8 +13,7 @@ export function loadFeatureFlagsEdge(): FeatureFlags {
   try {
     return {
       enableAuthentication: process.env.ENABLE_AUTHENTICATION !== "false",
-      FF_Chat_Analysis_Screen:
-        process.env.FF_Chat_Analysis_Screen !== "false",
+      FF_Chat_Analysis_Screen: DEFAULT_FLAGS.FF_Chat_Analysis_Screen,
     };
   } catch (error) {
     console.warn(
