@@ -3,20 +3,15 @@ import { Text } from "@ui5/webcomponents-react";
 import { ChatMessage } from "@/lib/types/chats";
 import { parseDate } from "@/lib/utils/dateUtils";
 import { FeedbackVote } from "@/components/FeedbackVote/FeedbackVote";
-import { tableData } from "@/lib/constants/mocks/dataTable";
-import BaseDataTable from "@/components/Tables/BaseDataTable";
-import { AIChart } from "../AIChart/AIChart";
+import { AIChart } from "@/components/AIChart/AIChart";
 import { AIChartExamples } from "@/lib/constants/mocks/aiChart";
+import { AIResponseRenderer } from "@/components/AnalysisChat/AIResponseRenderer";
 
 interface AIResponseBubbleProps {
   message: ChatMessage;
-  showTable?: boolean;
 }
 
-export function AIResponseBubble({
-  message,
-  showTable,
-}: Readonly<AIResponseBubbleProps>) {
+export function AIResponseBubble({ message }: Readonly<AIResponseBubbleProps>) {
   return (
     <div
       style={{
@@ -90,15 +85,7 @@ export function AIResponseBubble({
         <AIChart data={AIChartExamples.composed} />
         <AIChart data={AIChartExamples.radar} />
       </div>
-
-      {showTable && (
-        <div
-          style={{ marginTop: "1rem", width: "100%" }}
-          data-testid="base-data-table"
-        >
-          <BaseDataTable data={tableData} tableClassName="h-96" />
-        </div>
-      )}
+      <AIResponseRenderer content={message.content} />
     </div>
   );
 }
