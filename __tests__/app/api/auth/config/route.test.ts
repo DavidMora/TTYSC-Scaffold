@@ -153,8 +153,8 @@ describe("/api/auth/config", () => {
       '[Auth Config] Disabling auto-login due to logout context:',
       {
         hasLoggedOutParam: true,
-        isFromLogout: null,
-        isOnLogoutPage: null,
+        isFromLogout: undefined,
+        isOnLogoutPage: undefined,
         referer: null
       }
     );
