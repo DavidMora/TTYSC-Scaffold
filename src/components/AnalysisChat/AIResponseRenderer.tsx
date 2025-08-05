@@ -4,8 +4,6 @@ import { CodeBlock } from "@/components/CodeBlock/CodeBlock";
 import BaseDataTable from "@/components/Tables/BaseDataTable";
 import { tableData } from "@/lib/constants/mocks/dataTable";
 import { parseContent } from "@/lib/utils/aiContentParser";
-import { AIChart } from "@/components/AIChart/AIChart";
-import { AIChartExamples } from "@/lib/constants/mocks/aiChart";
 interface AIResponseRendererProps {
   content: string;
 }
@@ -98,21 +96,5 @@ export function AIResponseRenderer({
     });
   }, [content]);
 
-  return (
-    <div style={{ width: "100%" }}>
-      {renderedContent}
-      <div style={{ marginTop: "1rem", width: "100%" }}>
-        <AIChart data={AIChartExamples.bar} />
-        <AIChart data={AIChartExamples.line} />
-        <AIChart data={AIChartExamples.area} />
-        <AIChart data={AIChartExamples.pie} />
-        <AIChart data={AIChartExamples.doughnut} />
-        <AIChart data={AIChartExamples.column} />
-        <AIChart data={AIChartExamples.bullet} />
-        <AIChart data={AIChartExamples.columnWithTrend} />
-        <AIChart data={AIChartExamples.composed} />
-        <AIChart data={AIChartExamples.radar} />
-      </div>
-    </div>
-  );
+  return <div style={{ width: "100%" }}>{renderedContent}</div>;
 }
