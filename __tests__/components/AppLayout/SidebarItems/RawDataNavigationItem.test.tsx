@@ -1004,7 +1004,7 @@ describe("RawDataNavigationItem", () => {
 
   // Tests specifically for the missing branch coverage on lines 125, 152, and 178
   it("covers handleFilterChange continuation when selectedRawData exists (line 125)", () => {
-    render(
+    renderWithProvider(
       <RawDataNavigationItem
         rawDataItems={mockRawDataItems}
         onDataSelection={mockOnDataSelection}
@@ -1027,7 +1027,7 @@ describe("RawDataNavigationItem", () => {
   });
 
   it("covers table selection with non-null value (line 152)", () => {
-    render(
+    renderWithProvider(
       <RawDataNavigationItem
         rawDataItems={mockRawDataItems}
         onDataSelection={mockOnDataSelection}
@@ -1046,7 +1046,7 @@ describe("RawDataNavigationItem", () => {
   });
 
   it("covers filter selection with non-null value (line 178)", () => {
-    render(
+    renderWithProvider(
       <RawDataNavigationItem
         rawDataItems={mockRawDataItems}
         onDataSelection={mockOnDataSelection}

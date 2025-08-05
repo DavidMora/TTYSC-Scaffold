@@ -17,8 +17,8 @@ let cachedFlags: FeatureFlags | null = null;
  */
 const loadFromGeneratedFile = async (): Promise<FeatureFlags | null> => {
   try {
-    // Use dynamic import to load the JSON file
-    const featureFlags = await import('@/feature-flags.json');
+    // Use dynamic import to load the JSON file from the root
+    const featureFlags = await import('../../../feature-flags.json');
     return featureFlags.default as FeatureFlags;
   } catch {
     return null;

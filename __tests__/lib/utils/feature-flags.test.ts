@@ -226,7 +226,7 @@ describe("Feature Flags Utils", () => {
       
       // Mock the import to throw an error, forcing the catch block
       const originalImport = global.require;
-      jest.doMock('@/feature-flags.json', () => {
+      jest.doMock('../../../feature-flags.json', () => {
         throw new Error('File not found');
       });
       
@@ -241,7 +241,7 @@ describe("Feature Flags Utils", () => {
       
       // Restore original require
       global.require = originalImport;
-      jest.dontMock('@/feature-flags.json');
+      jest.dontMock('../../../feature-flags.json');
     });
 
     it('should test import failure path by removing the feature-flags.json file from path', async () => {
@@ -268,6 +268,36 @@ describe("Feature Flags Utils", () => {
       expect(flags.FF_Chat_Analysis_Screen).toBe(
         DEFAULT_FLAGS.FF_Chat_Analysis_Screen
       );
+    });
+  });
+
+  describe('JSON file loading success path', () => {
+    it('should successfully load flags from JSON file and cache them', async () => {
+      clearFeatureFlagsCache();
+      
+      // The actual JSON file should be loaded
+      const flags = await getFeatureFlags();
+      
+      // Should return the actual JSON file values
+      expect(flags.enableAuthentication).toBe(true);
+      expect(flags.FF_Chat_Analysis_Screen).toBe(true);
+      
+      // Should be cached
+      const cachedFlags = await getFeatureFlags();
+      expect(cachedFlags).toBe(flags); // Same reference due to caching
+    });
+
+    it('should prioritize JSON file over environment variables', async () => {
+      clearFeatureFlagsCache();
+      
+      // Set environment variables
+      process.env.FEATURE_FLAG_ENABLE_AUTHENTICATION = 'true';
+      process.env.FF_Chat_Analysis_Screen = 'false';
+      
+      // JSON file should take precedence
+      const flags = await getFeatureFlags();
+      expect(flags.enableAuthentication).toBe(true); // From JSON file
+      expect(flags.FF_Chat_Analysis_Screen).toBe(true); // From JSON file
     });
   });
 
