@@ -48,6 +48,98 @@ function getNextAuthCookieNames(): string[] {
 }
 
 /**
+ * Generate all possible domain variations for cookie clearing
+ */
+function getDomainVariations(hostname: string): string[] {
+  const domainParts = hostname.split('.');
+  const domains = [
+    hostname, // exact domain
+    `.${hostname}`, // with leading dot
+  ];
+  
+  // Add parent domains for subdomains
+  if (domainParts.length > 2) {
+    const parentDomain = domainParts.slice(-2).join('.');
+    domains.push(parentDomain, `.${parentDomain}`);
+  }
+  
+  return domains;
+}
+
+/**
+ * Check if a cookie name is auth-related
+ */
+function isAuthRelatedCookie(name: string): boolean {
+  return name.includes('auth') ||
+         name.includes('session') ||
+         name.includes('token') ||
+         name.includes('next-auth') ||
+         name.includes('jwt');
+}
+
+/**
+ * Clear standard auth cookies with all variations
+ */
+function clearStandardAuthCookies(
+  cookieNames: string[],
+  domains: string[],
+  paths: string[],
+  clearCookie: (name: string, path?: string, domain?: string, sameSite?: string, secure?: boolean) => void
+): void {
+  for (const cookieName of cookieNames) {
+    // Clear with all domain/path combinations
+    for (const domain of domains) {
+      for (const path of paths) {
+        // Clear with different SameSite and Secure combinations
+        clearCookie(cookieName, path, domain, 'Lax');
+        clearCookie(cookieName, path, domain, 'Strict');
+        clearCookie(cookieName, path, domain, undefined, true);
+        clearCookie(cookieName, path, domain, 'None', true);
+      }
+      // Clear without path
+      clearCookie(cookieName, undefined, domain);
+    }
+    
+    // Clear without domain
+    for (const path of paths) {
+      clearCookie(cookieName, path);
+    }
+    
+    // Clear with minimal attributes
+    clearCookie(cookieName);
+  }
+}
+
+/**
+ * Clear any remaining auth-related cookies found in document.cookie
+ */
+function clearRemainingAuthCookies(
+  cookieString: string,
+  domains: string[],
+  paths: string[],
+  clearCookie: (name: string, path?: string, domain?: string, sameSite?: string, secure?: boolean) => void
+): void {
+  const existingCookies = cookieString.split(';');
+  
+  for (const cookie of existingCookies) {
+    const [name] = cookie.split('=');
+    const trimmedName = name?.trim();
+    
+    if (!trimmedName || !isAuthRelatedCookie(trimmedName)) {
+      continue;
+    }
+
+    // Clear the auth-related cookie with all domain/path combinations
+    for (const domain of domains) {
+      for (const path of paths) {
+        clearCookie(trimmedName, path, domain);
+      }
+    }
+    clearCookie(trimmedName);
+  }
+}
+
+/**
  * Create token cleanup utilities with dependency injection
  */
 export function createTokenCleanup(options: TokenCleanupOptions = {}) {
@@ -68,22 +160,7 @@ export function createTokenCleanup(options: TokenCleanupOptions = {}) {
       if (!windowObj || !doc || !location) return;
       
       const cookieNames = getNextAuthCookieNames();
-      const hostname = location.hostname;
-      const domainParts = hostname.split('.');
-      
-      // Generate all possible domain variations
-      const domains = [
-        hostname, // exact domain
-        `.${hostname}`, // with leading dot
-      ];
-      
-      // Add parent domains for subdomains
-      if (domainParts.length > 2) {
-        const parentDomain = domainParts.slice(-2).join('.');
-        domains.push(parentDomain, `.${parentDomain}`);
-      }
-      
-      // Common paths where cookies might be set
+      const domains = getDomainVariations(location.hostname);
       const paths = ['/', '/api', '/auth'];
       
       logger.log('[Token Cleanup] Clearing cookies:', { cookieNames, domains, paths });
@@ -98,56 +175,11 @@ export function createTokenCleanup(options: TokenCleanupOptions = {}) {
         doc.cookie = cookieStr;
       };
 
-      // Clear cookies for each combination of name, domain, and path
-      for (const cookieName of cookieNames) {
-        for (const domain of domains) {
-          for (const path of paths) {
-            // Clear with different SameSite and Secure combinations
-            clearCookie(cookieName, path, domain, 'Lax');
-            clearCookie(cookieName, path, domain, 'Strict');
-            clearCookie(cookieName, path, domain, undefined, true);
-            clearCookie(cookieName, path, domain, 'None', true);
-          }
-          // Clear without path
-          clearCookie(cookieName, undefined, domain);
-        }
-        
-        // Clear without domain
-        for (const path of paths) {
-          clearCookie(cookieName, path);
-        }
-        
-        // Clear with minimal attributes
-        clearCookie(cookieName);
-      }
+      // Clear standard auth cookies
+      clearStandardAuthCookies(cookieNames, domains, paths, clearCookie);
       
-      // Helper function to check if a cookie name is auth-related
-      const isAuthRelatedCookie = (name: string): boolean => {
-        return name.includes('auth') ||
-               name.includes('session') ||
-               name.includes('token') ||
-               name.includes('next-auth') ||
-               name.includes('jwt');
-      };
-
-      // Additional cleanup: iterate through actual cookies and clear anything suspicious
-      const existingCookies = doc.cookie.split(';');
-      for (const cookie of existingCookies) {
-        const [name] = cookie.split('=');
-        const trimmedName = name?.trim();
-        
-        if (!trimmedName || !isAuthRelatedCookie(trimmedName)) {
-          continue;
-        }
-
-        // Clear the auth-related cookie with all domain/path combinations
-        for (const domain of domains) {
-          for (const path of paths) {
-            clearCookie(trimmedName, path, domain);
-          }
-        }
-        clearCookie(trimmedName);
-      }
+      // Clear any remaining auth-related cookies
+      clearRemainingAuthCookies(doc.cookie, domains, paths, clearCookie);
     },
 
     /**

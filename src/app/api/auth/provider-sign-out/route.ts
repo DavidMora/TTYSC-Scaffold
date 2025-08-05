@@ -5,12 +5,6 @@ import { authOptions } from '@/lib/auth/auth-options';
 // Force dynamic rendering for this route
 export const dynamic = 'force-dynamic';
 
-interface SessionData {
-  idToken?: string;
-  accessToken?: string;
-  refreshToken?: string;
-}
-
 function clearAuthCookies(response: NextResponse): void {
   const cookiesToClear = [
     'next-auth.session-token',
@@ -169,7 +163,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     const isBackground = searchParams.get('background') === 'true';
     
     // Try to get session first, then fallback to query parameter
-    const session = await getServerSession(authOptions) as SessionData | null;
+    const session = await getServerSession(authOptions);
     
     const idToken = session?.idToken ?? searchParams.get('idToken');
     const accessToken = session?.accessToken;
