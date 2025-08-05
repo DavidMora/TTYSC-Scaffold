@@ -38,8 +38,8 @@ const loadFromEnvironment = (): FeatureFlags => {
     enableAuth = process.env.FEATURE_FLAG_ENABLE_AUTHENTICATION.toLowerCase() === 'true';
   }
 
-  if (process.env.FF_Chat_Analysis_Screen !== undefined) {
-    FF_Chat_Analysis_Screen = process.env.FF_Chat_Analysis_Screen.toLowerCase() === 'true';
+  if (process.env.FEATURE_FLAG_FF_CHAT_ANALYSIS_SCREEN !== undefined) {
+    FF_Chat_Analysis_Screen = process.env.FEATURE_FLAG_FF_CHAT_ANALYSIS_SCREEN.toLowerCase() === 'true';
   }
   
   const flags: FeatureFlags = {
