@@ -3,8 +3,6 @@ import { Text } from "@ui5/webcomponents-react";
 import { ChatMessage } from "@/lib/types/chats";
 import { parseDate } from "@/lib/utils/dateUtils";
 import { FeedbackVote } from "@/components/FeedbackVote/FeedbackVote";
-import { AIChart } from "@/components/AIChart/AIChart";
-import { AIChartExamples } from "@/lib/constants/mocks/aiChart";
 import { AIResponseRenderer } from "@/components/AnalysisChat/AIResponseRenderer";
 
 interface AIResponseBubbleProps {
@@ -64,27 +62,6 @@ export function AIResponseBubble({ message }: Readonly<AIResponseBubbleProps>) {
         {parseDate(message.created)}
       </Text>
 
-      <Text
-        style={{
-          fontSize: "var(--sapFontSize)",
-          fontWeight: "400",
-        }}
-      >
-        {message.content}
-      </Text>
-
-      <div style={{ marginTop: "1rem", width: "100%" }}>
-        <AIChart data={AIChartExamples.bar} />
-        <AIChart data={AIChartExamples.line} />
-        <AIChart data={AIChartExamples.area} />
-        <AIChart data={AIChartExamples.pie} />
-        <AIChart data={AIChartExamples.doughnut} />
-        <AIChart data={AIChartExamples.column} />
-        <AIChart data={AIChartExamples.bullet} />
-        <AIChart data={AIChartExamples.columnWithTrend} />
-        <AIChart data={AIChartExamples.composed} />
-        <AIChart data={AIChartExamples.radar} />
-      </div>
       <AIResponseRenderer content={message.content} />
     </div>
   );
