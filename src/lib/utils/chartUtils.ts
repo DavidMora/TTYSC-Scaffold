@@ -26,37 +26,24 @@ export const getMultiMeasures = (seriesData: ChartSeries[]): ChartMeasure[] =>
     axis: "y",
   }));
 
-export const getBulletMeasures = (seriesData: ChartSeries[]): BulletMeasure[] =>
-  seriesData.map((series, i) => {
-    if (i === 0) {
-      return {
-        accessor: `series${i}`,
-        label: series.name,
-        formatter: (v: number) => v.toString(),
-        color: series.color,
-        axis: "y",
-        type: "primary",
-      };
-    } else if (i === 1) {
-      return {
-        accessor: `series${i}`,
-        label: series.name,
-        formatter: (v: number) => v.toString(),
-        color: series.color,
-        axis: "y",
-        type: "comparison",
-      };
-    } else {
-      return {
-        accessor: `series${i}`,
-        label: series.name,
-        formatter: (v: number) => v.toString(),
-        color: series.color,
-        axis: "y",
-        type: "additional",
-      };
-    }
-  });
+export const getBulletMeasures = (
+  seriesData: ChartSeries[]
+): BulletMeasure[] => {
+  const types: ("primary" | "comparison" | "additional")[] = [
+    "primary",
+    "comparison",
+    "additional",
+  ];
+
+  return seriesData.map((series, i) => ({
+    accessor: `series${i}`,
+    label: series.name,
+    formatter: (v: number) => v.toString(),
+    color: series.color,
+    axis: "y",
+    type: types[i] || "additional",
+  }));
+};
 
 export const getColumnWithTrendMeasures = (
   seriesData: ChartSeries[]
@@ -83,13 +70,13 @@ export const getMultiDataset = (
   labels: string[],
   seriesData: ChartSeries[]
 ): MultiDataPoint[] =>
-  labels.map((label, idx) => {
-    const dp: MultiDataPoint = { name: label };
-    seriesData.forEach((s, i) => {
-      dp[`series${i}`] = s.data[idx];
-    });
-    return dp;
-  });
+  labels.map((label, idx) => ({
+    name: label,
+    ...seriesData.reduce(
+      (acc, s, i) => ({ ...acc, [`series${i}`]: s.data[idx] }),
+      {}
+    ),
+  }));
 
 export const getSingleDataset = (
   labels: string[],
@@ -107,22 +94,19 @@ export const getChartDataInfo = (chart: {
     typeof chart.data[0] === "object" &&
     "name" in chart.data[0];
 
-  let dataset: SingleDataPoint[] | MultiDataPoint[], measures: ChartMeasure[];
-  let seriesData: ChartSeries[] | undefined;
-
   if (isMulti) {
-    seriesData = chart.data as ChartSeries[];
-    dataset = getMultiDataset(chart.labels, seriesData);
-    measures = getMultiMeasures(seriesData);
+    const seriesData = chart.data as ChartSeries[];
+    return {
+      isMulti: true,
+      dataset: getMultiDataset(chart.labels, seriesData),
+      measures: getMultiMeasures(seriesData),
+      seriesData,
+    };
   } else {
-    dataset = getSingleDataset(chart.labels, chart.data as number[]);
-    measures = getSingleMeasures();
+    return {
+      isMulti: false,
+      dataset: getSingleDataset(chart.labels, chart.data as number[]),
+      measures: getSingleMeasures(),
+    };
   }
-
-  return {
-    isMulti,
-    dataset,
-    measures,
-    seriesData,
-  };
 };

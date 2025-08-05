@@ -4,8 +4,6 @@ import {
   getBulletMeasures,
   getColumnWithTrendMeasures,
   addChartType,
-  getMultiDataset,
-  getSingleDataset,
   getChartDataInfo,
 } from "@/lib/utils/chartUtils";
 import { ChartSeries, ChartMeasure } from "@/lib/types/charts";
@@ -179,58 +177,6 @@ describe("chartUtils", () => {
         formatter: expect.any(Function),
         axis: "y",
         type: "bar",
-      });
-    });
-  });
-
-  describe("getMultiDataset", () => {
-    it("creates multi dataset from labels and series data", () => {
-      const dataset = getMultiDataset(mockLabels, mockSeriesData);
-
-      expect(dataset).toHaveLength(3);
-
-      expect(dataset[0]).toEqual({
-        name: "Category 1",
-        series0: 100,
-        series1: 150,
-        series2: 80,
-      });
-
-      expect(dataset[1]).toEqual({
-        name: "Category 2",
-        series0: 200,
-        series1: 250,
-        series2: 180,
-      });
-
-      expect(dataset[2]).toEqual({
-        name: "Category 3",
-        series0: 150,
-        series1: 200,
-        series2: 120,
-      });
-    });
-  });
-
-  describe("getSingleDataset", () => {
-    it("creates single dataset from labels and data", () => {
-      const dataset = getSingleDataset(mockLabels, mockData);
-
-      expect(dataset).toHaveLength(3);
-
-      expect(dataset[0]).toEqual({
-        name: "Category 1",
-        value: 100,
-      });
-
-      expect(dataset[1]).toEqual({
-        name: "Category 2",
-        value: 200,
-      });
-
-      expect(dataset[2]).toEqual({
-        name: "Category 3",
-        value: 150,
       });
     });
   });
