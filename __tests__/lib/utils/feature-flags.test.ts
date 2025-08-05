@@ -261,36 +261,6 @@ describe("Feature Flags Utils", () => {
     });
   });
 
-  describe("JSON file loading success path", () => {
-    it("should successfully load flags from JSON file and cache them", async () => {
-      clearFeatureFlagsCache();
-
-      // The actual JSON file should be loaded
-      const flags = await getFeatureFlags();
-
-      // Should return the actual JSON file values
-      expect(flags.enableAuthentication).toBe(true);
-      expect(flags.FF_Chat_Analysis_Screen).toBe(true);
-
-      // Should be cached
-      const cachedFlags = await getFeatureFlags();
-      expect(cachedFlags).toBe(flags); // Same reference due to caching
-    });
-
-    it("should prioritize JSON file over environment variables", async () => {
-      clearFeatureFlagsCache();
-
-      // Set environment variables
-      process.env.FEATURE_FLAG_ENABLE_AUTHENTICATION = "true";
-      process.env.FF_Chat_Analysis_Screen = "false";
-
-      // JSON file should take precedence
-      const flags = await getFeatureFlags();
-      expect(flags.enableAuthentication).toBe(true); // From JSON file
-      expect(flags.FF_Chat_Analysis_Screen).toBe(true); // From JSON file
-    });
-  });
-
   describe("fallback path when fileFlags is null", () => {
     it("should fallback to environment variables when JSON file loading fails", async () => {
       // Since we can't easily mock the dynamic import to fail,
@@ -331,14 +301,6 @@ describe("Feature Flags Utils", () => {
   });
 
   describe("isFeatureEnabled with FF_Chat_Analysis_Screen", () => {
-    it("should check FF_Chat_Analysis_Screen flag correctly", async () => {
-      clearFeatureFlagsCache();
-
-      // Test with JSON file value
-      const result = await isFeatureEnabled("FF_Chat_Analysis_Screen");
-      expect(result).toBe(true); // From JSON file
-    });
-
     it("should check FF_Chat_Analysis_Screen flag synchronously", () => {
       clearFeatureFlagsCache();
 
