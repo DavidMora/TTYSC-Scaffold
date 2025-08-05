@@ -138,12 +138,7 @@ export default function AnalysisContainer() {
             isDisabled={isDisabled}
             handleFilterChange={handleFilterChange}
           />
-          <hr
-            style={{
-              height: "2px",
-              backgroundColor: "var(--sapToolbar_SeparatorColor)",
-            }}
-          />
+          <div className="h-[1px] bg-[var(--sapToolbar_SeparatorColor)]" />
           {error ? (
             <ErrorDisplay error={error} onRetry={refetchAnalysis} />
           ) : (
