@@ -1,5 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { useParams } from "next/navigation";
+import { useFeatureFlag } from "@/hooks/useFeatureFlags";
 import AnalysisPage from "@/app/(main)/[id]/page";
 
 // Mock next/navigation

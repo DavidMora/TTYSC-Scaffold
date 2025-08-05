@@ -147,7 +147,7 @@ jest.mock("@ui5/webcomponents-react", () => ({
     header?: React.ReactNode;
   }) => (
     <div data-testid="card" {...props}>
-      {header && <div data-testid="card-header-wrapper">{header}</div>}
+      {header}
       {children}
     </div>
   ),
@@ -185,27 +185,6 @@ jest.mock("@ui5/webcomponents-react", () => ({
     >
       {children}
     </button>
-  ),
-  Card: ({ children, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
-    <div data-testid="card" {...props}>
-      {children}
-    </div>
-  ),
-  CardHeader: ({
-    titleText,
-    subtitleText,
-    additionalText,
-    ...props
-  }: React.HTMLAttributes<HTMLDivElement> & {
-    titleText?: React.ReactNode;
-    subtitleText?: React.ReactNode;
-    additionalText?: React.ReactNode;
-  }) => (
-    <div data-testid="card-header" {...props}>
-      <span data-testid="card-header-title">{titleText}</span>
-      <span data-testid="card-header-subtitle">{subtitleText}</span>
-      <span data-testid="card-header-additional">{additionalText}</span>
-    </div>
   ),
 }));
 

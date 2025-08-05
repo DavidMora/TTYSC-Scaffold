@@ -11,6 +11,17 @@ jest.mock("next/navigation", () => ({
 
 // Mock UI5 components
 jest.mock("@ui5/webcomponents-react", () => ({
+  Button: ({
+    children,
+    onClick,
+    ...props
+  }: React.PropsWithChildren<
+    { onClick?: () => void } & Record<string, unknown>
+  >) => (
+    <button data-testid="button" onClick={onClick} {...props}>
+      {children}
+    </button>
+  ),
   FlexBox: ({
     children,
     ...props
@@ -24,7 +35,7 @@ jest.mock("@ui5/webcomponents-react", () => ({
     onClick,
     ...props
   }: { name?: string; onClick?: () => void } & Record<string, unknown>) => (
-    <button data-testid="icon" data-name={name} onClick={onClick} {...props} />
+    <span data-testid="icon" data-name={name} onClick={onClick} {...props} />
   ),
   Label: ({
     children,
@@ -82,6 +93,7 @@ describe("FullscreenLayout", () => {
       expect(screen.getByTestId("theme-provider")).toBeInTheDocument();
       expect(screen.getByTestId("page")).toBeInTheDocument();
       expect(screen.getByTestId("flexbox")).toBeInTheDocument();
+      expect(screen.getByTestId("button")).toBeInTheDocument();
       expect(screen.getByTestId("icon")).toBeInTheDocument();
       expect(screen.getByTestId("label")).toBeInTheDocument();
       expect(screen.getByTestId("test-child")).toBeInTheDocument();
@@ -143,8 +155,8 @@ describe("FullscreenLayout", () => {
         </FullscreenLayout>
       );
 
-      const backIcon = screen.getByTestId("icon");
-      fireEvent.click(backIcon);
+      const backButton = screen.getByTestId("button");
+      fireEvent.click(backButton);
 
       expect(mockBack).toHaveBeenCalledTimes(1);
     });
@@ -156,9 +168,9 @@ describe("FullscreenLayout", () => {
         </FullscreenLayout>
       );
 
-      const backIcon = screen.getByTestId("icon");
-      fireEvent.click(backIcon);
-      fireEvent.click(backIcon);
+      const backButton = screen.getByTestId("button");
+      fireEvent.click(backButton);
+      fireEvent.click(backButton);
 
       expect(mockBack).toHaveBeenCalledTimes(2);
     });
@@ -215,7 +227,9 @@ describe("FullscreenLayout", () => {
         </FullscreenLayout>
       );
 
+      const backButton = screen.getByTestId("button");
       const backIcon = screen.getByTestId("icon");
+      expect(backButton).toBeInTheDocument();
       expect(backIcon).toBeInTheDocument();
       expect(backIcon).toHaveAttribute("data-name", "arrow-left");
     });
