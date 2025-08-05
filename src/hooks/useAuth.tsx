@@ -2,7 +2,9 @@
 
 import { Suspense, createContext, useContext, useEffect, useState } from "react";
 import type { Session } from "next-auth";
-import { useSession, signIn } from "next-auth/react";
+import { useSession, signIn, signOut } from "next-auth/react";
+import { logoutState } from "@/lib/utils/logout-state";
+import { performCompleteLogoutCleanup } from "@/lib/utils/token-cleanup";
 
 interface AuthConfig {
   authProcess: string;
@@ -25,6 +27,8 @@ interface AuthContextType {
   isLoading: boolean;
   authError: string | null;
   retryCount: number;
+  logout: () => Promise<void>;
+  login: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -35,6 +39,10 @@ function useAuthInternal(): AuthContextType {
   const [hasTriedAutoLogin, setHasTriedAutoLogin] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
+  const [isManuallyLoggedOut, setIsManuallyLoggedOut] = useState(() => {
+    // Initialize from logout state utility
+    return logoutState.isManuallyLoggedOut();
+  });
   const maxRetries = 3;
   
   // Cast session to ExtendedSession for error handling
@@ -60,6 +68,20 @@ function useAuthInternal(): AuthContextType {
       setAuthError(null);
       setRetryCount(0);
       setHasTriedAutoLogin(false);
+      
+      // Clear logout flags when user successfully logs in
+      logoutState.clearLogoutState();
+      setIsManuallyLoggedOut(false);
+      
+      // Clean up URL parameters if present
+      if (typeof window !== 'undefined') {
+        const url = new URL(window.location.href);
+        if (url.searchParams.has('logged_out') || url.searchParams.has('prompt')) {
+          url.searchParams.delete('logged_out');
+          url.searchParams.delete('prompt');
+          window.history.replaceState({}, document.title, url.toString());
+        }
+      }
     }
     
     // Handle session errors
@@ -108,6 +130,39 @@ function useAuthInternal(): AuthContextType {
 
   // Auto-login logic with error handling and retry limits
   useEffect(() => {
+    // Use centralized logout state management
+    const isLoggedOutFromState = logoutState.isManuallyLoggedOut();
+    const hasLoggedOutParam = logoutState.hasLogoutUrlParams();
+    
+    // Update local state if needed
+    if (isLoggedOutFromState !== isManuallyLoggedOut) {
+      setIsManuallyLoggedOut(isLoggedOutFromState);
+    }
+    
+    // Log the current state for debugging
+    console.log('[Auth] Auto-login check:', {
+      hasAuthConfig: !!authConfig,
+      isAuthDisabled: authConfig?.isAuthDisabled,
+      autoLogin: authConfig?.autoLogin,
+      hasSession: !!extendedSession,
+      isSessionLoading,
+      hasTriedAutoLogin,
+      hasAuthError: !!authError,
+      retryCount,
+      maxRetries,
+      isManuallyLoggedOut,
+      isLoggedOutFromState,
+      hasLoggedOutParam,
+      currentPath: typeof window !== 'undefined' ? window.location.pathname : 'unknown'
+    });
+
+    // Extra protection: never auto-login if on logout page
+    const isOnLogoutPage = typeof window !== 'undefined' && window.location.pathname === '/auth/logged-out';
+    if (isOnLogoutPage) {
+      console.log('[Auth] Blocking auto-login: on logout page');
+      return;
+    }
+    
     if (
       authConfig &&
       !authConfig.isAuthDisabled && 
@@ -116,7 +171,10 @@ function useAuthInternal(): AuthContextType {
       !isSessionLoading && 
       !hasTriedAutoLogin &&
       !authError &&
-      retryCount < maxRetries
+      retryCount < maxRetries &&
+      !isManuallyLoggedOut && // Don't auto-login if user manually logged out (local state)
+      !isLoggedOutFromState && // Don't auto-login if logged out (utility state)
+      !hasLoggedOutParam // Don't auto-login if coming from logout redirect (URL)
     ) {
       setHasTriedAutoLogin(true);
       setRetryCount(prev => prev + 1);
@@ -137,7 +195,9 @@ function useAuthInternal(): AuthContextType {
       setAuthError('Maximum login attempts exceeded. Please try manually.');
       setHasTriedAutoLogin(true);
     }
-  }, [authConfig, extendedSession, isSessionLoading, hasTriedAutoLogin, authError, retryCount]);  // Debug logging for troubleshooting
+  }, [authConfig, extendedSession, isSessionLoading, hasTriedAutoLogin, authError, retryCount, isManuallyLoggedOut]);
+
+  // Debug logging for troubleshooting
   useEffect(() => {
     if (authConfig) {
       console.log('[Auth] Current state:', {
@@ -152,6 +212,111 @@ function useAuthInternal(): AuthContextType {
     }
   }, [authConfig, extendedSession, status, isLoading, hasTriedAutoLogin, authError]);
 
+  // Custom federated sign-out handler
+  const logout = async () => {
+    try {
+      console.log('[Auth] Starting comprehensive sign-out process');
+      
+      // Store ID token before clearing session - this is critical!
+      const idToken = (extendedSession as { idToken?: string })?.idToken;
+      console.log('[Auth] ID Token available for logout:', !!idToken);
+      
+      if (typeof window !== 'undefined') {
+        // Set logout flag FIRST and ensure it's persistent
+        console.log('[Auth] Setting persistent logout state');
+        logoutState.setManuallyLoggedOut();
+        setIsManuallyLoggedOut(true);
+        
+        // Store logout state in multiple places for redundancy
+        localStorage.setItem('user_manually_logged_out', 'true');
+        localStorage.setItem('logout_timestamp', Date.now().toString());
+        sessionStorage.setItem('logout_in_progress', 'true');
+        
+        // Perform comprehensive token and session cleanup
+        console.log('[Auth] Starting comprehensive cleanup (preserving logout state)');
+        await performCompleteLogoutCleanup();
+        
+        // Verify logout state is still set after cleanup
+        if (localStorage.getItem('user_manually_logged_out') !== 'true') {
+          console.warn('[Auth] Logout state was cleared during cleanup, restoring...');
+          logoutState.setManuallyLoggedOut();
+        }
+        
+        // Clear the NextAuth session explicitly
+        console.log('[Auth] Clearing NextAuth session');
+        await signOut({ redirect: false });
+        
+        // Ensure logout state persists after signOut
+        logoutState.setManuallyLoggedOut();
+        
+        // Perform background federated logout (no redirect)
+        if (idToken) {
+          console.log('[Auth] Performing background federated logout');
+          try {
+            await fetch(`/api/auth/provider-sign-out?idToken=${encodeURIComponent(idToken)}&background=true`);
+          } catch (error) {
+            console.warn('[Auth] Background federated logout failed:', error);
+          }
+        }
+        
+        // Final verification of logout state before redirect
+        console.log('[Auth] Final logout state verification');
+        logoutState.setManuallyLoggedOut();
+        console.log('[Auth] Logout state before redirect:', localStorage.getItem('user_manually_logged_out'));
+        
+        // Redirect to logged out page
+        console.log('[Auth] Redirecting to logged out page');
+        window.location.href = '/auth/logged-out';
+      }
+    } catch (error) {
+      console.error('[Auth] Error during federated sign-out:', error);
+      // Fallback: comprehensive cleanup and redirect
+      if (typeof window !== 'undefined') {
+        // Force comprehensive cleanup on error
+        logoutState.setManuallyLoggedOut();
+        setIsManuallyLoggedOut(true);
+        
+        try {
+          await performCompleteLogoutCleanup();
+        } catch (cleanupError) {
+          console.error('[Auth] Fallback cleanup failed:', cleanupError);
+        }
+        
+        window.location.href = '/auth/logged-out';
+      }
+    }
+  };
+
+  // Manual login function to clear logout state and initiate login
+  const login = async () => {
+    try {
+      console.log('[Auth] Manual login initiated');
+      
+      // Clear logout flags
+      logoutState.clearLogoutState();
+      
+      // Reset auth state
+      setAuthError(null);
+      setRetryCount(0);
+      setHasTriedAutoLogin(false);
+      setIsManuallyLoggedOut(false);
+      
+      // Initiate sign in with prompt to ensure account selection
+      const providerId = authConfig?.authProcess === 'azure' ? 'nvlogin' : (authConfig?.authProcess || 'nvlogin');
+      
+      // Force account selection to prevent auto-login with previous credentials
+      await signIn(providerId, { 
+        callbackUrl: "/",
+        redirect: true,
+        // Add prompt parameter to force account selection
+        prompt: 'select_account'
+      });
+    } catch (error) {
+      console.error('[Auth] Manual login failed:', error);
+      setAuthError(`Login failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  };
+
   return { 
     session: extendedSession, 
     authProcess: 'azure', // Simplified to always return azure
@@ -159,7 +324,9 @@ function useAuthInternal(): AuthContextType {
     isAuthDisabled: authConfig?.isAuthDisabled || false,
     isLoading,
     authError,
-    retryCount
+    retryCount,
+    logout,
+    login
   };
 }
 

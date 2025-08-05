@@ -81,9 +81,7 @@ export default function AnalysisContainer() {
 
   const { filters, availableOptions, isDisabled, handleFilterChange } =
     useAnalysisFilters(
-      analysis?.data?.metadata
-        ? { ...INITIAL_FILTERS, ...analysis.data.metadata }
-        : INITIAL_FILTERS,
+      { ...INITIAL_FILTERS, ...analysis?.data?.metadata },
       () => {
         hasUserModifiedRef.current = true;
       }
@@ -97,18 +95,16 @@ export default function AnalysisContainer() {
 
   useAutoSave({
     valueToWatch: hasUserModifiedRef.current ? filters : undefined,
-    onSave: async () => {
-      await updateChat({
-        id: analysisId,
-        metadata: {
-          analysis: filters.analysis,
-          organizations: filters.organizations,
-          CM: filters.CM,
-          SKU: filters.SKU,
-          NVPN: filters.NVPN,
-        },
-      });
-    },
+    onSave: () => void updateChat({
+      id: analysisId,
+      metadata: {
+        analysis: filters.analysis,
+        organizations: filters.organizations,
+        CM: filters.CM,
+        SKU: filters.SKU,
+        NVPN: filters.NVPN,
+      },
+    }),
     delayMs: 3000,
     onSuccess: () => {
       activateAutosaveUI();
@@ -119,10 +115,8 @@ export default function AnalysisContainer() {
   });
 
   useEffect(() => {
-    if (analysis?.data) {
-      if (analysis?.data?.title !== "") {
-        setAnalysisName(analysis?.data?.title);
-      }
+    if (analysis?.data?.title) {
+      setAnalysisName(analysis.data.title);
     }
   }, [analysis?.data]);
 

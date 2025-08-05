@@ -15,6 +15,7 @@ import RawDataNavigationItem, {
 import ChatHistoryNavigationItem from "./SidebarItems/ChatHistoryNavigationItem";
 import { useChats } from "@/hooks/chats";
 import "@ui5/webcomponents-icons/dist/inspect.js";
+import { useAuth } from "@/hooks/useAuth";
 
 interface SideBarProps {
   sideNavCollapsed?: boolean;
@@ -28,6 +29,7 @@ const SideBarMenu: React.FC<SideBarProps> = ({
 }) => {
   const pathname = usePathname();
   const router = useRouter();
+  const { logout } = useAuth();
 
   const {
     data: chatHistory,
@@ -58,11 +60,53 @@ const SideBarMenu: React.FC<SideBarProps> = ({
     // Implement chat item selection logic here
   };
 
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch (error) {
+      console.error("Error during logout:", error);
+    }
+  };
+
+  const handleRestartSession = async () => {
+    try {
+      // Clear local storage and session storage
+      if (typeof window !== 'undefined') {
+        localStorage.clear();
+        sessionStorage.clear();
+      }
+      
+      // Send request to the server to restart the session
+      const response = await fetch('/api/auth/restart-session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        console.log('Session restarted successfully');
+        // You might want to trigger a refresh of certain components here
+        // or show a success message to the user
+      } else {
+        console.error('Failed to restart session:', await response.text());
+      }
+    } catch (error) {
+      console.error('Error during session restart:', error);
+    }
+  };
+
   const handleNavSelection = (event: {
-    detail?: { item?: { dataset?: { path?: string } } };
+    detail?: { item?: { dataset?: { path?: string; action?: string } } };
   }) => {
     const path = event.detail?.item?.dataset?.path;
-    if (path) {
+    const action = event.detail?.item?.dataset?.action;
+    
+    if (action === 'logout') {
+      handleLogout();
+    } else if (action === 'restart') {
+      handleRestartSession();
+    } else if (path) {
       router.push(path);
     }
   };
@@ -78,8 +122,16 @@ const SideBarMenu: React.FC<SideBarProps> = ({
       }
       fixedItems={
         <>
-          <SideNavigationItem icon="restart" text="Restart Session" />
-          <SideNavigationItem icon="journey-arrive" text="Log Out" />
+          <SideNavigationItem 
+            icon="restart" 
+            text="Restart Session" 
+            data-action="restart"
+          />
+          <SideNavigationItem 
+            icon="journey-arrive" 
+            text="Log Out" 
+            data-action="logout"
+          />
         </>
       }
     >

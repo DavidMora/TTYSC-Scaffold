@@ -17,8 +17,8 @@ let cachedFlags: FeatureFlags | null = null;
  */
 const loadFromGeneratedFile = async (): Promise<FeatureFlags | null> => {
   try {
-    // Use dynamic import to load the JSON file
-    const featureFlags = await import('@/feature-flags.json');
+    // Use dynamic import to load the JSON file from the root
+    const featureFlags = await import('../../../feature-flags.json');
     return featureFlags.default as FeatureFlags;
   } catch {
     return null;
@@ -32,15 +32,13 @@ const loadFromGeneratedFile = async (): Promise<FeatureFlags | null> => {
 const loadFromEnvironment = (): FeatureFlags => {
   // Use FEATURE_FLAG_ENABLE_AUTHENTICATION or fall back to default
   let enableAuth = DEFAULT_FLAGS.enableAuthentication;
-  let FF_Chat_Analysis_Screen = DEFAULT_FLAGS.FF_Chat_Analysis_Screen;
+  const FF_Chat_Analysis_Screen = DEFAULT_FLAGS.FF_Chat_Analysis_Screen;
   
   if (process.env.FEATURE_FLAG_ENABLE_AUTHENTICATION !== undefined) {
     enableAuth = process.env.FEATURE_FLAG_ENABLE_AUTHENTICATION.toLowerCase() === 'true';
   }
 
-  if (process.env.FF_Chat_Analysis_Screen !== undefined) {
-    FF_Chat_Analysis_Screen = process.env.FF_Chat_Analysis_Screen.toLowerCase() === 'true';
-  }
+
   
   const flags: FeatureFlags = {
     enableAuthentication: enableAuth,
