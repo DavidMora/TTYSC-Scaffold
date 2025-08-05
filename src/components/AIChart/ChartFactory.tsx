@@ -22,15 +22,17 @@ import {
 interface ChartFactoryProps {
   chartType: string;
   chartDataInfo: ChartDataInfo;
-  dimensions: ChartDimension[];
 }
 
 export const ChartFactory: React.FC<ChartFactoryProps> = ({
   chartType,
   chartDataInfo,
-  dimensions,
 }) => {
   const { isMulti, dataset, measures, seriesData } = chartDataInfo;
+
+  const dimensions: ChartDimension[] = [
+    { accessor: "name", formatter: (v: string) => v },
+  ];
 
   switch (chartType) {
     case "bar":

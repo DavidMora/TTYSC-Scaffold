@@ -1,7 +1,7 @@
 import React from "react";
 import { Title } from "@ui5/webcomponents-react";
 import TitleLevel from "@ui5/webcomponents/dist/types/TitleLevel.js";
-import { AIChartData, ChartDimension } from "@/lib/types/charts";
+import { AIChartData } from "@/lib/types/charts";
 import { getChartDataInfo } from "@/lib/utils/chartUtils";
 import { ChartFactory } from "./ChartFactory";
 
@@ -13,10 +13,6 @@ interface AIChartProps {
 
 export function AIChart({ data, className, style }: Readonly<AIChartProps>) {
   const { headline, preamble, content, chart } = data;
-
-  const dimensions: ChartDimension[] = [
-    { accessor: "name", formatter: (v: string) => v },
-  ];
 
   const chartDataInfo = getChartDataInfo(chart);
 
@@ -62,11 +58,7 @@ export function AIChart({ data, className, style }: Readonly<AIChartProps>) {
           marginTop: 16,
         }}
       >
-        <ChartFactory
-          chartType={chart.type}
-          chartDataInfo={chartDataInfo}
-          dimensions={dimensions}
-        />
+        <ChartFactory chartType={chart.type} chartDataInfo={chartDataInfo} />
       </div>
     </div>
   );
