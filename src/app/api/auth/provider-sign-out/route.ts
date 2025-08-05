@@ -5,6 +5,69 @@ import { authOptions } from '@/lib/auth/auth-options';
 // Force dynamic rendering for this route
 export const dynamic = 'force-dynamic';
 
+interface SessionData {
+  idToken?: string;
+  accessToken?: string;
+  refreshToken?: string;
+}
+
+function clearAuthCookies(response: NextResponse): void {
+  const cookiesToClear = [
+    'next-auth.session-token',
+    'next-auth.csrf-token',
+    'next-auth.callback-url',
+    '__Secure-next-auth.session-token',
+    '__Host-next-auth.csrf-token'
+  ];
+  
+  cookiesToClear.forEach(cookieName => {
+    response.cookies.set(cookieName, '', {
+      expires: new Date(0),
+      path: '/',
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax'
+    });
+  });
+}
+
+function buildFederatedLogoutUrl(logoutUrl: string, idToken: string, baseUrl: string): URL {
+  const federatedLogoutUrl = new URL(logoutUrl);
+  federatedLogoutUrl.searchParams.set('id_token_hint', idToken);
+  federatedLogoutUrl.searchParams.set('post_logout_redirect_uri', `${baseUrl}/auth/logged-out`);
+  federatedLogoutUrl.searchParams.set('logout_hint', 'user_logout');
+  return federatedLogoutUrl;
+}
+
+async function handleBackgroundLogout(logoutUrl: string, idToken: string, baseUrl: string): Promise<NextResponse> {
+  try {
+    const federatedLogoutUrl = buildFederatedLogoutUrl(logoutUrl, idToken, baseUrl);
+    federatedLogoutUrl.searchParams.set('post_logout_redirect_uri', baseUrl);
+    
+    console.log('[Auth] Performing background federated logout');
+    
+    const logoutResponse = await fetch(federatedLogoutUrl.toString(), {
+      method: 'GET',
+      redirect: 'manual'
+    });
+
+    console.log('[Auth] Background logout response status:', logoutResponse.status);
+    
+    return NextResponse.json({ 
+      success: true, 
+      message: 'Background federated logout completed',
+      status: logoutResponse.status
+    });
+  } catch (error) {
+    console.error('[Auth] Background federated logout failed:', error);
+    return NextResponse.json({ 
+      success: false, 
+      message: 'Background federated logout failed',
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+}
+
 interface OAuthConfig {
   clientId: string;
   clientSecret?: string;
@@ -106,11 +169,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     const isBackground = searchParams.get('background') === 'true';
     
     // Try to get session first, then fallback to query parameter
-    const session = await getServerSession(authOptions) as { 
-      idToken?: string; 
-      accessToken?: string;
-      refreshToken?: string;
-    } | null;
+    const session = await getServerSession(authOptions) as SessionData | null;
     
     const idToken = session?.idToken ?? searchParams.get('idToken');
     const accessToken = session?.accessToken;
@@ -146,72 +205,19 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
 
     // For background requests, perform the logout without redirect
     if (isBackground) {
-      try {
-        // Construct the federated logout URL
-        const federatedLogoutUrl = new URL(logoutUrl);
-        federatedLogoutUrl.searchParams.set('id_token_hint', idToken);
-        federatedLogoutUrl.searchParams.set('post_logout_redirect_uri', baseUrl);
-        federatedLogoutUrl.searchParams.set('logout_hint', 'user_logout');
-
-        console.log('[Auth] Performing background federated logout');
-        
-        // Make a fetch request to Azure to invalidate the session
-        const logoutResponse = await fetch(federatedLogoutUrl.toString(), {
-          method: 'GET',
-          redirect: 'manual' // Don't follow redirects
-        });
-
-        console.log('[Auth] Background logout response status:', logoutResponse.status);
-        
-        return NextResponse.json({ 
-          success: true, 
-          message: 'Background federated logout completed',
-          status: logoutResponse.status
-        });
-      } catch (error) {
-        console.error('[Auth] Background federated logout failed:', error);
-        return NextResponse.json({ 
-          success: false, 
-          message: 'Background federated logout failed',
-          error: error instanceof Error ? error.message : 'Unknown error'
-        });
-      }
+      return await handleBackgroundLogout(logoutUrl, idToken, baseUrl);
     }
 
     // Regular logout with redirect (legacy behavior)
-    const federatedLogoutUrl = new URL(logoutUrl);
-    federatedLogoutUrl.searchParams.set('id_token_hint', idToken);
-    
-    // Redirect to logged out page instead of home
-    const logoutRedirectUrl = new URL(`${baseUrl}/auth/logged-out`);
-    federatedLogoutUrl.searchParams.set('post_logout_redirect_uri', logoutRedirectUrl.toString());
-    federatedLogoutUrl.searchParams.set('logout_hint', 'user_logout');
+    const federatedLogoutUrl = buildFederatedLogoutUrl(logoutUrl, idToken, baseUrl);
 
     console.log('[Auth] Federated logout URL constructed:', federatedLogoutUrl.toString());
-    console.log('[Auth] Redirect URL:', logoutRedirectUrl.toString());
+    console.log('[Auth] Redirect URL:', `${baseUrl}/auth/logged-out`);
     console.log('[Auth] ID token length:', idToken.length);
     
     // Create response with headers to clear cookies
     const response = NextResponse.redirect(federatedLogoutUrl.toString(), 302);
-    
-    // Clear NextAuth cookies explicitly
-    const cookiesToClear = [
-      'next-auth.session-token',
-      'next-auth.csrf-token',
-      'next-auth.callback-url',
-      '__Secure-next-auth.session-token',
-      '__Host-next-auth.csrf-token'
-    ];
-    
-    cookiesToClear.forEach(cookieName => {
-      response.cookies.set(cookieName, '', {
-        expires: new Date(0),
-        path: '/',
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax'
-      });
-    });
+    clearAuthCookies(response);
     
     return response;
   } catch (error) {
@@ -227,25 +233,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     }
     
     const response = NextResponse.redirect(`${baseUrl}/auth/logged-out`, 302);
-    
-    // Clear cookies even on error
-    const cookiesToClear = [
-      'next-auth.session-token',
-      'next-auth.csrf-token',
-      'next-auth.callback-url',
-      '__Secure-next-auth.session-token',
-      '__Host-next-auth.csrf-token'
-    ];
-    
-    cookiesToClear.forEach(cookieName => {
-      response.cookies.set(cookieName, '', {
-        expires: new Date(0),
-        path: '/',
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax'
-      });
-    });
+    clearAuthCookies(response);
     
     return response;
   }

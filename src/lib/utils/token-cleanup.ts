@@ -88,49 +88,66 @@ export function createTokenCleanup(options: TokenCleanupOptions = {}) {
       
       logger.log('[Token Cleanup] Clearing cookies:', { cookieNames, domains, paths });
       
+      // Helper function to clear a single cookie
+      const clearCookie = (name: string, path?: string, domain?: string, sameSite?: string, secure?: boolean) => {
+        let cookieStr = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
+        if (path) cookieStr += `; path=${path}`;
+        if (domain) cookieStr += `; domain=${domain}`;
+        if (sameSite) cookieStr += `; SameSite=${sameSite}`;
+        if (secure) cookieStr += `; Secure`;
+        doc.cookie = cookieStr;
+      };
+
       // Clear cookies for each combination of name, domain, and path
-      cookieNames.forEach(cookieName => {
-        domains.forEach(domain => {
-          paths.forEach(path => {
-            // Clear with domain and path
-            doc.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=${path}; domain=${domain}; SameSite=Lax`;
-            doc.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=${path}; domain=${domain}; SameSite=Strict`;
-            doc.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=${path}; domain=${domain}; Secure`;
-            doc.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=${path}; domain=${domain}; Secure; SameSite=None`;
-          });
-          
+      for (const cookieName of cookieNames) {
+        for (const domain of domains) {
+          for (const path of paths) {
+            // Clear with different SameSite and Secure combinations
+            clearCookie(cookieName, path, domain, 'Lax');
+            clearCookie(cookieName, path, domain, 'Strict');
+            clearCookie(cookieName, path, domain, undefined, true);
+            clearCookie(cookieName, path, domain, 'None', true);
+          }
           // Clear without path
-          doc.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=${domain}`;
-        });
+          clearCookie(cookieName, undefined, domain);
+        }
         
         // Clear without domain
-        paths.forEach(path => {
-          doc.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=${path}`;
-        });
+        for (const path of paths) {
+          clearCookie(cookieName, path);
+        }
         
         // Clear with minimal attributes
-        doc.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
-      });
+        clearCookie(cookieName);
+      }
       
+      // Helper function to check if a cookie name is auth-related
+      const isAuthRelatedCookie = (name: string): boolean => {
+        return name.includes('auth') ||
+               name.includes('session') ||
+               name.includes('token') ||
+               name.includes('next-auth') ||
+               name.includes('jwt');
+      };
+
       // Additional cleanup: iterate through actual cookies and clear anything suspicious
-      doc.cookie.split(';').forEach(cookie => {
+      const existingCookies = doc.cookie.split(';');
+      for (const cookie of existingCookies) {
         const [name] = cookie.split('=');
         const trimmedName = name?.trim();
-        if (trimmedName && (
-          trimmedName.includes('auth') ||
-          trimmedName.includes('session') ||
-          trimmedName.includes('token') ||
-          trimmedName.includes('next-auth') ||
-          trimmedName.includes('jwt')
-        )) {
-          domains.forEach(domain => {
-            paths.forEach(path => {
-              doc.cookie = `${trimmedName}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=${path}; domain=${domain}`;
-            });
-          });
-          doc.cookie = `${trimmedName}=; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
+        
+        if (!trimmedName || !isAuthRelatedCookie(trimmedName)) {
+          continue;
         }
-      });
+
+        // Clear the auth-related cookie with all domain/path combinations
+        for (const domain of domains) {
+          for (const path of paths) {
+            clearCookie(trimmedName, path, domain);
+          }
+        }
+        clearCookie(trimmedName);
+      }
     },
 
     /**

@@ -1,5 +1,4 @@
-import { NextResponse } from 'next/server';
-import { NextRequest } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 
 export async function GET(request: NextRequest) {
   const authProcess = process.env.AUTH_PROCESS || 'azure';
@@ -10,8 +9,8 @@ export async function GET(request: NextRequest) {
   const url = new URL(request.url);
   const hasLoggedOutParam = url.searchParams.get('logged_out') === 'true';
   const referer = request.headers.get('referer');
-  const isFromLogout = referer && (referer.includes('logged_out=true') || referer.includes('provider-sign-out'));
-  const isOnLogoutPage = referer && referer.includes('/auth/logged-out');
+  const isFromLogout = referer?.includes('logged_out=true') || referer?.includes('provider-sign-out');
+  const isOnLogoutPage = referer?.includes('/auth/logged-out');
 
   // Disable auto-login if user was recently logged out or is on logout page
   if (hasLoggedOutParam || isFromLogout || isOnLogoutPage) {

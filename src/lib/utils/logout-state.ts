@@ -20,13 +20,29 @@ export function createLogoutState(options: LogoutStateOptions = {}) {
   // If no options are provided at all, use environment defaults
   const hasAnyOptions = Object.keys(options).length > 0;
   
-  const location = 'location' in options ? options.location : (typeof window !== 'undefined' ? window.location : null);
-  const storage = 'localStorage' in options ? 
-    options.localStorage : 
-    (!hasAnyOptions && typeof window !== 'undefined' ? window.localStorage : null);
-  const sessionStore = 'sessionStorage' in options ? 
-    options.sessionStorage : 
-    (!hasAnyOptions && typeof window !== 'undefined' ? window.sessionStorage : null);
+  // Extract location with simplified logic
+  let location: Location | null = null;
+  if ('location' in options) {
+    location = options.location || null;
+  } else if (typeof window !== 'undefined') {
+    location = window.location;
+  }
+  
+  // Extract localStorage with simplified logic
+  let storage: Storage | null = null;
+  if ('localStorage' in options) {
+    storage = options.localStorage || null;
+  } else if (!hasAnyOptions && typeof window !== 'undefined') {
+    storage = window.localStorage;
+  }
+  
+  // Extract sessionStorage with simplified logic
+  let sessionStore: Storage | null = null;
+  if ('sessionStorage' in options) {
+    sessionStore = options.sessionStorage || null;
+  } else if (!hasAnyOptions && typeof window !== 'undefined') {
+    sessionStore = window.sessionStorage;
+  }
   const logger = 'console' in options ? options.console : console;
   const dateNow = 'dateNow' in options ? options.dateNow : (() => Date.now());
 
