@@ -25,7 +25,7 @@ export function AIChart({ data, className, style }: Readonly<AIChartProps>) {
       <Title level={TitleLevel.H2} style={{ marginBottom: 16 }}>
         {headline}
       </Title>
-      
+
       {preamble && (
         <p
           style={{
@@ -38,7 +38,7 @@ export function AIChart({ data, className, style }: Readonly<AIChartProps>) {
           {preamble}
         </p>
       )}
-      
+
       {content && (
         <p
           style={{
@@ -50,7 +50,7 @@ export function AIChart({ data, className, style }: Readonly<AIChartProps>) {
           {content}
         </p>
       )}
-      
+
       <div
         style={{
           borderRadius: 8,

@@ -28,12 +28,6 @@ export interface AIChartData {
   chart: ChartData;
 }
 
-export interface AIChartResponse {
-  success: boolean;
-  data: AIChartData;
-}
-
-// New interfaces for chart components
 export interface ChartDimension {
   accessor: string;
   formatter: (v: string) => string;

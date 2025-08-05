@@ -4,6 +4,7 @@ import { CodeBlock } from "@/components/CodeBlock/CodeBlock";
 import BaseDataTable from "@/components/Tables/BaseDataTable";
 import { tableData } from "@/lib/constants/mocks/dataTable";
 import { parseContent } from "@/lib/utils/aiContentParser";
+
 interface AIResponseRendererProps {
   content: string;
 }

@@ -35,5 +35,3 @@ export const EXPORT_TABLE = (tableId: string, format: string) =>
   `${BASE}/export/${encodeURIComponent(tableId)}?format=${encodeURIComponent(
     format
   )}`;
-
-export const AUXILIARY_CHART = `${BASE}/auxiliary/chart`;
