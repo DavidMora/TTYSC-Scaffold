@@ -308,5 +308,219 @@ describe('Token Cleanup Utils - Simplified', () => {
       
       expect(() => cleanup.clearAllAuthCookies()).not.toThrow();
     });
+
+    it('should preserve and restore logout state during storage cleanup', () => {
+      const storageData: Record<string, string> = {
+        'user_manually_logged_out': 'true',
+        'logout_timestamp': '1609459200000',
+        'some_other_key': 'value_to_remove'
+      };
+
+      const mockLocalStorage = {
+        getItem: jest.fn((key: string) => storageData[key] || null),
+        setItem: jest.fn((key: string, value: string) => {
+          storageData[key] = value;
+        }),
+        removeItem: jest.fn((key: string) => {
+          delete storageData[key];
+        }),
+        clear: jest.fn(() => {
+          Object.keys(storageData).forEach(key => delete storageData[key]);
+        }),
+        key: () => null,
+        length: 0
+      };
+
+      // Mock Object.keys to return storage keys without circular reference
+      const originalObjectKeys = Object.keys;
+      Object.keys = jest.fn((obj) => {
+        if (obj === mockLocalStorage) {
+          return ['user_manually_logged_out', 'logout_timestamp', 'some_other_key'];
+        }
+        return originalObjectKeys(obj);
+      });
+
+      const mockSessionStorage = {
+        getItem: () => null,
+        setItem: () => {},
+        removeItem: () => {},
+        clear: jest.fn(),
+        key: () => null,
+        length: 0
+      };
+
+      const mockConsole = {
+        log: jest.fn(),
+        warn: jest.fn(),
+        error: jest.fn(),
+        info: jest.fn(),
+        debug: jest.fn()
+      };
+
+      const mockWindow = {};
+
+      const cleanup = createTokenCleanup({
+        window: mockWindow as Window,
+        localStorage: mockLocalStorage as Storage,
+        sessionStorage: mockSessionStorage as Storage,
+        console: mockConsole as Console
+      });
+
+      cleanup.clearAllAuthStorage();
+
+      // Verify that logout state was preserved (covers lines 160 and 163)
+      expect(mockLocalStorage.setItem).toHaveBeenCalledWith('user_manually_logged_out', 'true');
+      expect(mockLocalStorage.setItem).toHaveBeenCalledWith('logout_timestamp', '1609459200000');
+      
+      // Verify other keys were removed
+      expect(mockLocalStorage.removeItem).toHaveBeenCalledWith('some_other_key');
+      
+      // Verify session storage was cleared
+      expect(mockSessionStorage.clear).toHaveBeenCalled();
+
+      // Restore original Object.keys
+      Object.keys = originalObjectKeys;
+    });
+
+    it('should handle logout state restoration when only flag exists', () => {
+      const storageData: Record<string, string> = {
+        'user_manually_logged_out': 'true',
+        // No timestamp
+        'some_other_key': 'value_to_remove'
+      };
+
+      const mockLocalStorage = {
+        getItem: jest.fn((key: string) => storageData[key] || null),
+        setItem: jest.fn((key: string, value: string) => {
+          storageData[key] = value;
+        }),
+        removeItem: jest.fn((key: string) => {
+          delete storageData[key];
+        }),
+        clear: jest.fn(() => {
+          Object.keys(storageData).forEach(key => delete storageData[key]);
+        }),
+        key: () => null,
+        length: 0
+      };
+
+      // Mock Object.keys to return storage keys
+      const originalObjectKeys = Object.keys;
+      Object.keys = jest.fn((obj) => {
+        if (obj === mockLocalStorage) {
+          return ['user_manually_logged_out', 'some_other_key'];
+        }
+        return originalObjectKeys(obj);
+      });
+
+      const mockSessionStorage = {
+        getItem: () => null,
+        setItem: () => {},
+        removeItem: () => {},
+        clear: jest.fn(),
+        key: () => null,
+        length: 0
+      };
+
+      const mockConsole = {
+        log: jest.fn(),
+        warn: jest.fn(),
+        error: jest.fn(),
+        info: jest.fn(),
+        debug: jest.fn()
+      };
+
+      const mockWindow = {};
+
+      const cleanup = createTokenCleanup({
+        window: mockWindow as Window,
+        localStorage: mockLocalStorage as Storage,
+        sessionStorage: mockSessionStorage as Storage,
+        console: mockConsole as Console
+      });
+
+      cleanup.clearAllAuthStorage();
+
+      // Verify that logout flag was preserved (covers line 160)
+      expect(mockLocalStorage.setItem).toHaveBeenCalledWith('user_manually_logged_out', 'true');
+      
+      // Verify that timestamp setItem was not called since there's no timestamp
+      expect(mockLocalStorage.setItem).not.toHaveBeenCalledWith('logout_timestamp', expect.anything());
+
+      // Restore original Object.keys
+      Object.keys = originalObjectKeys;
+    });
+
+    it('should handle logout state restoration when only timestamp exists', () => {
+      const storageData: Record<string, string> = {
+        // Use null for logout flag to ensure it's not 'true'
+        'logout_timestamp': '1609459200000',
+        'some_other_key': 'value_to_remove'
+      };
+
+      const mockLocalStorage = {
+        getItem: jest.fn((key: string) => {
+          if (key === 'user_manually_logged_out') return null; // Explicitly return null
+          return storageData[key] || null;
+        }),
+        setItem: jest.fn((key: string, value: string) => {
+          storageData[key] = value;
+        }),
+        removeItem: jest.fn((key: string) => {
+          delete storageData[key];
+        }),
+        clear: jest.fn(() => {
+          Object.keys(storageData).forEach(key => delete storageData[key]);
+        }),
+        key: () => null,
+        length: 0
+      };
+
+      // Mock Object.keys to return storage keys
+      const originalObjectKeys = Object.keys;
+      Object.keys = jest.fn((obj) => {
+        if (obj === mockLocalStorage) {
+          return ['logout_timestamp', 'some_other_key'];
+        }
+        return originalObjectKeys(obj);
+      });
+
+      const mockSessionStorage = {
+        getItem: () => null,
+        setItem: () => {},
+        removeItem: () => {},
+        clear: jest.fn(),
+        key: () => null,
+        length: 0
+      };
+
+      const mockConsole = {
+        log: jest.fn(),
+        warn: jest.fn(),
+        error: jest.fn(),
+        info: jest.fn(),
+        debug: jest.fn()
+      };
+
+      const mockWindow = {};
+
+      const cleanup = createTokenCleanup({
+        window: mockWindow as Window,
+        localStorage: mockLocalStorage as Storage,
+        sessionStorage: mockSessionStorage as Storage,
+        console: mockConsole as Console
+      });
+
+      cleanup.clearAllAuthStorage();
+
+      // Verify that timestamp was preserved (covers line 163)
+      expect(mockLocalStorage.setItem).toHaveBeenCalledWith('logout_timestamp', '1609459200000');
+      
+      // Verify that flag setItem was not called since logoutFlag is not 'true'
+      expect(mockLocalStorage.setItem).not.toHaveBeenCalledWith('user_manually_logged_out', 'true');
+
+      // Restore original Object.keys
+      Object.keys = originalObjectKeys;
+    });
   });
 });
