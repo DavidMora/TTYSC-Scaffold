@@ -94,7 +94,7 @@ const TableToolbar: React.FC<Readonly<TableToolbarProps>> = ({
           value={currentValue}
         >
           {filter.placeholder && <Option value="">{filter.placeholder}</Option>}
-          {filter.options.map((option) => (
+          {filter.options?.map((option) => (
             <Option key={option.value} value={option.value}>
               {option.text}
             </Option>

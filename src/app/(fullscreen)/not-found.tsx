@@ -28,7 +28,7 @@ export default function NotFound() {
         <Link href="/">
           <Button design="Emphasized">Go Home</Button>
         </Link>
-        <Button design="Transparent" onClick={() => goHome()}>
+        <Button design="Transparent" onClick={goHome}>
           Go Back
         </Button>
       </FlexBox>
