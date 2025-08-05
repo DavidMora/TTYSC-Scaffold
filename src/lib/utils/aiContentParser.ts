@@ -51,14 +51,11 @@ export function parseContent(text: string): ParsedContentItem[] {
   }
 
   let match;
-  const showTableRegexCopy = new RegExp(
-    showTableRegex.source,
-    showTableRegex.flags
-  );
+  showTableRegex.lastIndex = 0;
 
-  while ((match = showTableRegexCopy.exec(text)) !== null) {
-    if (match.index === showTableRegexCopy.lastIndex) {
-      showTableRegexCopy.lastIndex++;
+  while ((match = showTableRegex.exec(text)) !== null) {
+    if (match.index === showTableRegex.lastIndex) {
+      showTableRegex.lastIndex++;
     }
 
     results.push({
