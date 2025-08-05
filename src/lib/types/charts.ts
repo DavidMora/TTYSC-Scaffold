@@ -5,7 +5,17 @@ export interface ChartSeries {
 }
 
 export interface ChartData {
-  type: "bar" | "line" | "pie" | "doughnut" | "area" | "column" | "bullet" | "columnWithTrend" | "composed" | "radar";
+  type:
+    | "bar"
+    | "line"
+    | "pie"
+    | "doughnut"
+    | "area"
+    | "column"
+    | "bullet"
+    | "columnWithTrend"
+    | "composed"
+    | "radar";
   labels: string[];
   data: number[] | ChartSeries[];
 }
@@ -45,4 +55,26 @@ export interface SingleDataPoint extends Record<string, unknown> {
 export interface MultiDataPoint extends Record<string, unknown> {
   name: string;
   [key: string]: string | number;
+}
+
+// AIChart specific types
+export interface BulletMeasure extends ChartMeasure {
+  type: "primary" | "comparison" | "additional";
+}
+
+export interface ChartMeasureWithType extends ChartMeasure {
+  type: string;
+}
+
+export interface ChartRendererProps {
+  dataset: SingleDataPoint[] | MultiDataPoint[];
+  dimensions: ChartDimension[];
+  measures: ChartMeasure[] | BulletMeasure[] | ChartMeasureWithType[];
+}
+
+export interface ChartDataInfo {
+  isMulti: boolean;
+  dataset: SingleDataPoint[] | MultiDataPoint[];
+  measures: ChartMeasure[];
+  seriesData?: ChartSeries[];
 }

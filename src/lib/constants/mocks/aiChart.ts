@@ -143,10 +143,17 @@ export const mockBulletChart: AIChartData = {
   headline: "Performance Metrics vs Targets",
   timestamp: "2024-12-01T21:00:00Z",
   preamble: "Performance indicators compared against set targets",
-  content: "Most departments are meeting or exceeding their performance targets.",
+  content:
+    "Most departments are meeting or exceeding their performance targets.",
   chart: {
     type: "bullet",
-    labels: ["Sales", "Customer Satisfaction", "Efficiency", "Quality", "Innovation"],
+    labels: [
+      "Sales",
+      "Customer Satisfaction",
+      "Efficiency",
+      "Quality",
+      "Innovation",
+    ],
     data: [
       {
         name: "Current Performance",
@@ -189,7 +196,8 @@ export const mockComposedChart: AIChartData = {
   headline: "Multi-Metric Business Dashboard",
   timestamp: "2024-12-01T23:00:00Z",
   preamble: "Combined visualization of revenue, costs, and profit margins",
-  content: "Revenue growth outpaces cost increases, leading to improved margins.",
+  content:
+    "Revenue growth outpaces cost increases, leading to improved margins.",
   chart: {
     type: "composed",
     labels: ["Q1", "Q2", "Q3", "Q4"],
@@ -217,10 +225,18 @@ export const mockRadarChart: AIChartData = {
   headline: "Competency Assessment Matrix",
   timestamp: "2024-12-02T00:00:00Z",
   preamble: "Multi-dimensional evaluation of team capabilities",
-  content: "Team shows strong technical skills with room for improvement in communication.",
+  content:
+    "Team shows strong technical skills with room for improvement in communication.",
   chart: {
     type: "radar",
-    labels: ["Technical Skills", "Communication", "Leadership", "Problem Solving", "Creativity", "Teamwork"],
+    labels: [
+      "Technical Skills",
+      "Communication",
+      "Leadership",
+      "Problem Solving",
+      "Creativity",
+      "Teamwork",
+    ],
     data: [
       {
         name: "Current Team",
