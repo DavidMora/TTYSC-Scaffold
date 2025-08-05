@@ -24,8 +24,8 @@ import { getFormattedValueByAccessor } from "@/lib/utils/tableHelpers";
 function getIdentifier(
   row: TableDataRow,
   identifier: string | undefined
-): string {
-  return row[identifier || "id"] as string;
+): unknown {
+  return row[identifier || "id"];
 }
 
 function getRowKey(row: TableDataRow, identifier: string | undefined): string {

@@ -37,7 +37,11 @@ function getUniqueValuesFromData(
     if (value !== undefined && value !== null) {
       // Handle different types safely
       if (typeof value === "object") {
-        uniqueValues.add(JSON.stringify(value));
+        try {
+          uniqueValues.add(JSON.stringify(value));
+        } catch {
+          uniqueValues.add("[Complex Object]");
+        }
       } else if (
         typeof value === "string" ||
         typeof value === "number" ||
@@ -163,9 +167,10 @@ function applyFilters(
         } catch {
           return false;
         }
+      } else {
+        console.warn(`Unhandled filter type: ${filter.type}`);
+        return false;
       }
-
-      return true;
     });
   });
 }

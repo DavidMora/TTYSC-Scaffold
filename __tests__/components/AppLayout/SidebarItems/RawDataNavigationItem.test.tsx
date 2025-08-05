@@ -47,6 +47,13 @@ interface IconProps {
   onClick?: () => void;
 }
 
+interface ButtonProps {
+  children?: React.ReactNode;
+  className?: string;
+  onClick?: () => void;
+  "aria-label"?: string;
+}
+
 jest.mock("@ui5/webcomponents-react", () => ({
   SideNavigationItem: ({
     children,
@@ -162,6 +169,22 @@ jest.mock("@ui5/webcomponents-react", () => ({
       <span data-testid="card-header-additional">{additionalText}</span>
       {action && <div data-testid="card-header-action">{action}</div>}
     </div>
+  ),
+  Button: ({
+    children,
+    className,
+    onClick,
+    "aria-label": ariaLabel,
+  }: ButtonProps) => (
+    <button
+      data-testid="button"
+      className={className}
+      onClick={onClick}
+      aria-label={ariaLabel}
+      type="button"
+    >
+      {children}
+    </button>
   ),
 }));
 
@@ -1009,12 +1032,15 @@ describe("RawDataNavigationItem", () => {
         </RawDataModalProvider>
       );
 
-      const iconButton = screen.getByTestId("icon");
-      expect(iconButton).toBeInTheDocument();
-      expect(iconButton).toHaveAttribute("data-name", "inspect");
+      const button = screen.getByTestId("button");
+      expect(button).toBeInTheDocument();
+      expect(button).toHaveAttribute("aria-label", "Open raw data modal");
+
+      const icon = screen.getByTestId("icon");
+      expect(icon).toHaveAttribute("data-name", "inspect");
 
       // Verify it's clickable by checking if it has an onClick handler
-      fireEvent.click(iconButton);
+      fireEvent.click(button);
       // If the test reaches this point without error, the click worked
     });
 
@@ -1025,9 +1051,12 @@ describe("RawDataNavigationItem", () => {
         </RawDataModalProvider>
       );
 
-      const iconButton = screen.getByTestId("icon");
-      expect(iconButton).toHaveAttribute("type", "button");
-      expect(iconButton).toHaveAttribute("data-name", "inspect");
+      const button = screen.getByTestId("button");
+      expect(button).toHaveAttribute("type", "button");
+      expect(button).toHaveAttribute("aria-label", "Open raw data modal");
+
+      const icon = screen.getByTestId("icon");
+      expect(icon).toHaveAttribute("data-name", "inspect");
     });
   });
 });

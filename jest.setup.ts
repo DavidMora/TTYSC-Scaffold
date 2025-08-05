@@ -86,9 +86,11 @@ global.CSSStyleSheet = class {
   rules: string[] = [];
 
   insertRule(rule: string, index?: number) {
-    this.cssRules.splice(index ?? 0, 0, rule);
+    const insertIndex = index ?? this.cssRules.length;
+    const safeIndex = Math.max(0, Math.min(insertIndex, this.cssRules.length));
+    this.cssRules.splice(safeIndex, 0, rule);
     this.rules = this.cssRules;
-    return index ?? 0;
+    return safeIndex;
   }
 
   deleteRule(index: number) {

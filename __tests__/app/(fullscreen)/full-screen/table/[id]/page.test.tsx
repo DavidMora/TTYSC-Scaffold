@@ -61,11 +61,24 @@ jest.mock("@ui5/webcomponents-react", () => ({
     {
       level?: string;
     } & Record<string, unknown>
-  >) => (
-    <h1 data-testid="title" data-level={level} {...props}>
-      {children}
-    </h1>
-  ),
+  >) => {
+    const getElementType = (level?: string): string => {
+      const headingLevel = level?.toLowerCase();
+      if (headingLevel === "h1") return "h1";
+      if (headingLevel === "h2") return "h2";
+      if (headingLevel === "h3") return "h3";
+      if (headingLevel === "h4") return "h4";
+      if (headingLevel === "h5") return "h5";
+      if (headingLevel === "h6") return "h6";
+      return "div";
+    };
+
+    return React.createElement(
+      getElementType(level),
+      { "data-testid": "title", "data-level": level, ...props },
+      children
+    );
+  },
 }));
 
 // Mock BaseDataTable component
@@ -148,7 +161,7 @@ describe("TablePage", () => {
       render(await TablePage({ params: mockParams }));
 
       const text = screen.getByTestId("text");
-      expect(text).toHaveTextContent("Here is the the full table");
+      expect(text).toHaveTextContent("Here is the full table");
     });
 
     it("should render the download button with correct text and styling", async () => {
@@ -315,9 +328,7 @@ describe("TablePage", () => {
 
       render(await TablePage({ params: mockParams }));
 
-      expect(
-        screen.getByText("Here is the the full table")
-      ).toBeInTheDocument();
+      expect(screen.getByText("Here is the full table")).toBeInTheDocument();
       expect(screen.getByText("Download full data")).toBeInTheDocument();
     });
   });

@@ -9,6 +9,7 @@ import {
   Card,
   CardHeader,
   Icon,
+  Button,
 } from "@ui5/webcomponents-react";
 import { useState } from "react";
 
@@ -199,13 +200,15 @@ export default function RawDataNavigationItem(
             <CardHeader
               titleText={selectedRawData.tableName}
               action={
-                <Icon
-                  className="cursor-pointer"
-                  name="inspect"
+                <Button
+                  aria-label="Open raw data modal"
+                  className="cursor-pointer bg-transparent border-none p-0"
                   onClick={() => {
                     open();
                   }}
-                />
+                >
+                  <Icon name="inspect" />
+                </Button>
               }
               subtitleText="Here you can expand the table for you to see the full display of it "
             />

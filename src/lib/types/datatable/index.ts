@@ -23,7 +23,16 @@ export interface DateFilter {
   value?: string;
 }
 
-export type Filter = SelectFilter | DateFilter;
+export interface UnknownFilter {
+  type: string; // Catch-all for unknown types
+  key: string;
+  label?: string;
+  placeholder?: string;
+  options?: FilterOption[];
+  value?: string;
+}
+
+export type Filter = SelectFilter | DateFilter | UnknownFilter;
 
 export interface FilterChangeEvent {
   filterKey: string;

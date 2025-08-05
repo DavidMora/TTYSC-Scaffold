@@ -35,7 +35,7 @@ export default async function TablePage({ params }: TablePageProps) {
         className="pb-4 border-b-2 border-gray-300 mb-6 sticky top-0 z-10"
       >
         <Title level="H2">{tableName}</Title>
-        <Text>Here is the the full table</Text>
+        <Text>Here is the full table</Text>
       </FlexBox>
       <BaseDataTable
         data={tableData}
