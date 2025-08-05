@@ -8,7 +8,8 @@ interface AIResponseRendererProps {
   content: string;
 }
 
-const BLOCK_REGEX = /```(?:(\w+)\n?)?((?:[^`]|`(?!``))*?)```|\[SHOW_TABLE\]/gi;
+const codeBlockRegex = /```(\w+)?\n?([\s\S]*?)\n?```/g;
+const showTableRegex = /\[SHOW_TABLE\]/gi;
 
 const textStyle = {
   fontSize: "var(--sapFontSize)",
@@ -16,32 +17,86 @@ const textStyle = {
   whiteSpace: "pre-wrap" as const,
 };
 
+function parseContent(text: string) {
+  const results: Array<{
+    type: "text" | "code" | "table";
+    content?: string;
+    language?: string;
+    index: number;
+    matchLength?: number;
+  }> = [];
+
+  // Find code blocks
+  const codeBlocks = text.matchAll(codeBlockRegex);
+  for (const match of codeBlocks) {
+    results.push({
+      type: "code",
+      language: match[1] || "",
+      content: match[2],
+      index: match.index,
+      matchLength: match[0].length,
+    });
+  }
+
+  // Find show table markers
+  const showTables = text.matchAll(showTableRegex);
+  for (const match of showTables) {
+    results.push({
+      type: "table",
+      index: match.index,
+    });
+  }
+
+  return results.sort((a, b) => a.index - b.index);
+}
+
 export function AIResponseRenderer({
   content,
 }: Readonly<AIResponseRendererProps>) {
   const renderedContent = useMemo(() => {
     if (!content) return null;
 
-    let lastIndex = 0;
-    const parts = [];
+    const matches = parseContent(content);
 
-    for (const match of content.matchAll(BLOCK_REGEX)) {
+    if (matches.length === 0) {
+      return <Text style={textStyle}>{content}</Text>;
+    }
+
+    const parts: Array<{
+      type: "text" | "code" | "table";
+      content?: string;
+      language?: string;
+    }> = [];
+
+    let lastIndex = 0;
+
+    for (const match of matches) {
+      // Add text before this match
       if (match.index > lastIndex) {
         parts.push({
           type: "text",
           content: content.slice(lastIndex, match.index),
         });
       }
-      if (match[0].startsWith("```")) {
+
+      // Add the match
+      if (match.type === "code") {
         parts.push({
           type: "code",
-          content: match[2]?.trim() ?? "",
-          language: match[1] || "text",
+          content: match.content?.trim() ?? "",
+          language: match.language || "text",
         });
-      } else if (match[0].toUpperCase() === "[SHOW_TABLE]") {
+      } else if (match.type === "table") {
         parts.push({ type: "table" });
       }
-      lastIndex = match.index + match[0].length;
+
+      let matchLength: number;
+      if (match.type === "code") {
+        matchLength = match.matchLength || "[SHOW_TABLE]".length;
+      } else {
+        matchLength = "[SHOW_TABLE]".length;
+      }
+      lastIndex = match.index + matchLength;
     }
 
     // Add any remaining text
@@ -50,11 +105,6 @@ export function AIResponseRenderer({
         type: "text",
         content: content.slice(lastIndex),
       });
-    }
-
-    // If no matches, just render as text
-    if (parts.length === 0) {
-      return <Text style={textStyle}>{content}</Text>;
     }
 
     // Render parts
