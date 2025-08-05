@@ -32,15 +32,13 @@ const loadFromGeneratedFile = async (): Promise<FeatureFlags | null> => {
 const loadFromEnvironment = (): FeatureFlags => {
   // Use FEATURE_FLAG_ENABLE_AUTHENTICATION or fall back to default
   let enableAuth = DEFAULT_FLAGS.enableAuthentication;
-  let FF_Chat_Analysis_Screen = DEFAULT_FLAGS.FF_Chat_Analysis_Screen;
+  const FF_Chat_Analysis_Screen = DEFAULT_FLAGS.FF_Chat_Analysis_Screen;
   
   if (process.env.FEATURE_FLAG_ENABLE_AUTHENTICATION !== undefined) {
     enableAuth = process.env.FEATURE_FLAG_ENABLE_AUTHENTICATION.toLowerCase() === 'true';
   }
 
-  if (process.env.FEATURE_FLAG_FF_CHAT_ANALYSIS_SCREEN !== undefined) {
-    FF_Chat_Analysis_Screen = process.env.FEATURE_FLAG_FF_CHAT_ANALYSIS_SCREEN.toLowerCase() === 'true';
-  }
+
   
   const flags: FeatureFlags = {
     enableAuthentication: enableAuth,

@@ -23,19 +23,20 @@ const DEFAULT_FLAGS = {
 const flags = {};
 
 Object.keys(DEFAULT_FLAGS).forEach((key) => {
-  // Use proper naming convention: FEATURE_FLAG_ENABLE_AUTHENTICATION
-  const envKey = `FEATURE_FLAG_${key.toUpperCase().replace('AUTHENTICATION', 'AUTHENTICATION')}`;
-  // For enableAuthentication, use FEATURE_FLAG_ENABLE_AUTHENTICATION
-  const properEnvKey = key === 'enableAuthentication' ? 'FEATURE_FLAG_ENABLE_AUTHENTICATION' : envKey;
-  
-  const envValue = process.env[properEnvKey];
-  
-  if (envValue !== undefined) {
-    flags[key] = envValue.toLowerCase() === 'true';
+  // Only handle enableAuthentication from environment variables
+  if (key === 'enableAuthentication') {
+    const envValue = process.env['FEATURE_FLAG_ENABLE_AUTHENTICATION'];
+    
+    if (envValue !== undefined) {
+      flags[key] = envValue.toLowerCase() === 'true';
+    } else {
+      flags[key] = DEFAULT_FLAGS[key];
+      // Set the environment variable for the current process
+      process.env['FEATURE_FLAG_ENABLE_AUTHENTICATION'] = String(flags[key]);
+    }
   } else {
+    // For other flags, always use default values (no environment variable override)
     flags[key] = DEFAULT_FLAGS[key];
-    // Set the environment variable for the current process
-    process.env[properEnvKey] = String(flags[key]);
   }
 });
 

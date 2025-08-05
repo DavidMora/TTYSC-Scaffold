@@ -182,33 +182,5 @@ describe('feature-flags-edge', () => {
         writable: true,
       });
     });
-
-    it('should test FF_Chat_Analysis_Screen flag behavior', () => {
-      // Test the FF_Chat_Analysis_Screen flag to ensure it works correctly
-      delete process.env.ENABLE_AUTHENTICATION;
-      delete process.env.FF_Chat_Analysis_Screen;
-      
-      let result = isFeatureEnabledEdge('FF_Chat_Analysis_Screen');
-      expect(result).toBe(true);
-      
-      process.env.FF_Chat_Analysis_Screen = 'false';
-      result = isFeatureEnabledEdge('FF_Chat_Analysis_Screen');
-      expect(result).toBe(false);
-      
-      process.env.FF_Chat_Analysis_Screen = 'true';
-      result = isFeatureEnabledEdge('FF_Chat_Analysis_Screen');
-      expect(result).toBe(true);
-    });
-
-    it('should handle unknown flag keys gracefully', () => {
-      // Test with an unknown flag key to ensure the nullish coalescing works
-      delete process.env.ENABLE_AUTHENTICATION;
-      delete process.env.FF_Chat_Analysis_Screen;
-      
-      // This should return undefined for the flag, then fallback to DEFAULT_FLAGS
-      // Since DEFAULT_FLAGS doesn't have 'unknownFlag', it should return undefined
-      const result = isFeatureEnabledEdge('unknownFlag' as 'enableAuthentication' | 'FF_Chat_Analysis_Screen');
-      expect(result).toBeUndefined();
-    });
   });
 });

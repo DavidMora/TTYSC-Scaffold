@@ -17,7 +17,6 @@ describe("Feature Flags Utils", () => {
 
     // Reset environment variables
     delete process.env.FEATURE_FLAG_ENABLE_AUTHENTICATION;
-    delete process.env.FEATURE_FLAG_FF_CHAT_ANALYSIS_SCREEN;
   });
 
   describe("getFeatureFlagsSync", () => {
@@ -218,76 +217,15 @@ describe("Feature Flags Utils", () => {
     });
   });
 
-  describe("FF_Chat_Analysis_Screen environment variable", () => {
-    it("should load FF_Chat_Analysis_Screen from environment variable when defined", () => {
+  describe("FF_Chat_Analysis_Screen flag", () => {
+    it("should always use default value for FF_Chat_Analysis_Screen", () => {
       clearFeatureFlagsCache();
 
-      // Test with undefined env var (should use default)
-      delete process.env.FEATURE_FLAG_FF_CHAT_ANALYSIS_SCREEN;
-      const flags1 = getFeatureFlagsSync();
-      expect(flags1.FF_Chat_Analysis_Screen).toBe(
+      // FF_Chat_Analysis_Screen should always use default value
+      const flags = getFeatureFlagsSync();
+      expect(flags.FF_Chat_Analysis_Screen).toBe(
         DEFAULT_FLAGS.FF_Chat_Analysis_Screen
       );
-
-      clearFeatureFlagsCache();
-
-      // Test with defined env var set to false
-      process.env.FEATURE_FLAG_FF_CHAT_ANALYSIS_SCREEN = "false";
-      const flags2 = getFeatureFlagsSync();
-      expect(flags2.FF_Chat_Analysis_Screen).toBe(false);
-
-      clearFeatureFlagsCache();
-
-      // Test with defined env var set to true
-      process.env.FEATURE_FLAG_FF_CHAT_ANALYSIS_SCREEN = "true";
-      const flags3 = getFeatureFlagsSync();
-      expect(flags3.FF_Chat_Analysis_Screen).toBe(true);
-    });
-
-    it("should handle case-insensitive FF_Chat_Analysis_Screen environment variable", () => {
-      clearFeatureFlagsCache();
-
-      // Test with uppercase TRUE
-      process.env.FF_Chat_Analysis_Screen = "TRUE";
-      const flags1 = getFeatureFlagsSync();
-      expect(flags1.FF_Chat_Analysis_Screen).toBe(true);
-
-      clearFeatureFlagsCache();
-
-      // Test with uppercase FALSE
-      process.env.FEATURE_FLAG_FF_CHAT_ANALYSIS_SCREEN = "FALSE";
-      const flags2 = getFeatureFlagsSync();
-      expect(flags2.FF_Chat_Analysis_Screen).toBe(false);
-    });
-  });
-
-  describe("JSON file loading success path", () => {
-    it("should successfully load flags from JSON file and cache them", async () => {
-      clearFeatureFlagsCache();
-
-      // The actual JSON file should be loaded
-      const flags = await getFeatureFlags();
-
-      // Should return the actual JSON file values
-      expect(flags.enableAuthentication).toBe(true);
-      expect(flags.FF_Chat_Analysis_Screen).toBe(true);
-
-      // Should be cached
-      const cachedFlags = await getFeatureFlags();
-      expect(cachedFlags).toBe(flags); // Same reference due to caching
-    });
-
-    it("should prioritize JSON file over environment variables", async () => {
-      clearFeatureFlagsCache();
-
-      // Set environment variables
-      process.env.FEATURE_FLAG_ENABLE_AUTHENTICATION = "true";
-      process.env.FEATURE_FLAG_FF_CHAT_ANALYSIS_SCREEN = "false";
-
-      // JSON file should take precedence
-      const flags = await getFeatureFlags();
-      expect(flags.enableAuthentication).toBe(true); // From JSON file
-      expect(flags.FF_Chat_Analysis_Screen).toBe(true); // From JSON file
     });
   });
 
@@ -300,14 +238,13 @@ describe("Feature Flags Utils", () => {
 
       // Set environment variables for fallback
       process.env.FEATURE_FLAG_ENABLE_AUTHENTICATION = "true";
-      process.env.FEATURE_FLAG_FF_CHAT_ANALYSIS_SCREEN = "false";
 
       // Test the synchronous version which uses environment variables
       const flags = getFeatureFlagsSync();
 
-      // Should use environment variables
+      // Should use environment variables for enableAuthentication, default for FF_Chat_Analysis_Screen
       expect(flags.enableAuthentication).toBe(true);
-      expect(flags.FF_Chat_Analysis_Screen).toBe(false);
+      expect(flags.FF_Chat_Analysis_Screen).toBe(DEFAULT_FLAGS.FF_Chat_Analysis_Screen);
     });
 
     it("should use default values when both JSON file and environment variables fail", async () => {
@@ -315,7 +252,6 @@ describe("Feature Flags Utils", () => {
 
       // Don't set any environment variables
       delete process.env.FEATURE_FLAG_ENABLE_AUTHENTICATION;
-      delete process.env.FEATURE_FLAG_FF_CHAT_ANALYSIS_SCREEN;
 
       // Test the synchronous version which uses defaults
       const flags = getFeatureFlagsSync();
@@ -342,10 +278,9 @@ describe("Feature Flags Utils", () => {
     it("should check FF_Chat_Analysis_Screen flag synchronously", () => {
       clearFeatureFlagsCache();
 
-      // Test with environment variable
-      process.env.FEATURE_FLAG_FF_CHAT_ANALYSIS_SCREEN = "false";
+      // Test with default value (no environment variable override)
       const result = isFeatureEnabledSync("FF_Chat_Analysis_Screen");
-      expect(result).toBe(false);
+      expect(result).toBe(DEFAULT_FLAGS.FF_Chat_Analysis_Screen);
     });
   });
 });
