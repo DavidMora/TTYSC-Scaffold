@@ -142,5 +142,21 @@ describe("MockMutationAdapter", () => {
 
       expect(result).toEqual(mockData);
     });
+
+    it("should handle non-Error exceptions gracefully", async () => {
+      const nonErrorValue = "string error";
+      const onError = jest.fn();
+      const mutationFn = jest.fn().mockRejectedValue(nonErrorValue);
+
+      const response = adapter.mutateData(["test-key"], mutationFn, {
+        onError,
+      });
+      const variables = { name: "test" };
+
+      await expect(response.mutate(variables)).rejects.toThrow("Mutation failed");
+
+      expect(onError).toHaveBeenCalledWith(expect.any(Error), variables);
+      expect(onError.mock.calls[0][0].message).toBe("Mutation failed");
+    });
   });
 });

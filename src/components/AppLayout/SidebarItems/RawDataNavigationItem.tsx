@@ -127,11 +127,10 @@ export default function RawDataNavigationItem(
   };
 
   const handleFilterChange = (filterId: number, value: string) => {
-    if (!selectedRawData) return;
-
+    // Since this is only called when selectedRawData exists, we don't need the check
     const newFilterSelections = { ...filterSelections, [filterId]: value };
     setFilterSelections(newFilterSelections);
-    onDataSelection?.(selectedRawData, newFilterSelections);
+    onDataSelection?.(selectedRawData!, newFilterSelections);
   };
 
   if (!selectedRawData) {
@@ -153,8 +152,8 @@ export default function RawDataNavigationItem(
           className="w-full"
           value={selectedRawData.id.toString()}
           onChange={(event) => {
-            const value = event.detail.selectedOption.value;
-            const id = parseInt(value ?? "");
+            const value = event.detail.selectedOption.value || "";
+            const id = parseInt(value);
             handleRawDataChange(id);
           }}
         >
@@ -180,7 +179,7 @@ export default function RawDataNavigationItem(
               onChange={(event) =>
                 handleFilterChange(
                   filter.id,
-                  event.detail.selectedOption.value ?? "all"
+                  event.detail.selectedOption.value || "all"
                 )
               }
             >

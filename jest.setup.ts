@@ -74,11 +74,13 @@ global.fetch = jest.fn((url) => {
   });
 }) as jest.Mock;
 
-// Mock adoptedStyleSheets for UI5 WebComponents
-Object.defineProperty(document, "adoptedStyleSheets", {
-  value: [],
-  writable: true,
-});
+// Mock adoptedStyleSheets for UI5 WebComponents (only in jsdom environment)
+if (typeof document !== 'undefined') {
+  Object.defineProperty(document, "adoptedStyleSheets", {
+    value: [],
+    writable: true,
+  });
+}
 
 // Mock CSSStyleSheet for UI5 WebComponents
 global.CSSStyleSheet = class {

@@ -12,7 +12,6 @@ const customJestConfig = {
   testPathIgnorePatterns: [
     "<rootDir>/.next/",
     "<rootDir>/node_modules/",
-    "<rootDir>/__tests__/test-utils-internal/",
   ],
   moduleNameMapper: {
     "^@ui5/webcomponents-react$":
