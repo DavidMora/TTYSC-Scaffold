@@ -1,54 +1,19 @@
 import React, { useMemo } from "react";
 import { Text } from "@ui5/webcomponents-react";
 import { CodeBlock } from "@/components/CodeBlock/CodeBlock";
-import BaseDataTable from "../Tables/BaseDataTable";
+import BaseDataTable from "@/components/Tables/BaseDataTable";
 import { tableData } from "@/lib/constants/mocks/dataTable";
+import { parseContent } from "@/lib/utils/aiContentParser";
 
 interface AIResponseRendererProps {
   content: string;
 }
-
-const codeBlockRegex = /```(\w+)?\n?((?:[^`]|`(?!``))*?)\n?```/g;
-const showTableRegex = /\[SHOW_TABLE\]/gi;
 
 const textStyle = {
   fontSize: "var(--sapFontSize)",
   fontWeight: 400,
   whiteSpace: "pre-wrap" as const,
 };
-
-function parseContent(text: string) {
-  const results: Array<{
-    type: "text" | "code" | "table";
-    content?: string;
-    language?: string;
-    index: number;
-    matchLength?: number;
-  }> = [];
-
-  // Find code blocks
-  const codeBlocks = text.matchAll(codeBlockRegex);
-  for (const match of codeBlocks) {
-    results.push({
-      type: "code",
-      language: match[1] || "",
-      content: match[2],
-      index: match.index,
-      matchLength: match[0].length,
-    });
-  }
-
-  // Find show table markers
-  const showTables = text.matchAll(showTableRegex);
-  for (const match of showTables) {
-    results.push({
-      type: "table",
-      index: match.index,
-    });
-  }
-
-  return results.sort((a, b) => a.index - b.index);
-}
 
 export function AIResponseRenderer({
   content,
@@ -90,13 +55,7 @@ export function AIResponseRenderer({
         parts.push({ type: "table" });
       }
 
-      let matchLength: number;
-      if (match.type === "code") {
-        matchLength = match.matchLength || "[SHOW_TABLE]".length;
-      } else {
-        matchLength = "[SHOW_TABLE]".length;
-      }
-      lastIndex = match.index + matchLength;
+      lastIndex = match.index + (match.matchLength || 0);
     }
 
     // Add any remaining text
