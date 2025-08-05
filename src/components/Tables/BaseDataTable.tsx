@@ -69,6 +69,7 @@ const BaseDataTable: React.FC<Readonly<TableDataProps>> = (props) => {
         className={props.toolbarClassName}
         onFilterChange={handleFilterChange}
         onSearch={handleSearch}
+        disableFullScreen={props.disableFullScreen}
       />
       <Table
         features={[

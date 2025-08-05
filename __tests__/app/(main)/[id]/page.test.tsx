@@ -1,6 +1,11 @@
 import { render, screen } from "@testing-library/react";
 import { useParams } from "next/navigation";
-import AnalysisPage from "@/app/[id]/page";
+import AnalysisPage from "@/app/(main)/[id]/page";
+
+// Mock next/navigation
+jest.mock("next/navigation", () => ({
+  useParams: jest.fn(),
+}));
 
 jest.mock("@/components/AnalysisContainer/AnalysisContainer", () => {
   return function MockAnalysisContainer() {

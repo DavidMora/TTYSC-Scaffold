@@ -1,5 +1,5 @@
 import { render, waitFor, screen, fireEvent } from "@testing-library/react";
-import Home from "@/app/page";
+import Home from "@/app/(main)/page";
 import "@testing-library/jest-dom";
 import React from "react";
 import { useCreateChat } from "@/hooks/chats";

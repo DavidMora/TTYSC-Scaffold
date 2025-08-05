@@ -8,6 +8,7 @@ import {
   Label,
   Card,
   CardHeader,
+  Icon,
 } from "@ui5/webcomponents-react";
 import { useState } from "react";
 
@@ -196,33 +197,20 @@ export default function RawDataNavigationItem(
         <Card
           header={
             <CardHeader
-              additionalText="view"
               titleText={selectedRawData.tableName}
+              action={
+                <Icon
+                  className="cursor-pointer"
+                  name="inspect"
+                  onClick={() => {
+                    open();
+                  }}
+                />
+              }
               subtitleText="Here you can expand the table for you to see the full display of it "
             />
           }
-        >
-          <button
-            type="button"
-            style={{
-              all: "unset",
-              textAlign: "center",
-              width: "100%",
-              height: "100%",
-              cursor: "pointer",
-              display: "block",
-            }}
-            onClick={() => {
-              console.log("Card clicked");
-              open();
-            }}
-            tabIndex={0}
-            aria-label="Expand raw data table"
-          >
-            {/* <Text>Card Content</Text> */}
-            View
-          </button>
-        </Card>
+        ></Card>
       </FlexBox>
     </SideNavigationItem>
   );

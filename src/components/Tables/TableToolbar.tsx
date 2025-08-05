@@ -19,6 +19,8 @@ import {
 import { ExportMenu } from "@/components/ExportMenu";
 import { Filter, TableToolbarProps } from "@/lib/types/datatable";
 import { twMerge } from "tailwind-merge";
+import { useRouter } from "next/navigation";
+import { FULL_SCREEN_TABLE } from "@/lib/constants/routes/Dashboard";
 
 const TableToolbar: React.FC<Readonly<TableToolbarProps>> = ({
   className,
@@ -27,7 +29,9 @@ const TableToolbar: React.FC<Readonly<TableToolbarProps>> = ({
   filters = [],
   onFilterChange,
   onSearch,
+  disableFullScreen = false,
 }) => {
+  const router = useRouter();
   const [search, setSearch] = useState("");
   const [filterValues, setFilterValues] = useState<Record<string, string>>(
     () => {
@@ -124,7 +128,9 @@ const TableToolbar: React.FC<Readonly<TableToolbarProps>> = ({
   };
 
   const handleFullScreen = () => {
-    console.log("full screen");
+    if (tableId) {
+      router.push(FULL_SCREEN_TABLE(tableId.toString()));
+    }
   };
 
   return (
@@ -168,6 +174,7 @@ const TableToolbar: React.FC<Readonly<TableToolbarProps>> = ({
         design="Transparent"
         icon="full-screen"
         onClick={handleFullScreen}
+        disabled={disableFullScreen}
       />
     </Toolbar>
   );
