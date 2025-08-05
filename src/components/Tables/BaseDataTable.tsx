@@ -57,6 +57,7 @@ const BaseDataTable: React.FC<Readonly<TableDataProps>> = (props) => {
 
   return (
     <div
+      data-testid="base-data-table"
       className={twMerge(
         "w-full rounded-xl overflow-hidden outline outline-gray-300 bg-[var(--sapBaseColor)]",
         props.mainClassName

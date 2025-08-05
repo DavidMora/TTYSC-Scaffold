@@ -632,6 +632,29 @@ describe("useTableData", () => {
       expect(result.current.filteredRows).toHaveLength(0); // Should filter when value is "[]" string
     });
 
+    it("should handle unknown types in search text building that return empty string", () => {
+      const rowsWithSymbol: TableDataRow[] = [
+        { id: "1", name: "John", symbol: Symbol("test") as unknown as string },
+      ];
+
+      const { result } = renderHook(() =>
+        useTableData({
+          rows: rowsWithSymbol,
+          headers: [
+            { text: "Name", accessorKey: "name" },
+            { text: "Symbol", accessorKey: "symbol" },
+          ],
+        })
+      );
+
+      act(() => {
+        result.current.handleSearch("Symbol");
+      });
+
+      // Should still find by name, but symbol should contribute empty string to search
+      expect(result.current.filteredRows).toHaveLength(0);
+    });
+
     it("should handle date filter error cases", () => {
       const dateFilters = [
         {

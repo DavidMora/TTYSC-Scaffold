@@ -359,6 +359,32 @@ describe("TableToolbar", () => {
       // The ExportMenu should be rendered with default tableId "1"
       expect(screen.getByText("Export")).toBeInTheDocument();
     });
+
+    it("should handle input events on search", () => {
+      const mockOnSearch = jest.fn();
+      render(<TableToolbar onSearch={mockOnSearch} />);
+
+      const searchInput = screen.getByTestId("ui5-input");
+      fireEvent.input(searchInput, { target: { value: "input test" } });
+
+      expect(mockOnSearch).toHaveBeenCalledWith("input test");
+    });
+  });
+
+  describe("Table ID prop", () => {
+    it("should pass tableId to ExportMenu when provided", () => {
+      render(<TableToolbar tableId={123} />);
+
+      // The ExportMenu should be rendered with the tableId
+      expect(screen.getByText("Export")).toBeInTheDocument();
+    });
+
+    it("should use default tableId when not provided", () => {
+      render(<TableToolbar />);
+
+      // The ExportMenu should be rendered with default tableId "1"
+      expect(screen.getByText("Export")).toBeInTheDocument();
+    });
   });
 
   describe("Accessibility", () => {

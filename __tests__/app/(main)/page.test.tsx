@@ -11,6 +11,7 @@ import {
 const mockPush = jest.fn();
 const mockMutate = jest.fn();
 const mockGenerateAnalysisName = jest.fn();
+const mockUseFeatureFlag = jest.fn();
 
 jest.mock("next/navigation", () => ({
   useRouter: () => ({
@@ -27,6 +28,10 @@ jest.mock("@/contexts/SequentialNamingContext", () => ({
   useSequentialNaming: jest.fn(),
   SequentialNamingProvider: ({ children }: { children: React.ReactNode }) =>
     children,
+}));
+
+jest.mock("@/hooks/useFeatureFlags", () => ({
+  useFeatureFlag: () => mockUseFeatureFlag(),
 }));
 
 const mockUseCreateChat = useCreateChat as jest.MockedFunction<
@@ -49,7 +54,14 @@ describe("Home page", () => {
     mockPush.mockClear();
     mockMutate.mockClear();
     mockGenerateAnalysisName.mockClear();
+    mockUseFeatureFlag.mockClear();
     jest.clearAllMocks();
+
+    // Default mock for useFeatureFlag
+    mockUseFeatureFlag.mockReturnValue({
+      flag: true,
+      loading: false,
+    });
 
     // Default mock for useSequentialNaming
     mockUseSequentialNaming.mockReturnValue({
@@ -60,10 +72,14 @@ describe("Home page", () => {
     // Default mock for useCreateChat
     mockUseCreateChat.mockReturnValue({
       mutate: mockMutate,
-      data: undefined,
-      error: null,
-      isLoading: true,
+      mutateAsync: mockMutate,
+      isSuccess: false,
+      isError: false,
+      isIdle: true,
       reset: jest.fn(),
+      data: undefined,
+      error: undefined,
+      isLoading: true,
     });
   });
 
@@ -116,13 +132,12 @@ describe("Home page", () => {
 
       return {
         mutate: mockMutate,
-        data: {
-          data: mockAnalysis,
-          status: 200,
-          statusText: "OK",
-          headers: {},
-        },
-        error: null,
+        mutateAsync: mockMutate,
+        isSuccess: true,
+        isError: false,
+        isIdle: false,
+        data: mockAnalysis,
+        error: undefined,
         isLoading: false,
         reset: jest.fn(),
       };
@@ -153,6 +168,10 @@ describe("Home page", () => {
 
       return {
         mutate: mockMutate,
+        mutateAsync: mockMutate,
+        isSuccess: false,
+        isError: true,
+        isIdle: false,
         data: undefined,
         error: testError,
         isLoading: false,
@@ -181,5 +200,33 @@ describe("Home page", () => {
     });
 
     consoleSpy.mockRestore();
+  });
+
+  it("renders loading display when feature flag is loading", () => {
+    mockUseFeatureFlag.mockReturnValue({
+      flag: false,
+      loading: true,
+    });
+
+    renderWithProvider(<Home />);
+
+    expect(screen.getByText("Creating Your Analysis...")).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "Setting up your analysis dashboard. You'll be redirected automatically."
+      )
+    ).toBeInTheDocument();
+  });
+
+  it("renders feature not available when feature flag is disabled", () => {
+    mockUseFeatureFlag.mockReturnValue({
+      flag: false,
+      loading: false,
+    });
+
+    renderWithProvider(<Home />);
+
+    expect(screen.getByText("Feature Not Available")).toBeInTheDocument();
+    expect(screen.getByText("Chat analysis functionality is currently disabled.")).toBeInTheDocument();
   });
 });
