@@ -165,9 +165,12 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     // Try to get session first, then fallback to query parameter
     const session = await getServerSession(authOptions);
     
-    const idToken = session?.idToken ?? searchParams.get('idToken');
-    const accessToken = session?.accessToken;
-    const refreshToken = session?.refreshToken;
+    // Type assertion to access our custom session properties
+    const extendedSession = session as { idToken?: string; accessToken?: string; refreshToken?: string } | null;
+    
+    const idToken = extendedSession?.idToken ?? searchParams.get('idToken');
+    const accessToken = extendedSession?.accessToken;
+    const refreshToken = extendedSession?.refreshToken;
 
     console.log('[Auth] Session available:', !!session);
     console.log('[Auth] ID Token available:', !!idToken);
