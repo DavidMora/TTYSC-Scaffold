@@ -510,6 +510,65 @@ describe("FetchAdapter", () => {
     });
   });
 
+  describe("basic authentication", () => {
+    it("should add Basic Authorization header when auth config is provided", async () => {
+      const config: HttpClientConfig = {
+        auth: {
+          username: "testuser",
+          password: "testpass"
+        }
+      };
+      const authAdapter = new FetchAdapter(config);
+
+      const mockResponse = {
+        ok: true,
+        status: 200,
+        statusText: "OK",
+        headers: new Headers({ "content-type": "application/json" }),
+        json: jest.fn().mockResolvedValue({ data: "success" }),
+      };
+      mockFetch.mockResolvedValue(mockResponse);
+
+      await authAdapter.get("/test");
+
+      expect(mockFetch).toHaveBeenCalledWith("/test", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Basic dGVzdHVzZXI6dGVzdHBhc3M=" // Base64 of "testuser:testpass"
+        },
+        signal: expect.any(AbortSignal),
+      });
+    });
+
+    it("should add Basic Authorization header from request config", async () => {
+      const mockResponse = {
+        ok: true,
+        status: 200,
+        statusText: "OK",
+        headers: new Headers({ "content-type": "application/json" }),
+        json: jest.fn().mockResolvedValue({ data: "success" }),
+      };
+      mockFetch.mockResolvedValue(mockResponse);
+
+      await adapter.get("/test", {
+        auth: {
+          username: "requestuser",
+          password: "requestpass"
+        }
+      });
+
+      expect(mockFetch).toHaveBeenCalledWith("/test", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Basic cmVxdWVzdHVzZXI6cmVxdWVzdHBhc3M=" // Base64 of "requestuser:requestpass"
+        },
+        signal: expect.any(AbortSignal),
+      });
+    });
+  });
+
   describe("header merging", () => {
     it("should merge headers correctly with all levels", async () => {
       const config = {

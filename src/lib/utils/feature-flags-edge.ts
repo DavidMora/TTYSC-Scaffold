@@ -28,6 +28,6 @@ export function loadFeatureFlagsEdge(): FeatureFlags {
  * Edge-compatible version to check if a specific feature flag is enabled
  */
 export function isFeatureEnabledEdge(key: FeatureFlagKey): boolean {
-  const flags = loadFeatureFlagsEdge();
-  return flags[key] ?? DEFAULT_FLAGS[key];
+  const flags = { ...DEFAULT_FLAGS, ...loadFeatureFlagsEdge() };
+  return flags[key];
 }

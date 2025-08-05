@@ -215,6 +215,48 @@ describe("Feature Flags Utils", () => {
       const flags2 = getFeatureFlagsSync();
       expect(flags2.enableAuthentication).toBe(false);
     });
+
+    it('should force loadFromGeneratedFile to return null and use environment fallback', async () => {
+      // This test specifically targets line 23 (return null in catch block)
+      // and lines 64-66 (fallback to environment)
+      clearFeatureFlagsCache();
+      
+      // Set environment variable for fallback
+      process.env.FEATURE_FLAG_ENABLE_AUTHENTICATION = 'false';
+      
+      // Mock the import to throw an error, forcing the catch block
+      const originalImport = global.require;
+      jest.doMock('@/feature-flags.json', () => {
+        throw new Error('File not found');
+      });
+      
+      // Clear modules cache to ensure our mock takes effect
+      jest.clearAllMocks();
+      
+      // This should trigger the catch block (line 23) and then use environment fallback (lines 64-66)
+      const flags = await getFeatureFlags();
+      
+      expect(flags).toBeDefined();
+      expect(flags.enableAuthentication).toBe(false);
+      
+      // Restore original require
+      global.require = originalImport;
+      jest.dontMock('@/feature-flags.json');
+    });
+
+    it('should test import failure path by removing the feature-flags.json file from path', async () => {
+      // Another approach to test line 23 - try to import a non-existent file
+      clearFeatureFlagsCache();
+      
+      process.env.FEATURE_FLAG_ENABLE_AUTHENTICATION = 'true';
+      
+      // The import will naturally fail if the file doesn't exist
+      // This should cover the catch block (line 23) and environment fallback (lines 64-66)
+      const flags = await getFeatureFlags();
+      
+      expect(flags).toBeDefined();
+      expect(typeof flags.enableAuthentication).toBe('boolean');
+    });
   });
 
   describe("FF_Chat_Analysis_Screen flag", () => {

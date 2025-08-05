@@ -592,5 +592,43 @@ describe("BaseDataTable", () => {
       // Should still have the growing feature
       expect(screen.getByTestId("ui5-table-growing")).toBeInTheDocument();
     });
+
+    it("handles rows with null/undefined row identifier values", () => {
+      const dataWithNullIds: TableDataProps = {
+        data: {
+          headers: [{ text: "Name", accessorKey: "name" }],
+          rows: [
+            { id: null, name: "Null ID" },
+            { name: "Missing ID" }, // undefined case
+          ],
+          rowIdentifier: "id",
+        },
+      };
+
+      render(<BaseDataTable {...dataWithNullIds} />);
+      
+      // Component should still render despite null/undefined IDs
+      expect(screen.getByText("Null ID")).toBeInTheDocument();
+      expect(screen.getByText("Missing ID")).toBeInTheDocument();
+    });
+
+    it("handles rows with object row identifier values", () => {
+      const dataWithObjectIds: TableDataProps = {
+        data: {
+          headers: [{ text: "Name", accessorKey: "name" }],
+          rows: [
+            { id: { nested: "value" }, name: "Object ID" },
+            { id: { complex: { data: "test" } }, name: "Complex Object ID" },
+          ],
+          rowIdentifier: "id",
+        },
+      };
+
+      render(<BaseDataTable {...dataWithObjectIds} />);
+      
+      // Component should still render with object IDs
+      expect(screen.getByText("Object ID")).toBeInTheDocument();
+      expect(screen.getByText("Complex Object ID")).toBeInTheDocument();
+    });
   });
 });
