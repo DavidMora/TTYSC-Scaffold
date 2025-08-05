@@ -8,7 +8,7 @@ interface AIResponseRendererProps {
   content: string;
 }
 
-const codeBlockRegex = /```(\w+)?\n?([\s\S]*?)\n?```/g;
+const codeBlockRegex = /```(\w+)?\n?((?:[^`]|`(?!``))*?)\n?```/g;
 const showTableRegex = /\[SHOW_TABLE\]/gi;
 
 const textStyle = {
