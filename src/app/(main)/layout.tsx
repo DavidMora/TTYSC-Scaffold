@@ -3,7 +3,7 @@ import ConditionalAuthLayout from "../../components/ConditionalAuthLayout";
 export default function MainLayout({
   children,
 }: {
-  children: React.ReactNode;
+  children: Readonly<React.ReactNode>;
 }) {
   return <ConditionalAuthLayout>{children}</ConditionalAuthLayout>;
 }

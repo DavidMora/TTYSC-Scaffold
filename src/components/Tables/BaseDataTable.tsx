@@ -39,7 +39,15 @@ function getRowKey(row: TableDataRow, identifier: string | undefined): string {
     return JSON.stringify(value);
   }
 
-  return String(value);
+  if (typeof value === "number" || typeof value === "boolean") {
+    return value.toString();
+  }
+
+  if (typeof value === "string") {
+    return value;
+  }
+
+  return "";
 }
 
 const BaseDataTable: React.FC<Readonly<TableDataProps>> = (props) => {

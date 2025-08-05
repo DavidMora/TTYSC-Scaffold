@@ -25,7 +25,7 @@ const getTableData = (
   };
 };
 
-export default async function TablePage({ params }: TablePageProps) {
+export default async function TablePage({ params }: Readonly<TablePageProps>) {
   const { id } = await params;
   const { tableId, tableName, tableData } = getTableData(id);
   return (
