@@ -533,10 +533,11 @@ describe("FetchAdapter", () => {
 
       expect(mockFetch).toHaveBeenCalledWith("/test", {
         method: "GET",
-        headers: {
+        headers: expect.objectContaining({
           "Content-Type": "application/json",
-          Authorization: "Basic dGVzdHVzZXI6dGVzdHBhc3M=" // Base64 of "testuser:testpass"
-        },
+          Authorization: "Basic dGVzdHVzZXI6dGVzdHBhc3M=", // Base64 of "testuser:testpass"
+          "X-Request-Id": expect.any(String)
+        }),
         signal: expect.any(AbortSignal),
       });
     });
@@ -560,12 +561,59 @@ describe("FetchAdapter", () => {
 
       expect(mockFetch).toHaveBeenCalledWith("/test", {
         method: "GET",
-        headers: {
+        headers: expect.objectContaining({
           "Content-Type": "application/json",
-          Authorization: "Basic cmVxdWVzdHVzZXI6cmVxdWVzdHBhc3M=" // Base64 of "requestuser:requestpass"
-        },
+          Authorization: "Basic cmVxdWVzdHVzZXI6cmVxdWVzdHBhc3M=", // Base64 of "requestuser:requestpass"
+          "X-Request-Id": expect.any(String)
+        }),
         signal: expect.any(AbortSignal),
       });
+    });
+  });
+
+  describe("request ID", () => {
+    it("should add X-Request-Id header with UUIDv6 to all requests", async () => {
+      const mockResponse = {
+        ok: true,
+        status: 200,
+        statusText: "OK",
+        headers: new Headers({ "content-type": "application/json" }),
+        json: jest.fn().mockResolvedValue({ data: "success" }),
+      };
+      mockFetch.mockResolvedValue(mockResponse);
+
+      await adapter.get("/test");
+
+      expect(mockFetch).toHaveBeenCalledWith("/test", {
+        method: "GET",
+        headers: expect.objectContaining({
+          "Content-Type": "application/json",
+          "X-Request-Id": expect.stringMatching(/^[0-9a-f]{8}-[0-9a-f]{4}-6[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i)
+        }),
+        signal: expect.any(AbortSignal),
+      });
+    });
+
+    it("should generate different request IDs for different requests", async () => {
+      const mockResponse = {
+        ok: true,
+        status: 200,
+        statusText: "OK",
+        headers: new Headers({ "content-type": "application/json" }),
+        json: jest.fn().mockResolvedValue({ data: "success" }),
+      };
+      mockFetch.mockResolvedValue(mockResponse);
+
+      await adapter.get("/test1");
+      await adapter.get("/test2");
+
+      const calls = mockFetch.mock.calls;
+      const requestId1 = calls[0][1].headers["X-Request-Id"];
+      const requestId2 = calls[1][1].headers["X-Request-Id"];
+
+      expect(requestId1).toBeDefined();
+      expect(requestId2).toBeDefined();
+      expect(requestId1).not.toBe(requestId2);
     });
   });
 
@@ -598,6 +646,7 @@ describe("FetchAdapter", () => {
             "Content-Type": "application/json",
             "X-Custom": "value",
             "X-Override": "test",
+            "X-Request-Id": expect.any(String),
           }),
         })
       );
