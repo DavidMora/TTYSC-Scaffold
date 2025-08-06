@@ -1,6 +1,6 @@
 import React from "react";
 import { render, screen } from "@testing-library/react";
-import ChatLayout from "@/app/[id]/layout";
+import ChatLayout from "@/app/(main)/[id]/layout";
 import "@testing-library/jest-dom";
 
 // Mock the AutosaveUIProvider

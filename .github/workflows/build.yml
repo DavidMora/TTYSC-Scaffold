@@ -32,8 +32,8 @@ jobs:
           echo "PR labels: ${{ steps.pr-labels.outputs.labels }}"
           # yarn.lock is excluded from line count
           LINES_CHANGED=$(git diff --stat origin/${{ github.base_ref }} -- . ':!yarn.lock' | tail -n 1 | awk '{print $4}' || echo "0")
-          if [ "$LINES_CHANGED" -gt 3500 ]; then
-            echo "❌ PR is too large! Contains $LINES_CHANGED lines changed. Maximum allowed is 3500 lines."
+          if [ "$LINES_CHANGED" -gt 1000 ]; then
+            echo "❌ PR is too large! Contains $LINES_CHANGED lines changed. Maximum allowed is 1000 lines."
             echo "Please split this PR into smaller ones for better review."
             exit 1
           else

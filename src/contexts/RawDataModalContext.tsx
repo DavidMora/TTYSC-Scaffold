@@ -14,11 +14,9 @@ export const RawDataModalProvider = ({ children }: { children: ReactNode }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const open = React.useCallback(() => {
-    console.log("Opening Raw Data Modal");
     setIsOpen(true);
   }, []);
   const close = React.useCallback(() => {
-    console.log("Closing Raw Data Modal");
     setIsOpen(false);
   }, []);
 

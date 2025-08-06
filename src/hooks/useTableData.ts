@@ -37,7 +37,11 @@ function getUniqueValuesFromData(
     if (value !== undefined && value !== null) {
       // Handle different types safely
       if (typeof value === "object") {
-        uniqueValues.add(JSON.stringify(value));
+        try {
+          uniqueValues.add(JSON.stringify(value));
+        } catch {
+          uniqueValues.add("[Complex Object]");
+        }
       } else if (
         typeof value === "string" ||
         typeof value === "number" ||
@@ -115,6 +119,47 @@ function buildSearchText(
     .toLowerCase();
 }
 
+// Helper function to check if filter value is empty
+function isFilterValueEmpty(filterValue: unknown): boolean {
+  return (
+    !filterValue ||
+    filterValue === "" ||
+    (Array.isArray(filterValue) && filterValue.length === 0)
+  );
+}
+
+// Helper function to convert value to string for comparison
+function valueToString(value: unknown): string {
+  if (value === null || value === undefined) return "";
+  if (typeof value === "object") return JSON.stringify(value);
+  if (
+    typeof value === "string" ||
+    typeof value === "number" ||
+    typeof value === "boolean"
+  ) {
+    return value.toString();
+  }
+  return "";
+}
+
+// Helper function to match select filter
+function matchSelectFilter(rowValue: unknown, filterValue: unknown): boolean {
+  const rowValueStr = valueToString(rowValue);
+  const filterValueStr = typeof filterValue === "string" ? filterValue : "";
+  return rowValueStr === filterValueStr;
+}
+
+// Helper function to match date filter
+function matchDateFilter(rowValue: unknown, filterValue: unknown): boolean {
+  try {
+    const rowDate = new Date(rowValue as string);
+    const filterDate = new Date(filterValue as string);
+    return rowDate.toDateString() === filterDate.toDateString();
+  } catch {
+    return false;
+  }
+}
+
 // Apply filters to rows
 function applyFilters(
   rows: TableDataRow[],
@@ -125,47 +170,20 @@ function applyFilters(
     return filters.every((filter) => {
       const filterValue = activeFilters[filter.key];
 
-      // If there's no filter value, don't filter
-      if (
-        !filterValue ||
-        filterValue === "" ||
-        (Array.isArray(filterValue) && filterValue.length === 0)
-      ) {
+      if (isFilterValueEmpty(filterValue)) {
         return true;
       }
 
       const rowValue = getValueByAccessor(row, filter.key);
 
       if (filter.type === "select") {
-        // For select filters, we compare exact values
-        let rowValueStr = "";
-        if (rowValue !== null && rowValue !== undefined) {
-          if (typeof rowValue === "object") {
-            rowValueStr = JSON.stringify(rowValue);
-          } else if (
-            typeof rowValue === "string" ||
-            typeof rowValue === "number" ||
-            typeof rowValue === "boolean"
-          ) {
-            rowValueStr = rowValue.toString();
-          }
-        }
-
-        const filterValueStr =
-          typeof filterValue === "string" ? filterValue : "";
-        return rowValueStr === filterValueStr;
+        return matchSelectFilter(rowValue, filterValue);
       } else if (filter.type === "date") {
-        // For date filters, you can implement specific logic
-        try {
-          const rowDate = new Date(rowValue as string);
-          const filterDate = new Date(filterValue as string);
-          return rowDate.toDateString() === filterDate.toDateString();
-        } catch {
-          return false;
-        }
+        return matchDateFilter(rowValue, filterValue);
+      } else {
+        console.warn(`Unhandled filter type: ${filter.type}`);
+        return false;
       }
-
-      return true;
     });
   });
 }
