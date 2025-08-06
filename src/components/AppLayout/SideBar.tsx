@@ -15,6 +15,7 @@ import RawDataNavigationItem, {
 import ChatHistoryNavigationItem from "./SidebarItems/ChatHistoryNavigationItem";
 import { useChats } from "@/hooks/chats";
 import "@ui5/webcomponents-icons/dist/inspect.js";
+import { CHAT } from "@/lib/constants/routes/Dashboard";
 
 interface SideBarProps {
   sideNavCollapsed?: boolean;
@@ -53,9 +54,9 @@ const SideBarMenu: React.FC<SideBarProps> = ({
     // Implement chat selection logic here
   };
 
-  const handleChatItemSelect = (chatId: string, itemId: string) => {
-    console.log("Chat item selected:", chatId, itemId);
-    // Implement chat item selection logic here
+  const handleChatItemSelect = (chatId: string) => {
+    console.log("Chat item selected:", chatId);
+    router.push(CHAT(chatId));
   };
 
   const handleNavSelection = (event: {
@@ -102,7 +103,7 @@ const SideBarMenu: React.FC<SideBarProps> = ({
           key={item.path || item.text}
           text={item.text}
           icon={item.icon}
-          unselectable={item.subItems?.length !== 0}
+          unselectable={!!item.subItems?.length}
           selected={item.path ? pathname === item.path : false}
           data-path={item.path || undefined}
         >
