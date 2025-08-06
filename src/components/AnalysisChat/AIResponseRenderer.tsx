@@ -4,6 +4,8 @@ import { CodeBlock } from "@/components/CodeBlock/CodeBlock";
 import BaseDataTable from "@/components/Tables/BaseDataTable";
 import { tableData } from "@/lib/constants/mocks/dataTable";
 import { parseContent } from "@/lib/utils/aiContentParser";
+import { AIChartContainer } from "../AICharts/AIChartContainer";
+import { ParsedContentItemType } from "@/lib/types/chatContent";
 
 interface AIResponseRendererProps {
   content: string;
@@ -28,9 +30,10 @@ export function AIResponseRenderer({
     }
 
     const parts: Array<{
-      type: "text" | "code" | "table";
+      type: ParsedContentItemType;
       content?: string;
       language?: string;
+      chartId?: string;
     }> = [];
 
     let lastIndex = 0;
@@ -53,6 +56,8 @@ export function AIResponseRenderer({
         });
       } else if (match.type === "table") {
         parts.push({ type: "table" });
+      } else if (match.type === "chart") {
+        parts.push({ type: "chart", chartId: match.chartId });
       }
 
       lastIndex = match.index + (match.matchLength || 0);
@@ -86,6 +91,13 @@ export function AIResponseRenderer({
         return (
           <div key={key} style={{ marginTop: "1rem", width: "100%" }}>
             <BaseDataTable data={tableData} tableClassName="h-96" />
+          </div>
+        );
+      }
+      if (part.type === "chart") {
+        return (
+          <div key={key} style={{ marginTop: "1rem", width: "100%" }}>
+            <AIChartContainer chartId={part.chartId ?? ""} />
           </div>
         );
       }

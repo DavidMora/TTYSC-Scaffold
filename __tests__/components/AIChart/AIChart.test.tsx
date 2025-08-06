@@ -1,10 +1,10 @@
 import React from "react";
 import { render, screen } from "@testing-library/react";
-import { AIChart } from "@/components/AIChart/AIChart";
+import { AIChart } from "@/components/AICharts/AIChart";
 import { AIChartData, ChartDataInfo } from "@/lib/types/charts";
 
 // Mock the ChartFactory component
-jest.mock("@/components/AIChart/ChartFactory", () => ({
+jest.mock("@/components/Charts/ChartFactory", () => ({
   ChartFactory: ({
     chartType,
     chartDataInfo,
