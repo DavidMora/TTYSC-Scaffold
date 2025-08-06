@@ -205,7 +205,7 @@ jest.mock(
       onChatItemSelect,
     }: {
       onChatSelect?: (chatId: number) => void;
-      onChatItemSelect?: (chatId: number, itemId: number) => void;
+      onChatItemSelect?: (chatId: number) => void;
     }) {
       return (
         <div data-testid="nav-item-chat-history">
@@ -217,7 +217,7 @@ jest.mock(
           </button>
           <button
             data-testid="chat-item-select-button"
-            onClick={() => onChatItemSelect?.(123, 456)}
+            onClick={() => onChatItemSelect?.(123)}
           >
             Select Chat Item
           </button>
@@ -444,7 +444,7 @@ describe("SideBarMenu", () => {
     const chatItemButton = screen.getByTestId("chat-item-select-button");
     fireEvent.click(chatItemButton);
 
-    expect(consoleSpy).toHaveBeenCalledWith("Chat item selected:", 123, 456);
+    expect(consoleSpy).toHaveBeenCalledWith("Chat item selected:", 123);
     consoleSpy.mockRestore();
   });
 

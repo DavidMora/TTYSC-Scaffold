@@ -17,7 +17,7 @@ interface ChatHistoryNavigationItemProps {
   isLoading?: boolean;
   errorLoading: Error | undefined;
   onChatSelect?: (chatId: string) => void;
-  onChatItemSelect?: (chatId: string, itemId: string) => void;
+  onChatItemSelect?: (chatId: string) => void;
 }
 
 const defaultChatHistory: Chat[] = [];
@@ -33,8 +33,8 @@ export default function ChatHistoryNavigationItem({
     onChatSelect?.(chatId);
   };
 
-  const handleChatItemClick = (chatId: string, itemId: string) => {
-    onChatItemSelect?.(chatId, itemId);
+  const handleChatItemClick = (chatId: string) => {
+    onChatItemSelect?.(chatId);
   };
 
   const renderLoadingState = () => (
@@ -69,12 +69,9 @@ export default function ChatHistoryNavigationItem({
   );
 
   const renderChatMessages = (chat: Chat) => (
-    <List>
+    <List separators="None" onClick={() => handleChatItemClick(chat.id)}>
       {chat.messages.map((message) => (
-        <ListItemStandard
-          key={message.id}
-          onClick={() => handleChatItemClick(chat.id, message.id)}
-        >
+        <ListItemStandard icon="initiative" key={message.id}>
           {message.content}
         </ListItemStandard>
       ))}
@@ -82,7 +79,7 @@ export default function ChatHistoryNavigationItem({
   );
 
   const renderChatCard = (chat: Chat) => (
-    <Card key={chat.id} className="w-full">
+    <Card key={chat.id} className="chat-history-card w-full">
       <Panel
         headerText={chat.title}
         onToggle={() => handleChatToggle(chat.id)}

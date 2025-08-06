@@ -82,7 +82,7 @@ export default function FeedbackNavigationItem({
           onInput={(event) => setFeedbackText(event.target.value)}
           disabled={isSubmitting}
         />
-        <FlexBox direction={FlexBoxDirection.Row} className="gap-2">
+        <FlexBox direction={FlexBoxDirection.Row} className="gap-2 mb-2">
           <Button
             data-testid="button"
             design="Emphasized"

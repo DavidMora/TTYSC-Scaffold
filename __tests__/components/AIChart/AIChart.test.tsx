@@ -5,6 +5,7 @@ import { AIChartData, ChartDataInfo } from "@/lib/types/charts";
 
 // Mock the ChartFactory component
 jest.mock("@/components/Charts/ChartFactory", () => ({
+
   ChartFactory: ({
     chartType,
     chartDataInfo,

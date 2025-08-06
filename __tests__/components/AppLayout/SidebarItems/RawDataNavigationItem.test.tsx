@@ -1094,13 +1094,15 @@ describe("RawDataNavigationItem", () => {
     );
 
     const tableSelect = screen.getAllByTestId("select")[0];
-    
+
     // This will trigger the onChange handler with a non-null/undefined value
     // covering the case where the nullish coalescing operator doesn't use the fallback
     fireEvent.change(tableSelect, { target: { value: "2" } });
 
     // Verify the table changed successfully
-    expect(screen.getByText("Showing data from Test Table 2 (Top 100 rows):")).toBeInTheDocument();
+    expect(
+      screen.getByText("Showing data from Test Table 2 (Top 100 rows):")
+    ).toBeInTheDocument();
     expect(mockOnDataSelection).toHaveBeenCalledWith(mockRawDataItems[1], {});
   });
 
