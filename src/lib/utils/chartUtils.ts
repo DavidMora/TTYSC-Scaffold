@@ -11,7 +11,7 @@ import {
 export const getSingleMeasures = (): ChartMeasure[] => [
   {
     accessor: "value",
-    label: "VaLUE",
+    label: "Value",
     formatter: (v: number) => v.toString(),
     axis: "y",
   },
