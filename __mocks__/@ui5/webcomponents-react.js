@@ -182,8 +182,8 @@ const Input = React.forwardRef(
 );
 Input.displayName = "Input";
 
-const List = ({ children, className }) => (
-  <ul className={className} data-testid="ui5-list">
+const List = ({ children, className, onClick, ...props }) => (
+  <ul className={className} data-testid="ui5-list" onClick={onClick} {...props}>
     {children}
   </ul>
 );
