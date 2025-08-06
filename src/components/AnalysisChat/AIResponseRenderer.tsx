@@ -4,7 +4,7 @@ import { CodeBlock } from "@/components/CodeBlock/CodeBlock";
 import BaseDataTable from "@/components/Tables/BaseDataTable";
 import { tableData } from "@/lib/constants/mocks/dataTable";
 import { parseContent } from "@/lib/utils/aiContentParser";
-import { AIChartContainer } from "../AICharts/AIChartContainer";
+import { AIChartContainer } from "@/components/AICharts/AIChartContainer";
 import { ParsedContentItemType } from "@/lib/types/chatContent";
 
 interface AIResponseRendererProps {
