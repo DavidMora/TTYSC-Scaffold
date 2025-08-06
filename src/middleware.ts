@@ -25,8 +25,7 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith('/auth/') ||
     pathname.startsWith('/_next/') ||
     pathname.includes('.') ||
-    publicAuthRoutes.some(route => pathname.startsWith(route)) ||
-    pathname.startsWith('/api/auth/'); // Allow all NextAuth routes
+    publicAuthRoutes.some(route => pathname.startsWith(route));
 
   if (isPublicRoute) {
     return NextResponse.next()
