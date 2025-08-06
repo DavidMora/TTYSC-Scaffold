@@ -363,4 +363,147 @@ describe("AnalysisContainer", () => {
 
     consoleSpy.mockRestore();
   });
+
+  it("handles analysis with empty title", () => {
+    const mockAnalysisWithEmptyTitle = {
+      data: {
+        id: "analysis-1",
+        title: "", // Empty title
+        metadata: {
+          analysis: ["test"],
+          organizations: ["org1"],
+          CM: ["cm1"],
+          SKU: ["sku1"],
+          NVPN: ["nvpn1"],
+        },
+      },
+      isLoading: false,
+      isError: false,
+    };
+
+    mockUseChat.mockReturnValue(mockAnalysisWithEmptyTitle);
+
+    renderWithProviders(<AnalysisContainer />);
+
+    // Component should render without errors even with empty title
+    expect(screen.getByTestId("analysis-header")).toBeInTheDocument();
+    expect(screen.getByTestId("analysis-filters")).toBeInTheDocument();
+  });
+
+  it("handles analysis without data", () => {
+    const mockAnalysisWithoutData = {
+      data: null,
+      isLoading: false,
+      isError: false,
+    };
+
+    mockUseChat.mockReturnValue(mockAnalysisWithoutData);
+
+    renderWithProviders(<AnalysisContainer />);
+
+    // Should handle null data gracefully
+    expect(screen.getByTestId("analysis-header")).toBeInTheDocument();
+  });
+
+  it("handles metadata initialization with existing data", () => {
+    const mockAnalysisWithMetadata = {
+      data: {
+        id: "analysis-1",
+        title: "Test Analysis",
+        metadata: {
+          analysis: ["custom"],
+          organizations: ["custom-org"],
+          CM: ["custom-cm"],
+          SKU: ["custom-sku"],
+          NVPN: ["custom-nvpn"],
+        },
+      },
+      isLoading: false,
+      isError: false,
+    };
+
+    mockUseChat.mockReturnValue(mockAnalysisWithMetadata);
+
+    let capturedInitialFilters: any;
+    let capturedOnUserChange: any;
+    
+    mockUseAnalysisFilters.mockImplementation((initialFilters, onUserChange) => {
+      capturedInitialFilters = initialFilters;
+      capturedOnUserChange = onUserChange;
+      return {
+        filters: initialFilters,
+        availableOptions: {},
+        isDisabled: false,
+        handleFilterChange: jest.fn(),
+      };
+    });
+
+    renderWithProviders(<AnalysisContainer />);
+
+    // Verify that metadata is merged with initial filters
+    expect(capturedInitialFilters).toEqual(
+      expect.objectContaining({
+        analysis: expect.any(Object),
+        organizations: expect.any(Object),
+        CM: expect.any(Object),
+        SKU: expect.any(Object),
+        NVPN: expect.any(Object),
+      })
+    );
+
+    // Test the onUserChange callback
+    expect(capturedOnUserChange).toBeDefined();
+    if (capturedOnUserChange) {
+      capturedOnUserChange();
+    }
+  });
+
+  it("handles autosave with user-modified filters", async () => {
+    const mockFilters = {
+      analysis: ["test"],
+      organizations: ["org1"],
+      CM: ["cm1"],
+      SKU: ["sku1"],
+      NVPN: ["nvpn1"],
+    };
+
+    mockUseAnalysisFilters.mockReturnValue({
+      filters: mockFilters,
+      availableOptions: {},
+      isDisabled: false,
+      handleFilterChange: jest.fn(),
+    });
+
+    let capturedAutoSaveOptions: any;
+    mockUseAutoSave.mockImplementation((options) => {
+      capturedAutoSaveOptions = options;
+      return {
+        isSaving: false,
+        lastSaved: null,
+        error: null,
+        executeAutosave: jest.fn(),
+      };
+    });
+
+    renderWithProviders(<AnalysisContainer />);
+
+    // Verify autosave options are set correctly
+    expect(capturedAutoSaveOptions).toBeDefined();
+    expect(capturedAutoSaveOptions.delayMs).toBe(3000);
+
+    // Test the onSave callback
+    if (capturedAutoSaveOptions.onSave) {
+      await capturedAutoSaveOptions.onSave();
+      expect(mockUpdateChat).toHaveBeenCalledWith({
+        id: "test-analysis-id",
+        metadata: {
+          analysis: ["test"],
+          organizations: ["org1"],
+          CM: ["cm1"],
+          SKU: ["sku1"],
+          NVPN: ["nvpn1"],
+        },
+      });
+    }
+  });
 });

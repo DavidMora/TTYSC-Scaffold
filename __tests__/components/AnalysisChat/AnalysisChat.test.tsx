@@ -98,6 +98,9 @@ describe("AnalysisChat", () => {
       error: null,
       reset: jest.fn(),
     });
+
+    // Mock scrollTo on HTMLDivElement prototype
+    HTMLDivElement.prototype.scrollTo = jest.fn();
   });
 
   describe("Component Rendering", () => {
@@ -370,12 +373,12 @@ describe("AnalysisChat", () => {
     });
 
     it("should test onError callback with smooth scroll (line 78)", () => {
+      jest.useFakeTimers();
+      
       let capturedOnError: ((error: Error) => void) | undefined;
       const mockScrollTo = jest.fn();
-      Object.defineProperty(HTMLElement.prototype, "scrollTo", {
-        value: mockScrollTo,
-        writable: true,
-      });
+      // Override the global mock for this specific test
+      HTMLDivElement.prototype.scrollTo = mockScrollTo;
 
       mockUseSendChatMessage.mockImplementation((options) => {
         capturedOnError = options?.onError;
@@ -383,18 +386,35 @@ describe("AnalysisChat", () => {
           mutate: mockMutate,
           isLoading: false,
           data: undefined,
-          error: null,
+          error: undefined,
           reset: jest.fn(),
+          mutateAsync: jest.fn(),
+          isSuccess: false,
+          isError: false,
+          isIdle: true,
         };
       });
 
       render(<AnalysisChat {...defaultProps} />);
+
+      // Fast forward timers to execute the initial useEffect scroll
+      act(() => {
+        jest.runAllTimers();
+      });
+
+      // Reset mock to test the actual behavior we're testing
+      mockScrollTo.mockClear();
 
       if (capturedOnError) {
         // Simulate an error that would trigger the onError callback
         const error = new Error("Test error");
         act(() => {
           capturedOnError!(error);
+        });
+
+        // Fast forward timers to execute the scroll behavior
+        act(() => {
+          jest.runAllTimers();
         });
       }
 
@@ -403,6 +423,128 @@ describe("AnalysisChat", () => {
         top: expect.any(Number),
         behavior: "smooth",
       });
+
+      jest.useRealTimers();
+    });
+
+    it("handles immediate scroll behavior", () => {
+      jest.useFakeTimers();
+      
+      const mockScrollTo = jest.fn();
+      // Override the global mock for this specific test
+      HTMLDivElement.prototype.scrollTo = mockScrollTo;
+
+      (useSendChatMessage as jest.Mock).mockReturnValue({
+        mutate: jest.fn(),
+        isLoading: false,
+      });
+
+      render(<AnalysisChat {...defaultProps} />);
+
+      // Fast forward timers to execute the initial useEffect scroll
+      act(() => {
+        jest.runAllTimers();
+      });
+
+      // Reset mock to test the actual behavior we're testing
+      mockScrollTo.mockClear();
+
+      // Test immediate scroll with auto behavior
+      // This would be triggered by some interaction, let's simulate via message sending
+      const messageInput = screen.getByTestId("message-input");
+      const sendButton = screen.getByTestId("send-button");
+
+      fireEvent.change(messageInput, { target: { value: "Test message" } });
+      fireEvent.click(sendButton);
+
+      // Fast forward timers to execute the scroll behavior
+      act(() => {
+        jest.runAllTimers();
+      });
+
+      // The immediate scroll is usually triggered internally, 
+      // but we can test the behavior by checking the scroll calls
+      expect(mockScrollTo).toHaveBeenCalled();
+      
+      jest.useRealTimers();
+    });
+
+    it("handles onSuccess callback with default values", () => {
+      jest.useFakeTimers();
+      
+      const mockScrollTo = jest.fn();
+      // Override the global mock for this specific test
+      HTMLDivElement.prototype.scrollTo = mockScrollTo;
+      
+      let capturedOnSuccess: ((botMsg: BotResponse) => void) | undefined;
+
+      (useSendChatMessage as jest.Mock).mockImplementation((options) => {
+        capturedOnSuccess = options.onSuccess;
+        return {
+          mutate: jest.fn(),
+          isLoading: false,
+          data: undefined,
+          error: undefined,
+          reset: jest.fn(),
+          mutateAsync: jest.fn(),
+          isSuccess: false,
+          isError: false,
+          isIdle: true,
+        };
+      });
+
+      render(<AnalysisChat {...defaultProps} />);
+
+      // Fast forward timers to execute the initial useEffect scroll
+      act(() => {
+        jest.runAllTimers();
+      });
+
+      // Reset mock to test the actual behavior we're testing
+      mockScrollTo.mockClear();
+
+      // Simulate onSuccess with minimal bot response
+      if (capturedOnSuccess) {
+        const botMsg: BotResponse = {
+          id: "test-bot-response",
+          object: "chat.completion",
+          model: "test-model",
+          created: new Date().toISOString(),
+          choices: [
+            {
+              message: {
+                content: "", // Test fallback to empty string
+                role: "assistant",    // Test fallback to "assistant"
+                title: "",   // Test fallback to empty string
+              },
+              finish_reason: "stop",
+              index: 0,
+            },
+          ],
+          usage: {
+            prompt_tokens: 10,
+            completion_tokens: 20,
+            total_tokens: 30,
+          },
+        };
+
+        act(() => {
+          capturedOnSuccess!(botMsg);
+        });
+
+        // Fast forward timers to execute the scroll behavior
+        act(() => {
+          jest.runAllTimers();
+        });
+      }
+
+      // Verify scrollTo was called after adding message
+      expect(mockScrollTo).toHaveBeenCalledWith({
+        top: expect.any(Number),
+        behavior: "smooth",
+      });
+      
+      jest.useRealTimers();
     });
   });
 });

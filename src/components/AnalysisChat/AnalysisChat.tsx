@@ -24,12 +24,10 @@ export default function AnalysisChat({
     immediate = false,
   }: { behavior?: "smooth" | "auto"; immediate?: boolean } = {}) => {
     const scroll = () => {
-      if (messagesContainerRef.current) {
-        messagesContainerRef.current.scrollTo({
-          top: messagesContainerRef.current.scrollHeight,
-          behavior,
-        });
-      }
+      messagesContainerRef.current?.scrollTo({
+        top: messagesContainerRef.current.scrollHeight,
+        behavior,
+      });
     };
 
     if (immediate) {
@@ -75,10 +73,11 @@ export default function AnalysisChat({
 
   const { mutate, isLoading } = useSendChatMessage({
     onSuccess: (botMsg) => {
-      const id = botMsg?.id || Date.now().toString();
-      const content = botMsg?.choices?.[0]?.message?.content || "";
-      const role = botMsg?.choices?.[0]?.message?.role || "assistant";
-      const title = botMsg?.choices?.[0]?.message?.title || "";
+      const message = botMsg?.choices?.[0]?.message || {};
+      const id = botMsg?.id ?? Date.now().toString();
+      const content = message.content ?? "";
+      const role = message.role ?? "assistant";
+      const title = message.title ?? "";
       addMessage(id, content, role, title);
       scrollToBottom();
     },

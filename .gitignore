@@ -52,3 +52,5 @@ feature-flags.json
 next-env.d.ts
 # vscode
 .vscode
+# CLAUDE
+CLAUDE.md

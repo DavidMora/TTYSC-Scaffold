@@ -24,7 +24,7 @@ export interface DateFilter {
 }
 
 export interface UnknownFilter {
-  type: string; // Catch-all for unknown types
+  type: Exclude<string, "select" | "date">;
   key: string;
   label?: string;
   placeholder?: string;
