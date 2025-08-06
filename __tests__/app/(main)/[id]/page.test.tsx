@@ -1,7 +1,12 @@
 import { render, screen } from "@testing-library/react";
 import { useParams } from "next/navigation";
-import AnalysisPage from "../../../src/app/[id]/page";
 import { useFeatureFlag } from "@/hooks/useFeatureFlags";
+import AnalysisPage from "@/app/(main)/[id]/page";
+
+// Mock next/navigation
+jest.mock("next/navigation", () => ({
+  useParams: jest.fn(),
+}));
 
 // Mock the useFeatureFlag hook
 jest.mock("@/hooks/useFeatureFlags", () => ({

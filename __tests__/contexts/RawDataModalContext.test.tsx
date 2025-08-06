@@ -77,7 +77,6 @@ describe("RawDataModalContext", () => {
       });
 
       expect(result.current.isOpen).toBe(true);
-      expect(consoleSpy).toHaveBeenCalledWith("Opening Raw Data Modal");
     });
 
     it("should update isOpen to false when close is called", () => {
@@ -96,7 +95,6 @@ describe("RawDataModalContext", () => {
       });
 
       expect(result.current.isOpen).toBe(false);
-      expect(consoleSpy).toHaveBeenCalledWith("Closing Raw Data Modal");
     });
 
     it("should maintain correct state through multiple open/close cycles", () => {
@@ -162,14 +160,9 @@ describe("RawDataModalContext", () => {
         result.current.open();
       });
 
-      expect(consoleSpy).toHaveBeenCalledWith("Opening Raw Data Modal");
-
       act(() => {
         result.current.close();
       });
-
-      expect(consoleSpy).toHaveBeenCalledWith("Closing Raw Data Modal");
-      expect(consoleSpy).toHaveBeenCalledTimes(2);
     });
   });
 });

@@ -24,8 +24,8 @@ import { getFormattedValueByAccessor } from "@/lib/utils/tableHelpers";
 function getIdentifier(
   row: TableDataRow,
   identifier: string | undefined
-): string {
-  return row[identifier || "id"] as string;
+): unknown {
+  return row[identifier || "id"];
 }
 
 function getRowKey(row: TableDataRow, identifier: string | undefined): string {
@@ -39,7 +39,15 @@ function getRowKey(row: TableDataRow, identifier: string | undefined): string {
     return JSON.stringify(value);
   }
 
-  return String(value);
+  if (typeof value === "number" || typeof value === "boolean") {
+    return value.toString();
+  }
+
+  if (typeof value === "string") {
+    return value;
+  }
+
+  return "";
 }
 
 const BaseDataTable: React.FC<Readonly<TableDataProps>> = (props) => {
@@ -70,6 +78,7 @@ const BaseDataTable: React.FC<Readonly<TableDataProps>> = (props) => {
         className={props.toolbarClassName}
         onFilterChange={handleFilterChange}
         onSearch={handleSearch}
+        disableFullScreen={props.disableFullScreen}
       />
       <Table
         features={[

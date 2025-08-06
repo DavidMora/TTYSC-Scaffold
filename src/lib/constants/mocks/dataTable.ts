@@ -232,7 +232,7 @@ export const tableData: TableData = {
       type: "date",
       key: "created_date",
       label: "Created Date",
-      placeholder: "dd/mm/yyyy",
+      placeholder: "yyyy-mm-dd",
     },
     // {
     //   type: "select" as const,

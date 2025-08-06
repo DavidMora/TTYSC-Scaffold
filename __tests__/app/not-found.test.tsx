@@ -1,6 +1,6 @@
 import { render, screen, fireEvent } from "@testing-library/react";
 import { useRouter } from "next/navigation";
-import NotFound from "../../src/app/not-found";
+import NotFound from "@/app/(main)/not-found";
 
 // Mock Next.js router
 jest.mock("next/navigation", () => ({

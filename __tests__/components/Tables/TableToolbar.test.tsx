@@ -1,7 +1,13 @@
 import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
+import { useRouter } from "next/navigation";
 import TableToolbar from "@/components/Tables/TableToolbar";
 import "@testing-library/jest-dom";
+
+// Mock Next.js router
+jest.mock("next/navigation", () => ({
+  useRouter: jest.fn(),
+}));
 
 const consoleSpy = jest.spyOn(console, "log").mockImplementation(() => {});
 
@@ -23,7 +29,22 @@ const mockDateFilter = {
   options: [],
 };
 
+const mockPush = jest.fn();
+const mockRouter = {
+  push: mockPush,
+  replace: jest.fn(),
+  prefetch: jest.fn(),
+  back: jest.fn(),
+  forward: jest.fn(),
+  refresh: jest.fn(),
+};
+
 describe("TableToolbar", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    (useRouter as jest.Mock).mockReturnValue(mockRouter);
+  });
+
   afterEach(() => {
     consoleSpy.mockClear();
   });
@@ -305,13 +326,38 @@ describe("TableToolbar", () => {
     });
 
     it("should handle full screen button click", () => {
-      render(<TableToolbar />);
+      render(<TableToolbar tableId={123} />);
 
       const buttons = screen.getAllByTestId("ui5-toolbar-button");
       const fullScreenButton = buttons[3]; // Fourth button is full screen
       fireEvent.click(fullScreenButton);
 
-      expect(consoleSpy).toHaveBeenCalledWith("full screen");
+      expect(mockPush).toHaveBeenCalledWith("/full-screen/table/123");
+    });
+    it("should handle input events on search", () => {
+      const mockOnSearch = jest.fn();
+      render(<TableToolbar onSearch={mockOnSearch} />);
+
+      const searchInput = screen.getByTestId("ui5-input");
+      fireEvent.input(searchInput, { target: { value: "input test" } });
+
+      expect(mockOnSearch).toHaveBeenCalledWith("input test");
+    });
+  });
+
+  describe("Table ID prop", () => {
+    it("should pass tableId to ExportMenu when provided", () => {
+      render(<TableToolbar tableId={123} />);
+
+      // The ExportMenu should be rendered with the tableId
+      expect(screen.getByText("Export")).toBeInTheDocument();
+    });
+
+    it("should use default tableId when not provided", () => {
+      render(<TableToolbar />);
+
+      // The ExportMenu should be rendered with default tableId "1"
+      expect(screen.getByText("Export")).toBeInTheDocument();
     });
 
     it("should handle input events on search", () => {

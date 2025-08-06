@@ -23,7 +23,16 @@ export interface DateFilter {
   value?: string;
 }
 
-export type Filter = SelectFilter | DateFilter;
+export interface UnknownFilter {
+  type: Exclude<string, "select" | "date">;
+  key: string;
+  label?: string;
+  placeholder?: string;
+  options?: FilterOption[];
+  value?: string;
+}
+
+export type Filter = SelectFilter | DateFilter | UnknownFilter;
 
 export interface FilterChangeEvent {
   filterKey: string;
@@ -37,6 +46,7 @@ export interface TableToolbarProps {
   filters?: Filter[];
   onFilterChange?: (event: FilterChangeEvent) => void;
   onSearch?: (searchTerm: string) => void;
+  disableFullScreen?: boolean;
 }
 
 export interface TableDataHeader {
@@ -48,6 +58,7 @@ export type TableDataRowPrimitive = string | number | boolean | null;
 
 export type TableDataRowComplex =
   | TableDataRowPrimitive
+  | TableDataRowPrimitive[]
   | TableDataRow
   | TableDataRow[]
   | null;
@@ -86,4 +97,5 @@ export interface TableDataProps {
   onSearch?: (searchTerm: string) => void;
   onRowClick?: (row: TableDataRow) => void;
   onCellClick?: (row: TableDataRow, columnKey: string) => void;
+  disableFullScreen?: boolean;
 }

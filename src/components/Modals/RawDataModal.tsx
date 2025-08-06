@@ -16,9 +16,7 @@ export const RawDataModal = (props: RawDataDialogProps) => {
   const dialogRef = React.useRef<DialogDomRef>(null);
 
   const handleClose = () => {
-    if (props.onClose) {
-      props.onClose({} as Parameters<NonNullable<typeof props.onClose>>[0]);
-    }
+    props.onClose?.({} as Parameters<NonNullable<typeof props.onClose>>[0]);
   };
 
   return (

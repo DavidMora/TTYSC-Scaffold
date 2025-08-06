@@ -19,6 +19,8 @@ import {
 import { ExportMenu } from "@/components/ExportMenu";
 import { Filter, TableToolbarProps } from "@/lib/types/datatable";
 import { twMerge } from "tailwind-merge";
+import { useRouter } from "next/navigation";
+import { FULL_SCREEN_TABLE } from "@/lib/constants/routes/Dashboard";
 
 const TableToolbar: React.FC<Readonly<TableToolbarProps>> = ({
   className,
@@ -27,11 +29,13 @@ const TableToolbar: React.FC<Readonly<TableToolbarProps>> = ({
   filters = [],
   onFilterChange,
   onSearch,
+  disableFullScreen = false,
 }) => {
+  const router = useRouter();
   const [search, setSearch] = useState("");
   const [filterValues, setFilterValues] = useState<Record<string, string>>(
     () => {
-      // Inicializar valores de filtros con los valores por defecto
+      // Initialize filter values with default values
       const initialValues: Record<string, string> = {};
       filters.forEach((filter) => {
         if (filter.value) {
@@ -90,7 +94,7 @@ const TableToolbar: React.FC<Readonly<TableToolbarProps>> = ({
           value={currentValue}
         >
           {filter.placeholder && <Option value="">{filter.placeholder}</Option>}
-          {filter.options.map((option) => (
+          {filter.options?.map((option) => (
             <Option key={option.value} value={option.value}>
               {option.text}
             </Option>
@@ -124,7 +128,9 @@ const TableToolbar: React.FC<Readonly<TableToolbarProps>> = ({
   };
 
   const handleFullScreen = () => {
-    console.log("full screen");
+    if (tableId) {
+      router.push(FULL_SCREEN_TABLE(tableId.toString()));
+    }
   };
 
   return (
@@ -140,11 +146,7 @@ const TableToolbar: React.FC<Readonly<TableToolbarProps>> = ({
         }
         value={search}
         onChange={handleSearch}
-        onClose={function Xs() {}}
         onInput={handleSearch}
-        onOpen={function Xs() {}}
-        onSelect={function Xs() {}}
-        onSelectionChange={function Xs() {}}
         type="Text"
         placeholder="Search..."
         valueState="None"
@@ -168,6 +170,7 @@ const TableToolbar: React.FC<Readonly<TableToolbarProps>> = ({
         design="Transparent"
         icon="full-screen"
         onClick={handleFullScreen}
+        disabled={disableFullScreen}
       />
     </Toolbar>
   );
