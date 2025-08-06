@@ -37,7 +37,7 @@ describe("chartUtils", () => {
       expect(measures).toHaveLength(1);
       expect(measures[0]).toEqual({
         accessor: "value",
-        label: "VaLUE",
+        label: "Value",
         formatter: expect.any(Function),
         axis: "y",
       });
@@ -200,7 +200,7 @@ describe("chartUtils", () => {
         measures: expect.arrayContaining([
           {
             accessor: "value",
-            label: "VaLUE",
+            label: "Value",
             formatter: expect.any(Function),
             axis: "y",
           },
