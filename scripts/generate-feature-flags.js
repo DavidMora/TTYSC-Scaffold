@@ -97,6 +97,7 @@ try {
   fs.writeFileSync(publicFlagsPath, jsonContent);
 } catch (error) {
   // Silent fail for public file
+  console.warn("Failed to write public feature-flags.json:", error.message);
 }
 
 // 4. Update .env.local if it doesn't exist for local development

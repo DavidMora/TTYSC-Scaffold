@@ -255,4 +255,45 @@ describe("FullscreenLayout", () => {
       expect(label).toHaveTextContent("Return to Talk to your Supply Chain");
     });
   });
+
+  describe("Feature Flag Disabled", () => {
+    beforeEach(() => {
+      mockUseFeatureFlag.mockReturnValue({ flag: false, loading: false });
+      import("@/hooks/useFeatureFlags").then((module) => {
+        module.useFeatureFlag = mockUseFeatureFlag;
+      });
+    });
+
+    it("should not render navigation when feature flag is disabled", () => {
+      render(
+        <FullscreenLayout>
+          <div data-testid="test-child">Test Child</div>
+        </FullscreenLayout>
+      );
+
+      expect(screen.queryByTestId("flexbox")).not.toBeInTheDocument();
+      expect(screen.queryByTestId("button")).not.toBeInTheDocument();
+      expect(screen.getByTestId("test-child")).toBeInTheDocument();
+    });
+  });
+
+  describe("Feature Flag Loading", () => {
+    beforeEach(() => {
+      mockUseFeatureFlag.mockReturnValue({ flag: true, loading: true });
+      import("@/hooks/useFeatureFlags").then((module) => {
+        module.useFeatureFlag = mockUseFeatureFlag;
+      });
+    });
+
+    it("should not render navigation when loading", () => {
+      render(
+        <FullscreenLayout>
+          <div data-testid="test-child">Test Child</div>
+        </FullscreenLayout>
+      );
+
+      expect(screen.queryByTestId("flexbox")).not.toBeInTheDocument();
+      expect(screen.getByTestId("test-child")).toBeInTheDocument();
+    });
+  });
 });

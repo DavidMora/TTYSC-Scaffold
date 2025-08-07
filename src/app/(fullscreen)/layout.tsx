@@ -26,30 +26,38 @@ export default function FullscreenLayout({
         backgroundDesign="List"
         className="w-screen h-screen overflow-hidden"
       >
-        {isNavigationEnabled && !loading && (
-          <FlexBox
-            direction="Row"
-            alignItems="Center"
-            gap="0.1rem"
-            className="py-4"
-            data-testid="flexbox"
-          >
-            <Button
-              design="Transparent"
-              onClick={handleBack}
-              data-testid="button"
-            >
-              <Icon
-                name="arrow-left"
-                className="cursor-pointer"
-                data-testid="icon"
-              />
-            </Button>
-            <Label data-testid="label">
-              Return to Talk to your Supply Chain
-            </Label>
-          </FlexBox>
-        )}
+        {(() => {
+          if (!loading && isNavigationEnabled) {
+            return (
+              <FlexBox
+                direction="Row"
+                alignItems="Center"
+                gap="0.1rem"
+                className="py-4"
+                data-testid="flexbox"
+              >
+                <Button
+                  design="Transparent"
+                  onClick={handleBack}
+                  data-testid="button"
+                >
+                  <Icon
+                    name="arrow-left"
+                    className="cursor-pointer"
+                    data-testid="icon"
+                  />
+                </Button>
+                <Label data-testid="label">
+                  Return to Talk to your Supply Chain
+                </Label>
+              </FlexBox>
+            );
+          } else if (!loading) {
+            return null;
+          } else {
+            return <div className="py-4 h-12" />;
+          }
+        })()}
         {children}
       </Page>
     </ThemeProvider>
