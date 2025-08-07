@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 
-const fs = require('fs');
-const path = require('path');
+const fs = require("fs");
+const path = require("path");
 
 // Load environment variables from .env.local
-require('dotenv').config({ path: '.env.local' });
+require("dotenv").config({ path: ".env.local" });
 
 /**
  * Generates feature-flags.json from environment variables
@@ -17,22 +17,34 @@ require('dotenv').config({ path: '.env.local' });
 const DEFAULT_FLAGS = {
   enableAuthentication: true,
   FF_Chat_Analysis_Screen: true,
+  FF_Full_Page_Navigation: true,
 };
 
 // Generate flags from environment variables
 const flags = {};
 
 Object.keys(DEFAULT_FLAGS).forEach((key) => {
-  // Only handle enableAuthentication from environment variables
-  if (key === 'enableAuthentication') {
-    const envValue = process.env['FEATURE_FLAG_ENABLE_AUTHENTICATION'];
-    
+  // Handle enableAuthentication from environment variables
+  if (key === "enableAuthentication") {
+    const envValue = process.env["FEATURE_FLAG_ENABLE_AUTHENTICATION"];
+
     if (envValue !== undefined) {
-      flags[key] = envValue.toLowerCase() === 'true';
+      flags[key] = envValue.toLowerCase() === "true";
     } else {
       flags[key] = DEFAULT_FLAGS[key];
       // Set the environment variable for the current process
-      process.env['FEATURE_FLAG_ENABLE_AUTHENTICATION'] = String(flags[key]);
+      process.env["FEATURE_FLAG_ENABLE_AUTHENTICATION"] = String(flags[key]);
+    }
+  } else if (key === "FF_Full_Page_Navigation") {
+    // Handle FF_Full_Page_Navigation from environment variables
+    const envValue = process.env["FF_FULL_PAGE_NAVIGATION"];
+
+    if (envValue !== undefined) {
+      flags[key] = envValue.toLowerCase() === "true";
+    } else {
+      flags[key] = DEFAULT_FLAGS[key];
+      // Set the environment variable for the current process
+      process.env["FF_FULL_PAGE_NAVIGATION"] = String(flags[key]);
     }
   } else {
     // For other flags, always use default values (no environment variable override)
@@ -44,7 +56,7 @@ Object.keys(DEFAULT_FLAGS).forEach((key) => {
 const jsonContent = JSON.stringify(flags, null, 2);
 
 // 1. Write to src/ for import usage (primary location)
-const srcFlagsPath = path.join(process.cwd(), 'src', 'feature-flags.json');
+const srcFlagsPath = path.join(process.cwd(), "src", "feature-flags.json");
 
 try {
   // Ensure src directory exists
@@ -52,15 +64,15 @@ try {
   if (!fs.existsSync(srcDir)) {
     fs.mkdirSync(srcDir, { recursive: true });
   }
-  
+
   fs.writeFileSync(srcFlagsPath, jsonContent);
 } catch (error) {
-  console.error('❌ Error generating src/feature-flags.json:', error.message);
+  console.error("❌ Error generating src/feature-flags.json:", error.message);
   process.exit(1);
 }
 
 // 2. Write to root for backward compatibility (development/debugging)
-const rootFlagsPath = path.join(process.cwd(), 'feature-flags.json');
+const rootFlagsPath = path.join(process.cwd(), "feature-flags.json");
 
 try {
   fs.writeFileSync(rootFlagsPath, jsonContent);
@@ -69,7 +81,11 @@ try {
 }
 
 // 3. Write to public/ for client-side access if needed
-const publicFlagsPath = path.join(process.cwd(), 'public', 'feature-flags.json');
+const publicFlagsPath = path.join(
+  process.cwd(),
+  "public",
+  "feature-flags.json"
+);
 
 try {
   // Ensure public directory exists
@@ -77,26 +93,33 @@ try {
   if (!fs.existsSync(publicDir)) {
     fs.mkdirSync(publicDir, { recursive: true });
   }
-  
+
   fs.writeFileSync(publicFlagsPath, jsonContent);
 } catch (error) {
   // Silent fail for public file
 }
 
 // 4. Update .env.local if it doesn't exist for local development
-const envLocalPath = path.join(process.cwd(), '.env.local');
-let envContent = '';
+const envLocalPath = path.join(process.cwd(), ".env.local");
+let envContent = "";
 
 if (fs.existsSync(envLocalPath)) {
-  envContent = fs.readFileSync(envLocalPath, 'utf8');
+  envContent = fs.readFileSync(envLocalPath, "utf8");
 }
 
 // Add feature flag environment variables if they don't exist
 let envUpdated = false;
 Object.keys(DEFAULT_FLAGS).forEach((key) => {
   // Use proper naming convention
-  const properEnvKey = key === 'enableAuthentication' ? 'FEATURE_FLAG_ENABLE_AUTHENTICATION' : `FEATURE_FLAG_${key.toUpperCase()}`;
-  
+  let properEnvKey;
+  if (key === "enableAuthentication") {
+    properEnvKey = "FEATURE_FLAG_ENABLE_AUTHENTICATION";
+  } else if (key === "FF_Full_Page_Navigation") {
+    properEnvKey = "FF_FULL_PAGE_NAVIGATION";
+  } else {
+    properEnvKey = `FEATURE_FLAG_${key.toUpperCase()}`;
+  }
+
   if (!envContent.includes(properEnvKey)) {
     envContent += `\n# Feature Flag: ${key}\n${properEnvKey}=${flags[key]}\n`;
     envUpdated = true;

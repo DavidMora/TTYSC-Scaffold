@@ -9,6 +9,11 @@ jest.mock("next/navigation", () => ({
   useRouter: jest.fn(),
 }));
 
+// Mock useFeatureFlags hook
+jest.mock("@/hooks/useFeatureFlags", () => ({
+  useFeatureFlag: jest.fn(),
+}));
+
 // Mock UI5 components
 jest.mock("@ui5/webcomponents-react", () => ({
   Button: ({
@@ -76,10 +81,15 @@ const mockRouter = {
   refresh: jest.fn(),
 };
 
+const mockUseFeatureFlag = jest.fn();
+
 describe("FullscreenLayout", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     (useRouter as jest.Mock).mockReturnValue(mockRouter);
+    mockUseFeatureFlag.mockReturnValue({ flag: true, loading: false });
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    require("@/hooks/useFeatureFlags").useFeatureFlag = mockUseFeatureFlag;
   });
 
   describe("Rendering", () => {

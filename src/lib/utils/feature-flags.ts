@@ -4,6 +4,7 @@ import { FeatureFlags, FeatureFlagKey } from "@/lib/types/feature-flags";
 export const DEFAULT_FLAGS: FeatureFlags = {
   enableAuthentication: true,
   FF_Chat_Analysis_Screen: true,
+  FF_Full_Page_Navigation: true,
 };
 
 /**
@@ -15,11 +16,27 @@ let cachedFlags: FeatureFlags | null = null;
  * Load feature flags from the generated JSON file
  * This is the primary source of truth when available
  */
-const loadFromGeneratedFile = async (): Promise<FeatureFlags | null> => {
+/**
+ * Load feature flags from the generated JSON file
+ * This is the primary source of truth when available
+ */
+const loadFromGeneratedFile = async (
+  customPath?: string
+): Promise<FeatureFlags | null> => {
   try {
     // Use dynamic import to load the JSON file from the root
-    const featureFlags = await import('../../../feature-flags.json');
-    return featureFlags.default as FeatureFlags;
+    if (customPath) {
+      // For testing purposes - dynamic path
+      const featureFlags = await import(
+        /* webpackIgnore: true */
+        customPath
+      );
+      return featureFlags.default as FeatureFlags;
+    } else {
+      // Production path - static import for better webpack analysis
+      const featureFlags = await import("../../../feature-flags.json");
+      return featureFlags.default as FeatureFlags;
+    }
   } catch {
     return null;
   }
@@ -33,18 +50,24 @@ const loadFromEnvironment = (): FeatureFlags => {
   // Use FEATURE_FLAG_ENABLE_AUTHENTICATION or fall back to default
   let enableAuth = DEFAULT_FLAGS.enableAuthentication;
   const FF_Chat_Analysis_Screen = DEFAULT_FLAGS.FF_Chat_Analysis_Screen;
-  
+  let FF_Full_Page_Navigation = DEFAULT_FLAGS.FF_Full_Page_Navigation;
+
   if (process.env.FEATURE_FLAG_ENABLE_AUTHENTICATION !== undefined) {
-    enableAuth = process.env.FEATURE_FLAG_ENABLE_AUTHENTICATION.toLowerCase() === 'true';
+    enableAuth =
+      process.env.FEATURE_FLAG_ENABLE_AUTHENTICATION.toLowerCase() === "true";
   }
 
+  if (process.env.FF_FULL_PAGE_NAVIGATION !== undefined) {
+    FF_Full_Page_Navigation =
+      process.env.FF_FULL_PAGE_NAVIGATION.toLowerCase() === "true";
+  }
 
-  
   const flags: FeatureFlags = {
     enableAuthentication: enableAuth,
     FF_Chat_Analysis_Screen: FF_Chat_Analysis_Screen,
+    FF_Full_Page_Navigation: FF_Full_Page_Navigation,
   };
-  
+
   return flags;
 };
 
@@ -52,14 +75,16 @@ const loadFromEnvironment = (): FeatureFlags => {
  * Main function to get feature flags (async version)
  * Priority: 1. Generated File -> 2. Environment Variables -> 3. Defaults
  */
-export const getFeatureFlags = async (): Promise<FeatureFlags> => {
+export const getFeatureFlags = async (
+  customPath?: string
+): Promise<FeatureFlags> => {
   // Return cached flags if available
   if (cachedFlags) {
     return cachedFlags;
   }
 
   // Try to load from generated file first
-  const fileFlags = await loadFromGeneratedFile();
+  const fileFlags = await loadFromGeneratedFile(customPath);
   if (fileFlags) {
     cachedFlags = fileFlags;
     return cachedFlags;
@@ -90,7 +115,9 @@ export const getFeatureFlagsSync = (): FeatureFlags => {
 /**
  * Checks if a specific feature flag is enabled (async)
  */
-export const isFeatureEnabled = async (flag: FeatureFlagKey): Promise<boolean> => {
+export const isFeatureEnabled = async (
+  flag: FeatureFlagKey
+): Promise<boolean> => {
   const flags = await getFeatureFlags();
   return flags[flag];
 };
