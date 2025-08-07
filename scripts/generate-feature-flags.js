@@ -20,32 +20,34 @@ const DEFAULT_FLAGS = {
   FF_Full_Page_Navigation: true,
 };
 
+// Helper function for handling environment variables
+const handleEnvFlag = (key, envKey, defaultValue) => {
+  const envValue = process.env[envKey];
+  if (envValue !== undefined) {
+    return envValue.toLowerCase() === "true";
+  } else {
+    process.env[envKey] = String(defaultValue);
+    return defaultValue;
+  }
+};
+
 // Generate flags from environment variables
 const flags = {};
 
 Object.keys(DEFAULT_FLAGS).forEach((key) => {
   // Handle enableAuthentication from environment variables
   if (key === "enableAuthentication") {
-    const envValue = process.env["FEATURE_FLAG_ENABLE_AUTHENTICATION"];
-
-    if (envValue !== undefined) {
-      flags[key] = envValue.toLowerCase() === "true";
-    } else {
-      flags[key] = DEFAULT_FLAGS[key];
-      // Set the environment variable for the current process
-      process.env["FEATURE_FLAG_ENABLE_AUTHENTICATION"] = String(flags[key]);
-    }
+    flags[key] = handleEnvFlag(
+      key,
+      "FEATURE_FLAG_ENABLE_AUTHENTICATION",
+      DEFAULT_FLAGS[key]
+    );
   } else if (key === "FF_Full_Page_Navigation") {
-    // Handle FF_Full_Page_Navigation from environment variables
-    const envValue = process.env["FF_FULL_PAGE_NAVIGATION"];
-
-    if (envValue !== undefined) {
-      flags[key] = envValue.toLowerCase() === "true";
-    } else {
-      flags[key] = DEFAULT_FLAGS[key];
-      // Set the environment variable for the current process
-      process.env["FF_FULL_PAGE_NAVIGATION"] = String(flags[key]);
-    }
+    flags[key] = handleEnvFlag(
+      key,
+      "FF_FULL_PAGE_NAVIGATION",
+      DEFAULT_FLAGS[key]
+    );
   } else {
     // For other flags, always use default values (no environment variable override)
     flags[key] = DEFAULT_FLAGS[key];
