@@ -4,6 +4,7 @@ import ThemeProvider from "@/providers/ThemeProvider";
 import { Button, FlexBox, Icon, Label, Page } from "@ui5/webcomponents-react";
 import { useRouter } from "next/navigation";
 import { useFeatureFlag } from "@/hooks/useFeatureFlags";
+import { FeatureNotAvailable } from "@/components/FeatureNotAvailable";
 import "@ui5/webcomponents-icons/dist/arrow-left.js";
 
 export default function FullscreenLayout({
@@ -27,8 +28,21 @@ export default function FullscreenLayout({
         className="w-screen h-screen overflow-hidden"
       >
         {(() => {
-          if (!loading && isNavigationEnabled) {
+          if (loading) {
+            return <div className="py-4 h-12" />;
+          }
+
+          if (!isNavigationEnabled) {
             return (
+              <FeatureNotAvailable
+                title="Full Screen View Not Available"
+                message="The full screen functionality is currently disabled. Please contact your administrator for more information."
+              />
+            );
+          }
+
+          return (
+            <>
               <FlexBox
                 direction="Row"
                 alignItems="Center"
@@ -51,14 +65,10 @@ export default function FullscreenLayout({
                   Return to Talk to your Supply Chain
                 </Label>
               </FlexBox>
-            );
-          } else if (!loading) {
-            return null;
-          } else {
-            return <div className="py-4 h-12" />;
-          }
+              {children}
+            </>
+          );
         })()}
-        {children}
       </Page>
     </ThemeProvider>
   );
