@@ -39,6 +39,7 @@ describe("feature-flags-edge", () => {
         enableAuthentication: true, // default is true when env var is not 'false'
         FF_Chat_Analysis_Screen: true, // default is true when env var is not 'false'
         FF_Full_Page_Navigation: true, // default is true when env var is not 'false'
+        FF_Modals: true, // default is true when env var is not 'false'
       });
     });
 
@@ -53,6 +54,7 @@ describe("feature-flags-edge", () => {
         enableAuthentication: false,
         FF_Chat_Analysis_Screen: true,
         FF_Full_Page_Navigation: true,
+        FF_Modals: true,
       });
     });
 
@@ -67,6 +69,7 @@ describe("feature-flags-edge", () => {
         enableAuthentication: true,
         FF_Chat_Analysis_Screen: true,
         FF_Full_Page_Navigation: true,
+        FF_Modals: true,
       });
     });
 
@@ -81,6 +84,7 @@ describe("feature-flags-edge", () => {
         enableAuthentication: true,
         FF_Chat_Analysis_Screen: true,
         FF_Full_Page_Navigation: true,
+        FF_Modals: true,
       });
     });
 
@@ -100,6 +104,7 @@ describe("feature-flags-edge", () => {
         enableAuthentication: true, // DEFAULT_FLAGS value
         FF_Chat_Analysis_Screen: true, // DEFAULT_FLAGS value
         FF_Full_Page_Navigation: true, // DEFAULT_FLAGS value
+        FF_Modals: true, // DEFAULT_FLAGS value
       });
       expect(mockConsoleWarn).toHaveBeenCalledWith(
         "Error loading feature flags in edge runtime, using defaults:",

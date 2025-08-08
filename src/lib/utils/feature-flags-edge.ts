@@ -10,6 +10,7 @@ import { DEFAULT_FLAGS } from "./feature-flags";
  * - ENABLE_AUTHENTICATION (true/false)
  * - FF_Chat_Analysis_Screen (true/false)
  * - FF_FULL_PAGE_NAVIGATION (true/false)
+ * - FF_Modals (true/false)
  */
 export function loadFeatureFlagsEdge(): FeatureFlags {
   try {
@@ -17,6 +18,7 @@ export function loadFeatureFlagsEdge(): FeatureFlags {
       enableAuthentication: process.env.ENABLE_AUTHENTICATION !== "false",
       FF_Chat_Analysis_Screen: process.env.FF_Chat_Analysis_Screen !== "false",
       FF_Full_Page_Navigation: process.env.FF_FULL_PAGE_NAVIGATION !== "false",
+      FF_Modals: process.env.FF_Modals !== "false",
     };
   } catch (error) {
     console.warn(
