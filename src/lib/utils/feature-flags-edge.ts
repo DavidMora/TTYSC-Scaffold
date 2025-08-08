@@ -9,12 +9,14 @@ import { DEFAULT_FLAGS } from "./feature-flags";
  * Environment variables:
  * - ENABLE_AUTHENTICATION (true/false)
  * - FF_Chat_Analysis_Screen (true/false)
+ * - FF_FULL_PAGE_NAVIGATION (true/false)
  */
 export function loadFeatureFlagsEdge(): FeatureFlags {
   try {
     return {
       enableAuthentication: process.env.ENABLE_AUTHENTICATION !== "false",
       FF_Chat_Analysis_Screen: process.env.FF_Chat_Analysis_Screen !== "false",
+      FF_Full_Page_Navigation: process.env.FF_FULL_PAGE_NAVIGATION !== "false",
     };
   } catch (error) {
     console.warn(

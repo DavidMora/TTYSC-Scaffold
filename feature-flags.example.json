@@ -1,4 +1,5 @@
 {
   "enableAuthentication": true,
-  "FF_Chat_Analysis_Screen": true
+  "FF_Chat_Analysis_Screen": true,
+  "FF_Full_Page_Navigation": true
 }

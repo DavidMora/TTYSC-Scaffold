@@ -9,6 +9,11 @@ jest.mock("next/navigation", () => ({
   useRouter: jest.fn(),
 }));
 
+// Mock useFeatureFlags hook
+jest.mock("@/hooks/useFeatureFlags", () => ({
+  useFeatureFlag: jest.fn(),
+}));
+
 // Mock UI5 components
 jest.mock("@ui5/webcomponents-react", () => ({
   Button: ({
@@ -66,6 +71,22 @@ jest.mock("@/providers/ThemeProvider", () => {
   };
 });
 
+// Mock FeatureNotAvailable component
+jest.mock("@/components/FeatureNotAvailable", () => ({
+  FeatureNotAvailable: ({
+    title,
+    message,
+  }: {
+    title?: string;
+    message?: string;
+  }) => (
+    <div data-testid="feature-not-available">
+      <div data-testid="feature-not-available-title">{title}</div>
+      <div data-testid="feature-not-available-message">{message}</div>
+    </div>
+  ),
+}));
+
 const mockBack = jest.fn();
 const mockRouter = {
   back: mockBack,
@@ -76,10 +97,15 @@ const mockRouter = {
   refresh: jest.fn(),
 };
 
+const mockUseFeatureFlag = jest.fn();
+
 describe("FullscreenLayout", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     (useRouter as jest.Mock).mockReturnValue(mockRouter);
+    mockUseFeatureFlag.mockReturnValue({ flag: true, loading: false });
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    require("@/hooks/useFeatureFlags").useFeatureFlag = mockUseFeatureFlag;
   });
 
   describe("Rendering", () => {
@@ -243,6 +269,218 @@ describe("FullscreenLayout", () => {
 
       const label = screen.getByTestId("label");
       expect(label).toHaveTextContent("Return to Talk to your Supply Chain");
+    });
+  });
+
+  describe("Feature Flag Disabled", () => {
+    beforeEach(() => {
+      mockUseFeatureFlag.mockReturnValue({ flag: false, loading: false });
+      import("@/hooks/useFeatureFlags").then((module) => {
+        module.useFeatureFlag = mockUseFeatureFlag;
+      });
+    });
+
+    it("should render FeatureNotAvailable component when feature flag is disabled", () => {
+      render(
+        <FullscreenLayout>
+          <div data-testid="test-child">Test Child</div>
+        </FullscreenLayout>
+      );
+
+      expect(screen.getByTestId("feature-not-available")).toBeInTheDocument();
+      expect(
+        screen.getByTestId("feature-not-available-title")
+      ).toHaveTextContent("Full Screen View Not Available");
+      expect(
+        screen.getByTestId("feature-not-available-message")
+      ).toHaveTextContent(
+        "The full screen functionality is currently disabled. Please contact your administrator for more information."
+      );
+    });
+
+    it("should not render navigation or children when feature flag is disabled", () => {
+      render(
+        <FullscreenLayout>
+          <div data-testid="test-child">Test Child</div>
+        </FullscreenLayout>
+      );
+
+      expect(screen.queryByTestId("flexbox")).not.toBeInTheDocument();
+      expect(screen.queryByTestId("button")).not.toBeInTheDocument();
+      expect(screen.queryByTestId("test-child")).not.toBeInTheDocument();
+    });
+
+    it("should maintain ThemeProvider wrapper when feature flag is disabled", () => {
+      render(
+        <FullscreenLayout>
+          <div data-testid="test-child">Test Child</div>
+        </FullscreenLayout>
+      );
+
+      expect(screen.getByTestId("theme-provider")).toBeInTheDocument();
+      expect(screen.getByTestId("page")).toBeInTheDocument();
+      expect(screen.getByTestId("theme-provider")).toContainElement(
+        screen.getByTestId("feature-not-available")
+      );
+    });
+  });
+
+  describe("Feature Flag Loading", () => {
+    beforeEach(() => {
+      mockUseFeatureFlag.mockReturnValue({ flag: true, loading: true });
+      import("@/hooks/useFeatureFlags").then((module) => {
+        module.useFeatureFlag = mockUseFeatureFlag;
+      });
+    });
+
+    it("should show loading placeholder when loading", () => {
+      render(
+        <FullscreenLayout>
+          <div data-testid="test-child">Test Child</div>
+        </FullscreenLayout>
+      );
+
+      expect(screen.queryByTestId("flexbox")).not.toBeInTheDocument();
+      expect(
+        screen.queryByTestId("feature-not-available")
+      ).not.toBeInTheDocument();
+      expect(screen.queryByTestId("test-child")).not.toBeInTheDocument();
+
+      // The loading div should be present
+      const loadingDiv = screen
+        .getByTestId("page")
+        .querySelector('div[class="py-4 h-12"]');
+      expect(loadingDiv).toBeInTheDocument();
+    });
+
+    it("should maintain ThemeProvider wrapper when loading", () => {
+      render(
+        <FullscreenLayout>
+          <div data-testid="test-child">Test Child</div>
+        </FullscreenLayout>
+      );
+
+      expect(screen.getByTestId("theme-provider")).toBeInTheDocument();
+      expect(screen.getByTestId("page")).toBeInTheDocument();
+    });
+  });
+
+  describe("FeatureNotAvailable Integration", () => {
+    beforeEach(() => {
+      mockUseFeatureFlag.mockReturnValue({ flag: false, loading: false });
+      import("@/hooks/useFeatureFlags").then((module) => {
+        module.useFeatureFlag = mockUseFeatureFlag;
+      });
+    });
+
+    it("should render FeatureNotAvailable with correct props", () => {
+      render(
+        <FullscreenLayout>
+          <div data-testid="test-child">Test Child</div>
+        </FullscreenLayout>
+      );
+
+      const featureNotAvailable = screen.getByTestId("feature-not-available");
+      const title = screen.getByTestId("feature-not-available-title");
+      const message = screen.getByTestId("feature-not-available-message");
+
+      expect(featureNotAvailable).toBeInTheDocument();
+      expect(title).toHaveTextContent("Full Screen View Not Available");
+      expect(message).toHaveTextContent(
+        "The full screen functionality is currently disabled. Please contact your administrator for more information."
+      );
+    });
+
+    it("should maintain ThemeProvider wrapper with FeatureNotAvailable", () => {
+      render(
+        <FullscreenLayout>
+          <div data-testid="test-child">Test Child</div>
+        </FullscreenLayout>
+      );
+
+      const themeProvider = screen.getByTestId("theme-provider");
+      const page = screen.getByTestId("page");
+      const featureNotAvailable = screen.getByTestId("feature-not-available");
+
+      expect(themeProvider).toContainElement(page);
+      expect(page).toContainElement(featureNotAvailable);
+      expect(themeProvider).toContainElement(featureNotAvailable);
+    });
+
+    it("should handle smooth transitions between enabled/disabled states", () => {
+      const { rerender } = render(
+        <FullscreenLayout>
+          <div data-testid="test-child">Test Child</div>
+        </FullscreenLayout>
+      );
+
+      // Initially disabled - should show FeatureNotAvailable
+      expect(screen.getByTestId("feature-not-available")).toBeInTheDocument();
+      expect(screen.queryByTestId("test-child")).not.toBeInTheDocument();
+
+      // Enable the feature flag
+      mockUseFeatureFlag.mockReturnValue({ flag: true, loading: false });
+      rerender(
+        <FullscreenLayout>
+          <div data-testid="test-child">Test Child</div>
+        </FullscreenLayout>
+      );
+
+      // Should now show normal content
+      expect(
+        screen.queryByTestId("feature-not-available")
+      ).not.toBeInTheDocument();
+      expect(screen.getByTestId("test-child")).toBeInTheDocument();
+      expect(screen.getByTestId("flexbox")).toBeInTheDocument();
+
+      // Disable again
+      mockUseFeatureFlag.mockReturnValue({ flag: false, loading: false });
+      rerender(
+        <FullscreenLayout>
+          <div data-testid="test-child">Test Child</div>
+        </FullscreenLayout>
+      );
+
+      // Should show FeatureNotAvailable again
+      expect(screen.getByTestId("feature-not-available")).toBeInTheDocument();
+      expect(screen.queryByTestId("test-child")).not.toBeInTheDocument();
+    });
+
+    it("should maintain consistent Page component styling in all states", () => {
+      const { rerender } = render(
+        <FullscreenLayout>
+          <div data-testid="test-child">Test Child</div>
+        </FullscreenLayout>
+      );
+
+      // Check styling when disabled
+      let page = screen.getByTestId("page");
+      expect(page).toHaveAttribute("backgroundDesign", "List");
+      expect(page).toHaveClass("w-screen", "h-screen", "overflow-hidden");
+
+      // Enable and check styling
+      mockUseFeatureFlag.mockReturnValue({ flag: true, loading: false });
+      rerender(
+        <FullscreenLayout>
+          <div data-testid="test-child">Test Child</div>
+        </FullscreenLayout>
+      );
+
+      page = screen.getByTestId("page");
+      expect(page).toHaveAttribute("backgroundDesign", "List");
+      expect(page).toHaveClass("w-screen", "h-screen", "overflow-hidden");
+
+      // Loading state
+      mockUseFeatureFlag.mockReturnValue({ flag: true, loading: true });
+      rerender(
+        <FullscreenLayout>
+          <div data-testid="test-child">Test Child</div>
+        </FullscreenLayout>
+      );
+
+      page = screen.getByTestId("page");
+      expect(page).toHaveAttribute("backgroundDesign", "List");
+      expect(page).toHaveClass("w-screen", "h-screen", "overflow-hidden");
     });
   });
 });
