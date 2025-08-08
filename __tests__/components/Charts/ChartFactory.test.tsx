@@ -1,6 +1,6 @@
 import React from "react";
 import { render, screen } from "@testing-library/react";
-import { ChartFactory } from "@/components/AIChart/ChartFactory";
+import { ChartFactory } from "@/components/Charts/ChartFactory";
 import {
   ChartDataInfo,
   SingleDataPoint,
@@ -9,7 +9,7 @@ import {
 } from "@/lib/types/charts";
 
 // Mock all chart renderers
-jest.mock("@/components/AIChart/renderers", () => ({
+jest.mock("@/components/Charts/renderers", () => ({
   BarChartRenderer: ({ dataset, dimensions, measures }: any) => {
     // Test the formatter function from line 34
     if (dimensions && dimensions[0] && dimensions[0].formatter) {

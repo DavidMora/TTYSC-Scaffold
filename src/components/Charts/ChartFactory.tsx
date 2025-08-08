@@ -17,7 +17,7 @@ import {
   RadarChartRenderer,
   UnsupportedChartRenderer,
   MultiSeriesRequiredRenderer,
-} from "./renderers";
+} from "@/components/Charts/renderers";
 
 interface ChartFactoryProps {
   chartType: string;

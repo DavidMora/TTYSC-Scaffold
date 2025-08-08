@@ -127,4 +127,117 @@ describe("parseContent", () => {
       matchLength: 12,
     });
   });
+
+  // New test cases to cover missing lines
+  test("should handle consecutive code block markers without content", () => {
+    const input = "Text\n```\n```\nMore text";
+    const result = parseContent(input);
+
+    expect(result).toHaveLength(1);
+    expect(result[0]).toEqual({
+      type: "code",
+      language: "",
+      content: "\n",
+      index: 5,
+      matchLength: 7,
+    });
+  });
+
+  test("should parse chart markers with UUID", () => {
+    const input = "Here is some text [SHOW_CHART:12345678-1234-1234-1234-123456789abc] and more text";
+    const result = parseContent(input);
+
+    expect(result).toHaveLength(1);
+    expect(result[0]).toEqual({
+      type: "chart",
+      index: 18,
+      matchLength: 49,
+      chartId: "12345678-1234-1234-1234-123456789abc",
+    });
+  });
+
+  test("should parse chart markers without UUID", () => {
+    const input = "Here is some text [SHOW_CHART] and more text";
+    const result = parseContent(input);
+
+    expect(result).toHaveLength(1);
+    expect(result[0]).toEqual({
+      type: "chart",
+      index: 18,
+      matchLength: 12,
+      chartId: undefined,
+    });
+  });
+
+  test("should handle regex infinite loop prevention for table markers", () => {
+    const input = "[SHOW_TABLE][SHOW_TABLE][SHOW_TABLE]";
+    const result = parseContent(input);
+
+    expect(result).toHaveLength(3);
+    expect(result[0]).toEqual({
+      type: "table",
+      index: 0,
+      matchLength: 12,
+    });
+    expect(result[1]).toEqual({
+      type: "table",
+      index: 12,
+      matchLength: 12,
+    });
+    expect(result[2]).toEqual({
+      type: "table",
+      index: 24,
+      matchLength: 12,
+    });
+  });
+
+  test("should handle regex infinite loop prevention for chart markers", () => {
+    const input = "[SHOW_CHART][SHOW_CHART:12345678-1234-1234-1234-123456789abc][SHOW_CHART]";
+    const result = parseContent(input);
+
+    expect(result).toHaveLength(3);
+    expect(result[0]).toEqual({
+      type: "chart",
+      index: 0,
+      matchLength: 12,
+      chartId: undefined,
+    });
+    expect(result[1]).toEqual({
+      type: "chart",
+      index: 12,
+      matchLength: 49,
+      chartId: "12345678-1234-1234-1234-123456789abc",
+    });
+    expect(result[2]).toEqual({
+      type: "chart",
+      index: 61,
+      matchLength: 12,
+      chartId: undefined,
+    });
+  });
+
+  test("should handle mixed content with all types of markers", () => {
+    const input = "Start\n```js\nconst x = 1;\n```\n[SHOW_TABLE]\n[SHOW_CHART:12345678-1234-1234-1234-123456789abc]\nEnd";
+    const result = parseContent(input);
+
+    expect(result).toHaveLength(3);
+    expect(result[0]).toEqual({
+      type: "code",
+      language: "js",
+      content: "const x = 1;\n",
+      index: 6,
+      matchLength: 22,
+    });
+    expect(result[1]).toEqual({
+      type: "table",
+      index: 29,
+      matchLength: 12,
+    });
+    expect(result[2]).toEqual({
+      type: "chart",
+      index: 42,
+      matchLength: 49,
+      chartId: "12345678-1234-1234-1234-123456789abc",
+    });
+  });
 });

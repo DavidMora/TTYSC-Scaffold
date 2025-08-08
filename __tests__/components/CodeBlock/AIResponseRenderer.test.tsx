@@ -42,6 +42,16 @@ jest.mock("@/components/Tables/BaseDataTable", () => {
   return MockBaseDataTable;
 });
 
+jest.mock("@/components/AICharts/AIChartContainer", () => {
+  const MockAIChartContainer = ({ chartId }: { chartId: string }) => (
+    <div data-testid="ai-chart-container" data-chart-id={chartId}>
+      AI Chart Container with ID: {chartId}
+    </div>
+  );
+  MockAIChartContainer.displayName = "MockAIChartContainer";
+  return { AIChartContainer: MockAIChartContainer };
+});
+
 // Mock the table data
 jest.mock("@/lib/constants/mocks/dataTable", () => ({
   tableData: {
@@ -257,5 +267,93 @@ Complete code block
     expect(codeBlocks).toHaveLength(2);
     expect(codeBlocks[0]).toHaveAttribute("data-language", "text");
     expect(codeBlocks[1]).toHaveAttribute("data-language", "javascript");
+  });
+
+  it("renders chart when [SHOW_CHART] is present", () => {
+    const content = `Here is some analysis:
+[SHOW_CHART]
+And the conclusion.`;
+
+    render(<AIResponseRenderer content={content} />);
+
+    expect(screen.getByText("Here is some analysis:")).toBeInTheDocument();
+    expect(screen.getByTestId("ai-chart-container")).toBeInTheDocument();
+    expect(screen.getByTestId("ai-chart-container")).toHaveAttribute(
+      "data-chart-id",
+      ""
+    );
+    expect(screen.getByText("And the conclusion.")).toBeInTheDocument();
+  });
+
+  it("renders chart with UUID when [SHOW_CHART:uuid] is present", () => {
+    const chartId = "12345678-1234-1234-1234-123456789abc";
+    const content = `Analysis with chart:
+[SHOW_CHART:${chartId}]
+End of analysis.`;
+
+    render(<AIResponseRenderer content={content} />);
+
+    expect(screen.getByTestId("ai-chart-container")).toBeInTheDocument();
+    expect(screen.getByTestId("ai-chart-container")).toHaveAttribute(
+      "data-chart-id",
+      chartId
+    );
+  });
+
+  it("renders chart with case insensitive [SHOW_CHART]", () => {
+    const content = `Analysis with chart:
+[show_chart]
+End of analysis.`;
+
+    render(<AIResponseRenderer content={content} />);
+
+    expect(screen.getByTestId("ai-chart-container")).toBeInTheDocument();
+  });
+
+  it("renders mixed content with text, code, tables, and charts", () => {
+    const chartId = "12345678-1234-1234-1234-123456789abc";
+    const content = `Introduction text.
+\`\`\`bash
+npm install package
+\`\`\`
+[SHOW_TABLE]
+[SHOW_CHART:${chartId}]
+\`\`\`json
+{
+  "key": "value"
+}
+\`\`\`
+Conclusion text.`;
+
+    render(<AIResponseRenderer content={content} />);
+
+    expect(screen.getByText("Introduction text.")).toBeInTheDocument();
+    expect(screen.getAllByTestId("code-block")).toHaveLength(2);
+    expect(screen.getByTestId("base-data-table")).toBeInTheDocument();
+    expect(screen.getByTestId("ai-chart-container")).toBeInTheDocument();
+    expect(screen.getByTestId("ai-chart-container")).toHaveAttribute(
+      "data-chart-id",
+      chartId
+    );
+    expect(screen.getByText("Conclusion text.")).toBeInTheDocument();
+  });
+
+  it("handles content with only charts", () => {
+    const content = "[SHOW_CHART]";
+
+    render(<AIResponseRenderer content={content} />);
+
+    expect(screen.getByTestId("ai-chart-container")).toBeInTheDocument();
+  });
+
+  it("handles chart with empty content and fallback to empty string", () => {
+    const content = `[SHOW_CHART]
+Some text after chart.`;
+
+    render(<AIResponseRenderer content={content} />);
+
+    const chartContainer = screen.getByTestId("ai-chart-container");
+    expect(chartContainer).toBeInTheDocument();
+    expect(chartContainer).toHaveAttribute("data-chart-id", "");
   });
 });

@@ -3,21 +3,19 @@ import { Title } from "@ui5/webcomponents-react";
 import TitleLevel from "@ui5/webcomponents/dist/types/TitleLevel.js";
 import { AIChartData } from "@/lib/types/charts";
 import { getChartDataInfo } from "@/lib/utils/chartUtils";
-import { ChartFactory } from "./ChartFactory";
+import { ChartFactory } from "@/components/Charts/ChartFactory";
 
 interface AIChartProps {
   data: AIChartData;
-  className?: string;
-  style?: React.CSSProperties;
 }
 
-export function AIChart({ data, className, style }: Readonly<AIChartProps>) {
+export function AIChart({ data }: Readonly<AIChartProps>) {
   const { headline, preamble, content, chart } = data;
 
   const chartDataInfo = getChartDataInfo(chart);
 
   return (
-    <div className={className} style={style}>
+    <div>
       <Title level={TitleLevel.H2} style={{ marginBottom: 16 }}>
         {headline}
       </Title>

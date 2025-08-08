@@ -13,7 +13,7 @@ import {
   ComposedChartRenderer,
   UnsupportedChartRenderer,
   MultiSeriesRequiredRenderer,
-} from "@/components/AIChart/renderers";
+} from "@/components/Charts/renderers";
 import {
   ChartDimension,
   ChartMeasure,
