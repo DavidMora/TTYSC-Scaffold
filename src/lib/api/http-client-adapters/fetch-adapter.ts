@@ -3,6 +3,7 @@ import {
   HttpClientConfig,
   HttpClientResponse,
 } from "@/lib/types/api/http-client";
+import { v6 as uuidv6 } from "uuid";
 
 export class FetchAdapter implements HttpClientAdapter {
   private readonly defaultConfig: HttpClientConfig;
@@ -36,12 +37,17 @@ export class FetchAdapter implements HttpClientAdapter {
     );
 
     try {
-      // Merge headers properly
-      const mergedHeaders = {
+       // Merge headers properly
+      const mergedHeaders: Record<string, string> = {
         ...this.defaultConfig.headers,
         ...config?.headers,
         ...(options.headers as Record<string, string>),
       };
+
+      // Add request ID if not already provided
+      if (!mergedHeaders["X-Request-Id"]) {
+        mergedHeaders["X-Request-Id"] = uuidv6();
+      }
 
       // Add Basic Authentication if configured
       const authConfig = config?.auth || this.defaultConfig.auth;
