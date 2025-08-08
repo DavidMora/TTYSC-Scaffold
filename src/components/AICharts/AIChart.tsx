@@ -45,19 +45,7 @@ export function AIChart({ data }: Readonly<AIChartProps>) {
         </p>
       )}
 
-      <div
-        style={{
-          borderRadius: 8,
-          padding: 16,
-          background: "#fff",
-          width: "100%",
-          height: 400,
-          marginBottom: 16,
-          marginTop: 16,
-        }}
-      >
-        <ChartFactory chartType={chart.type} chartDataInfo={chartDataInfo} />
-      </div>
+      <ChartFactory chartType={chart.type} chartDataInfo={chartDataInfo} />
     </div>
   );
 }

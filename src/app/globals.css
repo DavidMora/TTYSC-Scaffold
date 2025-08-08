@@ -65,3 +65,9 @@ ui5-card.chat-history-card ui5-panel::part(header) {
 ui5-card.chat-history-card ui5-panel::part(content) {
   padding: 0rem;
 }
+
+/* Charts: force cursor when zoom active */
+.zoomable-container.zoom-active,
+.zoomable-container.zoom-active * {
+  cursor: move !important;
+}
