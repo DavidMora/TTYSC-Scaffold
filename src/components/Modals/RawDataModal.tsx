@@ -4,7 +4,7 @@ import type { DialogPropTypes, DialogDomRef } from "@ui5/webcomponents-react";
 import BaseDataTable from "@/components/Tables/BaseDataTable";
 import { tableData } from "@/lib/constants/mocks/dataTable";
 import { twMerge } from "tailwind-merge";
-import FeatureFlaggedDialog from "@/components/Modals/FeatureFlaggedDialog";
+import { FeatureFlaggedDialog } from "@/components/Modals/FeatureFlaggedDialog";
 
 type RawDataDialogProps = DialogPropTypes & {
   data: {

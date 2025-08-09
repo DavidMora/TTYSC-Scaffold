@@ -9,7 +9,7 @@ import {
   Title,
   FlexBoxDirection,
 } from "@ui5/webcomponents-react";
-import FeatureFlaggedDialog from "@/components/Modals/FeatureFlaggedDialog";
+import { FeatureFlaggedDialog } from "@/components/Modals/FeatureFlaggedDialog";
 
 interface ModalAction {
   label: string;

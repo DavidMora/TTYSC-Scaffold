@@ -27,7 +27,7 @@ describe("FeatureFlaggedDialog", () => {
       </FeatureFlaggedDialog>
     );
 
-    expect(screen.getByTestId("ui5-dialog")).toBeInTheDocument();
+    expect(document.querySelector('[data-testid="ui5-dialog"]')).toBeInTheDocument();
   });
 
   it("renders fallback when flag disabled and not loading", () => {
@@ -46,7 +46,7 @@ describe("FeatureFlaggedDialog", () => {
       </FeatureFlaggedDialog>
     );
 
-    expect(screen.queryByTestId("ui5-dialog")).not.toBeInTheDocument();
+    expect(document.querySelector('[data-testid="ui5-dialog"]')).not.toBeInTheDocument();
     expect(screen.getByTestId("fallback")).toBeInTheDocument();
   });
 
@@ -59,6 +59,6 @@ describe("FeatureFlaggedDialog", () => {
 
     render(<FeatureFlaggedDialog open>Content</FeatureFlaggedDialog>);
 
-    expect(screen.getByTestId("ui5-dialog")).toBeInTheDocument();
+    expect(document.querySelector('[data-testid="ui5-dialog"]')).toBeInTheDocument();
   });
 });
