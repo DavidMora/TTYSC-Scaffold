@@ -68,6 +68,20 @@ global.fetch = jest.fn((url) => {
     });
   }
 
+  // Mock feature flags API with defaults used in tests
+  if (url.toString().includes("/api/feature-flags")) {
+    return Promise.resolve({
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          enableAuthentication: true,
+          FF_Chat_Analysis_Screen: true,
+          FF_Full_Page_Navigation: true,
+          FF_Modals: true,
+        }),
+    });
+  }
+
   return Promise.resolve({
     ok: true,
     json: () => Promise.resolve({}),

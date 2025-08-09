@@ -32,6 +32,7 @@ describe("feature-flags-edge", () => {
       delete process.env.ENABLE_AUTHENTICATION;
       delete process.env.FF_Chat_Analysis_Screen;
       delete process.env.FF_Full_Page_Navigation;
+      delete process.env.FF_Modals;
 
       const result = loadFeatureFlagsEdge();
 
@@ -39,6 +40,7 @@ describe("feature-flags-edge", () => {
         enableAuthentication: true, // default is true when env var is not 'false'
         FF_Chat_Analysis_Screen: true, // default is true when env var is not 'false'
         FF_Full_Page_Navigation: true, // default is true when env var is not 'false'
+        FF_Modals: true, // default is true when env var is not 'false'
       });
     });
 
@@ -46,13 +48,14 @@ describe("feature-flags-edge", () => {
       process.env.ENABLE_AUTHENTICATION = "false";
       delete process.env.FF_Chat_Analysis_Screen;
       delete process.env.FF_Full_Page_Navigation;
-
+      delete process.env.FF_Modals;
       const result = loadFeatureFlagsEdge();
 
       expect(result).toEqual({
         enableAuthentication: false,
         FF_Chat_Analysis_Screen: true,
         FF_Full_Page_Navigation: true,
+        FF_Modals: true,
       });
     });
 
@@ -60,13 +63,14 @@ describe("feature-flags-edge", () => {
       process.env.ENABLE_AUTHENTICATION = "true";
       delete process.env.FF_Chat_Analysis_Screen;
       delete process.env.FF_Full_Page_Navigation;
-
+      delete process.env.FF_Modals;
       const result = loadFeatureFlagsEdge();
 
       expect(result).toEqual({
         enableAuthentication: true,
         FF_Chat_Analysis_Screen: true,
         FF_Full_Page_Navigation: true,
+        FF_Modals: true,
       });
     });
 
@@ -74,13 +78,14 @@ describe("feature-flags-edge", () => {
       process.env.ENABLE_AUTHENTICATION = "yes";
       delete process.env.FF_Chat_Analysis_Screen;
       delete process.env.FF_Full_Page_Navigation;
-
+      delete process.env.FF_Modals;
       const result = loadFeatureFlagsEdge();
 
       expect(result).toEqual({
         enableAuthentication: true,
         FF_Chat_Analysis_Screen: true,
         FF_Full_Page_Navigation: true,
+        FF_Modals: true,
       });
     });
 
@@ -100,6 +105,7 @@ describe("feature-flags-edge", () => {
         enableAuthentication: true, // DEFAULT_FLAGS value
         FF_Chat_Analysis_Screen: true, // DEFAULT_FLAGS value
         FF_Full_Page_Navigation: true, // DEFAULT_FLAGS value
+        FF_Modals: true, // DEFAULT_FLAGS value
       });
       expect(mockConsoleWarn).toHaveBeenCalledWith(
         "Error loading feature flags in edge runtime, using defaults:",
@@ -119,7 +125,7 @@ describe("feature-flags-edge", () => {
     it('should return true for enableAuthentication when flag is present and env var is not "false"', () => {
       delete process.env.ENABLE_AUTHENTICATION;
       delete process.env.FF_Chat_Analysis_Screen;
-
+      delete process.env.FF_Modals;
       const result = isFeatureEnabledEdge("enableAuthentication");
 
       expect(result).toBe(true);
@@ -128,7 +134,7 @@ describe("feature-flags-edge", () => {
     it('should return false for enableAuthentication when env var is "false"', () => {
       process.env.ENABLE_AUTHENTICATION = "false";
       delete process.env.FF_Chat_Analysis_Screen;
-
+      delete process.env.FF_Modals;
       const result = isFeatureEnabledEdge("enableAuthentication");
 
       expect(result).toBe(false);
@@ -201,7 +207,7 @@ describe("feature-flags-edge", () => {
       // Test the FF_Chat_Analysis_Screen flag to ensure it works correctly
       delete process.env.ENABLE_AUTHENTICATION;
       delete process.env.FF_Chat_Analysis_Screen;
-
+      delete process.env.FF_Modals; 
       let result = isFeatureEnabledEdge("FF_Chat_Analysis_Screen");
       expect(result).toBe(true);
 
@@ -261,7 +267,7 @@ describe("feature-flags-edge", () => {
       // Test with an unknown flag key to ensure the nullish coalescing works
       delete process.env.ENABLE_AUTHENTICATION;
       delete process.env.FF_Chat_Analysis_Screen;
-
+      delete process.env.FF_Modals;
       // This should return undefined for the flag, then fallback to DEFAULT_FLAGS
       // Since DEFAULT_FLAGS doesn't have 'unknownFlag', it should return undefined
       const result = isFeatureEnabledEdge(
