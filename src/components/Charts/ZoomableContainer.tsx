@@ -2,6 +2,14 @@
 
 import React, { useCallback, useMemo, useRef, useState } from "react";
 import ChartToolbar from "@/components/Charts/ChartToolbar";
+import { Title } from "@ui5/webcomponents-react";
+import TitleLevel from "@ui5/webcomponents/dist/types/TitleLevel.js";
+import {
+  ChartDimension,
+  ChartMeasure,
+  MultiDataPoint,
+  SingleDataPoint,
+} from "@/lib/types/charts";
 
 type ViewWindow = { start: number; end: number };
 
@@ -15,6 +23,12 @@ interface ZoomableContainerProps {
   mode?: "visual" | "dataX"; // visual = CSS scale/pan, dataX = update window [start,end]
   onWindowChange?: (window: ViewWindow) => void;
   renderContent?: (viewWindow: ViewWindow) => React.ReactNode;
+  title?: string;
+  exportContext?: {
+    dataset: SingleDataPoint[] | MultiDataPoint[];
+    dimensions: ChartDimension[];
+    measures: ChartMeasure[];
+  };
 }
 
 export const ZoomableContainer: React.FC<Readonly<ZoomableContainerProps>> = ({
@@ -27,6 +41,8 @@ export const ZoomableContainer: React.FC<Readonly<ZoomableContainerProps>> = ({
   mode = "visual",
   onWindowChange,
   renderContent,
+  title,
+  exportContext,
 }) => {
   const viewportRef = useRef<HTMLDivElement | null>(null);
   const [zoom, setZoom] = useState<number>(1);
@@ -328,12 +344,32 @@ export const ZoomableContainer: React.FC<Readonly<ZoomableContainerProps>> = ({
       <ChartToolbar
         showZoom
         showFullScreen
-        showSearch
         showDownload
+        leftContent={<Title level={TitleLevel.H2}>{title}</Title>}
         onZoomIn={handleZoomIn}
         onZoomOut={handleZoomOut}
         disableZoomIn={!canZoomIn}
         disableZoomOut={!canZoomOut}
+        onDownloadOption={(type) => {
+          if (type === "png") {
+            downloadChartAsPng(viewportRef.current, title);
+          } else if (type === "csv") {
+            if (exportContext) {
+              const baseData = exportContext.dataset as (SingleDataPoint | MultiDataPoint)[];
+              const slice = getCurrentSlice(baseData, viewWindow);
+              const csv = buildCsv(
+                slice,
+                exportContext.dimensions,
+                exportContext.measures
+              );
+              triggerFileDownload(
+                csv,
+                sanitizeFilename(title || "chart") + ".csv",
+                "text/csv;charset=utf-8"
+              );
+            }
+          }
+        }}
       />
       <div
         ref={viewportRef}
@@ -347,7 +383,7 @@ export const ZoomableContainer: React.FC<Readonly<ZoomableContainerProps>> = ({
           height,
           overflow: "hidden",
           background: "#fff",
-          borderRadius: 8,
+          borderRadius: "0 0 10px 10px",
           userSelect: isPanning ? "none" : undefined,
           cursor: cursorStyle,
         }}
@@ -388,3 +424,100 @@ export const ZoomableContainer: React.FC<Readonly<ZoomableContainerProps>> = ({
 };
 
 export default ZoomableContainer;
+
+// --------------------------
+// Export helpers (PNG & CSV)
+// --------------------------
+
+function sanitizeFilename(name: string): string {
+  return name.replace(/[^a-z0-9\-_.]+/gi, "_").slice(0, 120);
+}
+
+function triggerFileDownload(data: string | Blob, filename: string, mime?: string) {
+  const blob = typeof data === "string" ? new Blob([data], { type: mime || "application/octet-stream" }) : data;
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+function serializeSvgToPng(svg: SVGSVGElement, filenameBase: string) {
+  const rect = svg.getBoundingClientRect();
+  const width = Math.ceil(rect.width || Number(svg.getAttribute("width")) || 800);
+  const height = Math.ceil(rect.height || Number(svg.getAttribute("height")) || 400);
+
+  // Clone and inline background to white for better legibility
+  const cloned = svg.cloneNode(true) as SVGSVGElement;
+  cloned.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+  cloned.setAttribute("width", String(width));
+  cloned.setAttribute("height", String(height));
+  const svgData = new XMLSerializer().serializeToString(cloned);
+  const svgBlob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
+  const url = URL.createObjectURL(svgBlob);
+
+  const img = new Image();
+  img.onload = () => {
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    // Fill background white
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, width, height);
+    ctx.drawImage(img, 0, 0);
+    canvas.toBlob((blob) => {
+      if (blob) {
+        triggerFileDownload(blob, sanitizeFilename(filenameBase) + ".png", "image/png");
+      }
+      URL.revokeObjectURL(url);
+    }, "image/png");
+  };
+  img.onerror = () => URL.revokeObjectURL(url);
+  img.src = url;
+}
+
+function findFirstSvg(root: HTMLElement | null): SVGSVGElement | null {
+  if (!root) return null;
+  const svg = root.querySelector("svg");
+  return (svg as SVGSVGElement) || null;
+}
+
+function downloadChartAsPng(container: HTMLElement | null, title?: string) {
+  const svg = findFirstSvg(container);
+  if (svg) {
+    serializeSvgToPng(svg, title || "chart");
+  }
+}
+
+function getCurrentSlice<T>(data: T[], viewWindow: ViewWindow): T[] {
+  const len = data.length;
+  const from = Math.floor(viewWindow.start * len);
+  const to = Math.ceil(viewWindow.end * len);
+  const safeFrom = Math.max(0, Math.min(from, len - 1));
+  const safeTo = Math.max(safeFrom + 1, Math.min(to, len));
+  return data.slice(safeFrom, safeTo);
+}
+
+function buildCsv(
+  dataset: Array<SingleDataPoint | MultiDataPoint>,
+  dimensions: ChartDimension[],
+  measures: ChartMeasure[]
+): string {
+  const dimCols = dimensions.map((d) => d.accessor);
+  const measureCols = measures.map((m) => m.accessor);
+  const headers = [...dimCols, ...measures.map((m) => m.label)];
+  const rows = dataset.map((row) => {
+    const dimVals = dimCols.map((c) => String((row as Record<string, unknown>)[c] ?? ""));
+    const measVals = measureCols.map((c) => String((row as Record<string, unknown>)[c] ?? ""));
+    const needsQuote = /[",\n]/;
+    return [...dimVals, ...measVals]
+      .map((v) => (needsQuote.test(v) ? `"${v.replace(/"/g, '""')}"` : v))
+      .join(",");
+  });
+  return [headers.join(","), ...rows].join("\n");
+}

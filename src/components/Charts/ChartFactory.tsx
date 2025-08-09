@@ -23,11 +23,13 @@ import ZoomableContainer from "@/components/Charts/ZoomableContainer";
 interface ChartFactoryProps {
   chartType: string;
   chartDataInfo: ChartDataInfo;
+  title?: string;
 }
 
 export const ChartFactory: React.FC<ChartFactoryProps> = ({
   chartType,
   chartDataInfo,
+  title,
 }) => {
   const { isMulti, dataset, measures, seriesData } = chartDataInfo;
 
@@ -36,7 +38,14 @@ export const ChartFactory: React.FC<ChartFactoryProps> = ({
   ];
 
   const wrapVisual = (node: React.ReactNode) => (
-    <ZoomableContainer height={400} mode="visual">{node}</ZoomableContainer>
+    <ZoomableContainer
+      height={400}
+      mode="visual"
+      title={title}
+      exportContext={{ dataset, dimensions, measures }}
+    >
+      {node}
+    </ZoomableContainer>
   );
 
   const wrapDataX = (
@@ -47,6 +56,8 @@ export const ChartFactory: React.FC<ChartFactoryProps> = ({
       <ZoomableContainer
         height={400}
         mode="dataX"
+        title={title}
+        exportContext={{ dataset: datasetArray, dimensions, measures }}
         renderContent={({ start, end }) => {
           const len = datasetArray.length;
           const from = Math.floor(start * len);

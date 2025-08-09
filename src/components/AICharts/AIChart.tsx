@@ -45,7 +45,11 @@ export function AIChart({ data }: Readonly<AIChartProps>) {
         </p>
       )}
 
-      <ChartFactory chartType={chart.type} chartDataInfo={chartDataInfo} />
+      <ChartFactory
+        chartType={chart.type}
+        chartDataInfo={chartDataInfo}
+        title={headline}
+      />
     </div>
   );
 }
