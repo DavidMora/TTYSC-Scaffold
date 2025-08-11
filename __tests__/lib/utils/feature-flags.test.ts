@@ -403,6 +403,39 @@ describe("Feature Flags Utils", () => {
     });
   });
 
+  describe("FF_Side_NavBar environment variable handling", () => {
+    it("should handle FF_SIDE_NAVBAR environment variable when set to true", () => {
+      clearFeatureFlagsCache();
+
+      process.env.FF_SIDE_NAVBAR = "true";
+
+      const flags = getFeatureFlagsSync();
+      expect(flags.FF_Side_NavBar).toBe(true);
+
+      delete process.env.FF_SIDE_NAVBAR;
+    });
+
+    it("should handle FF_SIDE_NAVBAR environment variable when set to false", () => {
+      clearFeatureFlagsCache();
+
+      process.env.FF_SIDE_NAVBAR = "false";
+
+      const flags = getFeatureFlagsSync();
+      expect(flags.FF_Side_NavBar).toBe(false);
+
+      delete process.env.FF_SIDE_NAVBAR;
+    });
+
+    it("should use default value when FF_SIDE_NAVBAR is undefined", () => {
+      clearFeatureFlagsCache();
+
+      delete process.env.FF_SIDE_NAVBAR;
+
+      const flags = getFeatureFlagsSync();
+      expect(flags.FF_Side_NavBar).toBe(DEFAULT_FLAGS.FF_Side_NavBar);
+    });
+  });
+
   describe("loadFromGeneratedFile success path", () => {
     it("should successfully load from JSON file and return parsed flags", async () => {
       clearFeatureFlagsCache();
@@ -440,6 +473,21 @@ describe("Feature Flags Utils", () => {
       expect(typeof flags1.enableAuthentication).toBe("boolean");
       expect(typeof flags1.FF_Chat_Analysis_Screen).toBe("boolean");
       expect(typeof flags1.FF_Full_Page_Navigation).toBe("boolean");
+    });
+  });
+
+  describe("customPath parameter success path", () => {
+    it("should load flags using a provided customPath", async () => {
+      clearFeatureFlagsCache();
+
+      // Use the same JSON that default import uses, but via customPath branch
+      const flags = await getFeatureFlags("../../../feature-flags.json");
+
+      expect(flags).toBeDefined();
+      expect(typeof flags.enableAuthentication).toBe("boolean");
+      expect(typeof flags.FF_Chat_Analysis_Screen).toBe("boolean");
+      expect(typeof flags.FF_Full_Page_Navigation).toBe("boolean");
+      expect(typeof flags.FF_Side_NavBar).toBe("boolean");
     });
   });
 

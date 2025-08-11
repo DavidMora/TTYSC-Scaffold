@@ -5,6 +5,7 @@ export const DEFAULT_FLAGS: FeatureFlags = {
   enableAuthentication: true,
   FF_Chat_Analysis_Screen: true,
   FF_Full_Page_Navigation: true,
+  FF_Side_NavBar: true,
 };
 
 /**
@@ -51,6 +52,7 @@ const loadFromEnvironment = (): FeatureFlags => {
   let enableAuth = DEFAULT_FLAGS.enableAuthentication;
   const FF_Chat_Analysis_Screen = DEFAULT_FLAGS.FF_Chat_Analysis_Screen;
   let FF_Full_Page_Navigation = DEFAULT_FLAGS.FF_Full_Page_Navigation;
+  let FF_Side_NavBar = DEFAULT_FLAGS.FF_Side_NavBar;
 
   if (process.env.FEATURE_FLAG_ENABLE_AUTHENTICATION !== undefined) {
     enableAuth =
@@ -62,10 +64,15 @@ const loadFromEnvironment = (): FeatureFlags => {
       process.env.FF_FULL_PAGE_NAVIGATION.toLowerCase() === "true";
   }
 
+  if (process.env.FF_SIDE_NAVBAR !== undefined) {
+    FF_Side_NavBar = process.env.FF_SIDE_NAVBAR.toLowerCase() === "true";
+  }
+
   const flags: FeatureFlags = {
     enableAuthentication: enableAuth,
     FF_Chat_Analysis_Screen: FF_Chat_Analysis_Screen,
     FF_Full_Page_Navigation: FF_Full_Page_Navigation,
+    FF_Side_NavBar: FF_Side_NavBar,
   };
 
   return flags;

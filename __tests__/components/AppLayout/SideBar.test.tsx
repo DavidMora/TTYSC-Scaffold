@@ -13,6 +13,17 @@ jest.mock("next/navigation", () => ({
   usePathname: () => "/",
 }));
 
+// Ensure sidebar feature flag is enabled for these tests
+// Configurable mock for useFeatureFlags
+let mockFeatureFlagState = { flag: true, loading: false, error: null } as {
+  flag: boolean;
+  loading: boolean;
+  error: null | Error;
+};
+jest.mock("@/hooks/useFeatureFlags", () => ({
+  useFeatureFlag: () => mockFeatureFlagState,
+}));
+
 // Mock specific behavior for SideNavigation components in tests
 jest.mock("@ui5/webcomponents-react", () => {
   const actualModule = jest.requireActual("@ui5/webcomponents-react");
@@ -38,22 +49,27 @@ jest.mock("@ui5/webcomponents-react", () => {
           if (React.isValidElement(child)) {
             // Handle fragments by mapping over their children
             if (child.type === React.Fragment) {
-              const fragmentElement = child as React.ReactElement<{ children: React.ReactNode }>;
-              return React.Children.map(fragmentElement.props.children, (fragmentChild: React.ReactNode) => {
-                if (React.isValidElement(fragmentChild)) {
-                  return React.cloneElement(
-                    fragmentChild as React.ReactElement<{
-                      __onSelectionChange?: typeof onSelectionChange;
-                    }>,
-                    {
-                      __onSelectionChange: onSelectionChange,
-                    }
-                  );
+              const fragmentElement = child as React.ReactElement<{
+                children: React.ReactNode;
+              }>;
+              return React.Children.map(
+                fragmentElement.props.children,
+                (fragmentChild: React.ReactNode) => {
+                  if (React.isValidElement(fragmentChild)) {
+                    return React.cloneElement(
+                      fragmentChild as React.ReactElement<{
+                        __onSelectionChange?: typeof onSelectionChange;
+                      }>,
+                      {
+                        __onSelectionChange: onSelectionChange,
+                      }
+                    );
+                  }
+                  return fragmentChild;
                 }
-                return fragmentChild;
-              });
+              );
             }
-            
+
             // Handle regular elements
             return React.cloneElement(
               child as React.ReactElement<{
@@ -88,6 +104,9 @@ jest.mock("@ui5/webcomponents-react", () => {
       children,
       selected,
       __onSelectionChange,
+      // absorb unselectable from component props so it is not forwarded to DOM
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      unselectable: _ignoredUnselectable,
       ...props
     }: {
       "data-path"?: string;
@@ -95,6 +114,7 @@ jest.mock("@ui5/webcomponents-react", () => {
       text: string;
       children?: React.ReactNode;
       selected?: boolean;
+      unselectable?: boolean;
       __onSelectionChange?: (event: {
         detail: { item: { dataset: { path: string; action?: string } } };
       }) => void;
@@ -106,13 +126,13 @@ jest.mock("@ui5/webcomponents-react", () => {
           data-action={dataAction}
           onClick={() =>
             __onSelectionChange?.({
-              detail: { 
-                item: { 
-                  dataset: { 
-                    path: dataPath || "", 
-                    action: dataAction 
-                  } 
-                } 
+              detail: {
+                item: {
+                  dataset: {
+                    path: dataPath || "",
+                    action: dataAction,
+                  },
+                },
               },
             })
           }
@@ -274,6 +294,8 @@ describe("SideBarMenu", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockLogout.mockReset();
+    // reset feature flag mock state per test
+    mockFeatureFlagState = { flag: true, loading: false, error: null };
   });
 
   afterEach(() => {
@@ -450,22 +472,25 @@ describe("SideBarMenu", () => {
 
   it("covers handleLogout success path", async () => {
     mockLogout.mockResolvedValue(undefined);
-    
+
     render(<SideBarMenu navItems={mockNavItems} />);
-    
+
     const logoutButton = screen.getByTestId("nav-item-log-out");
     expect(logoutButton).toBeInTheDocument();
-    
+
     // Check if data-action is set correctly
     expect(logoutButton).toHaveAttribute("data-action", "logout");
-    
+
     // Click the button which should trigger the mock onClick
     fireEvent.click(logoutButton);
-    
+
     // Wait for async execution
-    await waitFor(() => {
-      expect(mockLogout).toHaveBeenCalled();
-    }, { timeout: 2000 });
+    await waitFor(
+      () => {
+        expect(mockLogout).toHaveBeenCalled();
+      },
+      { timeout: 2000 }
+    );
   });
 
   it("covers handleLogout error path", async () => {
@@ -484,9 +509,9 @@ describe("SideBarMenu", () => {
     consoleErrorSpy.mockRestore();
   });
 
-    it("handles restart session action when restart item is triggered", async () => {
+  it("handles restart session action when restart item is triggered", async () => {
     const consoleLogSpy = jest.spyOn(console, "log").mockImplementation();
-    
+
     // Mock fetch for successful restart session API call
     global.fetch = jest.fn().mockResolvedValue({
       ok: true,
@@ -495,20 +520,20 @@ describe("SideBarMenu", () => {
     // Mock localStorage and sessionStorage
     const mockLocalStorageClear = jest.fn();
     const mockSessionStorageClear = jest.fn();
-    
-    Object.defineProperty(window, 'localStorage', {
+
+    Object.defineProperty(window, "localStorage", {
       value: { clear: mockLocalStorageClear },
       writable: true,
     });
 
-    Object.defineProperty(window, 'sessionStorage', {
+    Object.defineProperty(window, "sessionStorage", {
       value: { clear: mockSessionStorageClear },
       writable: true,
     });
 
     render(<SideBarMenu navItems={mockNavItems} />);
 
-    // Find and click the restart session item  
+    // Find and click the restart session item
     const restartItem = screen.getByTestId("nav-item-restart-session");
     fireEvent.click(restartItem);
 
@@ -516,37 +541,39 @@ describe("SideBarMenu", () => {
     await waitFor(() => {
       expect(mockLocalStorageClear).toHaveBeenCalled();
       expect(mockSessionStorageClear).toHaveBeenCalled();
-      expect(global.fetch).toHaveBeenCalledWith('/api/auth/restart-session', {
-        method: 'POST',
+      expect(global.fetch).toHaveBeenCalledWith("/api/auth/restart-session", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
       });
-      expect(consoleLogSpy).toHaveBeenCalledWith('Session restarted successfully');
+      expect(consoleLogSpy).toHaveBeenCalledWith(
+        "Session restarted successfully"
+      );
     });
-    
+
     consoleLogSpy.mockRestore();
   });
 
   it("handles restart session API error gracefully", async () => {
     const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation();
-    
+
     // Mock fetch for the restart session API call to return error
     global.fetch = jest.fn().mockResolvedValue({
       ok: false,
-      text: () => Promise.resolve('Server Error'),
+      text: () => Promise.resolve("Server Error"),
     });
 
     // Mock localStorage and sessionStorage
     const mockLocalStorageClear = jest.fn();
     const mockSessionStorageClear = jest.fn();
-    
-    Object.defineProperty(window, 'localStorage', {
+
+    Object.defineProperty(window, "localStorage", {
       value: { clear: mockLocalStorageClear },
       writable: true,
     });
 
-    Object.defineProperty(window, 'sessionStorage', {
+    Object.defineProperty(window, "sessionStorage", {
       value: { clear: mockSessionStorageClear },
       writable: true,
     });
@@ -562,28 +589,31 @@ describe("SideBarMenu", () => {
       expect(mockLocalStorageClear).toHaveBeenCalled();
       expect(mockSessionStorageClear).toHaveBeenCalled();
       expect(global.fetch).toHaveBeenCalled();
-      expect(consoleErrorSpy).toHaveBeenCalledWith('Failed to restart session:', 'Server Error');
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        "Failed to restart session:",
+        "Server Error"
+      );
     });
-    
+
     consoleErrorSpy.mockRestore();
   });
 
   it("handles restart session network error gracefully", async () => {
     const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation();
-    
+
     // Mock fetch to throw an error
-    global.fetch = jest.fn().mockRejectedValue(new Error('Network error'));
+    global.fetch = jest.fn().mockRejectedValue(new Error("Network error"));
 
     // Mock localStorage and sessionStorage
     const mockLocalStorageClear = jest.fn();
     const mockSessionStorageClear = jest.fn();
-    
-    Object.defineProperty(window, 'localStorage', {
+
+    Object.defineProperty(window, "localStorage", {
       value: { clear: mockLocalStorageClear },
       writable: true,
     });
 
-    Object.defineProperty(window, 'sessionStorage', {
+    Object.defineProperty(window, "sessionStorage", {
       value: { clear: mockSessionStorageClear },
       writable: true,
     });
@@ -598,9 +628,12 @@ describe("SideBarMenu", () => {
     await waitFor(() => {
       expect(mockLocalStorageClear).toHaveBeenCalled();
       expect(mockSessionStorageClear).toHaveBeenCalled();
-      expect(consoleErrorSpy).toHaveBeenCalledWith('Error during session restart:', expect.any(Error));
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        "Error during session restart:",
+        expect.any(Error)
+      );
     });
-    
+
     consoleErrorSpy.mockRestore();
   });
 
@@ -622,15 +655,34 @@ describe("SideBarMenu", () => {
     const event = {
       detail: {
         item: {
-          dataset: {}
-        }
-      }
+          dataset: {},
+        },
+      },
     };
 
     // This should not crash or throw errors
     expect(() => {
       // Manually trigger the handler with empty dataset
-      fireEvent(sideNavigation, new CustomEvent('selectionChange', { detail: event.detail }));
+      fireEvent(
+        sideNavigation,
+        new CustomEvent("selectionChange", { detail: event.detail })
+      );
     }).not.toThrow();
+  });
+
+  it("returns null while feature flag is loading", () => {
+    mockFeatureFlagState = { flag: true, loading: true, error: null };
+    const { container } = render(<SideBarMenu navItems={mockNavItems} />);
+    // Expect nothing rendered
+    expect(container.firstChild).toBeNull();
+  });
+
+  it("renders FeatureNotAvailable when side nav feature is disabled", () => {
+    mockFeatureFlagState = { flag: false, loading: false, error: null };
+    render(<SideBarMenu navItems={mockNavItems} />);
+    expect(screen.getByText("Navigation Not Available")).toBeInTheDocument();
+    expect(
+      screen.getByText("The side navigation is currently disabled.")
+    ).toBeInTheDocument();
   });
 });

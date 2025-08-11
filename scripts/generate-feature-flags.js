@@ -18,6 +18,7 @@ const DEFAULT_FLAGS = {
   enableAuthentication: true,
   FF_Chat_Analysis_Screen: true,
   FF_Full_Page_Navigation: true,
+  FF_Side_NavBar: true,
 };
 
 // Helper function for handling environment variables
@@ -48,6 +49,8 @@ Object.keys(DEFAULT_FLAGS).forEach((key) => {
       "FF_FULL_PAGE_NAVIGATION",
       DEFAULT_FLAGS[key]
     );
+  } else if (key === "FF_Side_NavBar") {
+    flags[key] = handleEnvFlag(key, "FF_SIDE_NAVBAR", DEFAULT_FLAGS[key]);
   } else {
     // For other flags, always use default values (no environment variable override)
     flags[key] = DEFAULT_FLAGS[key];
@@ -119,6 +122,8 @@ Object.keys(DEFAULT_FLAGS).forEach((key) => {
     properEnvKey = "FEATURE_FLAG_ENABLE_AUTHENTICATION";
   } else if (key === "FF_Full_Page_Navigation") {
     properEnvKey = "FF_FULL_PAGE_NAVIGATION";
+  } else if (key === "FF_Side_NavBar") {
+    properEnvKey = "FF_SIDE_NAVBAR";
   } else {
     properEnvKey = `FEATURE_FLAG_${key.toUpperCase()}`;
   }

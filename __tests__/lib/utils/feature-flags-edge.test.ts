@@ -10,19 +10,25 @@ const mockConsoleWarn = jest
 
 describe("feature-flags-edge", () => {
   // Save original process.env to restore after tests
-  const originalEnv = process.env;
+  const originalEnv = { ...process.env };
 
   beforeEach(() => {
     // Reset process.env for each test
     jest.resetModules();
-    // Properly restore the original env
-    process.env = { ...originalEnv };
+    // Properly restore the original env by copying keys
+    for (const key of Object.keys(process.env)) {
+      delete (process.env as Record<string, string | undefined>)[key];
+    }
+    Object.assign(process.env, originalEnv);
     mockConsoleWarn.mockClear();
   });
 
   afterAll(() => {
-    // Restore original process.env
-    process.env = originalEnv;
+    // Restore original process.env keys
+    for (const key of Object.keys(process.env)) {
+      delete (process.env as Record<string, string | undefined>)[key];
+    }
+    Object.assign(process.env, originalEnv);
     mockConsoleWarn.mockRestore();
   });
 
@@ -32,6 +38,7 @@ describe("feature-flags-edge", () => {
       delete process.env.ENABLE_AUTHENTICATION;
       delete process.env.FF_Chat_Analysis_Screen;
       delete process.env.FF_Full_Page_Navigation;
+      delete process.env.FF_SIDE_NAVBAR;
 
       const result = loadFeatureFlagsEdge();
 
@@ -39,6 +46,7 @@ describe("feature-flags-edge", () => {
         enableAuthentication: true, // default is true when env var is not 'false'
         FF_Chat_Analysis_Screen: true, // default is true when env var is not 'false'
         FF_Full_Page_Navigation: true, // default is true when env var is not 'false'
+        FF_Side_NavBar: true, // default is true when env var is not 'false'
       });
     });
 
@@ -46,6 +54,7 @@ describe("feature-flags-edge", () => {
       process.env.ENABLE_AUTHENTICATION = "false";
       delete process.env.FF_Chat_Analysis_Screen;
       delete process.env.FF_Full_Page_Navigation;
+      delete process.env.FF_SIDE_NAVBAR;
 
       const result = loadFeatureFlagsEdge();
 
@@ -53,6 +62,7 @@ describe("feature-flags-edge", () => {
         enableAuthentication: false,
         FF_Chat_Analysis_Screen: true,
         FF_Full_Page_Navigation: true,
+        FF_Side_NavBar: true,
       });
     });
 
@@ -60,6 +70,7 @@ describe("feature-flags-edge", () => {
       process.env.ENABLE_AUTHENTICATION = "true";
       delete process.env.FF_Chat_Analysis_Screen;
       delete process.env.FF_Full_Page_Navigation;
+      delete process.env.FF_SIDE_NAVBAR;
 
       const result = loadFeatureFlagsEdge();
 
@@ -67,6 +78,7 @@ describe("feature-flags-edge", () => {
         enableAuthentication: true,
         FF_Chat_Analysis_Screen: true,
         FF_Full_Page_Navigation: true,
+        FF_Side_NavBar: true,
       });
     });
 
@@ -74,6 +86,7 @@ describe("feature-flags-edge", () => {
       process.env.ENABLE_AUTHENTICATION = "yes";
       delete process.env.FF_Chat_Analysis_Screen;
       delete process.env.FF_Full_Page_Navigation;
+      delete process.env.FF_SIDE_NAVBAR;
 
       const result = loadFeatureFlagsEdge();
 
@@ -81,6 +94,7 @@ describe("feature-flags-edge", () => {
         enableAuthentication: true,
         FF_Chat_Analysis_Screen: true,
         FF_Full_Page_Navigation: true,
+        FF_Side_NavBar: true,
       });
     });
 
@@ -100,6 +114,7 @@ describe("feature-flags-edge", () => {
         enableAuthentication: true, // DEFAULT_FLAGS value
         FF_Chat_Analysis_Screen: true, // DEFAULT_FLAGS value
         FF_Full_Page_Navigation: true, // DEFAULT_FLAGS value
+        FF_Side_NavBar: true, // DEFAULT_FLAGS value
       });
       expect(mockConsoleWarn).toHaveBeenCalledWith(
         "Error loading feature flags in edge runtime, using defaults:",

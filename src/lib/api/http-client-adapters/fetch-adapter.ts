@@ -37,7 +37,7 @@ export class FetchAdapter implements HttpClientAdapter {
     );
 
     try {
-       // Merge headers properly
+      // Merge headers properly
       const mergedHeaders: Record<string, string> = {
         ...this.defaultConfig.headers,
         ...config?.headers,

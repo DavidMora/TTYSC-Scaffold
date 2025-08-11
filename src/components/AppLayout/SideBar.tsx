@@ -17,6 +17,8 @@ import { useChats } from "@/hooks/chats";
 import "@ui5/webcomponents-icons/dist/inspect.js";
 import { CHAT } from "@/lib/constants/routes/Dashboard";
 import { useAuth } from "@/hooks/useAuth";
+import { useFeatureFlag } from "@/hooks/useFeatureFlags";
+import { FeatureNotAvailable } from "@/components/FeatureNotAvailable";
 
 interface SideBarProps {
   sideNavCollapsed?: boolean;
@@ -31,6 +33,7 @@ const SideBarMenu: React.FC<SideBarProps> = ({
   const pathname = usePathname();
   const router = useRouter();
   const { logout } = useAuth();
+  const { flag: isSideNavEnabled, loading } = useFeatureFlag("FF_Side_NavBar");
 
   const {
     data: chatHistory,
@@ -111,6 +114,19 @@ const SideBarMenu: React.FC<SideBarProps> = ({
       router.push(path);
     }
   };
+
+  if (loading) {
+    return null;
+  }
+
+  if (!isSideNavEnabled) {
+    return (
+      <FeatureNotAvailable
+        title="Navigation Not Available"
+        message="The side navigation is currently disabled."
+      />
+    );
+  }
 
   return (
     <SideNavigation
