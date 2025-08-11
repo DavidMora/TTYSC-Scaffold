@@ -7,6 +7,7 @@ import {
   shiftWindow,
   zoomInWindow,
   zoomOutWindow,
+  snapWindowSpanToCount,
 } from "@/lib/utils/zoomWindow";
 import type { ViewWindow } from "@/lib/utils/zoomWindow";
 
@@ -16,6 +17,7 @@ export interface UseZoomableOptions {
   maxZoom?: number;
   step?: number;
   onWindowChange?: (window: ViewWindow) => void;
+  dataLength?: number;
 }
 
 export function useZoomable({
@@ -24,6 +26,7 @@ export function useZoomable({
   maxZoom = 5,
   step = 0.4,
   onWindowChange,
+  dataLength,
 }: UseZoomableOptions = {}) {
   const viewportRef = useRef<HTMLDivElement | null>(null);
   const [zoom, setZoom] = useState<number>(1);
@@ -37,6 +40,7 @@ export function useZoomable({
     y: number;
     ox: number;
     oy: number;
+    windowAtStart?: ViewWindow;
   } | null>(null);
   const [viewWindow, setViewWindow] = useState<ViewWindow>({
     start: 0,
@@ -44,14 +48,58 @@ export function useZoomable({
   });
   const rafIdRef = useRef<number | null>(null);
   const pendingWindowRef = useRef<ViewWindow | null>(null);
+  const panRafIdRef = useRef<number | null>(null);
+  const pendingOffsetRef = useRef<{ x: number; y: number } | null>(null);
 
   const span = viewWindow.end - viewWindow.start;
   const dataZoom = 1 / Math.max(span, EPSILON);
 
-  const canZoomIn =
-    mode === "visual" ? zoom < maxZoom - EPSILON : dataZoom < maxZoom - EPSILON;
-  const canZoomOut =
-    mode === "visual" ? zoom > minZoom + EPSILON : dataZoom > minZoom + EPSILON;
+  const hasMultipleItems = (dataLength ?? 2) > 1;
+  const visibleCount = useMemo(() => {
+    if (!dataLength) return null;
+    return Math.max(1, Math.round(span * dataLength));
+  }, [span, dataLength]);
+  const canZoomIn = useMemo(() => {
+    if (!hasMultipleItems) return false;
+    if (visibleCount !== null && visibleCount <= 2) return false;
+    if (mode === "visual") return zoom < maxZoom - EPSILON;
+    let next = zoomInWindow(viewWindow, step, maxZoom);
+    if (dataLength) next = snapWindowSpanToCount(next, dataLength);
+    const changed =
+      Math.abs(next.start - viewWindow.start) > EPSILON ||
+      Math.abs(next.end - viewWindow.end) > EPSILON;
+    return changed && dataZoom < maxZoom - EPSILON;
+  }, [
+    hasMultipleItems,
+    visibleCount,
+    mode,
+    zoom,
+    maxZoom,
+    viewWindow,
+    step,
+    dataLength,
+    dataZoom,
+  ]);
+
+  const canZoomOut = useMemo(() => {
+    if (!hasMultipleItems) return false;
+    if (mode === "visual") return zoom > minZoom + EPSILON;
+    let next = zoomOutWindow(viewWindow, step, minZoom);
+    if (dataLength) next = snapWindowSpanToCount(next, dataLength);
+    const changed =
+      Math.abs(next.start - viewWindow.start) > EPSILON ||
+      Math.abs(next.end - viewWindow.end) > EPSILON;
+    return changed && dataZoom > minZoom + EPSILON;
+  }, [
+    hasMultipleItems,
+    mode,
+    zoom,
+    minZoom,
+    viewWindow,
+    step,
+    dataLength,
+    dataZoom,
+  ]);
 
   const clampOffsetToBounds = useCallback(
     (proposed: { x: number; y: number }, currentZoom: number) => {
@@ -97,7 +145,10 @@ export function useZoomable({
       return;
     }
     setViewWindow((w) => {
-      const next = zoomInWindow(w, step, maxZoom);
+      let next = zoomInWindow(w, step, maxZoom);
+      if (dataLength) {
+        next = snapWindowSpanToCount(next, dataLength);
+      }
       // Ensure a change happened; if not, force a tiny nudge inwards
       if (Math.abs(next.end - next.start - (w.end - w.start)) < EPSILON) {
         const center = (w.start + w.end) / 2;
@@ -106,13 +157,16 @@ export function useZoomable({
           start: Math.max(0, center - (w.end - w.start - tiny) / 2),
           end: Math.min(1, center + (w.end - w.start - tiny) / 2),
         };
-        onWindowChange?.(forced);
-        return forced;
+        const snapped = dataLength
+          ? snapWindowSpanToCount(forced, dataLength)
+          : forced;
+        onWindowChange?.(snapped);
+        return snapped;
       }
       onWindowChange?.(next);
       return next;
     });
-  }, [mode, maxZoom, step, onWindowChange, clampOffsetToBounds]);
+  }, [mode, maxZoom, step, onWindowChange, clampOffsetToBounds, dataLength]);
 
   const handleZoomOut = useCallback(() => {
     if (mode === "visual") {
@@ -129,7 +183,10 @@ export function useZoomable({
       return;
     }
     setViewWindow((w) => {
-      const next = zoomOutWindow(w, step, minZoom);
+      let next = zoomOutWindow(w, step, minZoom);
+      if (dataLength) {
+        next = snapWindowSpanToCount(next, dataLength);
+      }
       // Ensure a change happened; if not, force a tiny nudge outwards
       if (Math.abs(next.end - next.start - (w.end - w.start)) < EPSILON) {
         const span = Math.min(1, (w.end - w.start) * (1 + step * 0.5));
@@ -139,13 +196,16 @@ export function useZoomable({
           start: Math.max(0, center - half),
           end: Math.min(1, center + half),
         };
-        onWindowChange?.(forced);
-        return forced;
+        const snapped = dataLength
+          ? snapWindowSpanToCount(forced, dataLength)
+          : forced;
+        onWindowChange?.(snapped);
+        return snapped;
       }
       onWindowChange?.(next);
       return next;
     });
-  }, [mode, minZoom, step, onWindowChange, clampOffsetToBounds]);
+  }, [mode, minZoom, step, onWindowChange, clampOffsetToBounds, dataLength]);
 
   const onMouseDown = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
@@ -156,9 +216,10 @@ export function useZoomable({
         y: e.clientY,
         ox: offset.x,
         oy: offset.y,
+        windowAtStart: mode === "dataX" ? { ...viewWindow } : undefined,
       };
     },
-    [mode, zoom, offset.x, offset.y]
+    [mode, zoom, offset.x, offset.y, viewWindow]
   );
 
   const onMouseMove = useCallback(
@@ -171,27 +232,45 @@ export function useZoomable({
           x: panStartRef.current.ox + dx,
           y: panStartRef.current.oy + dy,
         };
-        setOffset(clampOffsetToBounds(proposed, zoom));
+        // throttle visual pan updates to animation frames to avoid flicker
+        pendingOffsetRef.current = clampOffsetToBounds(proposed, zoom);
+        panRafIdRef.current ??= requestAnimationFrame(() => {
+          panRafIdRef.current = null;
+          if (pendingOffsetRef.current) {
+            setOffset(pendingOffsetRef.current);
+            pendingOffsetRef.current = null;
+          }
+        });
         return;
       }
-      if (mode === "dataX") {
+      if (mode === "dataX" && hasMultipleItems) {
         const viewport = viewportRef.current;
         if (!viewport) return;
+        const startWin = panStartRef.current.windowAtStart;
+        if (!startWin) return;
         const dx = e.clientX - panStartRef.current.x;
-        const range = viewWindow.end - viewWindow.start;
-        if (range >= 1 - 1e-6) return;
-        const delta = -deltaFromPixels(dx, viewport.clientWidth || 1, range);
-        const next = shiftWindow(viewWindow, delta);
+        const rangeAtStart = startWin.end - startWin.start;
+        if (rangeAtStart >= 1 - 1e-6) return;
+        const delta = -deltaFromPixels(
+          dx,
+          viewport.clientWidth || 1,
+          rangeAtStart
+        );
+        let next = shiftWindow(startWin, delta);
+        if (dataLength) {
+          next = snapWindowSpanToCount(next, dataLength);
+        }
         scheduleWindowUpdate(next);
       }
     },
     [
       isPanning,
       mode,
-      viewWindow,
       scheduleWindowUpdate,
       clampOffsetToBounds,
       zoom,
+      dataLength,
+      hasMultipleItems,
     ]
   );
 
@@ -202,25 +281,91 @@ export function useZoomable({
 
   const onWheel = useCallback(
     (e: React.WheelEvent<HTMLDivElement>) => {
-      if (mode !== "visual") return;
-      if (zoom <= 1) return;
-      e.preventDefault();
-      setOffset((prev) =>
-        clampOffsetToBounds(
-          { x: prev.x - e.deltaX, y: prev.y - e.deltaY },
-          zoom
-        )
-      );
+      const handleWheelVisual = () => {
+        if (zoom <= 1) return;
+        e.preventDefault();
+        const proposed = (prev: { x: number; y: number }) =>
+          clampOffsetToBounds(
+            { x: prev.x - e.deltaX, y: prev.y - e.deltaY },
+            zoom
+          );
+        const next = proposed({ x: offset.x, y: offset.y });
+        pendingOffsetRef.current = next;
+        panRafIdRef.current ??= requestAnimationFrame(() => {
+          panRafIdRef.current = null;
+          if (pendingOffsetRef.current) {
+            setOffset(pendingOffsetRef.current);
+            pendingOffsetRef.current = null;
+          }
+        });
+      };
+
+      const handleWheelDataX = () => {
+        if (!hasMultipleItems) return;
+        const viewport = viewportRef.current;
+        if (!viewport) return;
+        const span = viewWindow.end - viewWindow.start;
+        if (e.ctrlKey) {
+          e.preventDefault();
+          if (e.deltaY < 0 && visibleCount !== null && visibleCount <= 2) {
+            // avoid futile zoom-in when already at 2 items
+            return;
+          }
+          let next =
+            e.deltaY < 0
+              ? zoomInWindow(viewWindow, step, maxZoom)
+              : zoomOutWindow(viewWindow, step, minZoom);
+          if (dataLength) next = snapWindowSpanToCount(next, dataLength);
+          scheduleWindowUpdate(next);
+          return;
+        }
+        if (span >= 1 - 1e-6) return;
+        // Only hijack wheel when there is horizontal scroll intent or Shift is pressed.
+        // If the user is scrolling vertically (deltaY only), let the page scroll naturally.
+        const hasHorizontalDelta = Math.abs(e.deltaX) > 0;
+        const shouldPanHorizontally = hasHorizontalDelta || e.shiftKey;
+        if (!shouldPanHorizontally) {
+          return;
+        }
+        const pixelDx = hasHorizontalDelta ? e.deltaX : e.deltaY;
+        if (pixelDx === 0) return;
+        e.preventDefault();
+        const delta = -deltaFromPixels(
+          pixelDx,
+          viewport.clientWidth || 1,
+          span
+        );
+        let next = shiftWindow(viewWindow, delta);
+        if (dataLength) next = snapWindowSpanToCount(next, dataLength);
+        scheduleWindowUpdate(next);
+      };
+
+      if (mode === "visual") return handleWheelVisual();
+      if (mode === "dataX") return handleWheelDataX();
     },
-    [mode, zoom, clampOffsetToBounds]
+    [
+      mode,
+      zoom,
+      clampOffsetToBounds,
+      viewWindow,
+      scheduleWindowUpdate,
+      step,
+      maxZoom,
+      minZoom,
+      offset.x,
+      offset.y,
+      dataLength,
+      hasMultipleItems,
+      visibleCount,
+    ]
   );
 
   const zoomActive = useMemo(
     () =>
       mode === "visual"
         ? zoom > 1
-        : viewWindow.end - viewWindow.start < 1 - EPSILON,
-    [mode, zoom, viewWindow.end, viewWindow.start]
+        : hasMultipleItems && viewWindow.end - viewWindow.start < 1 - EPSILON,
+    [mode, zoom, viewWindow.end, viewWindow.start, hasMultipleItems]
   );
 
   const cursorStyle = useMemo(

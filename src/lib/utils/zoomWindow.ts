@@ -83,3 +83,15 @@ export function deltaFromPixels(
   const width = viewportWidth || 1;
   return sign * (dx / width) * span;
 }
+
+export function snapWindowSpanToCount(
+  win: ViewWindow,
+  dataLength: number
+): ViewWindow {
+  const length = Math.max(1, Math.floor(dataLength));
+  const center = (win.start + win.end) / 2;
+  const currentSpan = Math.max(EPSILON, win.end - win.start);
+  const desiredCount = Math.max(1, Math.round(currentSpan * length));
+  const snappedSpan = desiredCount / length;
+  return windowAroundCenter(center, snappedSpan);
+}

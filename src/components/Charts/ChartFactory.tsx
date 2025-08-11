@@ -45,6 +45,7 @@ export const ChartFactory: React.FC<ChartFactoryProps> = ({
       mode="visual"
       title={title}
       chartIdForFullscreen={chartIdForFullscreen}
+      dataLength={(dataset as (SingleDataPoint | MultiDataPoint)[]).length}
       exportContext={{ dataset, dimensions, measures, isMulti, seriesData }}
     >
       {node}
@@ -61,6 +62,7 @@ export const ChartFactory: React.FC<ChartFactoryProps> = ({
         mode="dataX"
         title={title}
         chartIdForFullscreen={chartIdForFullscreen}
+        dataLength={datasetArray.length}
         exportContext={{
           dataset: datasetArray,
           dimensions,
@@ -70,10 +72,12 @@ export const ChartFactory: React.FC<ChartFactoryProps> = ({
         }}
         renderContent={({ start, end }) => {
           const len = datasetArray.length;
-          const from = Math.floor(start * len);
-          let to = Math.ceil(end * len);
-          if (to <= from) to = from + 1;
-          if (to > len) to = len;
+          const span = end - start;
+          const desiredCount = Math.max(1, Math.round(span * len));
+          const centerIndex = ((start + end) / 2) * len;
+          let from = Math.round(centerIndex - desiredCount / 2);
+          from = Math.max(0, Math.min(len - desiredCount, from));
+          const to = Math.min(len, from + desiredCount);
           const sliced = datasetArray.slice(from, to);
           return render(sliced);
         }}

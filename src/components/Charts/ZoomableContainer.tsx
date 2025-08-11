@@ -37,6 +37,7 @@ interface ZoomableContainerProps {
   }) => React.ReactNode;
   title?: string;
   chartIdForFullscreen?: string;
+  dataLength?: number;
   exportContext?: {
     dataset: SingleDataPoint[] | MultiDataPoint[];
     dimensions: ChartDimension[];
@@ -59,6 +60,7 @@ export const ZoomableContainer: React.FC<Readonly<ZoomableContainerProps>> = ({
   title,
   exportContext,
   chartIdForFullscreen,
+  dataLength,
 }) => {
   const router = useRouter();
 
@@ -77,7 +79,7 @@ export const ZoomableContainer: React.FC<Readonly<ZoomableContainerProps>> = ({
     onWheel,
     handleZoomIn,
     handleZoomOut,
-  } = useZoomable({ mode, minZoom, maxZoom, step, onWindowChange });
+  } = useZoomable({ mode, minZoom, maxZoom, step, onWindowChange, dataLength });
 
   const containerClass = [
     "zoomable-container",
@@ -90,13 +92,15 @@ export const ZoomableContainer: React.FC<Readonly<ZoomableContainerProps>> = ({
   return (
     <div style={{ width: "100%" }}>
       <ChartToolbar
-        showZoom
+        showZoom={(dataLength ?? exportContext?.dataset?.length ?? 0) > 1}
         showFullScreen={Boolean(chartIdForFullscreen)}
         showDownload
         leftContent={<Title level={TitleLevel.H2}>{title}</Title>}
         onZoomIn={handleZoomIn}
         onZoomOut={handleZoomOut}
-        disableZoomIn={!canZoomIn}
+        disableZoomIn={
+          !canZoomIn || (dataLength ?? exportContext?.dataset?.length ?? 0) <= 2
+        }
         disableZoomOut={!canZoomOut}
         onFullScreenClick={() => {
           if (!chartIdForFullscreen) return;
@@ -159,7 +163,7 @@ export const ZoomableContainer: React.FC<Readonly<ZoomableContainerProps>> = ({
               transform,
               transformOrigin: "0 0",
               willChange: "transform",
-              transition: "transform 60ms ease-out",
+              transition: isPanning ? undefined : "transform 60ms ease-out",
               cursor: cursorStyle,
             }}
           >
