@@ -5,6 +5,7 @@ export const DEFAULT_FLAGS: FeatureFlags = {
   enableAuthentication: true,
   FF_Chat_Analysis_Screen: true,
   FF_Full_Page_Navigation: true,
+  FF_Side_NavBar: true,
   FF_Modals: true,
 };
 
@@ -13,10 +14,6 @@ export const DEFAULT_FLAGS: FeatureFlags = {
  */
 let cachedFlags: FeatureFlags | null = null;
 
-/**
- * Load feature flags from the generated JSON file
- * This is the primary source of truth when available
- */
 /**
  * Load feature flags from the generated JSON file
  * This is the primary source of truth when available
@@ -44,30 +41,54 @@ const loadFromGeneratedFile = async (
 };
 
 /**
+ * Parses a string-like boolean to a boolean with sensible defaults.
+ * Accepts: "true/1/yes/y/on" and "false/0/no/n/off" (case-insensitive).
+ */
+const parseBool = (
+  value: string | undefined,
+  defaultValue: boolean
+): boolean => {
+  if (value == null) return defaultValue;
+  const normalized = String(value).trim().toLowerCase();
+  if (["true", "1", "yes", "y", "on"].includes(normalized)) return true;
+  if (["false", "0", "no", "n", "off"].includes(normalized)) return false;
+  // If a value is provided but it's invalid, treat it as false to match previous behavior
+  return false;
+};
+
+/**
  * Load feature flags from environment variables
  * Uses FEATURE_FLAG_ENABLE_AUTHENTICATION as the primary variable
  */
 const loadFromEnvironment = (): FeatureFlags => {
-  // Use FEATURE_FLAG_ENABLE_AUTHENTICATION or fall back to default
-  let enableAuth = DEFAULT_FLAGS.enableAuthentication;
-  const FF_Chat_Analysis_Screen = DEFAULT_FLAGS.FF_Chat_Analysis_Screen;
-  let FF_Full_Page_Navigation = DEFAULT_FLAGS.FF_Full_Page_Navigation;
-  const FF_Modals = DEFAULT_FLAGS.FF_Modals;
+  // Use environment variables with graceful fallbacks to defaults
+  const enableAuth = parseBool(
+    process.env.FEATURE_FLAG_ENABLE_AUTHENTICATION,
+    DEFAULT_FLAGS.enableAuthentication
+  );
 
-  if (process.env.FEATURE_FLAG_ENABLE_AUTHENTICATION !== undefined) {
-    enableAuth =
-      process.env.FEATURE_FLAG_ENABLE_AUTHENTICATION.toLowerCase() === "true";
-  }
+  const FF_Chat_Analysis_Screen = parseBool(
+    process.env.FEATURE_FLAG_FF_CHAT_ANALYSIS_SCREEN,
+    DEFAULT_FLAGS.FF_Chat_Analysis_Screen
+  );
 
-  if (process.env.FF_FULL_PAGE_NAVIGATION !== undefined) {
-    FF_Full_Page_Navigation =
-      process.env.FF_FULL_PAGE_NAVIGATION.toLowerCase() === "true";
-  }
+  const FF_Full_Page_Navigation = parseBool(
+    process.env.FF_FULL_PAGE_NAVIGATION,
+    DEFAULT_FLAGS.FF_Full_Page_Navigation
+  );
+
+  const FF_Side_NavBar = parseBool(
+    process.env.FF_SIDE_NAVBAR,
+    DEFAULT_FLAGS.FF_Side_NavBar
+  );
+
+  const FF_Modals = parseBool(process.env.FF_MODALS, DEFAULT_FLAGS.FF_Modals);
 
   const flags: FeatureFlags = {
     enableAuthentication: enableAuth,
     FF_Chat_Analysis_Screen: FF_Chat_Analysis_Screen,
     FF_Full_Page_Navigation: FF_Full_Page_Navigation,
+    FF_Side_NavBar: FF_Side_NavBar,
     FF_Modals: FF_Modals,
   };
 

@@ -1,8 +1,8 @@
 import {
   FetchAdapter,
   default as FetchAdapterDefault,
-} from "../../../../src/lib/api/http-client-adapters/fetch-adapter";
-import { HttpClientConfig } from "../../../../src/lib/types/api/http-client";
+} from "@/lib/api/http-client-adapters/fetch-adapter";
+import { HttpClientConfig } from "@/lib/types/api/http-client";
 
 // Mock fetch globally
 const mockFetch = jest.fn();
@@ -515,8 +515,8 @@ describe("FetchAdapter", () => {
       const config: HttpClientConfig = {
         auth: {
           username: "testuser",
-          password: "testpass"
-        }
+          password: "testpass",
+        },
       };
       const authAdapter = new FetchAdapter(config);
 
@@ -536,7 +536,7 @@ describe("FetchAdapter", () => {
         headers: expect.objectContaining({
           "Content-Type": "application/json",
           Authorization: "Basic dGVzdHVzZXI6dGVzdHBhc3M=", // Base64 of "testuser:testpass"
-          "X-Request-Id": expect.any(String)
+          "X-Request-Id": expect.any(String),
         }),
         signal: expect.any(AbortSignal),
       });
@@ -555,8 +555,8 @@ describe("FetchAdapter", () => {
       await adapter.get("/test", {
         auth: {
           username: "requestuser",
-          password: "requestpass"
-        }
+          password: "requestpass",
+        },
       });
 
       expect(mockFetch).toHaveBeenCalledWith("/test", {
@@ -564,7 +564,7 @@ describe("FetchAdapter", () => {
         headers: expect.objectContaining({
           "Content-Type": "application/json",
           Authorization: "Basic cmVxdWVzdHVzZXI6cmVxdWVzdHBhc3M=", // Base64 of "requestuser:requestpass"
-          "X-Request-Id": expect.any(String)
+          "X-Request-Id": expect.any(String),
         }),
         signal: expect.any(AbortSignal),
       });
@@ -588,7 +588,9 @@ describe("FetchAdapter", () => {
         method: "GET",
         headers: expect.objectContaining({
           "Content-Type": "application/json",
-          "X-Request-Id": expect.stringMatching(/^[0-9a-f]{8}-[0-9a-f]{4}-6[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i)
+          "X-Request-Id": expect.stringMatching(
+            /^[0-9a-f]{8}-[0-9a-f]{4}-6[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+          ),
         }),
         signal: expect.any(AbortSignal),
       });
