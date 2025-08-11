@@ -53,28 +53,6 @@ Object.keys(DEFAULT_FLAGS).forEach((key) => {
   }
 });
 
-Object.keys(DEFAULT_FLAGS).forEach((key) => {
-  // Handle enableAuthentication from environment variables
-  if (key === "enableAuthentication") {
-    flags[key] = handleEnvFlag(
-      key,
-      "FEATURE_FLAG_ENABLE_AUTHENTICATION",
-      DEFAULT_FLAGS[key]
-    );
-  } else if (key === "FF_Full_Page_Navigation") {
-    flags[key] = handleEnvFlag(
-      key,
-      "FF_FULL_PAGE_NAVIGATION",
-      DEFAULT_FLAGS[key]
-    );
-  } else if (key === "FF_Side_NavBar") {
-    flags[key] = handleEnvFlag(key, "FF_SIDE_NAVBAR", DEFAULT_FLAGS[key]);
-  } else {
-    // For other flags, always use default values (no environment variable override)
-    flags[key] = DEFAULT_FLAGS[key];
-  }
-});
-
 // Create the JSON content
 const jsonContent = JSON.stringify(flags, null, 2);
 
