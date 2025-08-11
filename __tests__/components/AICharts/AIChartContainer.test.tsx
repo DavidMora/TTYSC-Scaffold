@@ -100,7 +100,7 @@ describe("AIChartContainer", () => {
       mockUseChart.mockReturnValue({
         data: undefined,
         isLoading: false,
-        error: "String error message" as any,
+        error: "String error message" as unknown as Error,
         mutate: mockMutate,
       });
 
@@ -133,7 +133,7 @@ describe("AIChartContainer", () => {
         data: undefined,
         isLoading: false,
         error: mockError,
-        mutate: undefined as any,
+        mutate: undefined,
       });
 
       render(<AIChartContainer chartId={mockChartId} />);
@@ -293,6 +293,35 @@ describe("AIChartContainer", () => {
         mutate: mockMutate,
       });
       rerender(
+        <AIChartContainer chartId={mockChartId} onTitleChange={onTitleChange} />
+      );
+
+      expect(onTitleChange).toHaveBeenCalledWith("");
+    });
+
+    it("should call onTitleChange with empty string when headline is undefined but data exists", () => {
+      const onTitleChange = jest.fn();
+
+      mockUseChart.mockReturnValue({
+        data: {
+          success: true,
+          data: {
+            // headline intentionally undefined to trigger ?? "" branch
+            headline: undefined as unknown as string,
+            timestamp: "2024-01-01",
+            chart: {
+              type: "bar" as const,
+              labels: ["X"],
+              data: [1],
+            },
+          },
+        },
+        isLoading: false,
+        error: undefined,
+        mutate: mockMutate,
+      });
+
+      render(
         <AIChartContainer chartId={mockChartId} onTitleChange={onTitleChange} />
       );
 
