@@ -18,7 +18,7 @@ jest.mock("next/navigation", () => ({
 let mockFeatureFlagState = { flag: true, loading: false, error: null } as {
   flag: boolean;
   loading: boolean;
-  error: null | Error;
+  error: string | null;
 };
 jest.mock("@/hooks/useFeatureFlags", () => ({
   useFeatureFlag: () => mockFeatureFlagState,

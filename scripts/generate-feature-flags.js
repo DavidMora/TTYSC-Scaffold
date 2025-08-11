@@ -35,6 +35,21 @@ const handleEnvFlag = (key, envKey, defaultValue) => {
 // Generate flags from environment variables
 const flags = {};
 
+const ENV_KEYS = {
+  enableAuthentication: "FEATURE_FLAG_ENABLE_AUTHENTICATION",
+  FF_Full_Page_Navigation: "FF_FULL_PAGE_NAVIGATION",
+  FF_Side_NavBar: "FF_SIDE_NAVBAR",
+};
+
+Object.keys(DEFAULT_FLAGS).forEach((key) => {
+  const envKey = ENV_KEYS[key];
+  if (envKey) {
+    flags[key] = handleEnvFlag(key, envKey, DEFAULT_FLAGS[key]);
+  } else {
+    flags[key] = DEFAULT_FLAGS[key];
+  }
+});
+
 Object.keys(DEFAULT_FLAGS).forEach((key) => {
   // Handle enableAuthentication from environment variables
   if (key === "enableAuthentication") {
@@ -118,15 +133,8 @@ let envUpdated = false;
 Object.keys(DEFAULT_FLAGS).forEach((key) => {
   // Use proper naming convention
   let properEnvKey;
-  if (key === "enableAuthentication") {
-    properEnvKey = "FEATURE_FLAG_ENABLE_AUTHENTICATION";
-  } else if (key === "FF_Full_Page_Navigation") {
-    properEnvKey = "FF_FULL_PAGE_NAVIGATION";
-  } else if (key === "FF_Side_NavBar") {
-    properEnvKey = "FF_SIDE_NAVBAR";
-  } else {
-    properEnvKey = `FEATURE_FLAG_${key.toUpperCase()}`;
-  }
+
+  properEnvKey = ENV_KEYS[key] ?? `FEATURE_FLAG_${key.toUpperCase()}`;
 
   if (!envContent.includes(properEnvKey)) {
     envContent += `\n# Feature Flag: ${key}\n${properEnvKey}=${flags[key]}\n`;
@@ -137,7 +145,7 @@ Object.keys(DEFAULT_FLAGS).forEach((key) => {
 if (envUpdated) {
   try {
     fs.writeFileSync(envLocalPath, envContent);
-  } catch (error) {
+  } catch {
     // Silent fail for env update
   }
 }

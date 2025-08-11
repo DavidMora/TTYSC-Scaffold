@@ -16,7 +16,8 @@ export function loadFeatureFlagsEdge(): FeatureFlags {
   try {
     return {
       enableAuthentication: process.env.ENABLE_AUTHENTICATION !== "false",
-      FF_Chat_Analysis_Screen: process.env.FF_Chat_Analysis_Screen !== "false",
+      FF_Chat_Analysis_Screen:
+        process.env.FEATURE_FLAG_FF_CHAT_ANALYSIS_SCREEN !== "false",
       FF_Full_Page_Navigation: process.env.FF_FULL_PAGE_NAVIGATION !== "false",
       FF_Side_NavBar: process.env.FF_SIDE_NAVBAR !== "false",
     };

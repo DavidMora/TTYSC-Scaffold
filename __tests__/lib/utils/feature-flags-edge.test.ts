@@ -9,26 +9,39 @@ const mockConsoleWarn = jest
   .mockImplementation(() => {});
 
 describe("feature-flags-edge", () => {
-  // Save original process.env to restore after tests
-  const originalEnv = { ...process.env };
+  // Only manipulate specific feature-flag-related env vars in tests
 
   beforeEach(() => {
     // Reset process.env for each test
     jest.resetModules();
-    // Properly restore the original env by copying keys
-    for (const key of Object.keys(process.env)) {
+    // Only reset feature-flag-related env vars to avoid side effects in CI
+    const keysToReset = [
+      "ENABLE_AUTHENTICATION",
+      "FF_Chat_Analysis_Screen",
+      "FEATURE_FLAG_FF_CHAT_ANALYSIS_SCREEN",
+      "FF_FULL_PAGE_NAVIGATION",
+      "FF_SIDE_NAVBAR",
+      "FEATURE_FLAG_ENABLE_AUTHENTICATION",
+    ];
+    for (const key of keysToReset) {
       delete (process.env as Record<string, string | undefined>)[key];
     }
-    Object.assign(process.env, originalEnv);
     mockConsoleWarn.mockClear();
   });
 
   afterAll(() => {
-    // Restore original process.env keys
-    for (const key of Object.keys(process.env)) {
+    // Restore only the feature-flag-related keys to a clean state
+    const keysToReset = [
+      "ENABLE_AUTHENTICATION",
+      "FF_Chat_Analysis_Screen",
+      "FEATURE_FLAG_FF_CHAT_ANALYSIS_SCREEN",
+      "FF_FULL_PAGE_NAVIGATION",
+      "FF_SIDE_NAVBAR",
+      "FEATURE_FLAG_ENABLE_AUTHENTICATION",
+    ];
+    for (const key of keysToReset) {
       delete (process.env as Record<string, string | undefined>)[key];
     }
-    Object.assign(process.env, originalEnv);
     mockConsoleWarn.mockRestore();
   });
 
@@ -216,15 +229,16 @@ describe("feature-flags-edge", () => {
       // Test the FF_Chat_Analysis_Screen flag to ensure it works correctly
       delete process.env.ENABLE_AUTHENTICATION;
       delete process.env.FF_Chat_Analysis_Screen;
+      delete process.env.FEATURE_FLAG_FF_CHAT_ANALYSIS_SCREEN;
 
       let result = isFeatureEnabledEdge("FF_Chat_Analysis_Screen");
       expect(result).toBe(true);
 
-      process.env.FF_Chat_Analysis_Screen = "false";
+      process.env.FEATURE_FLAG_FF_CHAT_ANALYSIS_SCREEN = "false";
       result = isFeatureEnabledEdge("FF_Chat_Analysis_Screen");
       expect(result).toBe(false);
 
-      process.env.FF_Chat_Analysis_Screen = "true";
+      process.env.FEATURE_FLAG_FF_CHAT_ANALYSIS_SCREEN = "true";
       result = isFeatureEnabledEdge("FF_Chat_Analysis_Screen");
       expect(result).toBe(true);
     });

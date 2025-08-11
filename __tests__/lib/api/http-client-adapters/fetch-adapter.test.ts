@@ -572,7 +572,7 @@ describe("FetchAdapter", () => {
   });
 
   describe("request ID", () => {
-    it("should add X-Request-Id header with UUIDv4 to all requests", async () => {
+    it("should add X-Request-Id header with UUIDv6 to all requests", async () => {
       const mockResponse = {
         ok: true,
         status: 200,

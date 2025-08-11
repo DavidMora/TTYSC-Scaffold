@@ -17,10 +17,6 @@ let cachedFlags: FeatureFlags | null = null;
  * Load feature flags from the generated JSON file
  * This is the primary source of truth when available
  */
-/**
- * Load feature flags from the generated JSON file
- * This is the primary source of truth when available
- */
 const loadFromGeneratedFile = async (
   customPath?: string
 ): Promise<FeatureFlags | null> => {
@@ -44,29 +40,40 @@ const loadFromGeneratedFile = async (
 };
 
 /**
+ * Parses a string-like boolean to a boolean with sensible defaults.
+ * Accepts: "true/1/yes/y/on" and "false/0/no/n/off" (case-insensitive).
+ */
+const parseBool = (
+  value: string | undefined,
+  defaultValue: boolean
+): boolean => {
+  if (value == null) return defaultValue;
+  const normalized = String(value).trim().toLowerCase();
+  if (["true", "1", "yes", "y", "on"].includes(normalized)) return true;
+  if (["false", "0", "no", "n", "off"].includes(normalized)) return false;
+  // If a value is provided but it's invalid, treat it as false to match previous behavior
+  return false;
+};
+
+/**
  * Load feature flags from environment variables
  * Uses FEATURE_FLAG_ENABLE_AUTHENTICATION as the primary variable
  */
 const loadFromEnvironment = (): FeatureFlags => {
-  // Use FEATURE_FLAG_ENABLE_AUTHENTICATION or fall back to default
-  let enableAuth = DEFAULT_FLAGS.enableAuthentication;
+  // Use environment variables with graceful fallbacks to defaults
+  const enableAuth = parseBool(
+    process.env.FEATURE_FLAG_ENABLE_AUTHENTICATION,
+    DEFAULT_FLAGS.enableAuthentication
+  );
   const FF_Chat_Analysis_Screen = DEFAULT_FLAGS.FF_Chat_Analysis_Screen;
-  let FF_Full_Page_Navigation = DEFAULT_FLAGS.FF_Full_Page_Navigation;
-  let FF_Side_NavBar = DEFAULT_FLAGS.FF_Side_NavBar;
-
-  if (process.env.FEATURE_FLAG_ENABLE_AUTHENTICATION !== undefined) {
-    enableAuth =
-      process.env.FEATURE_FLAG_ENABLE_AUTHENTICATION.toLowerCase() === "true";
-  }
-
-  if (process.env.FF_FULL_PAGE_NAVIGATION !== undefined) {
-    FF_Full_Page_Navigation =
-      process.env.FF_FULL_PAGE_NAVIGATION.toLowerCase() === "true";
-  }
-
-  if (process.env.FF_SIDE_NAVBAR !== undefined) {
-    FF_Side_NavBar = process.env.FF_SIDE_NAVBAR.toLowerCase() === "true";
-  }
+  const FF_Full_Page_Navigation = parseBool(
+    process.env.FF_FULL_PAGE_NAVIGATION,
+    DEFAULT_FLAGS.FF_Full_Page_Navigation
+  );
+  const FF_Side_NavBar = parseBool(
+    process.env.FF_SIDE_NAVBAR,
+    DEFAULT_FLAGS.FF_Side_NavBar
+  );
 
   const flags: FeatureFlags = {
     enableAuthentication: enableAuth,
