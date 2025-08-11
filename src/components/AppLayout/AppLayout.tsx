@@ -29,7 +29,7 @@ export default function AppLayout({ children }: Readonly<AppLayoutProps>) {
           {/* Side Navigation */}
           <div
             className="
-              transition-[min-width] duration-300 ease-in-out border-r 
+              border-r 
               border-[var(--sapGroup_TitleBorderColor)] 
               bg-[var(--sapGroup_ContentBackground)]
               min-w-auto
