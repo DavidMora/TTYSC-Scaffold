@@ -38,8 +38,10 @@ const flags = {};
 
 const ENV_KEYS = {
   enableAuthentication: "FEATURE_FLAG_ENABLE_AUTHENTICATION",
+  FF_Chat_Analysis_Screen: "FEATURE_FLAG_FF_CHAT_ANALYSIS_SCREEN",
   FF_Full_Page_Navigation: "FF_FULL_PAGE_NAVIGATION",
   FF_Side_NavBar: "FF_SIDE_NAVBAR",
+  FF_Modals: "FF_MODALS",
 };
 
 Object.keys(DEFAULT_FLAGS).forEach((key) => {

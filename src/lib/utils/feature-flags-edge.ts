@@ -8,7 +8,7 @@ import { DEFAULT_FLAGS } from "./feature-flags";
  *
  * Environment variables:
  * - ENABLE_AUTHENTICATION (true/false)
- * - FF_Chat_Analysis_Screen (true/false)
+ * - FEATURE_FLAG_FF_CHAT_ANALYSIS_SCREEN (true/false)
  * - FF_FULL_PAGE_NAVIGATION (true/false)
  * - FF_SIDE_NAVBAR (true/false)
  * - FF_Modals (true/false)
