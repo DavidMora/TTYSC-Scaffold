@@ -71,7 +71,6 @@ export const ZoomableContainer: React.FC<Readonly<ZoomableContainerProps>> = ({
     zoomActive,
     canZoomIn,
     canZoomOut,
-    onKeyDown,
     onMouseDown,
     onMouseMove,
     endPan,
@@ -127,13 +126,12 @@ export const ZoomableContainer: React.FC<Readonly<ZoomableContainerProps>> = ({
           }
         }}
       />
-      
+
       {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions, jsx-a11y/no-noninteractive-tabindex */}
       <div
         ref={viewportRef}
         aria-label="Zoomable chart area"
         role="application"
-        onKeyDown={onKeyDown}
         style={{
           position: "relative",
           width: "100%",

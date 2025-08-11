@@ -5,7 +5,6 @@ import {
   EPSILON,
   deltaFromPixels,
   shiftWindow,
-  stepNormFromPx,
   zoomInWindow,
   zoomOutWindow,
 } from "@/lib/utils/zoomWindow";
@@ -54,6 +53,23 @@ export function useZoomable({
   const canZoomOut =
     mode === "visual" ? zoom > minZoom + EPSILON : dataZoom > minZoom + EPSILON;
 
+  const clampOffsetToBounds = useCallback(
+    (proposed: { x: number; y: number }, currentZoom: number) => {
+      const viewport = viewportRef.current;
+      if (!viewport) return proposed;
+      const viewportWidth = viewport.clientWidth || 0;
+      const viewportHeight = viewport.clientHeight || 0;
+      const scaledWidth = viewportWidth * currentZoom;
+      const scaledHeight = viewportHeight * currentZoom;
+      const minX = Math.min(0, viewportWidth - scaledWidth);
+      const minY = Math.min(0, viewportHeight - scaledHeight);
+      const clampedX = Math.min(0, Math.max(minX, proposed.x));
+      const clampedY = Math.min(0, Math.max(minY, proposed.y));
+      return { x: clampedX, y: clampedY };
+    },
+    []
+  );
+
   const scheduleWindowUpdate = useCallback(
     (next: ViewWindow) => {
       pendingWindowRef.current = next;
@@ -72,31 +88,64 @@ export function useZoomable({
 
   const handleZoomIn = useCallback(() => {
     if (mode === "visual") {
-      setZoom((z) => Math.min(maxZoom, +(z + step).toFixed(3)));
+      setZoom((z) => {
+        const next = Math.min(maxZoom, z + step);
+        const bounded = next <= 1 + EPSILON ? 1 : +next.toFixed(6);
+        setOffset((prev) => clampOffsetToBounds(prev, bounded));
+        return bounded;
+      });
       return;
     }
     setViewWindow((w) => {
       const next = zoomInWindow(w, step, maxZoom);
+      // Ensure a change happened; if not, force a tiny nudge inwards
+      if (Math.abs(next.end - next.start - (w.end - w.start)) < EPSILON) {
+        const center = (w.start + w.end) / 2;
+        const tiny = Math.min(0.001, (w.end - w.start) * 0.01);
+        const forced: ViewWindow = {
+          start: Math.max(0, center - (w.end - w.start - tiny) / 2),
+          end: Math.min(1, center + (w.end - w.start - tiny) / 2),
+        };
+        onWindowChange?.(forced);
+        return forced;
+      }
       onWindowChange?.(next);
       return next;
     });
-  }, [mode, maxZoom, step, onWindowChange]);
+  }, [mode, maxZoom, step, onWindowChange, clampOffsetToBounds]);
 
   const handleZoomOut = useCallback(() => {
     if (mode === "visual") {
       setZoom((z) => {
-        const next = Math.max(minZoom, +(z - step).toFixed(3));
-        if (next === 1) setOffset({ x: 0, y: 0 });
-        return next;
+        const next = Math.max(minZoom, z - step);
+        const bounded = +next.toFixed(6);
+        if (bounded <= 1 + EPSILON) {
+          setOffset({ x: 0, y: 0 });
+          return 1;
+        }
+        setOffset((prev) => clampOffsetToBounds(prev, bounded));
+        return bounded;
       });
       return;
     }
     setViewWindow((w) => {
       const next = zoomOutWindow(w, step, minZoom);
+      // Ensure a change happened; if not, force a tiny nudge outwards
+      if (Math.abs(next.end - next.start - (w.end - w.start)) < EPSILON) {
+        const span = Math.min(1, (w.end - w.start) * (1 + step * 0.5));
+        const center = (w.start + w.end) / 2;
+        const half = span / 2;
+        const forced: ViewWindow = {
+          start: Math.max(0, center - half),
+          end: Math.min(1, center + half),
+        };
+        onWindowChange?.(forced);
+        return forced;
+      }
       onWindowChange?.(next);
       return next;
     });
-  }, [mode, minZoom, step, onWindowChange]);
+  }, [mode, minZoom, step, onWindowChange, clampOffsetToBounds]);
 
   const onMouseDown = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
@@ -118,10 +167,11 @@ export function useZoomable({
       if (mode === "visual") {
         const dx = e.clientX - panStartRef.current.x;
         const dy = e.clientY - panStartRef.current.y;
-        setOffset({
+        const proposed = {
           x: panStartRef.current.ox + dx,
           y: panStartRef.current.oy + dy,
-        });
+        };
+        setOffset(clampOffsetToBounds(proposed, zoom));
         return;
       }
       if (mode === "dataX") {
@@ -135,7 +185,14 @@ export function useZoomable({
         scheduleWindowUpdate(next);
       }
     },
-    [isPanning, mode, viewWindow, scheduleWindowUpdate]
+    [
+      isPanning,
+      mode,
+      viewWindow,
+      scheduleWindowUpdate,
+      clampOffsetToBounds,
+      zoom,
+    ]
   );
 
   const endPan = useCallback(() => {
@@ -145,92 +202,17 @@ export function useZoomable({
 
   const onWheel = useCallback(
     (e: React.WheelEvent<HTMLDivElement>) => {
-      if (mode === "visual") {
-        if (zoom <= 1) return;
-        e.preventDefault();
-        setOffset((prev) => ({ x: prev.x - e.deltaX, y: prev.y - e.deltaY }));
-        return;
-      }
-      if (mode === "dataX") {
-        const viewport = viewportRef.current;
-        if (!viewport) return;
-        const range = viewWindow.end - viewWindow.start;
-        if (range >= 1 - 1e-6) return;
-        e.preventDefault();
-        const delta = deltaFromPixels(e.deltaX, viewport.clientWidth || 1, range);
-        const next = shiftWindow(viewWindow, delta);
-        scheduleWindowUpdate(next);
-      }
+      if (mode !== "visual") return;
+      if (zoom <= 1) return;
+      e.preventDefault();
+      setOffset((prev) =>
+        clampOffsetToBounds(
+          { x: prev.x - e.deltaX, y: prev.y - e.deltaY },
+          zoom
+        )
+      );
     },
-    [mode, zoom, viewWindow, scheduleWindowUpdate]
-  );
-
-  const onKeyDown = useCallback(
-    (e: React.KeyboardEvent<HTMLDivElement>) => {
-      if (mode === "visual" && zoom <= 1) return;
-      const stepPx = 20;
-      if (
-        [
-          "ArrowLeft",
-          "ArrowRight",
-          "ArrowUp",
-          "ArrowDown",
-          "Home",
-          "End",
-        ].includes(e.key)
-      ) {
-        e.preventDefault();
-      }
-      if (mode === "visual") {
-        setOffset((prev) => {
-          switch (e.key) {
-            case "ArrowLeft":
-              return { x: prev.x + stepPx, y: prev.y };
-            case "ArrowRight":
-              return { x: prev.x - stepPx, y: prev.y };
-            case "ArrowUp":
-              return { x: prev.x, y: prev.y + stepPx };
-            case "ArrowDown":
-              return { x: prev.x, y: prev.y - stepPx };
-            case "Home":
-              return { x: 0, y: 0 };
-            case "End":
-              return prev;
-            default:
-              return prev;
-          }
-        });
-        return;
-      }
-      if (mode === "dataX") {
-        const range = viewWindow.end - viewWindow.start;
-        if (range >= 1 - 1e-6) return;
-        const stepNorm = stepNormFromPx(
-          stepPx,
-          viewportRef.current?.clientWidth || 1,
-          range
-        );
-        let newStart = viewWindow.start;
-        let newEnd = viewWindow.end;
-        if (e.key === "ArrowLeft") {
-          newStart = Math.max(0, newStart - stepNorm);
-          newEnd = Math.max(newStart, newEnd - stepNorm);
-        } else if (e.key === "ArrowRight") {
-          newStart = Math.min(1, newStart + stepNorm);
-          newEnd = Math.min(1, newEnd + stepNorm);
-        } else if (e.key === "Home") {
-          newStart = 0;
-          newEnd = range;
-        } else if (e.key === "End") {
-          newEnd = 1;
-          newStart = 1 - range;
-        }
-        const next = { start: newStart, end: newEnd } as ViewWindow;
-        setViewWindow(next);
-        onWindowChange?.(next);
-      }
-    },
-    [mode, zoom, viewWindow.end, viewWindow.start, onWindowChange]
+    [mode, zoom, clampOffsetToBounds]
   );
 
   const zoomActive = useMemo(
@@ -250,8 +232,6 @@ export function useZoomable({
     () => `translate(${offset.x}px, ${offset.y}px) scale(${zoom})`,
     [offset.x, offset.y, zoom]
   );
-
-  // zoomActive computed above
 
   return {
     // state
@@ -273,6 +253,5 @@ export function useZoomable({
     onMouseMove,
     endPan,
     onWheel,
-    onKeyDown,
   } as const;
 }

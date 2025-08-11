@@ -16,15 +16,22 @@ export function clampWindow(start: number, end: number): ViewWindow {
   return { start: Math.max(0, s), end: Math.min(1, e) };
 }
 
-export function windowAroundCenter(center: number, targetSpan: number): ViewWindow {
+export function windowAroundCenter(
+  center: number,
+  targetSpan: number
+): ViewWindow {
   const half = targetSpan / 2;
   return clampWindow(center - half, center + half);
 }
 
-export function computeTargetSpanIn(currentSpan: number, step: number, maxZoom: number): number {
+export function computeTargetSpanIn(
+  currentSpan: number,
+  step: number,
+  maxZoom: number
+): number {
   const minSpan = Math.max(0.01, 1 / maxZoom);
   const factor = 1 - step;
-  return Math.max(minSpan, +(currentSpan * factor).toFixed(6));
+  return Math.max(minSpan, currentSpan * factor);
 }
 
 export function computeTargetSpanOut(
@@ -35,10 +42,14 @@ export function computeTargetSpanOut(
   const maxSpan = Math.min(1, 1 / minZoom);
   const factorIn = Math.max(EPSILON, 1 - step);
   const factorOut = 1 / factorIn;
-  return Math.min(1, Math.min(maxSpan, +(currentSpan * factorOut).toFixed(6)));
+  return Math.min(1, Math.min(maxSpan, currentSpan * factorOut));
 }
 
-export function zoomInWindow(win: ViewWindow, step: number, maxZoom: number): ViewWindow {
+export function zoomInWindow(
+  win: ViewWindow,
+  step: number,
+  maxZoom: number
+): ViewWindow {
   const span = win.end - win.start;
   const target = computeTargetSpanIn(span, step, maxZoom);
   const center = (win.start + win.end) / 2;
@@ -62,14 +73,13 @@ export function shiftWindow(win: ViewWindow, delta: number): ViewWindow {
   return clampWindow(win.start + delta, win.end + delta);
 }
 
-export function deltaFromPixels(dx: number, viewportWidth: number, span: number, reverse = false): number {
+export function deltaFromPixels(
+  dx: number,
+  viewportWidth: number,
+  span: number,
+  reverse = false
+): number {
   const sign = reverse ? -1 : 1;
   const width = viewportWidth || 1;
   return sign * (dx / width) * span;
 }
-
-export function stepNormFromPx(stepPx: number, viewportWidth: number, span: number): number {
-  const width = viewportWidth || 1;
-  return (stepPx / width) * span;
-}
-

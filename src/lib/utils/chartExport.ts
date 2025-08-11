@@ -33,9 +33,8 @@ export function downloadChartAsPng(
   title?: string
 ) {
   const svg = findFirstSvg(container);
-  if (svg) {
-    serializeSvgToPng(svg, title || "chart");
-  }
+  if (!svg) return;
+  serializeSvgToPng(svg, title || "chart");
 }
 
 export function getCurrentSlice<T>(
@@ -58,37 +57,36 @@ export function buildCsv(
   const dimCols = dimensions.map((d) => d.accessor);
   const measureCols = measures.map((m) => m.accessor);
   const headers = [...dimCols, ...measures.map((m) => m.label)];
-  const rows = dataset.map((row) => {
-    const dimVals = dimCols.map((c) =>
-      toCsvString((row as Record<string, unknown>)[c])
-    );
-    const measVals = measureCols.map((c) =>
-      toCsvString((row as Record<string, unknown>)[c])
-    );
-    const needsQuote = /[",\n]/;
-    return [...dimVals, ...measVals]
-      .map((v) => (needsQuote.test(v) ? `"${v.replace(/"/g, '""')}"` : v))
-      .join(",");
-  });
+  const cols = [...dimCols, ...measureCols];
+  const needsQuote = /[",\n]/;
+  const rows = dataset.map((row) =>
+    cols
+      .map((col) => toCsvString((row as Record<string, unknown>)[col]))
+      .map((value) =>
+        needsQuote.test(value) ? `"${value.replace(/"/g, '""')}"` : value
+      )
+      .join(",")
+  );
   return [headers.join(","), ...rows].join("\n");
 }
 
 function toCsvString(value: unknown): string {
   if (value == null) return "";
-  switch (typeof value) {
-    case "string":
-    case "number":
-    case "boolean":
-      return String(value);
-    case "object":
-      try {
-        return JSON.stringify(value);
-      } catch {
-        return "";
-      }
-    default:
+  if (typeof value === "object") {
+    try {
+      return JSON.stringify(value);
+    } catch {
       return "";
+    }
   }
+  if (
+    typeof value === "string" ||
+    typeof value === "number" ||
+    typeof value === "boolean"
+  ) {
+    return String(value);
+  }
+  return "";
 }
 
 function serializeSvgToPng(svg: SVGSVGElement, filenameBase: string) {
@@ -134,7 +132,5 @@ function serializeSvgToPng(svg: SVGSVGElement, filenameBase: string) {
 }
 
 function findFirstSvg(root: HTMLElement | null): SVGSVGElement | null {
-  if (!root) return null;
-  const svg = root.querySelector("svg");
-  return (svg as SVGSVGElement) || null;
+  return (root?.querySelector("svg") as SVGSVGElement) || null;
 }

@@ -85,38 +85,32 @@ export const ChartFactory: React.FC<ChartFactoryProps> = ({
 
   switch (chartType) {
     case "bar":
-      return wrapVisual(
+      return wrapDataX(dataset, (sliced) => (
         <BarChartRenderer
-          dataset={dataset}
+          dataset={sliced}
           dimensions={dimensions}
           measures={measures}
         />
-      );
+      ));
 
     case "column":
-      return wrapDataX(
-        dataset as SingleDataPoint[] | MultiDataPoint[],
-        (sliced) => (
-          <ColumnChartRenderer
-            dataset={sliced}
-            dimensions={dimensions}
-            measures={measures}
-          />
-        )
-      );
+      return wrapDataX(dataset, (sliced) => (
+        <ColumnChartRenderer
+          dataset={sliced}
+          dimensions={dimensions}
+          measures={measures}
+        />
+      ));
 
     case "line":
     case "area":
-      return wrapDataX(
-        dataset as SingleDataPoint[] | MultiDataPoint[],
-        (sliced) => (
-          <LineChartRenderer
-            dataset={sliced}
-            dimensions={dimensions}
-            measures={measures}
-          />
-        )
-      );
+      return wrapDataX(dataset, (sliced) => (
+        <LineChartRenderer
+          dataset={sliced}
+          dimensions={dimensions}
+          measures={measures}
+        />
+      ));
 
     case "pie":
       if (!isMulti) {
@@ -144,39 +138,36 @@ export const ChartFactory: React.FC<ChartFactoryProps> = ({
 
     case "bullet":
       if (isMulti && seriesData) {
-        return wrapVisual(
+        return wrapDataX(dataset, (sliced) => (
           <BulletChartRenderer
-            dataset={dataset as MultiDataPoint[]}
+            dataset={sliced as MultiDataPoint[]}
             dimensions={dimensions}
             seriesData={seriesData}
           />
-        );
+        ));
       }
       return <MultiSeriesRequiredRenderer chartType="BulletChart" />;
 
     case "columnWithTrend":
       if (isMulti && seriesData) {
-        return wrapVisual(
+        return wrapDataX(dataset, (sliced) => (
           <ColumnWithTrendRenderer
-            dataset={dataset as MultiDataPoint[]}
+            dataset={sliced as MultiDataPoint[]}
             dimensions={dimensions}
             seriesData={seriesData}
           />
-        );
+        ));
       }
       return <MultiSeriesRequiredRenderer chartType="ColumnChartWithTrend" />;
 
     case "composed":
-      return wrapDataX(
-        dataset as SingleDataPoint[] | MultiDataPoint[],
-        (sliced) => (
-          <ComposedChartRenderer
-            dataset={sliced}
-            dimensions={dimensions}
-            measures={measures}
-          />
-        )
-      );
+      return wrapDataX(dataset, (sliced) => (
+        <ComposedChartRenderer
+          dataset={sliced}
+          dimensions={dimensions}
+          measures={measures}
+        />
+      ));
 
     case "radar":
       return wrapVisual(

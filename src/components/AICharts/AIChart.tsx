@@ -8,23 +8,27 @@ import { ChartFactory } from "@/components/Charts/ChartFactory";
 interface AIChartProps {
   data: AIChartData;
   chartId?: string;
-  showPreviousText?: boolean;
+  isFullscreen?: boolean;
 }
 
-export function AIChart({ data, chartId, showPreviousText = true }: Readonly<AIChartProps>) {
+export function AIChart({
+  data,
+  chartId,
+  isFullscreen = false,
+}: Readonly<AIChartProps>) {
   const { headline, preamble, content, chart } = data;
 
   const chartDataInfo = getChartDataInfo(chart);
 
   return (
     <div>
-      {showPreviousText && (
+      {!isFullscreen && (
         <Title level={TitleLevel.H2} style={{ marginBottom: 16 }}>
           {headline}
         </Title>
       )}
 
-      {preamble && showPreviousText &&  (
+      {preamble && !isFullscreen && (
         <p
           style={{
             marginBottom: 12,
@@ -37,7 +41,7 @@ export function AIChart({ data, chartId, showPreviousText = true }: Readonly<AIC
         </p>
       )}
 
-      {content && showPreviousText && (
+      {content && !isFullscreen && (
         <p
           style={{
             color: "var(--sapTextColor)",
@@ -53,7 +57,7 @@ export function AIChart({ data, chartId, showPreviousText = true }: Readonly<AIC
         chartType={chart.type}
         chartDataInfo={chartDataInfo}
         title={headline}
-        chartIdForFullscreen={chartId}
+        chartIdForFullscreen={isFullscreen ? undefined : chartId}
       />
     </div>
   );

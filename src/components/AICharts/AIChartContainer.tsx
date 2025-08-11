@@ -6,12 +6,12 @@ import { FlexBox, Text, Title } from "@ui5/webcomponents-react";
 
 interface AIChartContainerProps {
   chartId: string;
-  showPreviousText?: boolean;
+  isFullscreen?: boolean;
 }
 
 export const AIChartContainer: React.FC<AIChartContainerProps> = ({
   chartId,
-  showPreviousText = true,
+  isFullscreen = false,
 }) => {
   const { data, isLoading, error, mutate } = useChart(chartId);
 
@@ -35,7 +35,7 @@ export const AIChartContainer: React.FC<AIChartContainerProps> = ({
   if (data?.data) {
     return (
       <>
-        {!showPreviousText && (
+        {isFullscreen && (
           <FlexBox
             direction="Column"
             className="pb-4 border-b-2 border-gray-300 mb-6 sticky top-0 z-10"
@@ -47,7 +47,7 @@ export const AIChartContainer: React.FC<AIChartContainerProps> = ({
         <AIChart
           data={data.data}
           chartId={chartId}
-          showPreviousText={showPreviousText}
+          isFullscreen={isFullscreen}
         />
       </>
     );
