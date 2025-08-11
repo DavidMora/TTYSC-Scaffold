@@ -24,12 +24,14 @@ interface ChartFactoryProps {
   chartType: string;
   chartDataInfo: ChartDataInfo;
   title?: string;
+  chartIdForFullscreen?: string;
 }
 
 export const ChartFactory: React.FC<ChartFactoryProps> = ({
   chartType,
   chartDataInfo,
   title,
+  chartIdForFullscreen,
 }) => {
   const { isMulti, dataset, measures, seriesData } = chartDataInfo;
 
@@ -42,7 +44,8 @@ export const ChartFactory: React.FC<ChartFactoryProps> = ({
       height={400}
       mode="visual"
       title={title}
-      exportContext={{ dataset, dimensions, measures }}
+      chartIdForFullscreen={chartIdForFullscreen}
+      exportContext={{ dataset, dimensions, measures, isMulti, seriesData }}
     >
       {node}
     </ZoomableContainer>
@@ -57,7 +60,14 @@ export const ChartFactory: React.FC<ChartFactoryProps> = ({
         height={400}
         mode="dataX"
         title={title}
-        exportContext={{ dataset: datasetArray, dimensions, measures }}
+        chartIdForFullscreen={chartIdForFullscreen}
+        exportContext={{
+          dataset: datasetArray,
+          dimensions,
+          measures,
+          isMulti,
+          seriesData,
+        }}
         renderContent={({ start, end }) => {
           const len = datasetArray.length;
           const from = Math.floor(start * len);
@@ -84,23 +94,29 @@ export const ChartFactory: React.FC<ChartFactoryProps> = ({
       );
 
     case "column":
-      return wrapDataX(dataset as SingleDataPoint[] | MultiDataPoint[], (sliced) => (
-        <ColumnChartRenderer
-          dataset={sliced}
-          dimensions={dimensions}
-          measures={measures}
-        />
-      ));
+      return wrapDataX(
+        dataset as SingleDataPoint[] | MultiDataPoint[],
+        (sliced) => (
+          <ColumnChartRenderer
+            dataset={sliced}
+            dimensions={dimensions}
+            measures={measures}
+          />
+        )
+      );
 
     case "line":
     case "area":
-      return wrapDataX(dataset as SingleDataPoint[] | MultiDataPoint[], (sliced) => (
-        <LineChartRenderer
-          dataset={sliced}
-          dimensions={dimensions}
-          measures={measures}
-        />
-      ));
+      return wrapDataX(
+        dataset as SingleDataPoint[] | MultiDataPoint[],
+        (sliced) => (
+          <LineChartRenderer
+            dataset={sliced}
+            dimensions={dimensions}
+            measures={measures}
+          />
+        )
+      );
 
     case "pie":
       if (!isMulti) {
@@ -151,13 +167,16 @@ export const ChartFactory: React.FC<ChartFactoryProps> = ({
       return <MultiSeriesRequiredRenderer chartType="ColumnChartWithTrend" />;
 
     case "composed":
-      return wrapDataX(dataset as SingleDataPoint[] | MultiDataPoint[], (sliced) => (
-        <ComposedChartRenderer
-          dataset={sliced}
-          dimensions={dimensions}
-          measures={measures}
-        />
-      ));
+      return wrapDataX(
+        dataset as SingleDataPoint[] | MultiDataPoint[],
+        (sliced) => (
+          <ComposedChartRenderer
+            dataset={sliced}
+            dimensions={dimensions}
+            measures={measures}
+          />
+        )
+      );
 
     case "radar":
       return wrapVisual(

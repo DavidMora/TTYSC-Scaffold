@@ -146,7 +146,7 @@ export const ChartToolbar: React.FC<Readonly<ChartToolbarProps>> = ({
               open={downloadMenuOpen}
               onClose={() => setDownloadMenuOpen(false)}
               horizontalAlign="End"
-           >
+            >
               <MenuItem
                 icon="image-viewer"
                 text="Download PNG"
@@ -167,14 +167,13 @@ export const ChartToolbar: React.FC<Readonly<ChartToolbarProps>> = ({
           )}
         </>
       )}
-      {showFullScreen && (
-        <Button
-          icon="full-screen"
-          design="Transparent"
-          onClick={onFullScreenClick}
-          title="Full Screen"
-        />
-      )}
+      <Button
+        icon="full-screen"
+        design="Transparent"
+        onClick={onFullScreenClick}
+        title="Full Screen"
+        disabled={!showFullScreen}
+      />
     </Toolbar>
   );
 };

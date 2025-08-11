@@ -2,6 +2,8 @@
 
 import React, { useCallback, useMemo, useRef, useState } from "react";
 import ChartToolbar from "@/components/Charts/ChartToolbar";
+import { useRouter } from "next/navigation";
+import { FULL_SCREEN_CHART } from "@/lib/constants/routes/Dashboard";
 import { Title } from "@ui5/webcomponents-react";
 import TitleLevel from "@ui5/webcomponents/dist/types/TitleLevel.js";
 import {
@@ -9,6 +11,7 @@ import {
   ChartMeasure,
   MultiDataPoint,
   SingleDataPoint,
+  ChartSeries,
 } from "@/lib/types/charts";
 
 type ViewWindow = { start: number; end: number };
@@ -24,10 +27,13 @@ interface ZoomableContainerProps {
   onWindowChange?: (window: ViewWindow) => void;
   renderContent?: (viewWindow: ViewWindow) => React.ReactNode;
   title?: string;
+  chartIdForFullscreen?: string;
   exportContext?: {
     dataset: SingleDataPoint[] | MultiDataPoint[];
     dimensions: ChartDimension[];
     measures: ChartMeasure[];
+    isMulti?: boolean;
+    seriesData?: ChartSeries[];
   };
 }
 
@@ -43,7 +49,9 @@ export const ZoomableContainer: React.FC<Readonly<ZoomableContainerProps>> = ({
   renderContent,
   title,
   exportContext,
+  chartIdForFullscreen,
 }) => {
+  const router = useRouter();
   const viewportRef = useRef<HTMLDivElement | null>(null);
   const [zoom, setZoom] = useState<number>(1);
   const [offset, setOffset] = useState<{ x: number; y: number }>({
@@ -343,13 +351,17 @@ export const ZoomableContainer: React.FC<Readonly<ZoomableContainerProps>> = ({
     <div style={{ width: "100%" }}>
       <ChartToolbar
         showZoom
-        showFullScreen
+        showFullScreen={Boolean(chartIdForFullscreen)}
         showDownload
         leftContent={<Title level={TitleLevel.H2}>{title}</Title>}
         onZoomIn={handleZoomIn}
         onZoomOut={handleZoomOut}
         disableZoomIn={!canZoomIn}
         disableZoomOut={!canZoomOut}
+        onFullScreenClick={() => {
+          if (!chartIdForFullscreen) return;
+          router.push(FULL_SCREEN_CHART(chartIdForFullscreen));
+        }}
         onDownloadOption={(type) => {
           if (type === "png") {
             downloadChartAsPng(viewportRef.current, title);
