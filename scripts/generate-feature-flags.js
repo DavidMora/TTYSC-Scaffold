@@ -18,6 +18,7 @@ const DEFAULT_FLAGS = {
   enableAuthentication: true,
   FF_Chat_Analysis_Screen: true,
   FF_Full_Page_Navigation: true,
+  FF_Modals: true,
 };
 
 // Helper function for handling environment variables
