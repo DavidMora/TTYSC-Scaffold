@@ -10,8 +10,18 @@ const mockUseChart = useChart as jest.MockedFunction<typeof useChart>;
 
 // Mock the AIChart component
 jest.mock("@/components/AICharts/AIChart", () => ({
-  AIChart: ({ data }: { data: AIChartData }) => (
-    <div data-testid="ai-chart" data-chart-data={JSON.stringify(data)}>
+  AIChart: ({
+    data,
+    isFullscreen,
+  }: {
+    data: AIChartData;
+    isFullscreen?: boolean;
+  }) => (
+    <div
+      data-testid="ai-chart"
+      data-chart-data={JSON.stringify(data)}
+      data-is-fullscreen={isFullscreen ? "true" : "false"}
+    >
       AI Chart Component
     </div>
   ),
@@ -116,23 +126,39 @@ describe("AIChartContainer", () => {
 
       expect(mockMutate).toHaveBeenCalledTimes(1);
     });
+
+    it("should handle retry gracefully if mutate is undefined", () => {
+      const mockError = new Error("Failed to load chart");
+      mockUseChart.mockReturnValue({
+        data: undefined,
+        isLoading: false,
+        error: mockError,
+        mutate: undefined as any,
+      });
+
+      render(<AIChartContainer chartId={mockChartId} />);
+
+      const retryButton = screen.getByText("Retry");
+      // Should not throw when clicking retry
+      expect(() => fireEvent.click(retryButton)).not.toThrow();
+    });
   });
 
   describe("Success state", () => {
-    it("should render AIChart component when data is available", () => {
-      const mockData = {
-        success: true,
-        data: {
-          headline: "Test Chart",
-          timestamp: "2024-01-01",
-          chart: {
-            type: "bar" as const,
-            labels: ["A", "B", "C"],
-            data: [1, 2, 3],
-          },
+    const mockData = {
+      success: true,
+      data: {
+        headline: "Test Chart",
+        timestamp: "2024-01-01",
+        chart: {
+          type: "bar" as const,
+          labels: ["A", "B", "C"],
+          data: [1, 2, 3],
         },
-      };
+      },
+    };
 
+    it("should render AIChart component when data is available", () => {
       mockUseChart.mockReturnValue({
         data: mockData,
         isLoading: false,
@@ -148,6 +174,21 @@ describe("AIChartContainer", () => {
         "data-chart-data",
         JSON.stringify(mockData.data)
       );
+      expect(aiChart).toHaveAttribute("data-is-fullscreen", "false");
+    });
+
+    it("passes isFullscreen to AIChart", () => {
+      mockUseChart.mockReturnValue({
+        data: mockData,
+        isLoading: false,
+        error: undefined,
+        mutate: mockMutate,
+      });
+
+      render(<AIChartContainer chartId={mockChartId} isFullscreen />);
+
+      const aiChart = screen.getByTestId("ai-chart");
+      expect(aiChart).toHaveAttribute("data-is-fullscreen", "true");
     });
   });
 
@@ -191,6 +232,71 @@ describe("AIChartContainer", () => {
       render(<AIChartContainer chartId={mockChartId} />);
 
       expect(mockUseChart).toHaveBeenCalledWith(mockChartId);
+    });
+
+    it("should call onTitleChange when headline changes and handle undefined gracefully", () => {
+      const onTitleChange = jest.fn();
+
+      // Initial render: no data
+      mockUseChart.mockReturnValue({
+        data: undefined,
+        isLoading: false,
+        error: undefined,
+        mutate: mockMutate,
+      });
+      const { rerender } = render(
+        <AIChartContainer chartId={mockChartId} onTitleChange={onTitleChange} />
+      );
+      // No call yet because data is undefined
+      expect(onTitleChange).not.toHaveBeenCalled();
+
+      // Update: data with headline
+      mockUseChart.mockReturnValue({
+        data: {
+          success: true,
+          data: {
+            headline: "My Title",
+            timestamp: "2024-01-01",
+            chart: {
+              type: "bar" as const,
+              labels: ["X"],
+              data: [1],
+            },
+          },
+        },
+        isLoading: false,
+        error: undefined,
+        mutate: mockMutate,
+      });
+      rerender(
+        <AIChartContainer chartId={mockChartId} onTitleChange={onTitleChange} />
+      );
+
+      expect(onTitleChange).toHaveBeenCalledWith("My Title");
+
+      // Update: headline becomes empty string
+      mockUseChart.mockReturnValue({
+        data: {
+          success: true,
+          data: {
+            headline: "",
+            timestamp: "2024-01-01",
+            chart: {
+              type: "bar" as const,
+              labels: ["X"],
+              data: [1],
+            },
+          },
+        },
+        isLoading: false,
+        error: undefined,
+        mutate: mockMutate,
+      });
+      rerender(
+        <AIChartContainer chartId={mockChartId} onTitleChange={onTitleChange} />
+      );
+
+      expect(onTitleChange).toHaveBeenCalledWith("");
     });
   });
 });

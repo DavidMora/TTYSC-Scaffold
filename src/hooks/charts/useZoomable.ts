@@ -224,13 +224,14 @@ export function useZoomable({
 
   const onMouseMove = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
-      if (!isPanning || !panStartRef.current) return;
+      const panStart = panStartRef.current;
+      if (!panStart) return;
       if (mode === "visual") {
-        const dx = e.clientX - panStartRef.current.x;
-        const dy = e.clientY - panStartRef.current.y;
+        const dx = e.clientX - panStart.x;
+        const dy = e.clientY - panStart.y;
         const proposed = {
-          x: panStartRef.current.ox + dx,
-          y: panStartRef.current.oy + dy,
+          x: panStart.ox + dx,
+          y: panStart.oy + dy,
         };
         // throttle visual pan updates to animation frames to avoid flicker
         pendingOffsetRef.current = clampOffsetToBounds(proposed, zoom);
@@ -246,9 +247,9 @@ export function useZoomable({
       if (mode === "dataX" && hasMultipleItems) {
         const viewport = viewportRef.current;
         if (!viewport) return;
-        const startWin = panStartRef.current.windowAtStart;
+        const startWin = panStart.windowAtStart;
         if (!startWin) return;
-        const dx = e.clientX - panStartRef.current.x;
+        const dx = e.clientX - panStart.x;
         const rangeAtStart = startWin.end - startWin.start;
         if (rangeAtStart >= 1 - 1e-6) return;
         const delta = -deltaFromPixels(
@@ -264,7 +265,6 @@ export function useZoomable({
       }
     },
     [
-      isPanning,
       mode,
       scheduleWindowUpdate,
       clampOffsetToBounds,
@@ -316,7 +316,8 @@ export function useZoomable({
               ? zoomInWindow(viewWindow, step, maxZoom)
               : zoomOutWindow(viewWindow, step, minZoom);
           if (dataLength) next = snapWindowSpanToCount(next, dataLength);
-          scheduleWindowUpdate(next);
+          setViewWindow(next);
+          onWindowChange?.(next);
           return;
         }
         if (span >= 1 - 1e-6) return;
@@ -337,7 +338,8 @@ export function useZoomable({
         );
         let next = shiftWindow(viewWindow, delta);
         if (dataLength) next = snapWindowSpanToCount(next, dataLength);
-        scheduleWindowUpdate(next);
+        setViewWindow(next);
+        onWindowChange?.(next);
       };
 
       if (mode === "visual") return handleWheelVisual();
@@ -348,7 +350,6 @@ export function useZoomable({
       zoom,
       clampOffsetToBounds,
       viewWindow,
-      scheduleWindowUpdate,
       step,
       maxZoom,
       minZoom,
@@ -357,6 +358,7 @@ export function useZoomable({
       dataLength,
       hasMultipleItems,
       visibleCount,
+      onWindowChange,
     ]
   );
 

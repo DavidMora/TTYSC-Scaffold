@@ -58,13 +58,10 @@ export function buildCsv(
   const measureCols = measures.map((m) => m.accessor);
   const headers = [...dimCols, ...measures.map((m) => m.label)];
   const cols = [...dimCols, ...measureCols];
-  const needsQuote = /[",\n]/;
   const rows = dataset.map((row) =>
     cols
       .map((col) => toCsvString((row as Record<string, unknown>)[col]))
-      .map((value) =>
-        needsQuote.test(value) ? `"${value.replace(/"/g, '""')}"` : value
-      )
+      .map((value) => escapeCsvField(value))
       .join(",")
   );
   return [headers.join(","), ...rows].join("\n");
@@ -89,6 +86,13 @@ function toCsvString(value: unknown): string {
   return "";
 }
 
+function escapeCsvField(raw: string): string {
+  const value = raw.replace(/\r?\n/g, "\\n");
+  const needsQuote = /[",\n]/.test(value);
+  const doubledQuotes = value.replace(/"/g, '""');
+  return needsQuote ? `"${doubledQuotes}"` : doubledQuotes;
+}
+
 function serializeSvgToPng(svg: SVGSVGElement, filenameBase: string) {
   const rect = svg.getBoundingClientRect();
   const width = Math.ceil(
@@ -109,14 +113,32 @@ function serializeSvgToPng(svg: SVGSVGElement, filenameBase: string) {
   const img = new Image();
   img.onload = () => {
     const canvas = document.createElement("canvas");
-    canvas.width = width;
-    canvas.height = height;
+    if (canvas && typeof canvas === "object") {
+      canvas.width = width;
+      canvas.height = height;
+    }
+    const hasGetContext = canvas && typeof canvas.getContext === "function";
+    const hasToBlob = canvas && typeof canvas.toBlob === "function";
+
+    if (!hasGetContext || !hasToBlob) {
+      triggerFileDownload(
+        svgBlob,
+        sanitizeFilename(filenameBase) + ".svg",
+        "image/svg+xml;charset=utf-8"
+      );
+      URL.revokeObjectURL(url);
+      return;
+    }
+
     const ctx = canvas.getContext("2d");
-    if (!ctx) return;
+    if (!ctx) {
+      URL.revokeObjectURL(url);
+      return;
+    }
     ctx.fillStyle = "#ffffff";
     ctx.fillRect(0, 0, width, height);
     ctx.drawImage(img, 0, 0);
-    canvas.toBlob((blob) => {
+    canvas.toBlob((blob: Blob | null) => {
       if (blob) {
         triggerFileDownload(
           blob,

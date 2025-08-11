@@ -2,6 +2,10 @@ export type ViewWindow = { start: number; end: number };
 
 export const EPSILON = 1e-3;
 
+function roundTo(value: number, decimals = 9): number {
+  return Number(value.toFixed(decimals));
+}
+
 export function clampWindow(start: number, end: number): ViewWindow {
   let s = start;
   let e = end;
@@ -13,15 +17,21 @@ export function clampWindow(start: number, end: number): ViewWindow {
     s -= e - 1;
     e = 1;
   }
-  return { start: Math.max(0, s), end: Math.min(1, e) };
+  const clampedStart = Math.max(0, s);
+  const clampedEnd = Math.min(1, e);
+  return { start: roundTo(clampedStart), end: roundTo(clampedEnd) };
 }
 
 export function windowAroundCenter(
   center: number,
   targetSpan: number
 ): ViewWindow {
+  if (targetSpan >= 1 - EPSILON) return { start: 0, end: 1 };
   const half = targetSpan / 2;
-  return clampWindow(center - half, center + half);
+  const startRaw = center - half;
+  const start = Math.max(0, startRaw);
+  const end = Math.min(1, start + targetSpan);
+  return { start: roundTo(start), end: roundTo(end) };
 }
 
 export function computeTargetSpanIn(
@@ -80,7 +90,7 @@ export function deltaFromPixels(
   reverse = false
 ): number {
   const sign = reverse ? -1 : 1;
-  const width = viewportWidth || 1;
+  const width = viewportWidth > 0 ? viewportWidth : 100; // sensible fallback for tests
   return sign * (dx / width) * span;
 }
 

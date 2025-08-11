@@ -5,19 +5,26 @@ import { AIChartData, ChartDataInfo } from "@/lib/types/charts";
 
 // Mock the ChartFactory component
 jest.mock("@/components/Charts/ChartFactory", () => ({
-
   ChartFactory: ({
     chartType,
     chartDataInfo,
+    title,
+    chartIdForFullscreen,
   }: {
     chartType: string;
     chartDataInfo: ChartDataInfo;
+    title?: string;
+    chartIdForFullscreen?: string;
   }) => (
     <div
       data-testid="chart-factory-mock"
       data-chart-type={chartType}
       data-chart-data-info={JSON.stringify(chartDataInfo)}
       data-dimensions={JSON.stringify([{ accessor: "name" }])}
+      data-title={title ?? ""}
+      data-has-chartidforfullscreen={
+        chartIdForFullscreen !== undefined ? "true" : "false"
+      }
     >
       Mocked ChartFactory
     </div>
@@ -45,16 +52,18 @@ jest.mock("@/lib/utils/chartUtils", () => ({
 }));
 
 describe("AIChart", () => {
+  const baseChart: AIChartData["chart"] = {
+    type: "bar",
+    labels: ["Category 1", "Category 2", "Category 3"],
+    data: [100, 200, 150],
+  };
+
   const mockAIChartData: AIChartData = {
     headline: "Test Chart Headline",
     timestamp: "2024-01-01T00:00:00Z",
     preamble: "This is a test preamble",
     content: "This is test content",
-    chart: {
-      type: "bar",
-      labels: ["Category 1", "Category 2", "Category 3"],
-      data: [100, 200, 150],
-    },
+    chart: baseChart,
   };
 
   beforeEach(() => {
@@ -63,9 +72,17 @@ describe("AIChart", () => {
 
   describe("Basic Rendering", () => {
     it("renders the headline correctly", () => {
-      render(<AIChart data={mockAIChartData} />);
+      render(<AIChart data={mockAIChartData} chartId="cid-1" />);
 
       expect(screen.getByText("Test Chart Headline")).toBeInTheDocument();
+
+      const chartFactory = screen.getByTestId("chart-factory-mock");
+      expect(chartFactory.getAttribute("data-title")).toBe(
+        "Test Chart Headline"
+      );
+      expect(chartFactory.getAttribute("data-has-chartidforfullscreen")).toBe(
+        "true"
+      );
     });
 
     it("renders the headline with correct Title level", () => {
@@ -86,6 +103,21 @@ describe("AIChart", () => {
       render(<AIChart data={mockAIChartData} />);
 
       expect(screen.getByText("This is test content")).toBeInTheDocument();
+    });
+
+    it("does not render preamble/content when missing", () => {
+      const dataWithoutText: AIChartData = {
+        headline: "Only Headline",
+        timestamp: "2024-01-01T00:00:00Z",
+        chart: baseChart,
+      } as AIChartData;
+
+      render(<AIChart data={dataWithoutText} />);
+
+      expect(screen.queryByText(/test preamble/i)).not.toBeInTheDocument();
+      expect(screen.queryByText(/test content/i)).not.toBeInTheDocument();
+      // Headline should still be visible in non-fullscreen
+      expect(screen.getByText("Only Headline")).toBeInTheDocument();
     });
   });
 
@@ -109,6 +141,30 @@ describe("AIChart", () => {
 
       expect(dimensions).toHaveLength(1);
       expect(dimensions[0]).toHaveProperty("accessor", "name");
+    });
+  });
+
+  describe("Fullscreen mode", () => {
+    it("hides headline, preamble and content and omits chartIdForFullscreen", () => {
+      render(
+        <AIChart data={mockAIChartData} chartId="chart-123" isFullscreen />
+      );
+
+      expect(screen.queryByText("Test Chart Headline")).not.toBeInTheDocument();
+      expect(
+        screen.queryByText("This is a test preamble")
+      ).not.toBeInTheDocument();
+      expect(
+        screen.queryByText("This is test content")
+      ).not.toBeInTheDocument();
+
+      const chartFactory = screen.getByTestId("chart-factory-mock");
+      expect(chartFactory.getAttribute("data-title")).toBe(
+        "Test Chart Headline"
+      );
+      expect(chartFactory.getAttribute("data-has-chartidforfullscreen")).toBe(
+        "false"
+      );
     });
   });
 });

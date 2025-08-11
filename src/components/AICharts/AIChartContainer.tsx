@@ -22,10 +22,11 @@ export const AIChartContainer: React.FC<AIChartContainerProps> = ({
   }, [error]);
 
   useEffect(() => {
-    if (onTitleChange) {
-      onTitleChange(data?.data?.headline || "");
+    if (!onTitleChange) return;
+    if (data?.data) {
+      onTitleChange(data.data.headline ?? "");
     }
-  }, [data?.data?.headline, onTitleChange]);
+  }, [data?.data?.headline, onTitleChange, data?.data]);
 
   const handleRetry = useCallback(() => {
     mutate?.();
