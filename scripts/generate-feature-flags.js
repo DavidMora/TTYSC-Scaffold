@@ -19,6 +19,7 @@ const DEFAULT_FLAGS = {
   FF_Chat_Analysis_Screen: true,
   FF_Full_Page_Navigation: true,
   FF_Side_NavBar: true,
+  FF_Modals: true,
 };
 
 // Helper function for handling environment variables
@@ -96,7 +97,7 @@ const rootFlagsPath = path.join(process.cwd(), "feature-flags.json");
 
 try {
   fs.writeFileSync(rootFlagsPath, jsonContent);
-} catch (error) {
+} catch {
   // Silent fail for backup file
 }
 
