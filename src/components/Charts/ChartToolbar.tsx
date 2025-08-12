@@ -24,7 +24,7 @@ interface ChartToolbarProps {
   disableZoomOut?: boolean;
   // Optional actions
   showDownload?: boolean;
-  onDownloadClick?: () => void; // deprecated in favor of onDownloadOption
+  onDownloadClick?: () => void;
   onDownloadOption?: (type: "png" | "csv") => void;
   showFullScreen?: boolean;
   onFullScreenClick?: () => void;

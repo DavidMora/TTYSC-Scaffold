@@ -26,6 +26,12 @@ export function triggerFileDownload(
   a.click();
   a.remove();
   URL.revokeObjectURL(url);
+  try {
+    document.body.appendChild(a)
+  } finally {
+    a.remove()
+    URL.revokeObjectURL(url)
+  }
 }
 
 export function downloadChartAsPng(
@@ -56,7 +62,7 @@ export function buildCsv(
 ): string {
   const dimCols = dimensions.map((d) => d.accessor);
   const measureCols = measures.map((m) => m.accessor);
-  const headers = [...dimCols, ...measures.map((m) => m.label)];
+  const headers = [...dimCols, ...measures.map((m) => m.label)].map(escapeCsvField);
   const cols = [...dimCols, ...measureCols];
   const rows = dataset.map((row) =>
     cols

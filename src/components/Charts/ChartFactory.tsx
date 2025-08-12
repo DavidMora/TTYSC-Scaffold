@@ -74,6 +74,7 @@ export const ChartFactory: React.FC<ChartFactoryProps> = ({
         }}
         renderContent={({ start, end }) => {
           const len = datasetArray.length;
+          if (len === 0) return render([]);
           const span = end - start;
           const desiredCount = Math.max(1, Math.round(span * len));
           const centerIndex = ((start + end) / 2) * len;
