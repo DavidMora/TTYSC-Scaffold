@@ -223,49 +223,51 @@ describe("HttpClient Authentication Configuration", () => {
     process.env = { ...originalEnv };
   });
 
-  it("should create authConfig when both username and password are provided", () => {
+  it("should create authConfig when both username and password are provided", async () => {
     // Set environment variables
     process.env.NEXT_PUBLIC_API_USERNAME = "testuser";
     process.env.NEXT_PUBLIC_API_PASSWORD = "testpass";
 
     // Re-import to get fresh instance with new env vars
-    const { apiClient } = require("../../../src/lib/api/http-client");
+    const { apiClient, HttpClient } = await import(
+      "../../../src/lib/api/http-client"
+    );
 
     // Verify that the apiClient was created (this covers the auth config creation)
     expect(apiClient).toBeDefined();
-    expect(apiClient).toBeInstanceOf(require("../../../src/lib/api/http-client").HttpClient);
+    expect(apiClient).toBeInstanceOf(HttpClient);
   });
 
-  it("should create authConfig as undefined when credentials are missing", () => {
+  it("should create authConfig as undefined when credentials are missing", async () => {
     // Ensure no credentials are set
     delete process.env.NEXT_PUBLIC_API_USERNAME;
     delete process.env.NEXT_PUBLIC_API_PASSWORD;
 
     // Re-import to get fresh instance
-    const { apiClient } = require("../../../src/lib/api/http-client");
+    const { apiClient } = await import("../../../src/lib/api/http-client");
 
     // Verify that the apiClient was created without auth
     expect(apiClient).toBeDefined();
   });
 
-  it("should create authConfig as undefined when only username is provided", () => {
+  it("should create authConfig as undefined when only username is provided", async () => {
     // Set only username
     process.env.NEXT_PUBLIC_API_USERNAME = "testuser";
     delete process.env.NEXT_PUBLIC_API_PASSWORD;
 
     // Re-import to get fresh instance
-    const { apiClient } = require("../../../src/lib/api/http-client");
+    const { apiClient } = await import("../../../src/lib/api/http-client");
 
     expect(apiClient).toBeDefined();
   });
 
-  it("should create authConfig as undefined when only password is provided", () => {
+  it("should create authConfig as undefined when only password is provided", async () => {
     // Set only password
     delete process.env.NEXT_PUBLIC_API_USERNAME;
     process.env.NEXT_PUBLIC_API_PASSWORD = "testpass";
 
     // Re-import to get fresh instance
-    const { apiClient } = require("../../../src/lib/api/http-client");
+    const { apiClient } = await import("../../../src/lib/api/http-client");
 
     expect(apiClient).toBeDefined();
   });

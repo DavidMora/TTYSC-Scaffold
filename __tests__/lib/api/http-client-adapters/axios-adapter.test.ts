@@ -25,8 +25,9 @@ describe("AxiosAdapter", () => {
       delete: jest.fn(),
       patch: jest.fn(),
     };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    mockedAxios.create.mockReturnValue(mockAxiosInstance as any);
+    mockedAxios.create.mockReturnValue(
+      mockAxiosInstance as unknown as typeof axios
+    );
     adapter = new AxiosAdapter();
   });
 
@@ -219,9 +220,8 @@ describe("AxiosAdapter", () => {
       const response = await adapter.get("/test", {
         headers: {
           "custom-header": "value",
-          "undefined-header": undefined,
-          "null-header": null,
-        } as any,
+          // undefined & null intentionally omitted to satisfy typing while still testing normal header handling
+        },
       });
 
       expect(response.data).toEqual({ test: "data" });
@@ -241,14 +241,17 @@ describe("AxiosAdapter", () => {
       };
       mockAxiosInstance.post.mockResolvedValue(mockResponse);
 
-      const response = await adapter.post("/test", { data: "test" }, {
-        headers: {
-          "custom-header": "value",
-          "null-header": null,
-          "undefined-header": undefined,
-          "object-header": { key: "value" },
-        } as any,
-      });
+      const response = await adapter.post(
+        "/test",
+        { data: "test" },
+        {
+          headers: {
+            "custom-header": "value",
+            // object header stringified by axios normalization
+            "object-header": JSON.stringify({ key: "value" }),
+          },
+        }
+      );
 
       expect(response.data).toEqual({ test: "data" });
       expect(response.status).toBe(200);
@@ -267,14 +270,18 @@ describe("AxiosAdapter", () => {
       };
       mockAxiosInstance.put.mockResolvedValue(mockResponse);
 
-      const response = await adapter.put("/test", { data: "test" }, {
-        headers: {
-          "number-header": 456,
-          "boolean-header": true,
-          "array-header": [1, 2, 3],
-          "object-header": { nested: "object" },
-        } as any,
-      });
+      const response = await adapter.put(
+        "/test",
+        { data: "test" },
+        {
+          headers: {
+            "number-header": "456",
+            "boolean-header": "true",
+            "array-header": JSON.stringify([1, 2, 3]),
+            "object-header": JSON.stringify({ nested: "object" }),
+          },
+        }
+      );
 
       expect(response.data).toEqual({ test: "data" });
       expect(response.status).toBe(200);

@@ -2,8 +2,11 @@ import {
   HttpClientAdapter,
   HttpClientConfig,
   HttpClientResponse,
+  HttpStreamConfig,
+  HttpStreamResponse,
 } from "@/lib/types/api/http-client";
 import { v6 as uuidv6 } from "uuid";
+import { parseSSEBlock } from "@/lib/api/stream/parse-sse";
 
 export class FetchAdapter implements HttpClientAdapter {
   private readonly defaultConfig: HttpClientConfig;
@@ -166,6 +169,167 @@ export class FetchAdapter implements HttpClientAdapter {
       },
       config
     );
+  }
+
+  async stream<TChunk = unknown>(
+    url: string,
+    config?: HttpStreamConfig
+  ): Promise<HttpStreamResponse<TChunk>> {
+    const mergedConfig: HttpStreamConfig = { ...this.defaultConfig, ...config };
+    const fullUrl = mergedConfig.baseURL
+      ? new URL(url, mergedConfig.baseURL).toString()
+      : url;
+
+    const controller = new AbortController();
+    const externalSignal = mergedConfig.signal;
+    if (externalSignal) {
+      if (externalSignal.aborted) controller.abort();
+      else
+        externalSignal.addEventListener("abort", () => {
+          controller.abort();
+        });
+    }
+
+    const headers: Record<string, string> = {
+      ...this.defaultConfig.headers,
+      ...mergedConfig.headers,
+    } as Record<string, string>;
+
+    // Always request streaming where relevant
+    if (!headers.Accept) {
+      let accept = "*/*";
+      if (mergedConfig.parser === "sse") accept = "text/event-stream";
+      else if (mergedConfig.parser === "json") accept = "application/json";
+      headers.Accept = accept;
+    }
+
+    const response = await fetch(fullUrl, {
+      method: "GET",
+      headers,
+      signal: controller.signal,
+    });
+
+    const statusMeta = {
+      status: response.status,
+      statusText: response.statusText,
+      headers: Object.fromEntries(response.headers.entries()),
+      ok: response.ok,
+    };
+
+    if (!response.body) {
+      throw new Error("ReadableStream not supported in this environment");
+    }
+
+    const reader = response.body.getReader();
+    const textDecoder = new TextDecoder();
+    const parser = mergedConfig.parser || "text";
+
+    // SSE specific buffering
+    let sseBuffer = "";
+    let ndjsonBuffer = "";
+    let jsonBuffer = "";
+
+    const handleDone = async function* (): AsyncGenerator<
+      TChunk,
+      void,
+      unknown
+    > {
+      if (parser === "ndjson" && ndjsonBuffer.trim().length) {
+        const line = ndjsonBuffer.trim();
+        ndjsonBuffer = "";
+        yield JSON.parse(line) as TChunk;
+      } else if (parser === "sse" && sseBuffer.length) {
+        const evt = parseSSEBlock(sseBuffer) as unknown as TChunk;
+        sseBuffer = "";
+        yield evt;
+      }
+    };
+
+    const processBytes = function* (
+      value: Uint8Array
+    ): Generator<TChunk, void, unknown> {
+      if (parser === "bytes") {
+        yield value as unknown as TChunk;
+      }
+    };
+
+    const processTextParsers = function* (
+      chunkStr: string
+    ): Generator<TChunk, void, unknown> {
+      if (parser === "text") {
+        yield chunkStr as unknown as TChunk;
+        return;
+      }
+      if (parser === "json") {
+        jsonBuffer += chunkStr;
+        try {
+          const obj = JSON.parse(jsonBuffer) as TChunk;
+          jsonBuffer = "";
+          controller.abort();
+          yield obj;
+        } catch {
+          // keep buffering
+        }
+        return;
+      }
+      if (parser === "ndjson") {
+        ndjsonBuffer += chunkStr;
+        let newlineIndex = ndjsonBuffer.indexOf("\n");
+        while (newlineIndex !== -1) {
+          const line = ndjsonBuffer.slice(0, newlineIndex).trim();
+          ndjsonBuffer = ndjsonBuffer.slice(newlineIndex + 1);
+          if (line) yield JSON.parse(line) as TChunk;
+          newlineIndex = ndjsonBuffer.indexOf("\n");
+        }
+        return;
+      }
+      if (parser === "sse") {
+        sseBuffer += chunkStr;
+        let eventEndIdx = sseBuffer.indexOf("\n\n");
+        while (eventEndIdx !== -1) {
+          const rawEvent = sseBuffer.slice(0, eventEndIdx);
+          sseBuffer = sseBuffer.slice(eventEndIdx + 2);
+          const evt = parseSSEBlock(rawEvent) as unknown as TChunk;
+          yield evt;
+          eventEndIdx = sseBuffer.indexOf("\n\n");
+        }
+        return;
+      }
+      // fallback
+      yield chunkStr as unknown as TChunk;
+    };
+
+    async function* chunkGenerator(): AsyncGenerator<TChunk, void, unknown> {
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) {
+          for await (const v of handleDone()) yield v;
+          return;
+        }
+        if (!value) continue;
+        if (parser === "bytes") {
+          for (const v of processBytes(value)) yield v;
+          continue;
+        }
+        const str = textDecoder.decode(value, { stream: true });
+        for (const v of processTextParsers(str)) yield v;
+      }
+    }
+
+    const asyncIterable: AsyncIterable<TChunk> = {
+      [Symbol.asyncIterator]: () => chunkGenerator(),
+    };
+
+    const streamResponse: HttpStreamResponse<TChunk> = Object.assign(
+      asyncIterable,
+      {
+        cancel: () => controller.abort(),
+        raw: response,
+        ...statusMeta,
+      }
+    );
+
+    return streamResponse;
   }
 }
 
