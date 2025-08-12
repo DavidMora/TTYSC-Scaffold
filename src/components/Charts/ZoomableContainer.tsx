@@ -45,6 +45,10 @@ interface ZoomableContainerProps {
     isMulti?: boolean;
     seriesData?: ChartSeries[];
   };
+  onDateRangeChange?: (from: string, to: string) => void;
+  onRegionChange?: (region: string) => void;
+  dateRange?: string;
+  region?: string;
 }
 
 export const ZoomableContainer: React.FC<Readonly<ZoomableContainerProps>> = ({
@@ -60,6 +64,10 @@ export const ZoomableContainer: React.FC<Readonly<ZoomableContainerProps>> = ({
   exportContext,
   chartIdForFullscreen,
   dataLength,
+  onDateRangeChange,
+  onRegionChange,
+  dateRange,
+  region,
 }) => {
   const router = useRouter();
 
@@ -86,6 +94,10 @@ export const ZoomableContainer: React.FC<Readonly<ZoomableContainerProps>> = ({
         showFullScreen={Boolean(chartIdForFullscreen)}
         showDownload
         leftContent={<Title level={TitleLevel.H2}>{title}</Title>}
+        onDateRangeChange={onDateRangeChange}
+        onRegionChange={onRegionChange}
+        dateRange={dateRange}
+        region={region}
         onZoomIn={handleZoomIn}
         onZoomOut={handleZoomOut}
         disableZoomIn={
@@ -125,7 +137,7 @@ export const ZoomableContainer: React.FC<Readonly<ZoomableContainerProps>> = ({
         ref={viewportRef}
         aria-label="Zoomable chart area"
         role="application"
-        className={`${zoomActive && "zoomable-cursor-move"}`}
+        className={`${zoomActive ? "zoomable-cursor-move" : ""}`}
         style={{
           position: "relative",
           width: "100%",

@@ -26,6 +26,10 @@ interface ChartFactoryProps {
   title?: string;
   chartIdForFullscreen?: string;
   height?: number;
+  onDateRangeChange?: (from: string, to: string) => void;
+  onRegionChange?: (region: string) => void;
+  dateRange?: string;
+  region?: string;
 }
 
 export const ChartFactory: React.FC<ChartFactoryProps> = ({
@@ -34,6 +38,10 @@ export const ChartFactory: React.FC<ChartFactoryProps> = ({
   title,
   chartIdForFullscreen,
   height = 400,
+  onDateRangeChange,
+  onRegionChange,
+  dateRange,
+  region,
 }) => {
   const { isMulti, dataset, measures, seriesData } = chartDataInfo;
 
@@ -49,6 +57,10 @@ export const ChartFactory: React.FC<ChartFactoryProps> = ({
       chartIdForFullscreen={chartIdForFullscreen}
       dataLength={(dataset as (SingleDataPoint | MultiDataPoint)[]).length}
       exportContext={{ dataset, dimensions, measures, isMulti, seriesData }}
+      onDateRangeChange={onDateRangeChange}
+      onRegionChange={onRegionChange}
+      dateRange={dateRange}
+      region={region}
     >
       {node}
     </ZoomableContainer>
@@ -72,6 +84,10 @@ export const ChartFactory: React.FC<ChartFactoryProps> = ({
           isMulti,
           seriesData,
         }}
+        onDateRangeChange={onDateRangeChange}
+        onRegionChange={onRegionChange}
+        dateRange={dateRange}
+        region={region}
         renderContent={({ start, end }) => {
           const len = datasetArray.length;
           if (len === 0) return render([]);

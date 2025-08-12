@@ -82,6 +82,32 @@ const DatePicker = React.forwardRef(
 );
 DatePicker.displayName = "DatePicker";
 
+// Simple DateRangePicker mock that behaves like a text input and emits UI5-style events
+const DateRangePicker = React.forwardRef(
+  ({ placeholder, onChange, value, formatPattern, ...props }, ref) => {
+    const handleChange = (event) => {
+      const value = event.target.value;
+      if (onChange) {
+        onChange({ detail: { value } });
+      }
+    };
+    // The mock doesn't enforce formatPattern, but it's accepted to mirror the API
+    return (
+      <input
+        ref={ref}
+        type="text"
+        placeholder={placeholder}
+        data-testid="ui5-daterange-picker"
+        value={value}
+        onChange={handleChange}
+        data-format-pattern={formatPattern}
+        {...props}
+      />
+    );
+  }
+);
+DateRangePicker.displayName = "DateRangePicker";
+
 const Dialog = React.forwardRef(
   (
     { open, header, children, className, style, footer, onClose, ...props },
@@ -845,6 +871,7 @@ module.exports = {
     </option>
   ),
   DatePicker,
+  DateRangePicker,
   Dialog,
   FlexBox,
   Form,

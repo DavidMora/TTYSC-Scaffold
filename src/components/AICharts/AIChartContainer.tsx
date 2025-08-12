@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo } from "react";
-import { useChart } from "@/hooks/charts";
+import { useChart, ChartFilters } from "@/hooks/charts";
 import { AIChart } from "./AIChart";
 import { ChartError, ChartSkeleton } from "./AIChartSkeleton";
 
@@ -14,7 +14,10 @@ export const AIChartContainer: React.FC<AIChartContainerProps> = ({
   isFullscreen = false,
   onTitleChange,
 }) => {
-  const { data, isLoading, error, mutate } = useChart(chartId);
+  const [filters, setFilters] = React.useState<ChartFilters | undefined>(
+    undefined
+  );
+  const { data, isLoading, error, mutate } = useChart(chartId, filters);
 
   const errorMessage = useMemo(() => {
     if (!error) return undefined;
@@ -32,6 +35,14 @@ export const AIChartContainer: React.FC<AIChartContainerProps> = ({
     mutate?.();
   }, [mutate]);
 
+  const handleDateRangeChange = useCallback((from: string, to: string) => {
+    setFilters((prev) => ({ ...(prev || {}), from, to }));
+  }, []);
+
+  const handleRegionChange = useCallback((region: string) => {
+    setFilters((prev) => ({ ...(prev || {}), region }));
+  }, []);
+
   if (isLoading) {
     return <ChartSkeleton />;
   }
@@ -42,7 +53,19 @@ export const AIChartContainer: React.FC<AIChartContainerProps> = ({
 
   if (data?.data) {
     return (
-      <AIChart data={data.data} chartId={chartId} isFullscreen={isFullscreen} />
+      <AIChart
+        data={data.data}
+        chartId={chartId}
+        isFullscreen={isFullscreen}
+        onDateRangeChange={handleDateRangeChange}
+        onRegionChange={handleRegionChange}
+        dateRange={
+          filters?.from && filters?.to
+            ? `${filters.from} - ${filters.to}`
+            : undefined
+        }
+        region={filters?.region}
+      />
     );
   }
 

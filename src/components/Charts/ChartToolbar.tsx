@@ -6,7 +6,7 @@ import {
   ToolbarSpacer,
   Button,
   Select,
-  DatePicker,
+  DateRangePicker,
   Option,
   Ui5CustomEvent,
   Menu,
@@ -30,8 +30,10 @@ interface ChartToolbarProps {
   onFullScreenClick?: () => void;
   // Filter actions
   showFilters?: boolean;
-  onDateChange?: (date: string) => void;
+  onDateRangeChange?: (from: string, to: string) => void;
   onRegionChange?: (region: string) => void;
+  dateRange?: string;
+  region?: string;
 }
 
 export const ChartToolbar: React.FC<Readonly<ChartToolbarProps>> = ({
@@ -47,27 +49,32 @@ export const ChartToolbar: React.FC<Readonly<ChartToolbarProps>> = ({
   showFullScreen = false,
   onFullScreenClick,
   showFilters = true,
-  onDateChange,
+  onDateRangeChange,
   onRegionChange,
+  dateRange,
+  region,
 }) => {
-  const [selectedDate, setSelectedDate] = useState("2023-07-04");
+  const [selectedDateRange, setSelectedDateRange] = useState("");
   const [selectedRegion, setSelectedRegion] = useState("");
   const downloadBtnRef = useRef<ButtonDomRef | null>(null);
   const [downloadMenuOpen, setDownloadMenuOpen] = useState(false);
 
-  const handleDateChange = (
+  const handleDateRangeChange = (
     event: Ui5CustomEvent<HTMLElement, { value?: string }>
   ) => {
     const value = event.detail.value || "";
-    setSelectedDate(value);
-    onDateChange?.(value);
+    if (dateRange === undefined) setSelectedDateRange(value);
+    const [from, to] = value.split(" - ");
+    if (from && to) {
+      onDateRangeChange?.(from, to);
+    }
   };
 
   const handleRegionChange = (
     event: Ui5CustomEvent<HTMLElement, { selectedOption?: { value?: string } }>
   ) => {
     const value = event.detail.selectedOption?.value || "";
-    setSelectedRegion(value);
+    if (region === undefined) setSelectedRegion(value);
     onRegionChange?.(value);
   };
 
@@ -77,19 +84,20 @@ export const ChartToolbar: React.FC<Readonly<ChartToolbarProps>> = ({
       <ToolbarSpacer />
       {showFilters && (
         <>
-          <DatePicker
-            value={selectedDate}
-            onChange={handleDateChange}
+          <DateRangePicker
+            value={dateRange ?? selectedDateRange}
+            onChange={handleDateRangeChange}
+            formatPattern="yyyy-MM-dd"
             primaryCalendarType="Gregorian"
             valueState="None"
-            placeholder="Select date"
+            placeholder="Select date range"
             style={{
               marginRight: "8px",
-              width: "140px",
+              width: "220px",
             }}
           />
           <Select
-            value={selectedRegion}
+            value={region ?? selectedRegion}
             onChange={handleRegionChange}
             valueState="None"
             style={{

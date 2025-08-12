@@ -34,20 +34,20 @@ describe("ChartToolbar", () => {
     expect(onOut).toHaveBeenCalled();
   });
 
-  it("handles filter changes (date and region)", () => {
+  it("handles filter changes (date range and region)", () => {
     const onDate = jest.fn();
     const onRegion = jest.fn();
     render(
       <ChartToolbar
         showFilters
-        onDateChange={onDate}
+        onDateRangeChange={(from, to) => onDate(`${from}|${to}`)}
         onRegionChange={onRegion}
       />
     );
 
-    const datePicker = screen.getByPlaceholderText("Select date");
-    fireEvent.change(datePicker, { target: { value: "2024-01-01" } });
-    expect(onDate).toHaveBeenCalledWith("2024-01-01");
+    const datePicker = screen.getByPlaceholderText("Select date range");
+    fireEvent.change(datePicker, { target: { value: "2024-01-01 - 2024-06-30" } });
+    expect(onDate).toHaveBeenCalledWith("2024-01-01|2024-06-30");
 
     const region =
       screen.getByText("Region").closest("ui5-select") ||
@@ -55,6 +55,31 @@ describe("ChartToolbar", () => {
     // Simulate changing the select value; underlying mock forwards .value
     fireEvent.change(region, { target: { value: "north" } });
     expect(onRegion).toHaveBeenCalledWith("north");
+  });
+
+  it("supports controlled dateRange and region values without updating internal state", () => {
+    const onDate = jest.fn();
+    const onRegion = jest.fn();
+    render(
+      <ChartToolbar
+        showFilters
+        dateRange="2024-03-01 - 2024-03-31"
+        region="east"
+        onDateRangeChange={onDate}
+        onRegionChange={onRegion}
+      />
+    );
+
+    // When controlled, changing should still invoke callbacks but component keeps given values
+    const datePicker = screen.getByPlaceholderText("Select date range");
+    fireEvent.change(datePicker, { target: { value: "2024-04-01 - 2024-04-30" } });
+    expect(onDate).toHaveBeenCalled();
+
+    const regionSelect =
+      screen.getByText("Region").closest("ui5-select") ||
+      screen.getByText("Region").parentElement!;
+    fireEvent.change(regionSelect, { target: { value: "west" } });
+    expect(onRegion).toHaveBeenCalledWith("west");
   });
 
   it("opens download menu and triggers options when onDownloadOption is provided", () => {

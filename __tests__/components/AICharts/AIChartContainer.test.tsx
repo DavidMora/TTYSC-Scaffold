@@ -13,9 +13,13 @@ jest.mock("@/components/AICharts/AIChart", () => ({
   AIChart: ({
     data,
     isFullscreen,
+    onDateRangeChange,
+    onRegionChange,
   }: {
     data: AIChartData;
     isFullscreen?: boolean;
+    onDateRangeChange?: (from: string, to: string) => void;
+    onRegionChange?: (region: string) => void;
   }) => (
     <div
       data-testid="ai-chart"
@@ -23,6 +27,14 @@ jest.mock("@/components/AICharts/AIChart", () => ({
       data-is-fullscreen={isFullscreen ? "true" : "false"}
     >
       AI Chart Component
+      <button
+        data-testid="trigger-date"
+        onClick={() => onDateRangeChange?.("2024-01-01", "2024-01-31")}
+      />
+      <button
+        data-testid="trigger-region"
+        onClick={() => onRegionChange?.("north")}
+      />
     </div>
   ),
 }));
@@ -190,6 +202,26 @@ describe("AIChartContainer", () => {
       const aiChart = screen.getByTestId("ai-chart");
       expect(aiChart).toHaveAttribute("data-is-fullscreen", "true");
     });
+
+    it("wires up date range and region handlers to manage filters", () => {
+      mockUseChart.mockReturnValue({
+        data: mockData,
+        isLoading: false,
+        error: undefined,
+        mutate: mockMutate,
+      });
+
+      render(<AIChartContainer chartId={mockChartId} />);
+
+      // Trigger date range change
+      fireEvent.click(screen.getByTestId("trigger-date"));
+      // Trigger region change
+      fireEvent.click(screen.getByTestId("trigger-region"));
+
+      // Re-render to ensure filters updates don't crash and content still renders
+      const aiChart = screen.getByTestId("ai-chart");
+      expect(aiChart).toBeInTheDocument();
+    });
   });
 
   describe("Null state", () => {
@@ -231,7 +263,7 @@ describe("AIChartContainer", () => {
 
       render(<AIChartContainer chartId={mockChartId} />);
 
-      expect(mockUseChart).toHaveBeenCalledWith(mockChartId);
+      expect(mockUseChart).toHaveBeenCalledWith(mockChartId, undefined);
     });
 
     it("should call onTitleChange when headline changes and handle undefined gracefully", () => {

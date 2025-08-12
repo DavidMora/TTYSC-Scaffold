@@ -9,6 +9,15 @@ export default function ChartPage() {
   const { id } = useParams<{ id: string }>();
   const [title, setTitle] = useState("");
 
+  if (!id) {
+    return (
+      <FlexBox direction="Column" className="p-4">
+        <Title level="H2">Error</Title>
+        <Text>Chart ID not found</Text>
+      </FlexBox>
+    );
+  }
+
   return (
     <>
       <FlexBox

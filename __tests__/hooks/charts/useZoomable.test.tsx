@@ -122,8 +122,8 @@ describe("useZoomable", () => {
 
       const startWindow = result.current.viewWindow;
       act(() => {
-        result.current.onMouseDown({ clientX: 100, clientY: 0 } as any);
-        result.current.onMouseMove({ clientX: 120, clientY: 0 } as any);
+        result.current.onMouseDown({ clientX: 100, clientY: 0 } as React.MouseEvent<HTMLDivElement>);
+        result.current.onMouseMove({ clientX: 120, clientY: 0 } as React.MouseEvent<HTMLDivElement>);
       });
 
       // viewWindow should have been scheduled to update; flush RAF by calling scheduled handler synchronously
@@ -155,7 +155,7 @@ describe("useZoomable", () => {
           ctrlKey: true,
           deltaY: -1,
           preventDefault: () => {},
-        } as any);
+        } as React.WheelEvent<HTMLDivElement>);
       });
       expect(
         result.current.viewWindow.end - result.current.viewWindow.start
@@ -169,7 +169,7 @@ describe("useZoomable", () => {
           deltaX: 10,
           deltaY: 0,
           preventDefault: () => {},
-        } as any);
+        } as React.WheelEvent<HTMLDivElement>);
       });
       const winAfterPan = result.current.viewWindow;
       expect(winAfterPan.start).not.toBe(winBeforePan.start);
@@ -221,8 +221,14 @@ describe("useZoomable", () => {
 
       const start = result.current.viewWindow;
       act(() => {
-        result.current.onMouseDown({ clientX: 100, clientY: 0 } as any);
-        result.current.onMouseMove({ clientX: 140, clientY: 0 } as any);
+        result.current.onMouseDown({
+          clientX: 100,
+          clientY: 0,
+        } as React.MouseEvent<HTMLDivElement>);
+        result.current.onMouseMove({
+          clientX: 140,
+          clientY: 0,
+        } as React.MouseEvent<HTMLDivElement>);
       });
       const end = result.current.viewWindow;
       expect(onChange).toHaveBeenCalled();
@@ -268,8 +274,14 @@ describe("useZoomable", () => {
 
       // Start pan to create a non-zero offset and let RAF apply it
       act(() => {
-        result.current.onMouseDown({ clientX: 0, clientY: 0 } as any);
-        result.current.onMouseMove({ clientX: -1000, clientY: -1000 } as any);
+        result.current.onMouseDown({
+          clientX: 0,
+          clientY: 0,
+        } as React.MouseEvent<HTMLDivElement>);
+        result.current.onMouseMove({
+          clientX: -1000,
+          clientY: -1000,
+        } as React.MouseEvent<HTMLDivElement>);
       });
       const before = result.current.offset;
       expect(before.x).toBeLessThanOrEqual(0);
@@ -296,7 +308,7 @@ describe("useZoomable", () => {
           ctrlKey: true,
           deltaY: -1,
           preventDefault: () => {},
-        } as any);
+        } as React.WheelEvent<HTMLDivElement>);
       });
       const after = result.current.viewWindow;
       expect(after).toEqual(before);
@@ -323,7 +335,7 @@ describe("useZoomable", () => {
           deltaX: 20,
           deltaY: 10,
           preventDefault: () => {},
-        } as any);
+        } as React.WheelEvent<HTMLDivElement>);
       });
       const after = result.current.offset;
       // With RAF mocked to run immediately, offset should update synchronously

@@ -95,12 +95,13 @@ describe("chartExport utils", () => {
       expect(csv).toContain("B,2");
     });
 
-    it("escapes commas, quotes and newlines", () => {
+    it("escapes commas, quotes and preserves actual newlines inside quoted fields", () => {
       const dataset: SingleDataPoint[] = [{ name: 'A, "x"\n', value: 5 }];
       const csv = buildCsv(dataset, dimensions, measures);
-      const row = csv.split("\n")[1];
-      // Expect literal backslash-n inside the quoted field so the CSV stays single-line per record
-      expect(row).toMatch(/^"A, ""x""\\n",5$/);
+      const [header, ...rest] = csv.split("\n");
+      expect(header).toBe("name,Value");
+      const row = rest.join("\n");
+      expect(row).toBe("\"A, \"\"x\"\"\n\",5");
     });
 
     it("builds CSV for multi series by projecting accessors", () => {

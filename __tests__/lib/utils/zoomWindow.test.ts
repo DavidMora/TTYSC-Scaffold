@@ -17,6 +17,14 @@ describe("zoomWindow utils", () => {
     it("clamps negative start to 0 and shifts end accordingly", () => {
       expect(clampWindow(-0.2, 0.5)).toEqual({ start: 0, end: 0.7 });
     });
+
+    it("clamps end > 1 and shifts start accordingly", () => {
+      expect(clampWindow(0.5, 1.3)).toEqual({ start: 0.2, end: 1 });
+    });
+
+    it("handles both bounds out of range", () => {
+      expect(clampWindow(-0.1, 1.2)).toEqual({ start: 0, end: 1 });
+    });
   });
 
   describe("windowAroundCenter", () => {

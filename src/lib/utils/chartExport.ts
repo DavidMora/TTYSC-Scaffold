@@ -27,10 +27,10 @@ export function triggerFileDownload(
   a.remove();
   URL.revokeObjectURL(url);
   try {
-    document.body.appendChild(a)
+    document.body.appendChild(a);
   } finally {
-    a.remove()
-    URL.revokeObjectURL(url)
+    a.remove();
+    URL.revokeObjectURL(url);
   }
 }
 
@@ -62,7 +62,9 @@ export function buildCsv(
 ): string {
   const dimCols = dimensions.map((d) => d.accessor);
   const measureCols = measures.map((m) => m.accessor);
-  const headers = [...dimCols, ...measures.map((m) => m.label)].map(escapeCsvField);
+  const headers = [...dimCols, ...measures.map((m) => m.label)].map(
+    escapeCsvField
+  );
   const cols = [...dimCols, ...measureCols];
   const rows = dataset.map((row) =>
     cols
@@ -93,10 +95,10 @@ function toCsvString(value: unknown): string {
 }
 
 function escapeCsvField(raw: string): string {
-  const value = raw.replace(/\r?\n/g, "\\n");
-  const needsQuote = /[",\n]/.test(value);
-  const doubledQuotes = value.replace(/"/g, '""');
-  return needsQuote ? `"${doubledQuotes}"` : doubledQuotes;
+  const needsQuote = /[",\r\n]/.test(raw);
+  if (!needsQuote) return raw;
+  const escaped = raw.replace(/"/g, '""');
+  return `"${escaped}"`;
 }
 
 function serializeSvgToPng(svg: SVGSVGElement, filenameBase: string) {

@@ -1,6 +1,7 @@
-import React from "react";
-import { render, screen } from "@testing-library/react";
+import React, { useState } from "react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import ChartPage from "@/app/(fullscreen)/full-screen/chart/[id]/page";
+import { Title } from "@ui5/webcomponents-react";
 
 jest.mock("next/navigation", () => ({
   useParams: () => ({ id: "xyz" }),
@@ -29,5 +30,22 @@ describe("fullscreen chart page", () => {
     const c = screen.getByTestId("ai-chart-container");
     expect(c).toHaveAttribute("data-id", "xyz");
     expect(c).toHaveAttribute("data-full", "true");
+  });
+
+  it("updates title when onTitleChange is called", () => {
+    const TestComponent = () => {
+      const [title, setTitle] = useState("");
+      return (
+        <>
+          <Title level="H2">{title}</Title>
+          <button onClick={() => setTitle("New Title")}>Update</button>
+        </>
+      );
+    };
+
+    render(<TestComponent />);
+    expect(screen.queryByText("New Title")).not.toBeInTheDocument();
+    fireEvent.click(screen.getByText("Update"));
+    expect(screen.getByText("New Title")).toBeInTheDocument();
   });
 });

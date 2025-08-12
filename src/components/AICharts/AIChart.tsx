@@ -9,12 +9,20 @@ interface AIChartProps {
   data: AIChartData;
   chartId?: string;
   isFullscreen?: boolean;
+  onDateRangeChange?: (from: string, to: string) => void;
+  onRegionChange?: (region: string) => void;
+  dateRange?: string;
+  region?: string;
 }
 
 export function AIChart({
   data,
   chartId,
   isFullscreen = false,
+  onDateRangeChange,
+  onRegionChange,
+  dateRange,
+  region,
 }: Readonly<AIChartProps>) {
   const { headline, preamble, content, chart } = data;
 
@@ -59,6 +67,10 @@ export function AIChart({
         chartDataInfo={chartDataInfo}
         title={headline}
         chartIdForFullscreen={isFullscreen ? undefined : chartId}
+        onDateRangeChange={onDateRangeChange}
+        onRegionChange={onRegionChange}
+        dateRange={dateRange}
+        region={region}
       />
     </div>
   );

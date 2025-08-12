@@ -243,5 +243,55 @@ describe("charts.service", () => {
         expect(result.data.data.chart.type).toBe(chartType);
       }
     });
+
+    it("appends query params when filters are provided (from, to, region)", async () => {
+      const mockUrl = "/api/charts/test-chart-id";
+      mockAUXILIARY_CHART.mockReturnValue(mockUrl);
+      mockApiClient.get.mockResolvedValue(mockResponse);
+
+      await getChart(mockChartId, {
+        from: "2024-01-01",
+        to: "2024-01-31",
+        region: "north",
+      });
+
+      expect(mockApiClient.get).toHaveBeenCalledWith(
+        `${mockUrl}?from=2024-01-01&to=2024-01-31&region=north`
+      );
+    });
+
+    it("includes only provided filter params and preserves order", async () => {
+      const baseUrl = "/api/charts/test-chart-id";
+      mockAUXILIARY_CHART.mockReturnValue(baseUrl);
+      mockApiClient.get.mockResolvedValue(mockResponse);
+
+      // Only from
+      await getChart(mockChartId, { from: "2024-02-01" });
+      expect(mockApiClient.get).toHaveBeenCalledWith(
+        `${baseUrl}?from=2024-02-01`
+      );
+
+      // Only to
+      await getChart(mockChartId, { to: "2024-02-28" });
+      expect(mockApiClient.get).toHaveBeenCalledWith(
+        `${baseUrl}?to=2024-02-28`
+      );
+
+      // Only region
+      await getChart(mockChartId, { region: "south" });
+      expect(mockApiClient.get).toHaveBeenCalledWith(
+        `${baseUrl}?region=south`
+      );
+    });
+
+    it("does not append a '?' when filters object is empty", async () => {
+      const baseUrl = "/api/charts/test-chart-id";
+      mockAUXILIARY_CHART.mockReturnValue(baseUrl);
+      mockApiClient.get.mockResolvedValue(mockResponse);
+
+      await getChart(mockChartId, {});
+
+      expect(mockApiClient.get).toHaveBeenCalledWith(baseUrl);
+    });
   });
 });
