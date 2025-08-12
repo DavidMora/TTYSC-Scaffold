@@ -6,7 +6,7 @@ import { AIChartContainer } from "@/components/AICharts/AIChartContainer";
 import { FlexBox, Text, Title } from "@ui5/webcomponents-react";
 
 export default function ChartPage() {
-  const { id } = useParams() as { id: string };
+  const { id } = useParams<{ id: string }>();
   const [title, setTitle] = useState("");
 
   return (
