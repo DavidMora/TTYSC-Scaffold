@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type React from "react";
 import {
   EPSILON,
   deltaFromPixels,
@@ -50,6 +51,19 @@ export function useZoomable({
   const pendingWindowRef = useRef<ViewWindow | null>(null);
   const panRafIdRef = useRef<number | null>(null);
   const pendingOffsetRef = useRef<{ x: number; y: number } | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (rafIdRef.current != null) {
+        cancelAnimationFrame(rafIdRef.current);
+      }
+      if (panRafIdRef.current != null) {
+        cancelAnimationFrame(panRafIdRef.current);
+      }
+      pendingWindowRef.current = null;
+      pendingOffsetRef.current = null;
+    };
+  }, []);
 
   const span = viewWindow.end - viewWindow.start;
   const dataZoom = 1 / Math.max(span, EPSILON);
