@@ -25,6 +25,7 @@ interface ChartFactoryProps {
   chartDataInfo: ChartDataInfo;
   title?: string;
   chartIdForFullscreen?: string;
+  height?: number;
 }
 
 export const ChartFactory: React.FC<ChartFactoryProps> = ({
@@ -32,6 +33,7 @@ export const ChartFactory: React.FC<ChartFactoryProps> = ({
   chartDataInfo,
   title,
   chartIdForFullscreen,
+  height = 400,
 }) => {
   const { isMulti, dataset, measures, seriesData } = chartDataInfo;
 
@@ -41,7 +43,7 @@ export const ChartFactory: React.FC<ChartFactoryProps> = ({
 
   const wrapVisual = (node: React.ReactNode) => (
     <ZoomableContainer
-      height={400}
+      height={height}
       mode="visual"
       title={title}
       chartIdForFullscreen={chartIdForFullscreen}
@@ -58,7 +60,7 @@ export const ChartFactory: React.FC<ChartFactoryProps> = ({
   ) => {
     return (
       <ZoomableContainer
-        height={400}
+        height={height}
         mode="dataX"
         title={title}
         chartIdForFullscreen={chartIdForFullscreen}

@@ -54,6 +54,7 @@ export function AIChart({
       )}
 
       <ChartFactory
+        height={isFullscreen ? 800 : 400}
         chartType={chart.type}
         chartDataInfo={chartDataInfo}
         title={headline}

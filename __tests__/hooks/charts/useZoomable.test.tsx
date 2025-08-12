@@ -33,14 +33,12 @@ describe("useZoomable", () => {
 
       // initial state
       expect(result.current.zoom).toBe(1);
-      expect(result.current.cursorStyle).toBe("default");
 
       // zoom in: should go to > 1
       act(() => {
         result.current.handleZoomIn();
       });
       expect(result.current.zoom).toBeGreaterThan(1);
-      expect(result.current.cursorStyle).toBe("move");
 
       // start pan and move inside bounds
       act(() => {

@@ -24,16 +24,16 @@
 
 @layer base {
   * {
-      box-sizing: border-box;
-    }
-  
-    body {
-      background: var(--background);
-      color: var(--foreground);
-      font-family: Arial, Helvetica, sans-serif;
-      margin: 0 !important;
-      padding: 0 !important;
-    }
+    box-sizing: border-box;
+  }
+
+  body {
+    background: var(--background);
+    color: var(--foreground);
+    font-family: Arial, Helvetica, sans-serif;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
 }
 
 .analysis-chat-input::part(textarea) {
@@ -66,8 +66,5 @@ ui5-card.chat-history-card ui5-panel::part(content) {
   padding: 0rem;
 }
 
-/* Charts: force cursor when zoom active */
-.zoomable-container.zoom-active,
-.zoomable-container.zoom-active * {
-  cursor: move !important;
-}
+/* Zoomable cursor helpers */
+.zoomable-cursor-move, .zoomable-cursor-move * { cursor: move !important; }

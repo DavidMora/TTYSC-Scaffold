@@ -370,11 +370,6 @@ export function useZoomable({
     [mode, zoom, viewWindow.end, viewWindow.start, hasMultipleItems]
   );
 
-  const cursorStyle = useMemo(
-    () => (zoomActive ? ("move" as const) : ("default" as const)),
-    [zoomActive]
-  );
-
   const transform = useMemo(
     () => `translate(${offset.x}px, ${offset.y}px) scale(${zoom})`,
     [offset.x, offset.y, zoom]
@@ -388,7 +383,6 @@ export function useZoomable({
     isPanning,
     viewWindow,
     // derived
-    cursorStyle,
     transform,
     zoomActive,
     canZoomIn,

@@ -53,7 +53,6 @@ export const ZoomableContainer: React.FC<Readonly<ZoomableContainerProps>> = ({
   minZoom = 1,
   maxZoom = 5,
   step = 0.4,
-  className,
   mode = "visual",
   onWindowChange,
   renderContent,
@@ -68,7 +67,6 @@ export const ZoomableContainer: React.FC<Readonly<ZoomableContainerProps>> = ({
     viewportRef,
     viewWindow,
     isPanning,
-    cursorStyle,
     transform,
     zoomActive,
     canZoomIn,
@@ -80,14 +78,6 @@ export const ZoomableContainer: React.FC<Readonly<ZoomableContainerProps>> = ({
     handleZoomIn,
     handleZoomOut,
   } = useZoomable({ mode, minZoom, maxZoom, step, onWindowChange, dataLength });
-
-  const containerClass = [
-    "zoomable-container",
-    zoomActive ? "zoom-active" : null,
-    className,
-  ]
-    .filter(Boolean)
-    .join(" ");
 
   return (
     <div style={{ width: "100%" }}>
@@ -131,11 +121,11 @@ export const ZoomableContainer: React.FC<Readonly<ZoomableContainerProps>> = ({
         }}
       />
 
-      {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions, jsx-a11y/no-noninteractive-tabindex */}
       <div
         ref={viewportRef}
         aria-label="Zoomable chart area"
         role="application"
+        className={`${zoomActive && "zoomable-cursor-move"}`}
         style={{
           position: "relative",
           width: "100%",
@@ -144,12 +134,11 @@ export const ZoomableContainer: React.FC<Readonly<ZoomableContainerProps>> = ({
           background: "#fff",
           borderRadius: "0 0 10px 10px",
           userSelect: isPanning ? "none" : undefined,
-          cursor: cursorStyle,
         }}
-        onMouseDown={onMouseDown}
-        onMouseMove={onMouseMove}
-        onMouseUp={endPan}
-        onMouseLeave={endPan}
+        onPointerDown={onMouseDown}
+        onPointerMove={onMouseMove}
+        onPointerUp={endPan}
+        onPointerLeave={endPan}
         onWheel={onWheel}
       >
         {mode === "visual" ? (
@@ -164,16 +153,12 @@ export const ZoomableContainer: React.FC<Readonly<ZoomableContainerProps>> = ({
               transformOrigin: "0 0",
               willChange: "transform",
               transition: isPanning ? undefined : "transform 60ms ease-out",
-              cursor: cursorStyle,
             }}
           >
             <div style={{ width: "100%", height: "100%" }}>{children}</div>
           </div>
         ) : (
-          <div
-            className={containerClass}
-            style={{ position: "absolute", inset: 0, cursor: cursorStyle }}
-          >
+          <div style={{ position: "absolute", inset: 0 }}>
             {renderContent ? renderContent(viewWindow) : children}
           </div>
         )}
