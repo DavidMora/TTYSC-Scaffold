@@ -223,6 +223,15 @@ export class FetchAdapter implements HttpClientAdapter {
     const reader = response.body.getReader();
     const textDecoder = new TextDecoder();
     const parser = mergedConfig.parser || "text";
+    const maxBufferSize = mergedConfig.maxBufferSize ?? 10 * 1024 * 1024; // 10MB default
+    const ensureSize = (name: string, size: number) => {
+      if (size > maxBufferSize) {
+        controller.abort();
+        throw new Error(
+          `${name} buffer exceeded maximum size of ${maxBufferSize} bytes`
+        );
+      }
+    };
 
     // SSE specific buffering
     let sseBuffer = "";
@@ -261,6 +270,7 @@ export class FetchAdapter implements HttpClientAdapter {
         return;
       }
       if (parser === "json") {
+        ensureSize("JSON", jsonBuffer.length + chunkStr.length);
         jsonBuffer += chunkStr;
         try {
           const obj = JSON.parse(jsonBuffer) as TChunk;
@@ -273,6 +283,7 @@ export class FetchAdapter implements HttpClientAdapter {
         return;
       }
       if (parser === "ndjson") {
+        ensureSize("NDJSON", ndjsonBuffer.length + chunkStr.length);
         ndjsonBuffer += chunkStr;
         let newlineIndex = ndjsonBuffer.indexOf("\n");
         while (newlineIndex !== -1) {
@@ -284,6 +295,7 @@ export class FetchAdapter implements HttpClientAdapter {
         return;
       }
       if (parser === "sse") {
+        ensureSize("SSE", sseBuffer.length + chunkStr.length);
         sseBuffer += chunkStr;
         let eventEndIdx = sseBuffer.indexOf("\n\n");
         while (eventEndIdx !== -1) {

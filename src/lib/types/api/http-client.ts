@@ -20,6 +20,8 @@ export interface HttpStreamConfig extends HttpClientConfig {
   parser?: HttpStreamParser;
   // Optional AbortSignal to externally cancel the stream
   signal?: AbortSignal;
+  // Maximum accumulated buffer size in bytes for buffered parsers (json, ndjson, sse). Default 10MB.
+  maxBufferSize?: number;
 }
 
 export interface HttpSSEEvent<TData = string> {

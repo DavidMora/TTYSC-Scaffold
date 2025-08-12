@@ -129,6 +129,16 @@ export class AxiosAdapter implements HttpClientAdapter {
       else externalSignal.addEventListener("abort", () => controller.abort());
     }
 
+    const maxBufferSize = config?.maxBufferSize ?? 10 * 1024 * 1024; // 10MB default
+    const ensureSize = (name: string, size: number) => {
+      if (size > maxBufferSize) {
+        controller.abort();
+        throw new Error(
+          `${name} buffer exceeded maximum size of ${maxBufferSize} bytes`
+        );
+      }
+    };
+
     // Derive headers incl. Accept similar to FetchAdapter for consistency
     const headers: Record<string, string> = { ...(config?.headers || {}) };
     if (!headers.Accept) {
@@ -140,8 +150,7 @@ export class AxiosAdapter implements HttpClientAdapter {
 
     const response = await this.axiosInstance.get(url, {
       responseType: "stream",
-      // axios types don't yet include AbortSignal for all versions, cast locally
-      signal: controller.signal as unknown as undefined,
+      signal: controller.signal,
       headers,
     });
 
@@ -163,7 +172,6 @@ export class AxiosAdapter implements HttpClientAdapter {
         let jsonBuf = "";
         let ndjsonBuf = "";
         let sseBuf = "";
-        // Consider: optional maxBufferSize to guard against unbounded growth
 
         const emitDone = (): IteratorResult<TChunk> => {
           if (parser === "ndjson" && ndjsonBuf.trim()) {
@@ -188,6 +196,7 @@ export class AxiosAdapter implements HttpClientAdapter {
           if (parser === "text")
             return { value: txt as unknown as TChunk, done: false };
           if (parser === "json") {
+            ensureSize("JSON", jsonBuf.length + txt.length);
             jsonBuf += txt;
             try {
               const obj = JSON.parse(jsonBuf) as TChunk;
@@ -199,6 +208,7 @@ export class AxiosAdapter implements HttpClientAdapter {
             }
           }
           if (parser === "ndjson") {
+            ensureSize("NDJSON", ndjsonBuf.length + txt.length);
             ndjsonBuf += txt;
             const newline = ndjsonBuf.indexOf("\n");
             if (newline !== -1) {
@@ -210,6 +220,7 @@ export class AxiosAdapter implements HttpClientAdapter {
             return undefined;
           }
           if (parser === "sse") {
+            ensureSize("SSE", sseBuf.length + txt.length);
             sseBuf += txt;
             const eventEnd = sseBuf.indexOf("\n\n");
             if (eventEnd !== -1) {

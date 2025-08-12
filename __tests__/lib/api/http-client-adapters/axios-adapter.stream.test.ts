@@ -85,7 +85,7 @@ describe("AxiosAdapter.stream", () => {
 
   it("parses SSE events including final buffered block", async () => {
     const evt1 = "id:1\ndata:hello\n\n";
-    const evt2 = "id:2\n event:note\n data:world"; // space before fields & no trailing blank -> final flush
+    const evt2 = "id:2\nevent:note\ndata:world"; // normalized field names (no leading space) & no trailing blank -> final flush
     mockAxiosInstance.get.mockResolvedValue({
       data: bufferStream([evt1.slice(0, 5), evt1.slice(5), evt2]),
       status: 200,
@@ -113,6 +113,34 @@ describe("AxiosAdapter.stream", () => {
     const chunks: Buffer[] = [];
     for await (const c of res) chunks.push(c as Buffer);
     expect(chunks[0]).toBeInstanceOf(Buffer);
+  });
+
+  it("enforces maxBufferSize for json parser", async () => {
+    // Create JSON that exceeds the custom small limit only when second chunk arrives
+    const bigJson = '{"large":"value_exceeding"}';
+    const first = bigJson.slice(0, 10); // below limit
+    const second = bigJson.slice(10); // pushes over limit
+    mockAxiosInstance.get.mockResolvedValue({
+      data: bufferStream([first, second]),
+      status: 200,
+      statusText: "OK",
+      headers: {},
+    });
+    const res = await adapter.stream<Record<string, unknown>>("/json-big", {
+      parser: "json",
+      maxBufferSize: 12, // small limit to trigger
+    });
+    let caught: Error | undefined;
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      for await (const _ of res) {
+        // intentionally discarding chunks to trigger buffer limit
+      }
+    } catch (e) {
+      caught = e as Error;
+    }
+    expect(caught).toBeDefined();
+    expect(String(caught)).toMatch(/JSON buffer exceeded/);
   });
 
   it("throws in browser environment", async () => {

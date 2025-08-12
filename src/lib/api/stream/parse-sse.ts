@@ -10,7 +10,7 @@ export function parseSSEBlock(block: string): HttpSSEEvent {
     if (!line || line.startsWith(":")) continue; // empty or comment line
     const idx = line.indexOf(":");
     if (idx === -1) continue; // malformed
-    const field = line.slice(0, idx).trim();
+    const field = line.slice(0, idx); // preserve exact field name per SSE spec
     const value = line.slice(idx + 1).trimStart();
     switch (field) {
       case "data":
