@@ -2,6 +2,8 @@ import {
   HttpClientAdapter,
   HttpClientConfig,
   HttpClientResponse,
+  HttpStreamConfig,
+  HttpStreamResponse,
 } from "@/lib/types/api/http-client";
 import FetchAdapter from "@/lib/api/http-client-adapters/fetch-adapter";
 
@@ -49,6 +51,26 @@ class HttpClient {
   ): Promise<HttpClientResponse<T>> {
     return this.adapter.patch<T>(url, data, config);
   }
+
+  async stream<TChunk = unknown>(
+    url: string,
+    config?: HttpStreamConfig
+  ): Promise<HttpStreamResponse<TChunk>> {
+    /**
+     * Stream data from an endpoint using the underlying adapter implementation.
+     * Supported parsers (see HttpStreamParser):
+     *  - text (default): yields decoded text chunks
+     *  - json: buffers until a single JSON value can be parsed, then aborts
+     *  - ndjson: emits each JSON object per newline (skips empty lines)
+     *  - sse: parses Server-Sent Event blocks (id, event, data, retry)
+     *  - bytes: yields raw Uint8Array / Buffer chunks
+     * Provide an AbortSignal in config.signal to cancel externally or call response.cancel().
+     */
+    if (!this.adapter.stream) {
+      throw new Error("Streaming not supported by current adapter");
+    }
+    return this.adapter.stream<TChunk>(url, config);
+  }
 }
 
 // Default instance using FetchAdapter
@@ -74,4 +96,10 @@ const apiClient = new HttpClient(undefined, {
 
 export default httpClient;
 export { HttpClient, apiClient };
-export type { HttpClientAdapter, HttpClientConfig, HttpClientResponse };
+export type {
+  HttpClientAdapter,
+  HttpClientConfig,
+  HttpClientResponse,
+  HttpStreamConfig,
+  HttpStreamResponse,
+};

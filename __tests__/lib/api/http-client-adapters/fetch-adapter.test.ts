@@ -1,7 +1,4 @@
-import {
-  FetchAdapter,
-  default as FetchAdapterDefault,
-} from "@/lib/api/http-client-adapters/fetch-adapter";
+import { FetchAdapter } from "@/lib/api/http-client-adapters/fetch-adapter";
 import { HttpClientConfig } from "@/lib/types/api/http-client";
 
 // Mock fetch globally
@@ -22,27 +19,7 @@ describe("FetchAdapter", () => {
     jest.useRealTimers();
   });
 
-  describe("constructor", () => {
-    it("should create adapter with default config", () => {
-      const defaultAdapter = new FetchAdapter();
-      expect(defaultAdapter).toBeInstanceOf(FetchAdapter);
-    });
-
-    it("should create adapter with custom config", () => {
-      const config: HttpClientConfig = {
-        baseURL: "https://api.example.com",
-        timeout: 5000,
-        headers: { Authorization: "Bearer token" },
-      };
-      const customAdapter = new FetchAdapter(config);
-      expect(customAdapter).toBeInstanceOf(FetchAdapter);
-    });
-
-    it("should create adapter using default export", () => {
-      const defaultAdapter = new FetchAdapterDefault();
-      expect(defaultAdapter).toBeInstanceOf(FetchAdapter);
-    });
-  });
+  // Constructor creation tests removed (redundant for coverage; adapter instantiation exercised by other tests)
 
   describe("GET requests", () => {
     it("should make successful GET request", async () => {
@@ -152,13 +129,7 @@ describe("FetchAdapter", () => {
       await expect(adapter.get("/test")).rejects.toThrow("HTTP 404: Not Found");
     });
 
-    it("should configure timeout correctly", () => {
-      const config: HttpClientConfig = { timeout: 1000 };
-      const customAdapter = new FetchAdapter(config);
-
-      // Just verify the adapter can be created with timeout config
-      expect(customAdapter).toBeInstanceOf(FetchAdapter);
-    });
+    // Removed timeout-only constructor test (no unique coverage)
 
     it("should handle network errors", async () => {
       mockFetch.mockRejectedValue(new Error("Network error"));
