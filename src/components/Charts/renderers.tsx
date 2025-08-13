@@ -41,6 +41,7 @@ const createBasicChartRenderer = (chartType: keyof typeof CHART_COMPONENTS) => {
       dataset={dataset}
       dimensions={dimensions}
       measures={measures}
+      style={{ width: "100%", height: "100%" }}
     />
   );
   Renderer.displayName = `${
@@ -62,7 +63,12 @@ export const PieChartRenderer: React.FC<{
   dimension: ChartDimension;
   measure: ChartMeasure;
 }> = ({ dataset, dimension, measure }) => (
-  <PieChart dataset={dataset} dimension={dimension} measure={measure} />
+  <PieChart
+    dataset={dataset}
+    dimension={dimension}
+    measure={measure}
+    style={{ width: "100%", height: "100%" }}
+  />
 );
 
 export const DonutChartRenderer: React.FC<{
@@ -70,7 +76,12 @@ export const DonutChartRenderer: React.FC<{
   dimension: ChartDimension;
   measure: ChartMeasure;
 }> = ({ dataset, dimension, measure }) => (
-  <DonutChart dataset={dataset} dimension={dimension} measure={measure} />
+  <DonutChart
+    dataset={dataset}
+    dimension={dimension}
+    measure={measure}
+    style={{ width: "100%", height: "100%" }}
+  />
 );
 
 // Specialized chart renderers
@@ -85,6 +96,7 @@ export const BulletChartRenderer: React.FC<{
       dataset={dataset}
       dimensions={dimensions}
       measures={bulletMeasures}
+      style={{ width: "100%", height: "100%" }}
     />
   );
 };
@@ -100,6 +112,7 @@ export const ColumnWithTrendRenderer: React.FC<{
       dataset={dataset}
       dimensions={dimensions}
       measures={columnWithTrendMeasures}
+      style={{ width: "100%", height: "100%" }}
     />
   );
 };
@@ -115,6 +128,7 @@ export const ComposedChartRenderer: React.FC<ChartRendererProps> = ({
       dataset={dataset}
       dimensions={dimensions}
       measures={measuresWithType}
+      style={{ width: "100%", height: "100%" }}
     />
   );
 };

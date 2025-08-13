@@ -95,7 +95,7 @@ describe("useChart", () => {
       // Call the fetcher function to verify it calls getChart
       fetcherFunction();
 
-      expect(mockGetChart).toHaveBeenCalledWith(mockChartId);
+      expect(mockGetChart).toHaveBeenCalledWith(mockChartId, undefined);
     });
 
     it("should return loading state when dataFetcher returns loading", () => {
@@ -197,6 +197,30 @@ describe("useChart", () => {
         expect.any(Function),
         expect.any(Object)
       );
+    });
+
+    it("includes filters in key and forwards filters to getChart", () => {
+      const mockFetchDataReturn = {
+        data: mockResponse,
+        isLoading: false,
+        error: undefined,
+        mutate: jest.fn(),
+      };
+
+      mockDataFetcher.fetchData.mockReturnValue(mockFetchDataReturn);
+
+      const filters = { from: "2024-01-01", to: "2024-01-31", region: "north" };
+      renderHook(() => useChart(mockChartId, filters));
+
+      const [key, fetcher] = mockDataFetcher.fetchData.mock.calls[0];
+      expect(key).toContain(CHART_KEY(mockChartId));
+      expect(key).toContain("2024-01-01");
+      expect(key).toContain("2024-01-31");
+      expect(key).toContain("north");
+
+      // invoke fetcher to assert forwarding
+      (fetcher as () => Promise<void>)();
+      expect(mockGetChart).toHaveBeenCalledWith(mockChartId, filters);
     });
   });
 }); 
