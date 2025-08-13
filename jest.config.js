@@ -39,7 +39,7 @@ const customJestConfig = {
 const jestConfig = async () => {
   const config = await createJestConfig(customJestConfig)();
   config.transformIgnorePatterns = [
-    "node_modules/(?!(@ui5|lit|lit-html|@zxing/library)/)",
+    "node_modules/(?!(@ui5|lit|lit-html|@zxing/library|marked)/)",
     "^.+\\.module\\.(css|sass|scss)$",
   ];
   return config;

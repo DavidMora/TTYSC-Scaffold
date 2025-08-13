@@ -39,10 +39,10 @@ export function AIChart({
       {preamble && !isFullscreen && (
         <p
           style={{
-            marginBottom: 12,
+            margin: "0.25rem 0",
+            lineHeight: "1.5",
+            fontSize: "var(--sapFontSize)",
             color: "var(--sapTextColor)",
-            fontSize: 14,
-            lineHeight: "1.4",
           }}
         >
           {preamble}
@@ -52,9 +52,10 @@ export function AIChart({
       {content && !isFullscreen && (
         <p
           style={{
+            margin: "0.25rem 0",
+            lineHeight: "1.5",
+            fontSize: "var(--sapFontSize)",
             color: "var(--sapTextColor)",
-            fontSize: 14,
-            lineHeight: "1.4",
           }}
         >
           {content}

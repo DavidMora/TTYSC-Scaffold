@@ -1,21 +1,15 @@
 import React, { useMemo } from "react";
-import { Text } from "@ui5/webcomponents-react";
 import { CodeBlock } from "@/components/CodeBlock/CodeBlock";
 import BaseDataTable from "@/components/Tables/BaseDataTable";
 import { tableData } from "@/lib/constants/mocks/dataTable";
 import { parseContent } from "@/lib/utils/aiContentParser";
 import { AIChartContainer } from "@/components/AICharts/AIChartContainer";
 import { ParsedContentItemType } from "@/lib/types/chatContent";
+import MarkdownRenderer from "@/components/Markdown/MarkdownRenderer";
 
 interface AIResponseRendererProps {
   content: string;
 }
-
-const textStyle = {
-  fontSize: "var(--sapFontSize)",
-  fontWeight: 400,
-  whiteSpace: "pre-wrap" as const,
-};
 
 export function AIResponseRenderer({
   content,
@@ -26,7 +20,7 @@ export function AIResponseRenderer({
     const matches = parseContent(content);
 
     if (matches.length === 0) {
-      return <Text style={textStyle}>{content}</Text>;
+      return <MarkdownRenderer className="markdown" markdown={content} />;
     }
 
     const parts: Array<{
@@ -102,9 +96,11 @@ export function AIResponseRenderer({
         );
       }
       return (
-        <Text key={key} style={textStyle}>
-          {part.content}
-        </Text>
+        <MarkdownRenderer
+          key={key}
+          className="markdown"
+          markdown={part.content ?? ""}
+        />
       );
     });
   }, [content]);

@@ -52,6 +52,27 @@ jest.mock("@/components/AICharts/AIChartContainer", () => {
   return { AIChartContainer: MockAIChartContainer };
 });
 
+// Mock MarkdownRenderer to render raw markdown text content
+jest.mock("@/components/Markdown/MarkdownRenderer", () => {
+  const MockMarkdownRenderer = ({
+    markdown,
+    className,
+  }: {
+    markdown: string;
+    className?: string;
+  }) => (
+    <div
+      className={className}
+      data-testid="ui5-text"
+      style={{ whiteSpace: "pre-wrap" }}
+    >
+      {markdown}
+    </div>
+  );
+  MockMarkdownRenderer.displayName = "MockMarkdownRenderer";
+  return { __esModule: true, default: MockMarkdownRenderer };
+});
+
 // Mock the table data
 jest.mock("@/lib/constants/mocks/dataTable", () => ({
   tableData: {
@@ -227,10 +248,8 @@ Line 4`;
 
   it("renders container with full width", () => {
     const content = "Test content";
-    render(<AIResponseRenderer content={content} />);
-
-    const container = screen.getByText(content).closest("div");
-    expect(container).toHaveStyle({ width: "100%" });
+    const { container } = render(<AIResponseRenderer content={content} />);
+    expect(container.firstChild).toHaveStyle({ width: "100%" });
   });
 
   it("handles content with only code blocks", () => {

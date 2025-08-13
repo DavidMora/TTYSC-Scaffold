@@ -54,7 +54,7 @@ global.ResizeObserver = jest.fn().mockImplementation(() => ({
 }));
 
 // Mock fetch for Node.js environment
-global.fetch = jest.fn((url) => {
+global.fetch = jest.fn((url, init?: RequestInit) => {
   // Mock auth config API
   if (url.toString().includes("/api/auth/config")) {
     return Promise.resolve({
@@ -82,6 +82,24 @@ global.fetch = jest.fn((url) => {
     });
   }
 
+  // Mock markdown rendering API to echo back provided markdown as HTML
+  if (url.toString().includes("/api/renderMarkdown")) {
+    try {
+      const body = typeof init?.body === "string" ? init.body : "";
+      const parsed = body ? JSON.parse(body) : { markdown: "" };
+      const html = parsed.markdown ?? "";
+      return Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({ html }),
+      });
+    } catch {
+      return Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({ html: "" }),
+      });
+    }
+  }
+
   return Promise.resolve({
     ok: true,
     json: () => Promise.resolve({}),
@@ -89,7 +107,7 @@ global.fetch = jest.fn((url) => {
 }) as jest.Mock;
 
 // Mock adoptedStyleSheets for UI5 WebComponents (only in jsdom environment)
-if (typeof document !== 'undefined') {
+if (typeof document !== "undefined") {
   Object.defineProperty(document, "adoptedStyleSheets", {
     value: [],
     writable: true,
@@ -124,3 +142,8 @@ global.CSSStyleSheet = class {
   }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 } as any;
+
+// Polyfill TextEncoder/TextDecoder for jsdom + jsdom dependencies
+import { TextEncoder, TextDecoder } from "util";
+global.TextEncoder = TextEncoder;
+global.TextDecoder = TextDecoder as unknown as typeof globalThis.TextDecoder;
