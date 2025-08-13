@@ -22,4 +22,9 @@ describe("parseSSEBlock", () => {
     const evt = parseSSEBlock("retry:1500\ndata:test");
     expect(evt).toEqual({ retry: 1500, data: "test" });
   });
+
+  it("ignores non-numeric retry values", () => {
+    const evt = parseSSEBlock("retry:abc\ndata:test");
+    expect(evt).toEqual({ data: "test" });
+  });
 });

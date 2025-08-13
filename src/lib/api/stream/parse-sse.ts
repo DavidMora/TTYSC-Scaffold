@@ -22,9 +22,12 @@ export function parseSSEBlock(block: string): HttpSSEEvent {
       case "event":
         evt.event = value;
         break;
-      case "retry":
-        evt.retry = Number(value);
+      case "retry": {
+        if (/^\d+$/.test(value)) {
+          evt.retry = Number(value);
+        }
         break;
+      }
     }
   }
   if (evt.data.endsWith("\n")) evt.data = evt.data.slice(0, -1);

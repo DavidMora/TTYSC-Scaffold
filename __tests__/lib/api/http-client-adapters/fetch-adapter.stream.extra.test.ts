@@ -1,4 +1,5 @@
-import FetchAdapter from "@/lib/api/http-client-adapters/fetch-adapter";
+import { FetchAdapter } from "@/lib/api/http-client-adapters/fetch-adapter";
+
 import {
   TextEncoder as NodeTextEncoder,
   TextDecoder as NodeTextDecoder,
