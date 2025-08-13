@@ -1,4 +1,4 @@
-import { dataFetcher } from "@/lib/api";
+import { dataFetcher } from '@/lib/api';
 import {
   getChats,
   getChat,
@@ -6,7 +6,7 @@ import {
   updateChat,
   createChatMessage,
   updateMessageFeedback,
-} from "@/lib/services/chats.service";
+} from '@/lib/services/chats.service';
 import {
   BotResponse,
   Chat,
@@ -14,9 +14,9 @@ import {
   CreateChatRequest,
   UpdateChatRequest,
   VoteType,
-} from "@/lib/types/chats";
+} from '@/lib/types/chats';
 
-export const CHATS_KEY = "chatHistory";
+export const CHATS_KEY = 'chatHistory';
 export const CHAT_KEY = (id: string) => `chat-${id}`;
 
 export const useChats = () => {
@@ -39,7 +39,7 @@ export const useCreateChat = ({
   onError?: (error: Error) => void;
 }) => {
   return dataFetcher.mutateData(
-    ["create-chat-mutation"],
+    ['create-chat-mutation'],
     (payload: CreateChatRequest) => createChat(payload),
     {
       invalidateQueries: [CHATS_KEY],
@@ -61,7 +61,7 @@ export const useUpdateChat = ({
   onError?: (error: Error) => void;
 }) => {
   return dataFetcher.mutateData(
-    ["update-chat-mutation"],
+    ['update-chat-mutation'],
     (payload: UpdateChatRequest) => updateChat(payload),
     {
       invalidateQueries: [CHATS_KEY],
@@ -83,7 +83,7 @@ export const useSendChatMessage = ({
   onError?: (error: Error) => void;
 }) => {
   return dataFetcher.mutateData(
-    ["send-chat-message-mutation"],
+    ['send-chat-message-mutation'],
     (payload: CreateChatMessageRequest) => createChatMessage(payload),
     {
       invalidateQueries: [], // No need to invalidate any queries here
@@ -105,7 +105,7 @@ export const useUpdateMessageFeedback = ({
   onError?: (error: Error) => void;
 }) => {
   return dataFetcher.mutateData(
-    ["update-message-feedback-mutation"],
+    ['update-message-feedback-mutation'],
     async ({
       messageId,
       feedbackVote,

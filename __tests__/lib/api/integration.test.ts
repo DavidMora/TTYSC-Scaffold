@@ -9,45 +9,45 @@ import {
   DataFetcher,
   FetchAdapter,
   MockAdapter,
-} from "../../../src/lib/api";
+} from '../../../src/lib/api';
 
 // Mock fetch globally for integration tests
 const mockFetch = jest.fn();
 global.fetch = mockFetch;
 
-describe("API Module Integration Tests", () => {
+describe('API Module Integration Tests', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  describe("HttpClient and DataFetcher integration", () => {
-    it("should work together in a typical usage scenario", async () => {
+  describe('HttpClient and DataFetcher integration', () => {
+    it('should work together in a typical usage scenario', async () => {
       // Setup mock response
       const mockData = [
-        { id: 1, title: "Test Post 1", body: "Content 1" },
-        { id: 2, title: "Test Post 2", body: "Content 2" },
+        { id: 1, title: 'Test Post 1', body: 'Content 1' },
+        { id: 2, title: 'Test Post 2', body: 'Content 2' },
       ];
 
       const mockResponse = {
         ok: true,
         status: 200,
-        statusText: "OK",
-        headers: new Map([["content-type", "application/json"]]),
+        statusText: 'OK',
+        headers: new Map([['content-type', 'application/json']]),
         json: jest.fn().mockResolvedValue(mockData),
         text: jest.fn().mockResolvedValue(JSON.stringify(mockData)),
       };
       mockResponse.headers.forEach = jest.fn((callback) => {
-        callback("application/json", "content-type", mockResponse.headers);
+        callback('application/json', 'content-type', mockResponse.headers);
       });
 
       mockFetch.mockResolvedValue(mockResponse);
 
       // Create a fetcher function that uses httpClient
-      const fetchPosts = () => httpClient.get("/posts");
+      const fetchPosts = () => httpClient.get('/posts');
 
       // Create a data fetcher with MockAdapter for predictable testing
       const testDataFetcher = new DataFetcher(new MockAdapter());
-      const result = testDataFetcher.fetchData("posts", fetchPosts);
+      const result = testDataFetcher.fetchData('posts', fetchPosts);
 
       // Verify the structure is correct (MockAdapter behavior)
       expect(result).toEqual({
@@ -62,14 +62,14 @@ describe("API Module Integration Tests", () => {
       expect(mockFetch).not.toHaveBeenCalled();
     });
 
-    it("should allow custom adapter combinations", () => {
+    it('should allow custom adapter combinations', () => {
       // Create custom HTTP client with specific configuration
       const customHttpClient = new HttpClient(
         new FetchAdapter({
-          baseURL: "https://api.custom.com",
+          baseURL: 'https://api.custom.com',
           timeout: 5000,
           headers: {
-            Authorization: "Bearer test-token",
+            Authorization: 'Bearer test-token',
           },
         })
       );
@@ -78,24 +78,24 @@ describe("API Module Integration Tests", () => {
       const customDataFetcher = new DataFetcher(new MockAdapter());
 
       // Verify they work together
-      const fetchData = () => customHttpClient.get("/data");
-      const result = customDataFetcher.fetchData("test-data", fetchData);
+      const fetchData = () => customHttpClient.get('/data');
+      const result = customDataFetcher.fetchData('test-data', fetchData);
 
       expect(result.isLoading).toBe(true);
       expect(result.data).toBeUndefined();
       expect(result.error).toBeUndefined();
     });
 
-    it("should handle errors properly in integration", async () => {
+    it('should handle errors properly in integration', async () => {
       // Mock fetch to throw an error
-      mockFetch.mockRejectedValue(new Error("Network error"));
+      mockFetch.mockRejectedValue(new Error('Network error'));
 
       const customHttpClient = new HttpClient(new FetchAdapter());
 
       // Create a data fetcher with MockAdapter for predictable testing
       const testDataFetcher = new DataFetcher(new MockAdapter());
-      const fetchData = () => customHttpClient.get("/error");
-      const result = testDataFetcher.fetchData("error-data", fetchData);
+      const fetchData = () => customHttpClient.get('/error');
+      const result = testDataFetcher.fetchData('error-data', fetchData);
 
       // MockAdapter always returns loading state regardless of fetcher behavior
       expect(result.isLoading).toBe(true);
@@ -103,18 +103,18 @@ describe("API Module Integration Tests", () => {
     });
   });
 
-  describe("Real-world usage patterns", () => {
-    it("should support multiple concurrent requests", () => {
-      const fetchUsers = () => httpClient.get("/users");
-      const fetchPosts = () => httpClient.get("/posts");
-      const fetchComments = () => httpClient.get("/comments");
+  describe('Real-world usage patterns', () => {
+    it('should support multiple concurrent requests', () => {
+      const fetchUsers = () => httpClient.get('/users');
+      const fetchPosts = () => httpClient.get('/posts');
+      const fetchComments = () => httpClient.get('/comments');
 
       // Create a data fetcher with MockAdapter for predictable testing
       const testDataFetcher = new DataFetcher(new MockAdapter());
-      const usersResult = testDataFetcher.fetchData("users", fetchUsers);
-      const postsResult = testDataFetcher.fetchData("posts", fetchPosts);
+      const usersResult = testDataFetcher.fetchData('users', fetchUsers);
+      const postsResult = testDataFetcher.fetchData('posts', fetchPosts);
       const commentsResult = testDataFetcher.fetchData(
-        "comments",
+        'comments',
         fetchComments
       );
 
@@ -130,11 +130,11 @@ describe("API Module Integration Tests", () => {
       });
     });
 
-    it("should handle different HTTP methods", async () => {
+    it('should handle different HTTP methods', async () => {
       const mockResponse = {
         ok: true,
         status: 200,
-        statusText: "OK",
+        statusText: 'OK',
         headers: new Map(),
         json: jest.fn().mockResolvedValue({ success: true }),
         text: jest.fn().mockResolvedValue(JSON.stringify({ success: true })),
@@ -144,22 +144,22 @@ describe("API Module Integration Tests", () => {
       mockFetch.mockResolvedValue(mockResponse);
 
       // Test different HTTP methods
-      await expect(httpClient.get("/test")).resolves.toBeDefined();
+      await expect(httpClient.get('/test')).resolves.toBeDefined();
       await expect(
-        httpClient.post("/test", { data: "value" })
+        httpClient.post('/test', { data: 'value' })
       ).resolves.toBeDefined();
       await expect(
-        httpClient.put("/test/1", { data: "updated" })
+        httpClient.put('/test/1', { data: 'updated' })
       ).resolves.toBeDefined();
-      await expect(httpClient.delete("/test/1")).resolves.toBeDefined();
+      await expect(httpClient.delete('/test/1')).resolves.toBeDefined();
       await expect(
-        httpClient.patch("/test/1", { field: "value" })
+        httpClient.patch('/test/1', { field: 'value' })
       ).resolves.toBeDefined();
 
       expect(mockFetch).toHaveBeenCalledTimes(5);
     });
 
-    it("should work with generic types", () => {
+    it('should work with generic types', () => {
       interface User {
         id: number;
         name: string;
@@ -173,17 +173,17 @@ describe("API Module Integration Tests", () => {
         userId: number;
       }
 
-      const fetchUsers = () => httpClient.get<User[]>("/users");
-      const fetchPosts = () => httpClient.get<Post[]>("/posts");
+      const fetchUsers = () => httpClient.get<User[]>('/users');
+      const fetchPosts = () => httpClient.get<Post[]>('/posts');
 
       // Create a data fetcher with MockAdapter for predictable testing
       const testDataFetcher = new DataFetcher(new MockAdapter());
       const usersResult = testDataFetcher.fetchData<User[]>(
-        "users",
+        'users',
         fetchUsers
       );
       const postsResult = testDataFetcher.fetchData<Post[]>(
-        "posts",
+        'posts',
         fetchPosts
       );
 
@@ -193,56 +193,56 @@ describe("API Module Integration Tests", () => {
     });
   });
 
-  describe("Error scenarios", () => {
-    it("should handle network failures gracefully", async () => {
-      mockFetch.mockRejectedValue(new Error("Network failure"));
+  describe('Error scenarios', () => {
+    it('should handle network failures gracefully', async () => {
+      mockFetch.mockRejectedValue(new Error('Network failure'));
 
-      await expect(httpClient.get("/test")).rejects.toThrow("Network failure");
+      await expect(httpClient.get('/test')).rejects.toThrow('Network failure');
     });
 
-    it("should handle HTTP error responses", async () => {
+    it('should handle HTTP error responses', async () => {
       const errorResponse = {
         ok: false,
         status: 404,
-        statusText: "Not Found",
+        statusText: 'Not Found',
         headers: new Map(),
         json: jest.fn(),
-        text: jest.fn().mockResolvedValue("Not Found"),
+        text: jest.fn().mockResolvedValue('Not Found'),
       };
 
       mockFetch.mockResolvedValue(errorResponse);
 
-      await expect(httpClient.get("/test")).rejects.toThrow(
-        "HTTP 404: Not Found"
+      await expect(httpClient.get('/test')).rejects.toThrow(
+        'HTTP 404: Not Found'
       );
     });
 
-    it("should handle malformed JSON responses", async () => {
+    it('should handle malformed JSON responses', async () => {
       const badResponse = {
         ok: true,
         status: 200,
-        statusText: "OK",
-        headers: new Map([["content-type", "application/json"]]),
-        json: jest.fn().mockRejectedValue(new Error("Invalid JSON")),
-        text: jest.fn().mockResolvedValue("malformed json"),
+        statusText: 'OK',
+        headers: new Map([['content-type', 'application/json']]),
+        json: jest.fn().mockRejectedValue(new Error('Invalid JSON')),
+        text: jest.fn().mockResolvedValue('malformed json'),
       };
       badResponse.headers.forEach = jest.fn();
 
       mockFetch.mockResolvedValue(badResponse);
 
-      await expect(httpClient.get("/test")).rejects.toThrow("Invalid JSON");
+      await expect(httpClient.get('/test')).rejects.toThrow('Invalid JSON');
     });
   });
 
-  describe("Configuration and customization", () => {
-    it("should respect configuration hierarchy", async () => {
+  describe('Configuration and customization', () => {
+    it('should respect configuration hierarchy', async () => {
       const adapterConfig = {
-        baseURL: "https://api.example.com",
-        headers: { "X-API-Key": "adapter-key" },
+        baseURL: 'https://api.example.com',
+        headers: { 'X-API-Key': 'adapter-key' },
       };
 
       const requestConfig = {
-        headers: { "X-Request-Id": "request-123" },
+        headers: { 'X-Request-Id': 'request-123' },
       };
 
       const customAdapter = new FetchAdapter(adapterConfig);
@@ -251,39 +251,39 @@ describe("API Module Integration Tests", () => {
       const mockResponse = {
         ok: true,
         status: 200,
-        statusText: "OK",
+        statusText: 'OK',
         headers: new Map(),
         json: jest.fn().mockResolvedValue({}),
-        text: jest.fn().mockResolvedValue("{}"),
+        text: jest.fn().mockResolvedValue('{}'),
       };
       mockResponse.headers.forEach = jest.fn();
 
       mockFetch.mockResolvedValue(mockResponse);
 
-      await customClient.get("/test", requestConfig);
+      await customClient.get('/test', requestConfig);
 
       // The headers should include Content-Type from defaults, adapter config, and request config
       const callArgs = mockFetch.mock.calls[0];
       const options = callArgs[1];
 
       expect(mockFetch).toHaveBeenCalledWith(
-        "https://api.example.com/test",
+        'https://api.example.com/test',
         expect.objectContaining({
-          method: "GET",
+          method: 'GET',
         })
       );
 
       // Verify all headers are present
       expect(options.headers).toEqual(
         expect.objectContaining({
-          "Content-Type": "application/json", // From default config
-          "X-API-Key": "adapter-key", // From adapter config
-          "X-Request-Id": "request-123", // From request config
+          'Content-Type': 'application/json', // From default config
+          'X-API-Key': 'adapter-key', // From adapter config
+          'X-Request-Id': 'request-123', // From request config
         })
       );
     });
 
-    it("should allow adapter swapping", () => {
+    it('should allow adapter swapping', () => {
       const fetchAdapter = new FetchAdapter({ timeout: 5000 });
       const mockAdapter = new MockAdapter();
 
@@ -294,8 +294,8 @@ describe("API Module Integration Tests", () => {
       expect(fetcherWithMock).toBeInstanceOf(DataFetcher);
 
       // Should be able to use them independently
-      const result = fetcherWithMock.fetchData("test", () =>
-        clientWithFetch.get("/test")
+      const result = fetcherWithMock.fetchData('test', () =>
+        clientWithFetch.get('/test')
       );
       expect(result.isLoading).toBe(true);
     });

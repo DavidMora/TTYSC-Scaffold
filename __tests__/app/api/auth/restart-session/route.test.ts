@@ -18,13 +18,15 @@ jest.mock('@/lib/auth/auth-options', () => ({
   },
 }));
 
-const mockGetServerSession = getServerSession as jest.MockedFunction<typeof getServerSession>;
+const mockGetServerSession = getServerSession as jest.MockedFunction<
+  typeof getServerSession
+>;
 
 // Mock NextRequest for testing
 class MockNextRequest {
   url: string;
   method: string;
-  
+
   constructor(url: string, options: { method?: string } = {}) {
     this.url = url;
     this.method = options.method || 'POST';
@@ -56,9 +58,12 @@ describe('/api/auth/restart-session', () => {
 
     mockGetServerSession.mockResolvedValue(mockSession);
 
-    const request = new MockNextRequest('http://localhost:3000/api/auth/restart-session', {
-      method: 'POST',
-    }) as any;
+    const request = new MockNextRequest(
+      'http://localhost:3000/api/auth/restart-session',
+      {
+        method: 'POST',
+      }
+    ) as any;
 
     const response = await POST(request);
     const data = await response.json();
@@ -76,9 +81,12 @@ describe('/api/auth/restart-session', () => {
     // Mock no session
     mockGetServerSession.mockResolvedValue(null);
 
-    const request = new MockNextRequest('http://localhost:3000/api/auth/restart-session', {
-      method: 'POST',
-    }) as any;
+    const request = new MockNextRequest(
+      'http://localhost:3000/api/auth/restart-session',
+      {
+        method: 'POST',
+      }
+    ) as any;
 
     const response = await POST(request);
     const data = await response.json();
@@ -92,11 +100,16 @@ describe('/api/auth/restart-session', () => {
 
   it('should handle errors gracefully', async () => {
     // Mock getServerSession to throw an error
-    mockGetServerSession.mockRejectedValue(new Error('Database connection failed'));
+    mockGetServerSession.mockRejectedValue(
+      new Error('Database connection failed')
+    );
 
-    const request = new MockNextRequest('http://localhost:3000/api/auth/restart-session', {
-      method: 'POST',
-    }) as any;
+    const request = new MockNextRequest(
+      'http://localhost:3000/api/auth/restart-session',
+      {
+        method: 'POST',
+      }
+    ) as any;
 
     const response = await POST(request);
     const data = await response.json();
@@ -121,9 +134,12 @@ describe('/api/auth/restart-session', () => {
     mockGetServerSession.mockResolvedValue(mockSession);
     const consoleSpy = jest.spyOn(console, 'log');
 
-    const request = new MockNextRequest('http://localhost:3000/api/auth/restart-session', {
-      method: 'POST',
-    }) as any;
+    const request = new MockNextRequest(
+      'http://localhost:3000/api/auth/restart-session',
+      {
+        method: 'POST',
+      }
+    ) as any;
 
     await POST(request);
 

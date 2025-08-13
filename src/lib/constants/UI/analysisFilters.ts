@@ -3,27 +3,27 @@ import {
   FilterOptions,
   FilterState,
   FilterValue,
-} from "@/lib/types/analysisFilters";
+} from '@/lib/types/analysisFilters';
 
 export enum FilterKeys {
-  ANALYSIS = "analysis",
-  ORGANIZATION = "organizations",
-  CM_SITE_NAME = "CM",
-  SKU = "SKU",
-  NVPN = "NVPN",
+  ANALYSIS = 'analysis',
+  ORGANIZATION = 'organizations',
+  CM_SITE_NAME = 'CM',
+  SKU = 'SKU',
+  NVPN = 'NVPN',
 }
 
 export const FILTER_ALL_VALUE: FilterValue = {
   key: null,
-  name: "All",
+  name: 'All',
 };
 
 export const FILTER_FIELDS: FilterField[] = [
-  { key: FilterKeys.ANALYSIS, label: "Select an Analysis" },
-  { key: FilterKeys.ORGANIZATION, label: "Select the organization" },
-  { key: FilterKeys.CM_SITE_NAME, label: "Select the CM Site Name" },
-  { key: FilterKeys.SKU, label: "Select the SKU" },
-  { key: FilterKeys.NVPN, label: "Select the NVPN" },
+  { key: FilterKeys.ANALYSIS, label: 'Select an Analysis' },
+  { key: FilterKeys.ORGANIZATION, label: 'Select the organization' },
+  { key: FilterKeys.CM_SITE_NAME, label: 'Select the CM Site Name' },
+  { key: FilterKeys.SKU, label: 'Select the SKU' },
+  { key: FilterKeys.NVPN, label: 'Select the NVPN' },
 ];
 
 export const INITIAL_FILTERS: FilterState = {

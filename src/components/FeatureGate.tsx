@@ -1,6 +1,6 @@
-import React from "react";
-import { FeatureFlagKey } from "@/lib/types/feature-flags";
-import { useFeatureFlag } from "@/hooks/useFeatureFlags";
+import React from 'react';
+import { FeatureFlagKey } from '@/lib/types/feature-flags';
+import { useFeatureFlag } from '@/hooks/useFeatureFlags';
 
 interface FeatureGateProps {
   readonly flag: FeatureFlagKey;

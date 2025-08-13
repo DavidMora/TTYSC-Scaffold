@@ -1,9 +1,9 @@
-import React from "react";
-import { Title } from "@ui5/webcomponents-react";
-import TitleLevel from "@ui5/webcomponents/dist/types/TitleLevel.js";
-import { AIChartData } from "@/lib/types/charts";
-import { getChartDataInfo } from "@/lib/utils/chartUtils";
-import { ChartFactory } from "@/components/Charts/ChartFactory";
+import React from 'react';
+import { Title } from '@ui5/webcomponents-react';
+import TitleLevel from '@ui5/webcomponents/dist/types/TitleLevel.js';
+import { AIChartData } from '@/lib/types/charts';
+import { getChartDataInfo } from '@/lib/utils/chartUtils';
+import { ChartFactory } from '@/components/Charts/ChartFactory';
 
 interface AIChartProps {
   data: AIChartData;
@@ -40,9 +40,9 @@ export function AIChart({
         <p
           style={{
             marginBottom: 12,
-            color: "var(--sapTextColor)",
+            color: 'var(--sapTextColor)',
             fontSize: 14,
-            lineHeight: "1.4",
+            lineHeight: '1.4',
           }}
         >
           {preamble}
@@ -52,9 +52,9 @@ export function AIChart({
       {content && !isFullscreen && (
         <p
           style={{
-            color: "var(--sapTextColor)",
+            color: 'var(--sapTextColor)',
             fontSize: 14,
-            lineHeight: "1.4",
+            lineHeight: '1.4',
           }}
         >
           {content}

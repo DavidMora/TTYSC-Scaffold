@@ -10,11 +10,11 @@ export interface HttpClientConfig {
 
 // Parsing strategies for streamed responses
 export type HttpStreamParser =
-  | "text" // raw decoded text chunks
-  | "json" // single JSON object (will buffer until complete)
-  | "ndjson" // newline-delimited JSON, yields object per line
-  | "sse" // text/event-stream (Server Sent Events)
-  | "bytes"; // yields Uint8Array chunks
+  | 'text' // raw decoded text chunks
+  | 'json' // single JSON object (will buffer until complete)
+  | 'ndjson' // newline-delimited JSON, yields object per line
+  | 'sse' // text/event-stream (Server Sent Events)
+  | 'bytes'; // yields Uint8Array chunks
 
 export interface HttpStreamConfig extends HttpClientConfig {
   parser?: HttpStreamParser;

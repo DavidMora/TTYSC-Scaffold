@@ -1,9 +1,9 @@
 export type MenuItemKey =
-  | "RETRY"
-  | "SETTINGS"
-  | "PRINT"
-  | "RECORD_SCREENCAST"
-  | "ABOUT";
+  | 'RETRY'
+  | 'SETTINGS'
+  | 'PRINT'
+  | 'RECORD_SCREENCAST'
+  | 'ABOUT';
 
 export type MenuItem = {
   key: MenuItemKey;

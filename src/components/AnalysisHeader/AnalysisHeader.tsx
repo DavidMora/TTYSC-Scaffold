@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect } from 'react';
 import {
   FlexBox,
   FlexBoxJustifyContent,
@@ -6,13 +6,13 @@ import {
   Text,
   Icon,
   InputDomRef,
-} from "@ui5/webcomponents-react";
+} from '@ui5/webcomponents-react';
 
-import { AnalysisRenaming } from "./AnalysisRenaming";
-import { CreateAnalysis } from "./CreateAnalysis";
-import { useRouter } from "next/navigation";
-import { useCreateChat } from "@/hooks/chats";
-import { useSequentialNaming } from "@/contexts/SequentialNamingContext";
+import { AnalysisRenaming } from './AnalysisRenaming';
+import { CreateAnalysis } from './CreateAnalysis';
+import { useRouter } from 'next/navigation';
+import { useCreateChat } from '@/hooks/chats';
+import { useSequentialNaming } from '@/contexts/SequentialNamingContext';
 
 interface AnalysisHeaderProps {
   currentAnalysisId?: string;
@@ -26,7 +26,7 @@ const AnalysisHeader: React.FC<AnalysisHeaderProps> = ({
   showAutoSaved = false,
 }) => {
   const inputRef = useRef<InputDomRef>(null);
-  const [name, setName] = useState<string>(currentAnalysisName || "");
+  const [name, setName] = useState<string>(currentAnalysisName || '');
   const router = useRouter();
 
   const { generateAnalysisName } = useSequentialNaming();
@@ -38,16 +38,16 @@ const AnalysisHeader: React.FC<AnalysisHeaderProps> = ({
   });
 
   useEffect(() => {
-    setName(currentAnalysisName || "");
+    setName(currentAnalysisName || '');
   }, [currentAnalysisName]);
 
   return (
     <FlexBox
       justifyContent={FlexBoxJustifyContent.SpaceBetween}
       alignItems={FlexBoxAlignItems.Center}
-      style={{ paddingInline: "0.5rem" }}
+      style={{ paddingInline: '0.5rem' }}
     >
-      <FlexBox style={{ gap: "1.5rem" }}>
+      <FlexBox style={{ gap: '1.5rem' }}>
         <AnalysisRenaming
           analysisName={name}
           analysisId={currentAnalysisId}
@@ -67,15 +67,15 @@ const AnalysisHeader: React.FC<AnalysisHeaderProps> = ({
         <FlexBox
           alignItems={FlexBoxAlignItems.Center}
           style={{
-            gap: "0.5rem",
-            color: "var(--sapHighlightColor)",
+            gap: '0.5rem',
+            color: 'var(--sapHighlightColor)',
           }}
         >
           <Text
             style={{
-              fontSize: "var(--sapFontSize)",
-              color: "var(--sapHighlightColor)",
-              fontWeight: "400",
+              fontSize: 'var(--sapFontSize)',
+              color: 'var(--sapHighlightColor)',
+              fontWeight: '400',
             }}
           >
             Analysis Auto-Saved
@@ -83,8 +83,8 @@ const AnalysisHeader: React.FC<AnalysisHeaderProps> = ({
           <Icon
             name="accept"
             style={{
-              fontSize: "1rem",
-              color: "var(--sapHighlightColor)",
+              fontSize: '1rem',
+              color: 'var(--sapHighlightColor)',
             }}
           />
         </FlexBox>

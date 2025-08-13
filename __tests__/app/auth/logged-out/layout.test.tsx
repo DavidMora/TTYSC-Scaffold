@@ -13,7 +13,7 @@ jest.mock('@/components/auth/LogoutPageWrapper', () => {
 describe('LoggedOutLayout', () => {
   it('should render children within LogoutPageWrapper', () => {
     const testContent = 'Test content for logged out layout';
-    
+
     render(
       <LoggedOutLayout>
         <div data-testid="test-child">{testContent}</div>
@@ -48,7 +48,7 @@ describe('LoggedOutLayout', () => {
 
   it('should handle text content as children', () => {
     const textContent = 'Just some text content';
-    
+
     render(<LoggedOutLayout>{textContent}</LoggedOutLayout>);
 
     expect(screen.getByTestId('logout-page-wrapper')).toBeInTheDocument();

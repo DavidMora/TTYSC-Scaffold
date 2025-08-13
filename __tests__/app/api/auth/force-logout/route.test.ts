@@ -18,20 +18,22 @@ jest.mock('@/lib/auth/auth-options', () => ({
   },
 }));
 
-const mockGetServerSession = getServerSession as jest.MockedFunction<typeof getServerSession>;
+const mockGetServerSession = getServerSession as jest.MockedFunction<
+  typeof getServerSession
+>;
 
 describe('/api/auth/force-logout', () => {
   const originalEnv = process.env;
-  
+
   beforeEach(() => {
     jest.clearAllMocks();
-    
+
     // Reset environment
     process.env = {
       ...originalEnv,
       NODE_ENV: 'test',
     };
-    
+
     // Mock console methods
     jest.spyOn(console, 'log').mockImplementation();
     jest.spyOn(console, 'error').mockImplementation();
@@ -90,11 +92,11 @@ describe('/api/auth/force-logout', () => {
       const response = await POST();
 
       expect(response.status).toBe(200);
-      
+
       // Check that set-cookie headers are present
       const setCookieHeaders = response.headers.get('set-cookie');
       expect(setCookieHeaders).toBeTruthy();
-      
+
       // The response should have multiple cookies being cleared
       // Since NextResponse.cookies.set() is called multiple times, we expect headers to be set
       expect(response.headers.has('set-cookie')).toBe(true);
@@ -135,7 +137,10 @@ describe('/api/auth/force-logout', () => {
         message: 'Error during server session clearing',
         error: 'Database connection failed',
       });
-      expect(console.error).toHaveBeenCalledWith('[Force Logout] Error during server-side clearing:', error);
+      expect(console.error).toHaveBeenCalledWith(
+        '[Force Logout] Error during server-side clearing:',
+        error
+      );
     });
 
     it('should handle non-Error exceptions', async () => {
@@ -178,9 +183,16 @@ describe('/api/auth/force-logout', () => {
 
       await POST();
 
-      expect(console.log).toHaveBeenCalledWith('[Force Logout] Starting server-side session clearing');
-      expect(console.log).toHaveBeenCalledWith('[Force Logout] Current session exists:', true);
-      expect(console.log).toHaveBeenCalledWith('[Force Logout] Server-side clearing completed');
+      expect(console.log).toHaveBeenCalledWith(
+        '[Force Logout] Starting server-side session clearing'
+      );
+      expect(console.log).toHaveBeenCalledWith(
+        '[Force Logout] Current session exists:',
+        true
+      );
+      expect(console.log).toHaveBeenCalledWith(
+        '[Force Logout] Server-side clearing completed'
+      );
     });
 
     it('should log force logout process without active session', async () => {
@@ -188,9 +200,16 @@ describe('/api/auth/force-logout', () => {
 
       await POST();
 
-      expect(console.log).toHaveBeenCalledWith('[Force Logout] Starting server-side session clearing');
-      expect(console.log).toHaveBeenCalledWith('[Force Logout] Current session exists:', false);
-      expect(console.log).toHaveBeenCalledWith('[Force Logout] Server-side clearing completed');
+      expect(console.log).toHaveBeenCalledWith(
+        '[Force Logout] Starting server-side session clearing'
+      );
+      expect(console.log).toHaveBeenCalledWith(
+        '[Force Logout] Current session exists:',
+        false
+      );
+      expect(console.log).toHaveBeenCalledWith(
+        '[Force Logout] Server-side clearing completed'
+      );
     });
 
     it('should log error information when exception occurs', async () => {
@@ -199,7 +218,10 @@ describe('/api/auth/force-logout', () => {
 
       await POST();
 
-      expect(console.error).toHaveBeenCalledWith('[Force Logout] Error during server-side clearing:', error);
+      expect(console.error).toHaveBeenCalledWith(
+        '[Force Logout] Error during server-side clearing:',
+        error
+      );
     });
   });
 
@@ -209,7 +231,9 @@ describe('/api/auth/force-logout', () => {
 
       const response = await POST();
 
-      expect(response.headers.get('Cache-Control')).toBe('no-cache, no-store, must-revalidate');
+      expect(response.headers.get('Cache-Control')).toBe(
+        'no-cache, no-store, must-revalidate'
+      );
       expect(response.headers.get('Pragma')).toBe('no-cache');
       expect(response.headers.get('Expires')).toBe('0');
     });
@@ -233,7 +257,7 @@ describe('/api/auth/force-logout', () => {
       const response = await POST();
 
       expect(response.status).toBe(200);
-      
+
       // The implementation clears multiple cookie names with different configurations
       // We verify that set-cookie headers are present, indicating cookies are being cleared
       expect(response.headers.has('set-cookie')).toBe(true);
@@ -245,7 +269,7 @@ describe('/api/auth/force-logout', () => {
       const response = await POST();
 
       expect(response.status).toBe(200);
-      
+
       // The implementation sets cookies for different paths: '/', '/api', '/auth'
       // and with different sameSite settings: 'lax', 'strict'
       expect(response.headers.has('set-cookie')).toBe(true);
@@ -257,7 +281,7 @@ describe('/api/auth/force-logout', () => {
       const response = await POST();
 
       expect(response.status).toBe(200);
-      
+
       // The implementation clears both httpOnly and non-httpOnly cookies
       // to ensure client-side accessible cookies are also cleared
       expect(response.headers.has('set-cookie')).toBe(true);
@@ -291,7 +315,7 @@ describe('/api/auth/force-logout', () => {
       const response = await POST();
 
       expect(response.status).toBe(200);
-      
+
       // The implementation sets expires: new Date(0) to immediately expire cookies
       expect(response.headers.has('set-cookie')).toBe(true);
     });
@@ -335,9 +359,16 @@ describe('/api/auth/force-logout', () => {
 
       await POST();
 
-      expect(console.log).toHaveBeenCalledWith('[Force Logout] Starting server-side session clearing');
-      expect(console.log).toHaveBeenCalledWith('[Force Logout] Current session exists:', true);
-      expect(console.log).toHaveBeenCalledWith('[Force Logout] Server-side clearing completed');
+      expect(console.log).toHaveBeenCalledWith(
+        '[Force Logout] Starting server-side session clearing'
+      );
+      expect(console.log).toHaveBeenCalledWith(
+        '[Force Logout] Current session exists:',
+        true
+      );
+      expect(console.log).toHaveBeenCalledWith(
+        '[Force Logout] Server-side clearing completed'
+      );
     });
 
     it('should complete cookie clearing process in error scenario', async () => {
@@ -351,7 +382,7 @@ describe('/api/auth/force-logout', () => {
       expect(data.success).toBe(false);
       expect(data.message).toBe('Error during server session clearing');
       expect(data.error).toBe('Session retrieval failed');
-      
+
       // Should still clear cookies even on error
       expect(response.headers.has('set-cookie')).toBe(true);
     });

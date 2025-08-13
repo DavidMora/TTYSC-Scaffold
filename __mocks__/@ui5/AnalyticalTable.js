@@ -1,8 +1,8 @@
-import _ from "lodash";
-import React from "react";
+import _ from 'lodash';
+import React from 'react';
 
 export const AnalyticalTable = ({ columns, data, className, ...props }) => {
-  const { "data-testid": dataTestId = "ui5-analytical-table" } = props;
+  const { 'data-testid': dataTestId = 'ui5-analytical-table' } = props;
   return (
     <div className={className} data-testid={dataTestId}>
       <div role="rowgroup">
@@ -58,4 +58,4 @@ export const AnalyticalTable = ({ columns, data, className, ...props }) => {
     </div>
   );
 };
-AnalyticalTable.displayName = "AnalyticalTable";
+AnalyticalTable.displayName = 'AnalyticalTable';

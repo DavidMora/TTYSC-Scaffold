@@ -1,13 +1,13 @@
-import { TanStackQueryAdapter } from "../../../../src/lib/api/data-fetcher-adapters/tanstack-query-adapter";
-import { HttpClientResponse } from "../../../../src/lib/types/api/http-client";
-import { useQuery } from "@tanstack/react-query";
+import { TanStackQueryAdapter } from '../../../../src/lib/api/data-fetcher-adapters/tanstack-query-adapter';
+import { HttpClientResponse } from '../../../../src/lib/types/api/http-client';
+import { useQuery } from '@tanstack/react-query';
 
 // Mock @tanstack/react-query
-jest.mock("@tanstack/react-query");
+jest.mock('@tanstack/react-query');
 
 const mockUseQuery = useQuery as jest.MockedFunction<typeof useQuery>;
 
-describe("TanStackQueryAdapter", () => {
+describe('TanStackQueryAdapter', () => {
   let adapter: TanStackQueryAdapter;
 
   beforeEach(() => {
@@ -15,34 +15,34 @@ describe("TanStackQueryAdapter", () => {
     adapter = new TanStackQueryAdapter();
   });
 
-  it("should create an instance successfully", () => {
+  it('should create an instance successfully', () => {
     expect(adapter).toBeInstanceOf(TanStackQueryAdapter);
   });
 
-  it("should be exportable for conditional usage", () => {
+  it('should be exportable for conditional usage', () => {
     expect(TanStackQueryAdapter).toBeDefined();
-    expect(typeof TanStackQueryAdapter).toBe("function");
+    expect(typeof TanStackQueryAdapter).toBe('function');
   });
 
-  it("should test the adapter with mocked TanStack Query", () => {
+  it('should test the adapter with mocked TanStack Query', () => {
     const mockResponse: HttpClientResponse<unknown> = {
-      data: { test: "data" },
+      data: { test: 'data' },
       status: 200,
-      statusText: "OK",
+      statusText: 'OK',
       headers: {},
     };
 
     const mockFetcher = jest.fn().mockResolvedValue(mockResponse);
 
     (mockUseQuery as jest.Mock).mockReturnValue({
-      data: { test: "data" },
+      data: { test: 'data' },
       error: null,
       isLoading: false,
       isFetching: false,
       refetch: jest.fn(),
     });
 
-    const result = adapter.fetchData("test-key", mockFetcher, {
+    const result = adapter.fetchData('test-key', mockFetcher, {
       enabled: true,
       retry: 3,
       refreshInterval: 1000,
@@ -50,7 +50,7 @@ describe("TanStackQueryAdapter", () => {
     });
 
     expect(mockUseQuery).toHaveBeenCalledWith({
-      queryKey: ["test-key"],
+      queryKey: ['test-key'],
       queryFn: expect.any(Function),
       enabled: true,
       refetchInterval: 1000,
@@ -59,7 +59,7 @@ describe("TanStackQueryAdapter", () => {
     });
 
     expect(result).toEqual({
-      data: { test: "data" },
+      data: { test: 'data' },
       error: undefined,
       isLoading: false,
       isValidating: false,
@@ -67,7 +67,7 @@ describe("TanStackQueryAdapter", () => {
     });
   });
 
-  it("should handle different retry configurations", () => {
+  it('should handle different retry configurations', () => {
     const mockFetcher = jest.fn();
 
     (mockUseQuery as jest.Mock).mockReturnValue({
@@ -79,7 +79,7 @@ describe("TanStackQueryAdapter", () => {
     });
 
     // Test with retry as boolean
-    adapter.fetchData("test-key", mockFetcher, { retry: true });
+    adapter.fetchData('test-key', mockFetcher, { retry: true });
     expect(mockUseQuery).toHaveBeenCalledWith(
       expect.objectContaining({
         retry: 3,
@@ -87,7 +87,7 @@ describe("TanStackQueryAdapter", () => {
     );
 
     // Test with retry as number
-    adapter.fetchData("test-key", mockFetcher, { retry: 5 });
+    adapter.fetchData('test-key', mockFetcher, { retry: 5 });
     expect(mockUseQuery).toHaveBeenCalledWith(
       expect.objectContaining({
         retry: 5,
@@ -95,7 +95,7 @@ describe("TanStackQueryAdapter", () => {
     );
 
     // Test with retry as false
-    adapter.fetchData("test-key", mockFetcher, { retry: false });
+    adapter.fetchData('test-key', mockFetcher, { retry: false });
     expect(mockUseQuery).toHaveBeenCalledWith(
       expect.objectContaining({
         retry: false,
@@ -103,7 +103,7 @@ describe("TanStackQueryAdapter", () => {
     );
   });
 
-  it("should handle enabled option", () => {
+  it('should handle enabled option', () => {
     const mockFetcher = jest.fn();
 
     (mockUseQuery as jest.Mock).mockReturnValue({
@@ -114,14 +114,14 @@ describe("TanStackQueryAdapter", () => {
       refetch: jest.fn(),
     });
 
-    adapter.fetchData("test-key", mockFetcher, { enabled: false });
+    adapter.fetchData('test-key', mockFetcher, { enabled: false });
     expect(mockUseQuery).toHaveBeenCalledWith(
       expect.objectContaining({
         enabled: false,
       })
     );
 
-    adapter.fetchData("test-key", mockFetcher, { enabled: true });
+    adapter.fetchData('test-key', mockFetcher, { enabled: true });
     expect(mockUseQuery).toHaveBeenCalledWith(
       expect.objectContaining({
         enabled: true,
@@ -129,7 +129,7 @@ describe("TanStackQueryAdapter", () => {
     );
 
     // Test default enabled
-    adapter.fetchData("test-key", mockFetcher);
+    adapter.fetchData('test-key', mockFetcher);
     expect(mockUseQuery).toHaveBeenCalledWith(
       expect.objectContaining({
         enabled: true,
@@ -137,11 +137,11 @@ describe("TanStackQueryAdapter", () => {
     );
   });
 
-  it("should transform fetcher correctly", async () => {
+  it('should transform fetcher correctly', async () => {
     const mockResponse: HttpClientResponse<{ id: number }> = {
       data: { id: 123 },
       status: 200,
-      statusText: "OK",
+      statusText: 'OK',
       headers: {},
     };
 
@@ -155,7 +155,7 @@ describe("TanStackQueryAdapter", () => {
       refetch: jest.fn(),
     });
 
-    adapter.fetchData("test-key", mockFetcher);
+    adapter.fetchData('test-key', mockFetcher);
 
     // Get the transformed fetcher function
     const call = (mockUseQuery as jest.Mock).mock.calls[0];
@@ -166,8 +166,8 @@ describe("TanStackQueryAdapter", () => {
     expect(result).toEqual({ id: 123 });
   });
 
-  it("should handle error conversion", () => {
-    const mockError = new Error("Test error");
+  it('should handle error conversion', () => {
+    const mockError = new Error('Test error');
     const mockFetcher = jest.fn();
 
     (mockUseQuery as jest.Mock).mockReturnValue({
@@ -178,7 +178,7 @@ describe("TanStackQueryAdapter", () => {
       refetch: jest.fn(),
     });
 
-    const result = adapter.fetchData("test-key", mockFetcher);
+    const result = adapter.fetchData('test-key', mockFetcher);
 
     expect(result.error).toBe(mockError);
 
@@ -191,11 +191,11 @@ describe("TanStackQueryAdapter", () => {
       refetch: jest.fn(),
     });
 
-    const result2 = adapter.fetchData("test-key", mockFetcher);
+    const result2 = adapter.fetchData('test-key', mockFetcher);
     expect(result2.error).toBeUndefined();
   });
 
-  it("should handle mutate function", () => {
+  it('should handle mutate function', () => {
     const mockRefetch = jest.fn();
     const mockFetcher = jest.fn();
 
@@ -207,17 +207,17 @@ describe("TanStackQueryAdapter", () => {
       refetch: mockRefetch,
     });
 
-    const result = adapter.fetchData("test-key", mockFetcher);
+    const result = adapter.fetchData('test-key', mockFetcher);
 
     result.mutate?.();
     expect(mockRefetch).toHaveBeenCalled();
   });
 
-  it("should handle array keys correctly", () => {
+  it('should handle array keys correctly', () => {
     const mockFetcher = jest.fn();
 
     (mockUseQuery as jest.Mock).mockReturnValue({
-      data: { test: "data" },
+      data: { test: 'data' },
       error: null,
       isLoading: false,
       isFetching: false,
@@ -225,7 +225,7 @@ describe("TanStackQueryAdapter", () => {
     });
 
     // Test with array key
-    const arrayKey = ["users", 123, { active: true }];
+    const arrayKey = ['users', 123, { active: true }];
     adapter.fetchData(arrayKey, mockFetcher);
 
     expect(mockUseQuery).toHaveBeenCalledWith({
@@ -238,10 +238,10 @@ describe("TanStackQueryAdapter", () => {
     });
   });
 
-  describe("export", () => {
-    it("should export TanStackQueryAdapter as default", async () => {
+  describe('export', () => {
+    it('should export TanStackQueryAdapter as default', async () => {
       const tanstackAdapterModule = await import(
-        "../../../../src/lib/api/data-fetcher-adapters/tanstack-query-adapter"
+        '../../../../src/lib/api/data-fetcher-adapters/tanstack-query-adapter'
       );
       expect(tanstackAdapterModule.default).toBe(TanStackQueryAdapter);
     });

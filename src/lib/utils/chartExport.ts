@@ -3,10 +3,10 @@ import {
   ChartMeasure,
   MultiDataPoint,
   SingleDataPoint,
-} from "@/lib/types/charts";
+} from '@/lib/types/charts';
 
 export function sanitizeFilename(name: string): string {
-  return name.replace(/[^a-z0-9\-_.]+/gi, "_").slice(0, 120);
+  return name.replace(/[^a-z0-9\-_.]+/gi, '_').slice(0, 120);
 }
 
 export function triggerFileDownload(
@@ -15,11 +15,11 @@ export function triggerFileDownload(
   mime?: string
 ) {
   const blob =
-    typeof data === "string"
-      ? new Blob([data], { type: mime || "application/octet-stream" })
+    typeof data === 'string'
+      ? new Blob([data], { type: mime || 'application/octet-stream' })
       : data;
   const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
+  const a = document.createElement('a');
   a.href = url;
   a.download = filename;
   document.body.appendChild(a);
@@ -40,7 +40,7 @@ export function downloadChartAsPng(
 ) {
   const svg = findFirstSvg(container);
   if (!svg) return;
-  serializeSvgToPng(svg, title || "chart");
+  serializeSvgToPng(svg, title || 'chart');
 }
 
 export function getCurrentSlice<T>(
@@ -70,28 +70,28 @@ export function buildCsv(
     cols
       .map((col) => toCsvString((row as Record<string, unknown>)[col]))
       .map((value) => escapeCsvField(value))
-      .join(",")
+      .join(',')
   );
-  return [headers.join(","), ...rows].join("\n");
+  return [headers.join(','), ...rows].join('\n');
 }
 
 function toCsvString(value: unknown): string {
-  if (value == null) return "";
-  if (typeof value === "object") {
+  if (value == null) return '';
+  if (typeof value === 'object') {
     try {
       return JSON.stringify(value);
     } catch {
-      return "";
+      return '';
     }
   }
   if (
-    typeof value === "string" ||
-    typeof value === "number" ||
-    typeof value === "boolean"
+    typeof value === 'string' ||
+    typeof value === 'number' ||
+    typeof value === 'boolean'
   ) {
     return String(value);
   }
-  return "";
+  return '';
 }
 
 function escapeCsvField(raw: string): string {
@@ -104,63 +104,63 @@ function escapeCsvField(raw: string): string {
 function serializeSvgToPng(svg: SVGSVGElement, filenameBase: string) {
   const rect = svg.getBoundingClientRect();
   const width = Math.ceil(
-    rect.width || Number(svg.getAttribute("width")) || 800
+    rect.width || Number(svg.getAttribute('width')) || 800
   );
   const height = Math.ceil(
-    rect.height || Number(svg.getAttribute("height")) || 400
+    rect.height || Number(svg.getAttribute('height')) || 400
   );
 
   const cloned = svg.cloneNode(true) as SVGSVGElement;
-  cloned.setAttribute("xmlns", "http://www.w3.org/2000/svg");
-  cloned.setAttribute("width", String(width));
-  cloned.setAttribute("height", String(height));
+  cloned.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+  cloned.setAttribute('width', String(width));
+  cloned.setAttribute('height', String(height));
   const svgData = new XMLSerializer().serializeToString(cloned);
-  const svgBlob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
+  const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
   const url = URL.createObjectURL(svgBlob);
 
   const img = new Image();
   img.onload = () => {
-    const canvas = document.createElement("canvas");
-    if (canvas && typeof canvas === "object") {
+    const canvas = document.createElement('canvas');
+    if (canvas && typeof canvas === 'object') {
       canvas.width = width;
       canvas.height = height;
     }
-    const hasGetContext = canvas && typeof canvas.getContext === "function";
-    const hasToBlob = canvas && typeof canvas.toBlob === "function";
+    const hasGetContext = canvas && typeof canvas.getContext === 'function';
+    const hasToBlob = canvas && typeof canvas.toBlob === 'function';
 
     if (!hasGetContext || !hasToBlob) {
       triggerFileDownload(
         svgBlob,
-        sanitizeFilename(filenameBase) + ".svg",
-        "image/svg+xml;charset=utf-8"
+        sanitizeFilename(filenameBase) + '.svg',
+        'image/svg+xml;charset=utf-8'
       );
       URL.revokeObjectURL(url);
       return;
     }
 
-    const ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext('2d');
     if (!ctx) {
       URL.revokeObjectURL(url);
       return;
     }
-    ctx.fillStyle = "#ffffff";
+    ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, width, height);
     ctx.drawImage(img, 0, 0);
     canvas.toBlob((blob: Blob | null) => {
       if (blob) {
         triggerFileDownload(
           blob,
-          sanitizeFilename(filenameBase) + ".png",
-          "image/png"
+          sanitizeFilename(filenameBase) + '.png',
+          'image/png'
         );
       }
       URL.revokeObjectURL(url);
-    }, "image/png");
+    }, 'image/png');
   };
   img.onerror = () => URL.revokeObjectURL(url);
   img.src = url;
 }
 
 function findFirstSvg(root: HTMLElement | null): SVGSVGElement | null {
-  return (root?.querySelector("svg") as SVGSVGElement) || null;
+  return (root?.querySelector('svg') as SVGSVGElement) || null;
 }

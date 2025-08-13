@@ -1,10 +1,10 @@
-import React from "react";
-import { render, screen, act } from "@testing-library/react";
-import "@testing-library/jest-dom";
+import React from 'react';
+import { render, screen, act } from '@testing-library/react';
+import '@testing-library/jest-dom';
 import {
   AutosaveUIProvider,
   useAutosaveUI,
-} from "@/contexts/AutosaveUIProvider";
+} from '@/contexts/AutosaveUIProvider';
 
 // Mock setTimeout and clearTimeout
 jest.useFakeTimers();
@@ -15,7 +15,7 @@ const TestComponent = () => {
   return (
     <div>
       <div data-testid="autosave-status">
-        {showAutoSaved ? "Auto-saved" : "Not auto-saved"}
+        {showAutoSaved ? 'Auto-saved' : 'Not auto-saved'}
       </div>
       <button data-testid="activate-button" onClick={activateAutosaveUI}>
         Activate
@@ -24,7 +24,7 @@ const TestComponent = () => {
   );
 };
 
-describe("AutosaveUIProvider", () => {
+describe('AutosaveUIProvider', () => {
   beforeEach(() => {
     jest.clearAllTimers();
     jest.clearAllMocks();
@@ -36,47 +36,47 @@ describe("AutosaveUIProvider", () => {
     jest.useRealTimers();
   });
 
-  describe("Provider Rendering", () => {
-    it("should render children correctly", () => {
+  describe('Provider Rendering', () => {
+    it('should render children correctly', () => {
       render(
         <AutosaveUIProvider>
           <div data-testid="test-child">Test Child</div>
         </AutosaveUIProvider>
       );
 
-      expect(screen.getByTestId("test-child")).toBeInTheDocument();
-      expect(screen.getByText("Test Child")).toBeInTheDocument();
+      expect(screen.getByTestId('test-child')).toBeInTheDocument();
+      expect(screen.getByText('Test Child')).toBeInTheDocument();
     });
 
-    it("should provide context value to children", () => {
+    it('should provide context value to children', () => {
       render(
         <AutosaveUIProvider>
           <TestComponent />
         </AutosaveUIProvider>
       );
 
-      expect(screen.getByTestId("autosave-status")).toBeInTheDocument();
-      expect(screen.getByTestId("activate-button")).toBeInTheDocument();
+      expect(screen.getByTestId('autosave-status')).toBeInTheDocument();
+      expect(screen.getByTestId('activate-button')).toBeInTheDocument();
     });
   });
 
-  describe("activateAutosaveUI", () => {
-    it("should reset timer when activated multiple times", async () => {
+  describe('activateAutosaveUI', () => {
+    it('should reset timer when activated multiple times', async () => {
       render(
         <AutosaveUIProvider>
           <TestComponent />
         </AutosaveUIProvider>
       );
 
-      const activateButton = screen.getByTestId("activate-button");
+      const activateButton = screen.getByTestId('activate-button');
 
       // First activation
       act(() => {
         activateButton.click();
       });
 
-      expect(screen.getByTestId("autosave-status")).toHaveTextContent(
-        "Auto-saved"
+      expect(screen.getByTestId('autosave-status')).toHaveTextContent(
+        'Auto-saved'
       );
 
       // Wait 1 second
@@ -89,8 +89,8 @@ describe("AutosaveUIProvider", () => {
         activateButton.click();
       });
 
-      expect(screen.getByTestId("autosave-status")).toHaveTextContent(
-        "Auto-saved"
+      expect(screen.getByTestId('autosave-status')).toHaveTextContent(
+        'Auto-saved'
       );
 
       // Wait 1 second (should still be showing)
@@ -98,8 +98,8 @@ describe("AutosaveUIProvider", () => {
         jest.advanceTimersByTime(1000);
       });
 
-      expect(screen.getByTestId("autosave-status")).toHaveTextContent(
-        "Auto-saved"
+      expect(screen.getByTestId('autosave-status')).toHaveTextContent(
+        'Auto-saved'
       );
 
       // Wait another second (should hide now)
@@ -107,19 +107,19 @@ describe("AutosaveUIProvider", () => {
         jest.advanceTimersByTime(1000);
       });
 
-      expect(screen.getByTestId("autosave-status")).toHaveTextContent(
-        "Not auto-saved"
+      expect(screen.getByTestId('autosave-status')).toHaveTextContent(
+        'Not auto-saved'
       );
     });
   });
 
-  describe("useAutosaveUI Hook", () => {
-    it("should throw error when used outside provider", () => {
-      const consoleSpy = jest.spyOn(console, "error").mockImplementation();
+  describe('useAutosaveUI Hook', () => {
+    it('should throw error when used outside provider', () => {
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
 
       expect(() => {
         render(<TestComponent />);
-      }).toThrow("useAutosaveUI must be used within an AutosaveUIProvider");
+      }).toThrow('useAutosaveUI must be used within an AutosaveUIProvider');
 
       consoleSpy.mockRestore();
     });

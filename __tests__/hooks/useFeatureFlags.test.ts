@@ -1,22 +1,22 @@
-import { renderHook, waitFor } from "@testing-library/react";
+import { renderHook, waitFor } from '@testing-library/react';
 import {
   useFeatureFlags,
   useFeatureFlag,
   useAuthenticationEnabled,
-} from "@/hooks/useFeatureFlags";
-import { FALLBACK_FLAGS } from "@/test-utils/featureFlags";
+} from '@/hooks/useFeatureFlags';
+import { FALLBACK_FLAGS } from '@/test-utils/featureFlags';
 
 // Mock fetch
 global.fetch = jest.fn();
 const mockFetch = fetch as jest.MockedFunction<typeof fetch>;
 
-describe("useFeatureFlags hooks", () => {
+describe('useFeatureFlags hooks', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  describe("useFeatureFlags", () => {
-    it("should load feature flags successfully", async () => {
+  describe('useFeatureFlags', () => {
+    it('should load feature flags successfully', async () => {
       const mockFlags = {
         enableAuthentication: true,
         enableBetaFeatures: false,
@@ -45,8 +45,8 @@ describe("useFeatureFlags hooks", () => {
       expect(result.current.error).toBeNull();
     });
 
-    it("should handle fetch errors with fallback", async () => {
-      mockFetch.mockRejectedValue(new Error("Network error"));
+    it('should handle fetch errors with fallback', async () => {
+      mockFetch.mockRejectedValue(new Error('Network error'));
 
       const { result } = renderHook(() => useFeatureFlags());
 
@@ -54,11 +54,11 @@ describe("useFeatureFlags hooks", () => {
         expect(result.current.loading).toBe(false);
       });
 
-      expect(result.current.error).toBe("Network error");
+      expect(result.current.error).toBe('Network error');
       expect(result.current.flags).toEqual(FALLBACK_FLAGS);
     });
 
-    it("should handle non-ok response", async () => {
+    it('should handle non-ok response', async () => {
       mockFetch.mockResolvedValue({
         ok: false,
         status: 500,
@@ -70,13 +70,13 @@ describe("useFeatureFlags hooks", () => {
         expect(result.current.loading).toBe(false);
       });
 
-      expect(result.current.error).toBe("Failed to fetch feature flags");
+      expect(result.current.error).toBe('Failed to fetch feature flags');
       expect(result.current.flags).toBeDefined();
     });
 
-    it("should handle non-Error objects in catch block", async () => {
+    it('should handle non-Error objects in catch block', async () => {
       // Test the "Unknown error" branch in line 30
-      mockFetch.mockRejectedValue("String error instead of Error object");
+      mockFetch.mockRejectedValue('String error instead of Error object');
 
       const { result } = renderHook(() => useFeatureFlags());
 
@@ -84,11 +84,11 @@ describe("useFeatureFlags hooks", () => {
         expect(result.current.loading).toBe(false);
       });
 
-      expect(result.current.error).toBe("Unknown error");
+      expect(result.current.error).toBe('Unknown error');
       expect(result.current.flags).toEqual(FALLBACK_FLAGS);
     });
 
-    it("should handle cancellation during json parsing", async () => {
+    it('should handle cancellation during json parsing', async () => {
       // Simple mock without complex nesting
       const slowJsonMock = jest
         .fn()
@@ -110,9 +110,9 @@ describe("useFeatureFlags hooks", () => {
       expect(mockFetch).toHaveBeenCalled();
     });
 
-    it("should handle cancellation in catch block", async () => {
+    it('should handle cancellation in catch block', async () => {
       // Simple error mock
-      mockFetch.mockRejectedValue(new Error("Test error"));
+      mockFetch.mockRejectedValue(new Error('Test error'));
 
       const { unmount } = renderHook(() => useFeatureFlags());
 
@@ -123,7 +123,7 @@ describe("useFeatureFlags hooks", () => {
       await new Promise((resolve) => setTimeout(resolve, 10));
     });
 
-    it("should handle cancellation in finally block", async () => {
+    it('should handle cancellation in finally block', async () => {
       // Simple success mock
       mockFetch.mockResolvedValue({
         ok: true,
@@ -140,8 +140,8 @@ describe("useFeatureFlags hooks", () => {
     });
   });
 
-  describe("useFeatureFlag", () => {
-    it("should return correct flag value", async () => {
+  describe('useFeatureFlag', () => {
+    it('should return correct flag value', async () => {
       const mockFlags = {
         enableAuthentication: true,
       };
@@ -152,7 +152,7 @@ describe("useFeatureFlags hooks", () => {
       } as Response);
 
       const { result } = renderHook(() =>
-        useFeatureFlag("enableAuthentication")
+        useFeatureFlag('enableAuthentication')
       );
 
       await waitFor(() => {
@@ -164,14 +164,14 @@ describe("useFeatureFlags hooks", () => {
       });
     });
 
-    it("should return false for undefined flags", async () => {
+    it('should return false for undefined flags', async () => {
       mockFetch.mockResolvedValue({
         ok: true,
         json: () => Promise.resolve({}),
       } as Response);
 
       const { result } = renderHook(() =>
-        useFeatureFlag("enableAuthentication")
+        useFeatureFlag('enableAuthentication')
       );
 
       await waitFor(() => {
@@ -184,8 +184,8 @@ describe("useFeatureFlags hooks", () => {
     });
   });
 
-  describe("useAuthenticationEnabled", () => {
-    it("should return authentication flag value", async () => {
+  describe('useAuthenticationEnabled', () => {
+    it('should return authentication flag value', async () => {
       const mockFlags = {
         enableAuthentication: false,
       };

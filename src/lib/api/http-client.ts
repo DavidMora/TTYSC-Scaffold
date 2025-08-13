@@ -4,8 +4,8 @@ import {
   HttpClientResponse,
   HttpStreamConfig,
   HttpStreamResponse,
-} from "@/lib/types/api/http-client";
-import FetchAdapter from "@/lib/api/http-client-adapters/fetch-adapter";
+} from '@/lib/types/api/http-client';
+import FetchAdapter from '@/lib/api/http-client-adapters/fetch-adapter';
 
 class HttpClient {
   private readonly adapter: HttpClientAdapter;
@@ -67,7 +67,7 @@ class HttpClient {
      * Provide an AbortSignal in config.signal to cancel externally or call response.cancel().
      */
     if (!this.adapter.stream) {
-      throw new Error("Streaming not supported by current adapter");
+      throw new Error('Streaming not supported by current adapter');
     }
     return this.adapter.stream<TChunk>(url, config);
   }

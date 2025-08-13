@@ -5,9 +5,9 @@ import {
   Text,
   TextArea,
   Button,
-} from "@ui5/webcomponents-react";
-import { useState, useCallback } from "react";
-import { createFeedback } from "@/lib/services/feedback.service";
+} from '@ui5/webcomponents-react';
+import { useState, useCallback } from 'react';
+import { createFeedback } from '@/lib/services/feedback.service';
 
 interface FeedbackNavigationItemProps {
   onSubmitFeedback?: (feedback: string) => void;
@@ -27,11 +27,11 @@ export const processFeedback = async (
   try {
     await createFeedback({
       message: text.trim(),
-      category: "general",
+      category: 'general',
     });
     onSuccess?.();
   } catch (error) {
-    console.error("Error submitting feedback:", error);
+    console.error('Error submitting feedback:', error);
     onError?.(error);
     throw error;
   }
@@ -40,23 +40,23 @@ export const processFeedback = async (
 export default function FeedbackNavigationItem({
   onSubmitFeedback,
 }: Readonly<FeedbackNavigationItemProps>) {
-  const [feedbackText, setFeedbackText] = useState("");
+  const [feedbackText, setFeedbackText] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = useCallback(async () => {
     // Validate feedback text
     if (!validateFeedbackText(feedbackText)) {
-      console.log("Feedback text is empty or only whitespace");
+      console.log('Feedback text is empty or only whitespace');
       return;
     }
 
     setIsSubmitting(true);
-    
+
     try {
       await processFeedback(
         feedbackText,
         () => {
-          setFeedbackText("");
+          setFeedbackText('');
           onSubmitFeedback?.(feedbackText);
         },
         () => {
@@ -89,13 +89,13 @@ export default function FeedbackNavigationItem({
             onClick={handleSubmit}
             disabled={!isFormValid || isSubmitting}
           >
-            {isSubmitting ? "Submitting..." : "Submit"}
+            {isSubmitting ? 'Submitting...' : 'Submit'}
           </Button>
           {/* Hidden button for testing validation path */}
           <Button
             data-testid="force-submit-button"
             onClick={handleSubmit}
-            style={{ display: "none" }}
+            style={{ display: 'none' }}
           >
             Force Submit
           </Button>

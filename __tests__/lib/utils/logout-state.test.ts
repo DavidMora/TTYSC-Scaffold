@@ -23,10 +23,12 @@ describe('Logout State Utils', () => {
         delete localStorageData[key];
       }),
       clear: jest.fn(() => {
-        Object.keys(localStorageData).forEach(key => delete localStorageData[key]);
+        Object.keys(localStorageData).forEach(
+          (key) => delete localStorageData[key]
+        );
       }),
       key: jest.fn(),
-      length: 0
+      length: 0,
     };
 
     // Mock sessionStorage
@@ -40,10 +42,12 @@ describe('Logout State Utils', () => {
         delete sessionStorageData[key];
       }),
       clear: jest.fn(() => {
-        Object.keys(sessionStorageData).forEach(key => delete sessionStorageData[key]);
+        Object.keys(sessionStorageData).forEach(
+          (key) => delete sessionStorageData[key]
+        );
       }),
       key: jest.fn(),
-      length: 0
+      length: 0,
     };
 
     // Mock console
@@ -52,7 +56,7 @@ describe('Logout State Utils', () => {
       warn: jest.fn(),
       error: jest.fn(),
       info: jest.fn(),
-      debug: jest.fn()
+      debug: jest.fn(),
     } as any;
 
     // Mock location
@@ -64,7 +68,7 @@ describe('Logout State Utils', () => {
       host: 'example.com',
       pathname: '/',
       search: '?logout=true',
-      hash: ''
+      hash: '',
     } as Location;
 
     // Mock Date.now
@@ -82,7 +86,7 @@ describe('Logout State Utils', () => {
         sessionStorage: mockSessionStorage,
         console: mockConsole,
         location: mockLocation,
-        dateNow: mockDateNow
+        dateNow: mockDateNow,
       });
 
       expect(logoutState.isManuallyLoggedOut).toBeDefined();
@@ -93,7 +97,7 @@ describe('Logout State Utils', () => {
 
     it('should handle missing dependencies gracefully', () => {
       const logoutState = createLogoutState({});
-      
+
       // Should not throw when calling methods without dependencies
       expect(() => logoutState.setManuallyLoggedOut()).not.toThrow();
       expect(() => logoutState.clearLogoutState()).not.toThrow();
@@ -107,23 +111,40 @@ describe('Logout State Utils', () => {
         localStorage: mockLocalStorage,
         sessionStorage: mockSessionStorage,
         console: mockConsole,
-        dateNow: mockDateNow
+        dateNow: mockDateNow,
       });
 
       logoutState.setManuallyLoggedOut();
 
-      expect(mockLocalStorage.setItem).toHaveBeenCalledWith('user_manually_logged_out', 'true');
-      expect(mockLocalStorage.setItem).toHaveBeenCalledWith('logout_timestamp', '1234567890');
-      expect(mockSessionStorage.setItem).toHaveBeenCalledWith('user_manually_logged_out', 'true');
-      expect(mockSessionStorage.setItem).toHaveBeenCalledWith('logout_timestamp', '1234567890');
-      expect(mockSessionStorage.setItem).toHaveBeenCalledWith('logout_in_progress', 'true');
-      expect(mockConsole.log).toHaveBeenCalledWith('[Logout State] Manual logout flag set with redundancy');
+      expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
+        'user_manually_logged_out',
+        'true'
+      );
+      expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
+        'logout_timestamp',
+        '1234567890'
+      );
+      expect(mockSessionStorage.setItem).toHaveBeenCalledWith(
+        'user_manually_logged_out',
+        'true'
+      );
+      expect(mockSessionStorage.setItem).toHaveBeenCalledWith(
+        'logout_timestamp',
+        '1234567890'
+      );
+      expect(mockSessionStorage.setItem).toHaveBeenCalledWith(
+        'logout_in_progress',
+        'true'
+      );
+      expect(mockConsole.log).toHaveBeenCalledWith(
+        '[Logout State] Manual logout flag set with redundancy'
+      );
     });
 
     it('should not execute when dependencies are missing', () => {
       const logoutState = createLogoutState({
         console: mockConsole,
-        dateNow: mockDateNow
+        dateNow: mockDateNow,
       });
 
       expect(() => logoutState.setManuallyLoggedOut()).not.toThrow();
@@ -136,22 +157,34 @@ describe('Logout State Utils', () => {
       const logoutState = createLogoutState({
         localStorage: mockLocalStorage,
         sessionStorage: mockSessionStorage,
-        console: mockConsole
+        console: mockConsole,
       });
 
       logoutState.clearLogoutState();
 
-      expect(mockLocalStorage.removeItem).toHaveBeenCalledWith('user_manually_logged_out');
-      expect(mockLocalStorage.removeItem).toHaveBeenCalledWith('logout_timestamp');
-      expect(mockSessionStorage.removeItem).toHaveBeenCalledWith('user_manually_logged_out');
-      expect(mockSessionStorage.removeItem).toHaveBeenCalledWith('logout_timestamp');
-      expect(mockSessionStorage.removeItem).toHaveBeenCalledWith('logout_in_progress');
-      expect(mockConsole.log).toHaveBeenCalledWith('[Logout State] Logout flags cleared from all locations');
+      expect(mockLocalStorage.removeItem).toHaveBeenCalledWith(
+        'user_manually_logged_out'
+      );
+      expect(mockLocalStorage.removeItem).toHaveBeenCalledWith(
+        'logout_timestamp'
+      );
+      expect(mockSessionStorage.removeItem).toHaveBeenCalledWith(
+        'user_manually_logged_out'
+      );
+      expect(mockSessionStorage.removeItem).toHaveBeenCalledWith(
+        'logout_timestamp'
+      );
+      expect(mockSessionStorage.removeItem).toHaveBeenCalledWith(
+        'logout_in_progress'
+      );
+      expect(mockConsole.log).toHaveBeenCalledWith(
+        '[Logout State] Logout flags cleared from all locations'
+      );
     });
 
     it('should not execute when dependencies are missing', () => {
       const logoutState = createLogoutState({
-        console: mockConsole
+        console: mockConsole,
       });
 
       expect(() => logoutState.clearLogoutState()).not.toThrow();
@@ -162,12 +195,15 @@ describe('Logout State Utils', () => {
   describe('isManuallyLoggedOut', () => {
     it('should return true when manual logout flag exists and is not expired', () => {
       mockLocalStorage.setItem('user_manually_logged_out', 'true');
-      mockLocalStorage.setItem('logout_timestamp', (1234567890 - 1000).toString()); // 1 second ago
+      mockLocalStorage.setItem(
+        'logout_timestamp',
+        (1234567890 - 1000).toString()
+      ); // 1 second ago
 
       const logoutState = createLogoutState({
         localStorage: mockLocalStorage,
         sessionStorage: mockSessionStorage,
-        dateNow: mockDateNow
+        dateNow: mockDateNow,
       });
 
       expect(logoutState.isManuallyLoggedOut()).toBe(true);
@@ -175,24 +211,31 @@ describe('Logout State Utils', () => {
 
     it('should return false when manual logout flag is expired', () => {
       mockLocalStorage.setItem('user_manually_logged_out', 'true');
-      mockLocalStorage.setItem('logout_timestamp', (1234567890 - 6000).toString()); // 6 seconds ago
+      mockLocalStorage.setItem(
+        'logout_timestamp',
+        (1234567890 - 6000).toString()
+      ); // 6 seconds ago
 
       const logoutState = createLogoutState({
         localStorage: mockLocalStorage,
         sessionStorage: mockSessionStorage,
-        dateNow: mockDateNow
+        dateNow: mockDateNow,
       });
 
       expect(logoutState.isManuallyLoggedOut()).toBe(false);
       // Should also clean up expired state
-      expect(mockLocalStorage.removeItem).toHaveBeenCalledWith('user_manually_logged_out');
-      expect(mockLocalStorage.removeItem).toHaveBeenCalledWith('logout_timestamp');
+      expect(mockLocalStorage.removeItem).toHaveBeenCalledWith(
+        'user_manually_logged_out'
+      );
+      expect(mockLocalStorage.removeItem).toHaveBeenCalledWith(
+        'logout_timestamp'
+      );
     });
 
     it('should return false when manual logout flag does not exist', () => {
       const logoutState = createLogoutState({
         localStorage: mockLocalStorage,
-        sessionStorage: mockSessionStorage
+        sessionStorage: mockSessionStorage,
       });
 
       expect(logoutState.isManuallyLoggedOut()).toBe(false);
@@ -200,11 +243,14 @@ describe('Logout State Utils', () => {
 
     it('should fallback to sessionStorage when localStorage is missing', () => {
       mockSessionStorage.setItem('user_manually_logged_out', 'true');
-      mockSessionStorage.setItem('logout_timestamp', (1234567890 - 1000).toString());
+      mockSessionStorage.setItem(
+        'logout_timestamp',
+        (1234567890 - 1000).toString()
+      );
 
       const logoutState = createLogoutState({
         sessionStorage: mockSessionStorage,
-        dateNow: mockDateNow
+        dateNow: mockDateNow,
       });
 
       expect(logoutState.isManuallyLoggedOut()).toBe(true);
@@ -222,11 +268,11 @@ describe('Logout State Utils', () => {
       const logoutLocation = {
         ...mockLocation,
         search: '?logged_out=true',
-        href: 'https://example.com?logged_out=true'
+        href: 'https://example.com?logged_out=true',
       };
 
       const logoutState = createLogoutState({
-        location: logoutLocation
+        location: logoutLocation,
       });
 
       expect(logoutState.hasLogoutUrlParams()).toBe(true);
@@ -236,11 +282,11 @@ describe('Logout State Utils', () => {
       const noLogoutLocation = {
         ...mockLocation,
         search: '?other=param',
-        href: 'https://example.com?other=param'
+        href: 'https://example.com?other=param',
       };
 
       const logoutState = createLogoutState({
-        location: noLogoutLocation
+        location: noLogoutLocation,
       });
 
       expect(logoutState.hasLogoutUrlParams()).toBe(false);
@@ -256,18 +302,18 @@ describe('Logout State Utils', () => {
       const testCases = [
         '?logged_out=true',
         '?other=value&logged_out=true',
-        '?logged_out=true&other=value'
+        '?logged_out=true&other=value',
       ];
 
-      testCases.forEach(search => {
+      testCases.forEach((search) => {
         const testLocation = {
           ...mockLocation,
           search,
-          href: `https://example.com${search}`
+          href: `https://example.com${search}`,
         };
 
         const logoutState = createLogoutState({
-          location: testLocation
+          location: testLocation,
         });
 
         expect(logoutState.hasLogoutUrlParams()).toBe(true);
@@ -278,9 +324,7 @@ describe('Logout State Utils', () => {
   describe('backward compatibility exports', () => {
     it('should provide backward compatible function exports', () => {
       // Import the default exports
-      const {
-        logoutState
-      } = require('@/lib/utils/logout-state');
+      const { logoutState } = require('@/lib/utils/logout-state');
 
       expect(typeof logoutState.isManuallyLoggedOut).toBe('function');
       expect(typeof logoutState.setManuallyLoggedOut).toBe('function');
@@ -296,18 +340,18 @@ describe('Logout State Utils', () => {
         sessionStorage: mockSessionStorage,
         console: mockConsole,
         location: mockLocation,
-        dateNow: mockDateNow
+        dateNow: mockDateNow,
       });
 
       // Set manual logout
       logoutState.setManuallyLoggedOut();
-      
+
       expect(logoutState.isManuallyLoggedOut()).toBe(true);
       expect(logoutState.hasLogoutUrlParams()).toBe(false); // URL has logged_out, not logout param
 
       // Clear logout
       logoutState.clearLogoutState();
-      
+
       expect(logoutState.isManuallyLoggedOut()).toBe(false);
     });
 
@@ -320,7 +364,7 @@ describe('Logout State Utils', () => {
       const logoutState = createLogoutState({
         localStorage: mockLocalStorage,
         sessionStorage: mockSessionStorage,
-        dateNow: mockDateNow
+        dateNow: mockDateNow,
       });
 
       // Should be false due to expiry and should clean up
@@ -331,11 +375,11 @@ describe('Logout State Utils', () => {
       const logoutLocation = {
         ...mockLocation,
         search: '?logged_out=true',
-        href: 'https://example.com?logged_out=true'
+        href: 'https://example.com?logged_out=true',
       };
 
       const logoutState = createLogoutState({
-        location: logoutLocation
+        location: logoutLocation,
       });
 
       expect(logoutState.hasLogoutUrlParams()).toBe(true);

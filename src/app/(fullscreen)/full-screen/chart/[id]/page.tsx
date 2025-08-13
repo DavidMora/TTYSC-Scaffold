@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import { useParams } from "next/navigation";
-import { AIChartContainer } from "@/components/AICharts/AIChartContainer";
-import { FlexBox, Text, Title } from "@ui5/webcomponents-react";
+import React, { useState } from 'react';
+import { useParams } from 'next/navigation';
+import { AIChartContainer } from '@/components/AICharts/AIChartContainer';
+import { FlexBox, Text, Title } from '@ui5/webcomponents-react';
 
 export default function ChartPage() {
   const { id } = useParams<{ id: string }>();
-  const [title, setTitle] = useState("");
+  const [title, setTitle] = useState('');
 
   if (!id) {
     return (

@@ -1,5 +1,5 @@
-import React from "react";
-import { AnalyticalTable } from "./AnalyticalTable";
+import React from 'react';
+import { AnalyticalTable } from './AnalyticalTable';
 
 const Button = React.forwardRef(
   (
@@ -19,7 +19,7 @@ const Button = React.forwardRef(
         className={className}
         onClick={handleClick}
         disabled={disabled}
-        data-testid={props["data-testid"] ?? "ui5-button"}
+        data-testid={props['data-testid'] ?? 'ui5-button'}
         {...restProps}
       >
         {icon && <span data-testid="ui5-icon">{icon}</span>}
@@ -29,7 +29,7 @@ const Button = React.forwardRef(
     );
   }
 );
-Button.displayName = "Button";
+Button.displayName = 'Button';
 
 const Card = React.forwardRef(
   ({ children, className, onClick, header, ...props }, ref) => (
@@ -46,14 +46,14 @@ const Card = React.forwardRef(
     </div>
   )
 );
-Card.displayName = "Card";
+Card.displayName = 'Card';
 
 const ComboBox = React.forwardRef(({ children, ...props }, ref) => (
   <select ref={ref} data-testid="ui5-combobox" {...props}>
     {children}
   </select>
 ));
-ComboBox.displayName = "ComboBox";
+ComboBox.displayName = 'ComboBox';
 
 const DatePicker = React.forwardRef(
   ({ placeholder, maxDate, minDate, onChange, value, ...props }, ref) => {
@@ -80,7 +80,7 @@ const DatePicker = React.forwardRef(
     );
   }
 );
-DatePicker.displayName = "DatePicker";
+DatePicker.displayName = 'DatePicker';
 
 // Simple DateRangePicker mock that behaves like a text input and emits UI5-style events
 const DateRangePicker = React.forwardRef(
@@ -106,7 +106,7 @@ const DateRangePicker = React.forwardRef(
     );
   }
 );
-DateRangePicker.displayName = "DateRangePicker";
+DateRangePicker.displayName = 'DateRangePicker';
 
 const Dialog = React.forwardRef(
   (
@@ -127,14 +127,14 @@ const Dialog = React.forwardRef(
       </div>
     ) : null
 );
-Dialog.displayName = "Dialog";
+Dialog.displayName = 'Dialog';
 
 const Label = ({ children, className }) => (
   <label className={className} data-testid="ui5-label">
     {children}
   </label>
 );
-Label.displayName = "Label";
+Label.displayName = 'Label';
 
 const FlexBox = React.forwardRef(
   (
@@ -145,28 +145,28 @@ const FlexBox = React.forwardRef(
       ref={ref}
       className={className}
       style={{
-        display: "flex",
+        display: 'flex',
         flexDirection:
-          direction === "Column" || direction === "column" ? "column" : "row",
+          direction === 'Column' || direction === 'column' ? 'column' : 'row',
         alignItems:
-          alignItems === "Center"
-            ? "center"
-            : alignItems === "Start"
-            ? "flex-start"
-            : alignItems === "End"
-            ? "flex-end"
-            : undefined,
+          alignItems === 'Center'
+            ? 'center'
+            : alignItems === 'Start'
+              ? 'flex-start'
+              : alignItems === 'End'
+                ? 'flex-end'
+                : undefined,
         justifyContent:
-          justifyContent === "Center"
-            ? "center"
-            : justifyContent === "SpaceBetween"
-            ? "space-between"
-            : justifyContent === "SpaceAround"
-            ? "space-around"
-            : undefined,
+          justifyContent === 'Center'
+            ? 'center'
+            : justifyContent === 'SpaceBetween'
+              ? 'space-between'
+              : justifyContent === 'SpaceAround'
+                ? 'space-around'
+                : undefined,
         ...props.style,
       }}
-      data-testid={"ui5-flexbox"}
+      data-testid={'ui5-flexbox'}
       data-direction={direction}
       {...props}
     >
@@ -174,14 +174,14 @@ const FlexBox = React.forwardRef(
     </div>
   )
 );
-FlexBox.displayName = "FlexBox";
+FlexBox.displayName = 'FlexBox';
 
 const Form = React.forwardRef(({ children, className }, ref) => (
   <div ref={ref} className={className} data-testid="ui5-form-layout">
     {children}
   </div>
 ));
-Form.displayName = "Form";
+Form.displayName = 'Form';
 
 const Input = React.forwardRef(
   ({ placeholder, maxlength, onInput, onChange, ...props }, ref) => {
@@ -206,21 +206,21 @@ const Input = React.forwardRef(
     );
   }
 );
-Input.displayName = "Input";
+Input.displayName = 'Input';
 
 const List = ({ children, className, onClick, ...props }) => (
   <ul className={className} data-testid="ui5-list" onClick={onClick} {...props}>
     {children}
   </ul>
 );
-List.displayName = "List";
+List.displayName = 'List';
 
 const ListItem = ({ children, onClick, ...props }) => (
   <li onClick={onClick} data-testid="ui5-list-item" {...props}>
     {children}
   </li>
 );
-ListItem.displayName = "ListItem";
+ListItem.displayName = 'ListItem';
 
 const ListItemCustom = ({ children, className, onClick }) => (
   <li
@@ -231,7 +231,7 @@ const ListItemCustom = ({ children, className, onClick }) => (
     {children}
   </li>
 );
-ListItemCustom.displayName = "ListItemCustom";
+ListItemCustom.displayName = 'ListItemCustom';
 
 const ListItemStandard = ({ children, className, onClick, ...props }) => (
   <li
@@ -243,7 +243,7 @@ const ListItemStandard = ({ children, className, onClick, ...props }) => (
     {children}
   </li>
 );
-ListItemStandard.displayName = "ListItemStandard";
+ListItemStandard.displayName = 'ListItemStandard';
 
 const Popover = ({
   children,
@@ -279,7 +279,7 @@ const Popover = ({
     </div>
   ) : null;
 };
-Popover.displayName = "Popover";
+Popover.displayName = 'Popover';
 
 const MultiComboBox = React.forwardRef(
   ({ children, placeholder, onSelectionChange, value = [], ...props }, ref) => {
@@ -318,13 +318,13 @@ const MultiComboBox = React.forwardRef(
     );
   }
 );
-MultiComboBox.displayName = "MultiComboBox";
+MultiComboBox.displayName = 'MultiComboBox';
 
 const MultiComboBoxItem = ({ text }) => <option value={text}>{text}</option>;
-MultiComboBoxItem.displayName = "MultiComboBoxItem";
+MultiComboBoxItem.displayName = 'MultiComboBoxItem';
 
 const Tag = ({ children }) => <div data-testid="ui5-tag">{children}</div>;
-Tag.displayName = "Tag";
+Tag.displayName = 'Tag';
 
 const Grid = ({ children }) => <div data-testid="ui5-grid">{children}</div>;
 
@@ -341,7 +341,7 @@ export const Select = ({ children, value, onChange, valueState, ...props }) => {
             value: selectedOption.props.value,
             text: selectedOption.props.children,
           }
-        : { value: selectedValue === "nullish-test" ? null : selectedValue };
+        : { value: selectedValue === 'nullish-test' ? null : selectedValue };
 
       onChange({ detail: { selectedOption: selectedOptionValue } });
     }
@@ -360,7 +360,7 @@ export const Select = ({ children, value, onChange, valueState, ...props }) => {
   );
 };
 
-Select.displayName = "Select";
+Select.displayName = 'Select';
 
 export const Option = ({ children, value, ...props }) => (
   <option value={value} {...props}>
@@ -368,7 +368,7 @@ export const Option = ({ children, value, ...props }) => (
   </option>
 );
 
-Option.displayName = "Option";
+Option.displayName = 'Option';
 
 const Table = ({
   children,
@@ -381,7 +381,7 @@ const Table = ({
   // Check if there are any table rows in children
   const hasTableRows = React.Children.toArray(children).some(
     (child) =>
-      React.isValidElement(child) && child.type?.displayName === "TableRow"
+      React.isValidElement(child) && child.type?.displayName === 'TableRow'
   );
 
   return (
@@ -406,7 +406,7 @@ const Table = ({
     </div>
   );
 };
-Table.displayName = "Table";
+Table.displayName = 'Table';
 
 const TableHeaderRow = ({ children, sticky, ...props }) => (
   <div
@@ -418,7 +418,7 @@ const TableHeaderRow = ({ children, sticky, ...props }) => (
     {children}
   </div>
 );
-TableHeaderRow.displayName = "TableHeaderRow";
+TableHeaderRow.displayName = 'TableHeaderRow';
 
 const TableHeaderCell = ({
   children,
@@ -444,10 +444,10 @@ const TableHeaderCell = ({
     {children}
   </div>
 );
-TableHeaderCell.displayName = "TableHeaderCell";
+TableHeaderCell.displayName = 'TableHeaderCell';
 
 const TableRow = ({ children, className, style, rowKey, ...props }) => {
-  const uiRowKey = props["data-ui5-row-key"] || rowKey;
+  const uiRowKey = props['data-ui5-row-key'] || rowKey;
   return (
     <div
       className={className}
@@ -461,7 +461,7 @@ const TableRow = ({ children, className, style, rowKey, ...props }) => {
     </div>
   );
 };
-TableRow.displayName = "TableRow";
+TableRow.displayName = 'TableRow';
 
 const TableCell = ({ children, className, ...props }) => (
   <div
@@ -473,7 +473,7 @@ const TableCell = ({ children, className, ...props }) => (
     {children}
   </div>
 );
-TableCell.displayName = "TableCell";
+TableCell.displayName = 'TableCell';
 
 const TableSelectionMulti = ({ behavior, ...props }) => (
   <div
@@ -482,19 +482,19 @@ const TableSelectionMulti = ({ behavior, ...props }) => (
     data-key={props.key}
   />
 );
-TableSelectionMulti.displayName = "TableSelectionMulti";
+TableSelectionMulti.displayName = 'TableSelectionMulti';
 
 const TableGrowing = ({ mode, ...props }) => (
   <div data-testid="ui5-table-growing" data-mode={mode} data-key={props.key} />
 );
-TableGrowing.displayName = "TableGrowing";
+TableGrowing.displayName = 'TableGrowing';
 
 const Icon = React.forwardRef(({ name, className, ...props }, ref) => (
   <span ref={ref} className={className} data-testid="ui5-icon" {...props}>
     {name}
   </span>
 ));
-Icon.displayName = "Icon";
+Icon.displayName = 'Icon';
 
 const RadioButton = React.forwardRef(
   (
@@ -515,9 +515,9 @@ const RadioButton = React.forwardRef(
       <label
         className={className}
         style={{
-          display: "inline-flex",
-          alignItems: "center",
-          cursor: "pointer",
+          display: 'inline-flex',
+          alignItems: 'center',
+          cursor: 'pointer',
           ...style,
         }}
       >
@@ -536,7 +536,7 @@ const RadioButton = React.forwardRef(
     );
   }
 );
-RadioButton.displayName = "RadioButton";
+RadioButton.displayName = 'RadioButton';
 
 const Switch = React.forwardRef(({ name, className, ...props }, ref) => (
   <label className={className}>
@@ -544,7 +544,7 @@ const Switch = React.forwardRef(({ name, className, ...props }, ref) => (
     <span className="slider round"></span>
   </label>
 ));
-Switch.displayName = "Switch";
+Switch.displayName = 'Switch';
 
 // Toolbar components
 const Toolbar = React.forwardRef(
@@ -560,7 +560,7 @@ const Toolbar = React.forwardRef(
     </div>
   )
 );
-Toolbar.displayName = "Toolbar";
+Toolbar.displayName = 'Toolbar';
 
 const ToolbarSpacer = React.forwardRef(({ ...props }, ref) => (
   <div
@@ -570,21 +570,21 @@ const ToolbarSpacer = React.forwardRef(({ ...props }, ref) => (
     {...props}
   />
 ));
-ToolbarSpacer.displayName = "ToolbarSpacer";
+ToolbarSpacer.displayName = 'ToolbarSpacer';
 
 const ToolbarSeparator = React.forwardRef(({ ...props }, ref) => (
   <div
     ref={ref}
     data-testid="ui5-toolbar-separator"
     style={{
-      width: "1px",
-      backgroundColor: "var(--sapToolbar_SeparatorColor)",
-      margin: "0 8px",
+      width: '1px',
+      backgroundColor: 'var(--sapToolbar_SeparatorColor)',
+      margin: '0 8px',
     }}
     {...props}
   />
 ));
-ToolbarSeparator.displayName = "ToolbarSeparator";
+ToolbarSeparator.displayName = 'ToolbarSeparator';
 
 const ToolbarButton = React.forwardRef(
   ({ design, icon, onClick, children, ...props }, ref) => (
@@ -595,10 +595,10 @@ const ToolbarButton = React.forwardRef(
       data-design={design}
       data-icon={icon}
       style={{
-        background: "transparent",
-        border: "none",
-        padding: "8px",
-        cursor: "pointer",
+        background: 'transparent',
+        border: 'none',
+        padding: '8px',
+        cursor: 'pointer',
       }}
       {...props}
     >
@@ -607,7 +607,7 @@ const ToolbarButton = React.forwardRef(
     </button>
   )
 );
-ToolbarButton.displayName = "ToolbarButton";
+ToolbarButton.displayName = 'ToolbarButton';
 
 // Menu components
 const Menu = React.forwardRef(
@@ -630,13 +630,13 @@ const Menu = React.forwardRef(
         data-horizontal-align={horizontalAlign}
         onClick={handleClose}
         style={{
-          position: "absolute",
-          backgroundColor: "white",
-          border: "1px solid #ccc",
-          borderRadius: "4px",
-          boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+          position: 'absolute',
+          backgroundColor: 'white',
+          border: '1px solid #ccc',
+          borderRadius: '4px',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
           zIndex: 1000,
-          minWidth: "120px",
+          minWidth: '120px',
         }}
         {...props}
       >
@@ -645,7 +645,7 @@ const Menu = React.forwardRef(
     ) : null;
   }
 );
-Menu.displayName = "Menu";
+Menu.displayName = 'Menu';
 
 const MenuItem = React.forwardRef(
   ({ children, icon, text, onClick, disabled, ...props }, ref) => {
@@ -664,16 +664,16 @@ const MenuItem = React.forwardRef(
         data-icon={icon}
         data-text={text}
         style={{
-          width: "100%",
-          padding: "8px 12px",
-          border: "none",
-          background: "transparent",
-          textAlign: "left",
-          cursor: disabled ? "not-allowed" : "pointer",
+          width: '100%',
+          padding: '8px 12px',
+          border: 'none',
+          background: 'transparent',
+          textAlign: 'left',
+          cursor: disabled ? 'not-allowed' : 'pointer',
           opacity: disabled ? 0.5 : 1,
-          display: "flex",
-          alignItems: "center",
-          gap: "8px",
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
         }}
         {...props}
       >
@@ -683,10 +683,10 @@ const MenuItem = React.forwardRef(
     );
   }
 );
-MenuItem.displayName = "MenuItem";
+MenuItem.displayName = 'MenuItem';
 
 // Improved Tab Component
-const Tab = ({ text, selected, children, onClick, "data-key": dataKey }) => (
+const Tab = ({ text, selected, children, onClick, 'data-key': dataKey }) => (
   <div
     data-selected={selected}
     data-label={text}
@@ -694,14 +694,14 @@ const Tab = ({ text, selected, children, onClick, "data-key": dataKey }) => (
     onClick={onClick}
     data-testid="ui5-tab"
     style={{
-      display: selected ? "block" : "none",
+      display: selected ? 'block' : 'none',
     }}
   >
-    <label style={{ display: "none" }}>{text}</label>
+    <label style={{ display: 'none' }}>{text}</label>
     {selected && children}
   </div>
 );
-Tab.displayName = "Tab";
+Tab.displayName = 'Tab';
 
 // Improved TabContainer Component
 const TabContainer = ({ children, className, onTabSelect }) => {
@@ -725,15 +725,15 @@ const TabContainer = ({ children, className, onTabSelect }) => {
     <div
       className={className}
       data-testid="ui5-tab-container"
-      style={{ display: "flex", flexDirection: "column", height: "100%" }}
+      style={{ display: 'flex', flexDirection: 'column', height: '100%' }}
     >
       {/* Tab Headers */}
       <div
         data-testid="ui5-tab-headers"
         style={{
-          display: "flex",
-          borderBottom: "1px solid #e0e0e0",
-          backgroundColor: "#f5f5f5",
+          display: 'flex',
+          borderBottom: '1px solid #e0e0e0',
+          backgroundColor: '#f5f5f5',
           flexShrink: 0,
         }}
       >
@@ -743,18 +743,18 @@ const TabContainer = ({ children, className, onTabSelect }) => {
             data-testid={`ui5-tab-header-${index}`}
             onClick={() => handleTabClick(index)}
             style={{
-              padding: "12px 24px",
-              border: "none",
+              padding: '12px 24px',
+              border: 'none',
               backgroundColor:
-                selectedTabIndex === index ? "#fff" : "transparent",
+                selectedTabIndex === index ? '#fff' : 'transparent',
               borderBottom:
                 selectedTabIndex === index
-                  ? "2px solid #0070f3"
-                  : "2px solid transparent",
-              cursor: "pointer",
-              fontWeight: selectedTabIndex === index ? "bold" : "normal",
-              color: selectedTabIndex === index ? "#0070f3" : "#666",
-              transition: "all 0.2s ease",
+                  ? '2px solid #0070f3'
+                  : '2px solid transparent',
+              cursor: 'pointer',
+              fontWeight: selectedTabIndex === index ? 'bold' : 'normal',
+              color: selectedTabIndex === index ? '#0070f3' : '#666',
+              transition: 'all 0.2s ease',
             }}
           >
             {tab.props.text}
@@ -767,8 +767,8 @@ const TabContainer = ({ children, className, onTabSelect }) => {
         data-testid="ui5-tab-content"
         style={{
           flex: 1,
-          overflow: "auto",
-          padding: "16px",
+          overflow: 'auto',
+          padding: '16px',
         }}
       >
         {tabs.map((tab, index) =>
@@ -782,24 +782,24 @@ const TabContainer = ({ children, className, onTabSelect }) => {
     </div>
   );
 };
-TabContainer.displayName = "TabContainer";
+TabContainer.displayName = 'TabContainer';
 
 // Title Component with improved level handling
 const Title = ({ children, level, className, ...props }) => {
   const Component =
-    level === "H1"
-      ? "h1"
-      : level === "H2"
-      ? "h2"
-      : level === "H3"
-      ? "h3"
-      : level === "H4"
-      ? "h4"
-      : level === "H5"
-      ? "h5"
-      : level === "H6"
-      ? "h6"
-      : "div";
+    level === 'H1'
+      ? 'h1'
+      : level === 'H2'
+        ? 'h2'
+        : level === 'H3'
+          ? 'h3'
+          : level === 'H4'
+            ? 'h4'
+            : level === 'H5'
+              ? 'h5'
+              : level === 'H6'
+                ? 'h6'
+                : 'div';
 
   return (
     <Component className={className} data-testid="ui5-title" {...props}>
@@ -807,7 +807,7 @@ const Title = ({ children, level, className, ...props }) => {
     </Component>
   );
 };
-Title.displayName = "Title";
+Title.displayName = 'Title';
 
 const CardHeader = React.forwardRef(
   ({ avatar, titleText, subtitleText, className, ...props }, ref) => (
@@ -823,7 +823,7 @@ const CardHeader = React.forwardRef(
     </div>
   )
 );
-CardHeader.displayName = "CardHeader";
+CardHeader.displayName = 'CardHeader';
 
 const Avatar = React.forwardRef(
   ({ initials, size, colorScheme, ...props }, ref) => (
@@ -838,7 +838,7 @@ const Avatar = React.forwardRef(
     </div>
   )
 );
-Avatar.displayName = "Avatar";
+Avatar.displayName = 'Avatar';
 
 const TextArea = React.forwardRef(
   ({ valueState, placeholder, className, ...props }, ref) => (
@@ -852,7 +852,7 @@ const TextArea = React.forwardRef(
     />
   )
 );
-TextArea.displayName = "TextArea";
+TextArea.displayName = 'TextArea';
 
 module.exports = {
   AnalyticalTable,
@@ -890,16 +890,16 @@ module.exports = {
   ),
   Page: ({ children, ...props }) =>
     React.createElement(
-      "div",
-      { "data-testid": "ui5-page", ...props },
+      'div',
+      { 'data-testid': 'ui5-page', ...props },
       children
     ),
   MessageStrip: ({ children, design, ...props }) =>
     React.createElement(
-      "div",
+      'div',
       {
-        "data-testid": "ui5-messagestrip",
-        "data-design": design,
+        'data-testid': 'ui5-messagestrip',
+        'data-design': design,
         ...props,
       },
       children
@@ -913,20 +913,20 @@ module.exports = {
     ...props
   }) => {
     return React.createElement(
-      "div",
+      'div',
       {
-        "data-testid": "ui5-shellbar",
-        "data-primary-title": primaryTitle,
-        "data-secondary-title": secondaryTitle,
+        'data-testid': 'ui5-shellbar',
+        'data-primary-title': primaryTitle,
+        'data-secondary-title': secondaryTitle,
         ...props,
       },
-      React.createElement("h1", {}, primaryTitle),
+      React.createElement('h1', {}, primaryTitle),
       onProfileClick
         ? React.createElement(
-            "button",
+            'button',
             {
               onClick: onProfileClick,
-              "data-testid": "profile-avatar",
+              'data-testid': 'profile-avatar',
             },
             profile
           )
@@ -936,12 +936,12 @@ module.exports = {
   },
   ShellBarItem: ({ onClick, text, icon, children, ...props }) => {
     return React.createElement(
-      "button",
+      'button',
       {
         onClick: onClick,
-        "data-testid": "ui5-shellbar-item",
-        "data-icon": icon,
-        "data-text": text,
+        'data-testid': 'ui5-shellbar-item',
+        'data-icon': icon,
+        'data-text': text,
         ...props,
       },
       text || children
@@ -949,18 +949,18 @@ module.exports = {
   },
   Avatar: ({ children, ...props }) =>
     React.createElement(
-      "div",
+      'div',
       {
-        "data-testid": "ui5-avatar",
+        'data-testid': 'ui5-avatar',
         ...props,
       },
       children
     ),
   SideNavigation: ({ children, ...props }) =>
     React.createElement(
-      "nav",
+      'nav',
       {
-        "data-testid": "ui5-side-navigation",
+        'data-testid': 'ui5-side-navigation',
         ...props,
       },
       children
@@ -974,20 +974,20 @@ module.exports = {
     ...props
   }) =>
     React.createElement(
-      "div",
+      'div',
       {
-        "data-testid": "ui5-side-navigation-item",
-        "data-text": text,
-        "data-icon": icon,
-        "data-selected": selected,
+        'data-testid': 'ui5-side-navigation-item',
+        'data-text': text,
+        'data-icon': icon,
+        'data-selected': selected,
         ...props,
       },
       children
     ),
   SideNavigationSubItem: ({ text, ...props }) =>
-    React.createElement("div", {
-      "data-testid": "ui5-side-navigation-sub-item",
-      "data-text": text,
+    React.createElement('div', {
+      'data-testid': 'ui5-side-navigation-sub-item',
+      'data-text': text,
       ...props,
     }),
   Panel: ({
@@ -999,19 +999,19 @@ module.exports = {
     ...props
   }) =>
     React.createElement(
-      "button",
+      'button',
       {
-        type: "button",
-        "data-testid": "ui5-panel",
-        "data-header-text": headerText,
-        "data-collapsed": collapsed ? "true" : "false",
+        type: 'button',
+        'data-testid': 'ui5-panel',
+        'data-header-text': headerText,
+        'data-collapsed': collapsed ? 'true' : 'false',
         onClick: onToggle ? () => onToggle() : undefined,
         style: {
-          border: "none",
-          background: "none",
+          border: 'none',
+          background: 'none',
           padding: 0,
-          width: "100%",
-          textAlign: "left",
+          width: '100%',
+          textAlign: 'left',
         },
         ...props,
       },
@@ -1019,9 +1019,9 @@ module.exports = {
     ),
   Link: ({ href, children, ...props }) =>
     React.createElement(
-      "a",
+      'a',
       {
-        "data-testid": "ui5-link",
+        'data-testid': 'ui5-link',
         href,
         ...props,
       },
@@ -1065,24 +1065,24 @@ module.exports = {
   CardHeader,
   Grid,
   FlexBoxDirection: {
-    Column: "column",
-    Row: "row",
+    Column: 'column',
+    Row: 'row',
   },
   FlexBoxJustifyContent: {
-    SpaceBetween: "space-between",
-    Center: "center",
-    Start: "start",
-    End: "end",
-    SpaceAround: "SpaceAround",
+    SpaceBetween: 'space-between',
+    Center: 'center',
+    Start: 'start',
+    End: 'end',
+    SpaceAround: 'SpaceAround',
   },
   FlexBoxAlignItems: {
-    Center: "center",
-    Start: "start",
-    End: "end",
-    Stretch: "stretch",
+    Center: 'center',
+    Start: 'start',
+    End: 'end',
+    Stretch: 'stretch',
   },
   FlexBoxWrap: {
-    Wrap: "wrap",
-    NoWrap: "nowrap",
+    Wrap: 'wrap',
+    NoWrap: 'nowrap',
   },
 };

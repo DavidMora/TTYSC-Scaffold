@@ -1,4 +1,4 @@
-import { DataFetcher } from "../../../src/lib/api";
+import { DataFetcher } from '../../../src/lib/api';
 import {
   DataFetcherAdapter,
   DataFetcherOptions,
@@ -6,8 +6,8 @@ import {
   MutationAdapter,
   MutationOptions,
   MutationResponse,
-} from "../../../src/lib/types/api/data-fetcher";
-import { HttpClientResponse } from "../../../src/lib/types/api/http-client";
+} from '../../../src/lib/types/api/data-fetcher';
+import { HttpClientResponse } from '../../../src/lib/types/api/http-client';
 
 // Mock adapter for testing
 class TestDataFetcherAdapter implements DataFetcherAdapter {
@@ -67,7 +67,7 @@ class TestMutationAdapter implements MutationAdapter {
   }
 }
 
-describe("DataFetcher", () => {
+describe('DataFetcher', () => {
   let dataFetcher: DataFetcher;
   let mockAdapter: TestDataFetcherAdapter;
   let mockMutationAdapter: TestMutationAdapter;
@@ -80,18 +80,18 @@ describe("DataFetcher", () => {
     mockFetcher = jest.fn();
   });
 
-  describe("constructor", () => {
-    it("should use MockAdapter by default when no adapter is provided", () => {
+  describe('constructor', () => {
+    it('should use MockAdapter by default when no adapter is provided', () => {
       const defaultDataFetcher = new DataFetcher();
       expect(defaultDataFetcher).toBeInstanceOf(DataFetcher);
     });
 
-    it("should use provided adapter", () => {
+    it('should use provided adapter', () => {
       const customDataFetcher = new DataFetcher(mockAdapter);
       expect(customDataFetcher).toBeInstanceOf(DataFetcher);
     });
 
-    it("should use provided mutation adapter", () => {
+    it('should use provided mutation adapter', () => {
       const customDataFetcher = new DataFetcher(
         mockAdapter,
         mockMutationAdapter
@@ -99,16 +99,16 @@ describe("DataFetcher", () => {
       expect(customDataFetcher).toBeInstanceOf(DataFetcher);
     });
 
-    it("should use default adapters when none provided", () => {
+    it('should use default adapters when none provided', () => {
       const defaultDataFetcher = new DataFetcher();
       expect(defaultDataFetcher).toBeInstanceOf(DataFetcher);
     });
   });
 
-  describe("fetchData", () => {
-    it("should call adapter fetchData method with correct parameters", () => {
-      const spy = jest.spyOn(mockAdapter, "fetchData");
-      const key = "test-key";
+  describe('fetchData', () => {
+    it('should call adapter fetchData method with correct parameters', () => {
+      const spy = jest.spyOn(mockAdapter, 'fetchData');
+      const key = 'test-key';
       const options = { enabled: true, retry: 3 };
 
       dataFetcher.fetchData(key, mockFetcher, options);
@@ -116,18 +116,18 @@ describe("DataFetcher", () => {
       expect(spy).toHaveBeenCalledWith(key, mockFetcher, options);
     });
 
-    it("should call adapter fetchData method without options", () => {
-      const spy = jest.spyOn(mockAdapter, "fetchData");
-      const key = "test-key";
+    it('should call adapter fetchData method without options', () => {
+      const spy = jest.spyOn(mockAdapter, 'fetchData');
+      const key = 'test-key';
 
       dataFetcher.fetchData(key, mockFetcher);
 
       expect(spy).toHaveBeenCalledWith(key, mockFetcher, undefined);
     });
 
-    it("should return response from adapter", () => {
+    it('should return response from adapter', () => {
       const expectedResponse: DataFetcherResponse<unknown> = {
-        data: "test-data",
+        data: 'test-data',
         error: undefined,
         isLoading: false,
         isValidating: false,
@@ -135,41 +135,41 @@ describe("DataFetcher", () => {
       };
 
       mockAdapter.setMockResponse(expectedResponse);
-      const spy = jest.spyOn(mockAdapter, "fetchData");
+      const spy = jest.spyOn(mockAdapter, 'fetchData');
 
-      const result = dataFetcher.fetchData("test-key", mockFetcher);
+      const result = dataFetcher.fetchData('test-key', mockFetcher);
 
-      expect(spy).toHaveBeenCalledWith("test-key", mockFetcher, undefined);
-      expect(result.data).toBe("test-data");
+      expect(spy).toHaveBeenCalledWith('test-key', mockFetcher, undefined);
+      expect(result.data).toBe('test-data');
     });
 
-    it("should handle error from adapter", () => {
+    it('should handle error from adapter', () => {
       const expectedResponse: DataFetcherResponse<unknown> = {
         data: undefined,
-        error: new Error("Test error"),
+        error: new Error('Test error'),
         isLoading: false,
         isValidating: false,
         mutate: jest.fn(),
       };
 
       mockAdapter.setMockResponse(expectedResponse);
-      const spy = jest.spyOn(mockAdapter, "fetchData");
+      const spy = jest.spyOn(mockAdapter, 'fetchData');
 
-      const result = dataFetcher.fetchData("test-key", mockFetcher);
+      const result = dataFetcher.fetchData('test-key', mockFetcher);
 
-      expect(spy).toHaveBeenCalledWith("test-key", mockFetcher, undefined);
-      expect(result.error).toEqual(new Error("Test error"));
+      expect(spy).toHaveBeenCalledWith('test-key', mockFetcher, undefined);
+      expect(result.error).toEqual(new Error('Test error'));
       expect(result.data).toBeUndefined();
     });
 
-    it("should pass generic type correctly", () => {
+    it('should pass generic type correctly', () => {
       interface TestData {
         id: number;
         name: string;
       }
 
       const expectedResponse: DataFetcherResponse<TestData[]> = {
-        data: [{ id: 1, name: "test" }],
+        data: [{ id: 1, name: 'test' }],
         error: undefined,
         isLoading: false,
         isValidating: false,
@@ -177,49 +177,49 @@ describe("DataFetcher", () => {
       };
 
       mockAdapter.setMockResponse(expectedResponse);
-      const spy = jest.spyOn(mockAdapter, "fetchData");
+      const spy = jest.spyOn(mockAdapter, 'fetchData');
 
-      const result = dataFetcher.fetchData<TestData[]>("test-key", mockFetcher);
+      const result = dataFetcher.fetchData<TestData[]>('test-key', mockFetcher);
 
-      expect(spy).toHaveBeenCalledWith("test-key", mockFetcher, undefined);
-      expect(result.data).toEqual([{ id: 1, name: "test" }]);
+      expect(spy).toHaveBeenCalledWith('test-key', mockFetcher, undefined);
+      expect(result.data).toEqual([{ id: 1, name: 'test' }]);
     });
   });
 
-  describe("mutateData", () => {
+  describe('mutateData', () => {
     let mockMutationFn: jest.Mock;
 
     beforeEach(() => {
       mockMutationFn = jest.fn();
     });
 
-    it("should call mutation adapter mutateData method with correct parameters", () => {
-      const spy = jest.spyOn(mockMutationAdapter, "mutateData");
+    it('should call mutation adapter mutateData method with correct parameters', () => {
+      const spy = jest.spyOn(mockMutationAdapter, 'mutateData');
       const options = {
         onSuccess: jest.fn(),
         onError: jest.fn(),
       };
-      const mutationKey = ["test-key"];
+      const mutationKey = ['test-key'];
 
       dataFetcher.mutateData(mutationKey, mockMutationFn, options);
 
       expect(spy).toHaveBeenCalledWith(mutationKey, mockMutationFn, options);
     });
 
-    it("should call mutation adapter mutateData method without options", () => {
-      const spy = jest.spyOn(mockMutationAdapter, "mutateData");
-      const mutationKey = ["test-key"];
+    it('should call mutation adapter mutateData method without options', () => {
+      const spy = jest.spyOn(mockMutationAdapter, 'mutateData');
+      const mutationKey = ['test-key'];
 
       dataFetcher.mutateData(mutationKey, mockMutationFn);
 
       expect(spy).toHaveBeenCalledWith(mutationKey, mockMutationFn, undefined);
     });
 
-    it("should return response from mutation adapter", () => {
+    it('should return response from mutation adapter', () => {
       const expectedResponse: MutationResponse<string, { id: number }> = {
         mutate: jest.fn(),
         mutateAsync: jest.fn(),
-        data: "success",
+        data: 'success',
         error: undefined,
         isLoading: false,
         isSuccess: true,
@@ -229,22 +229,22 @@ describe("DataFetcher", () => {
       };
 
       mockMutationAdapter.setMockResponse(expectedResponse);
-      const spy = jest.spyOn(mockMutationAdapter, "mutateData");
+      const spy = jest.spyOn(mockMutationAdapter, 'mutateData');
 
-      const mutationKey = ["test-key"];
+      const mutationKey = ['test-key'];
       const result = dataFetcher.mutateData(mutationKey, mockMutationFn);
 
       expect(spy).toHaveBeenCalledWith(mutationKey, mockMutationFn, undefined);
-      expect(result.data).toBe("success");
+      expect(result.data).toBe('success');
       expect(result.isSuccess).toBe(true);
     });
 
-    it("should handle error from mutation adapter", () => {
+    it('should handle error from mutation adapter', () => {
       const expectedResponse: MutationResponse<unknown, unknown> = {
         mutate: jest.fn(),
         mutateAsync: jest.fn(),
         data: undefined,
-        error: new Error("Mutation failed"),
+        error: new Error('Mutation failed'),
         isLoading: false,
         isSuccess: false,
         isError: true,
@@ -253,18 +253,18 @@ describe("DataFetcher", () => {
       };
 
       mockMutationAdapter.setMockResponse(expectedResponse);
-      const spy = jest.spyOn(mockMutationAdapter, "mutateData");
+      const spy = jest.spyOn(mockMutationAdapter, 'mutateData');
 
-      const mutationKey = ["test-key"];
+      const mutationKey = ['test-key'];
       const result = dataFetcher.mutateData(mutationKey, mockMutationFn);
 
       expect(spy).toHaveBeenCalledWith(mutationKey, mockMutationFn, undefined);
-      expect(result.error).toEqual(new Error("Mutation failed"));
+      expect(result.error).toEqual(new Error('Mutation failed'));
       expect(result.isError).toBe(true);
       expect(result.data).toBeUndefined();
     });
 
-    it("should pass generic types correctly for mutation", () => {
+    it('should pass generic types correctly for mutation', () => {
       interface CreateUserData {
         id: number;
         name: string;
@@ -282,7 +282,7 @@ describe("DataFetcher", () => {
       > = {
         mutate: jest.fn(),
         mutateAsync: jest.fn(),
-        data: { id: 1, name: "John Doe", email: "john@example.com" },
+        data: { id: 1, name: 'John Doe', email: 'john@example.com' },
         error: undefined,
         isLoading: false,
         isSuccess: true,
@@ -292,9 +292,9 @@ describe("DataFetcher", () => {
       };
 
       mockMutationAdapter.setMockResponse(expectedResponse);
-      const spy = jest.spyOn(mockMutationAdapter, "mutateData");
+      const spy = jest.spyOn(mockMutationAdapter, 'mutateData');
 
-      const mutationKey = ["test-key"];
+      const mutationKey = ['test-key'];
       const result = dataFetcher.mutateData<
         CreateUserData,
         CreateUserVariables
@@ -303,17 +303,17 @@ describe("DataFetcher", () => {
       expect(spy).toHaveBeenCalledWith(mutationKey, mockMutationFn, undefined);
       expect(result.data).toEqual({
         id: 1,
-        name: "John Doe",
-        email: "john@example.com",
+        name: 'John Doe',
+        email: 'john@example.com',
       });
     });
 
-    it("should handle mutation with invalidateQueries option", () => {
-      const spy = jest.spyOn(mockMutationAdapter, "mutateData");
+    it('should handle mutation with invalidateQueries option', () => {
+      const spy = jest.spyOn(mockMutationAdapter, 'mutateData');
       const options = {
-        invalidateQueries: ["users", ["user", 123]],
+        invalidateQueries: ['users', ['user', 123]],
       };
-      const mutationKey = ["test-key"];
+      const mutationKey = ['test-key'];
 
       dataFetcher.mutateData(mutationKey, mockMutationFn, options);
 
@@ -322,10 +322,10 @@ describe("DataFetcher", () => {
   });
 });
 
-describe("Default dataFetcher instance", () => {
-  it("should be an instance of DataFetcher", async () => {
+describe('Default dataFetcher instance', () => {
+  it('should be an instance of DataFetcher', async () => {
     const { default: defaultDataFetcher } = await import(
-      "../../../src/lib/api/data-fetcher"
+      '../../../src/lib/api/data-fetcher'
     );
     expect(defaultDataFetcher).toBeInstanceOf(DataFetcher);
   });

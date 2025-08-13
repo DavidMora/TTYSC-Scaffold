@@ -1,28 +1,28 @@
-import React from "react";
-import { render, screen } from "@testing-library/react";
-import AnalysisContainer from "@/components/AnalysisContainer/AnalysisContainer";
-import { SequentialNamingProvider } from "@/contexts/SequentialNamingContext";
-import { AutosaveUIProvider } from "@/contexts/AutosaveUIProvider";
-import { useParams } from "next/navigation";
+import React from 'react';
+import { render, screen } from '@testing-library/react';
+import AnalysisContainer from '@/components/AnalysisContainer/AnalysisContainer';
+import { SequentialNamingProvider } from '@/contexts/SequentialNamingContext';
+import { AutosaveUIProvider } from '@/contexts/AutosaveUIProvider';
+import { useParams } from 'next/navigation';
 
-jest.mock("@/components/AnalysisChat/AnalysisChat", () =>
+jest.mock('@/components/AnalysisChat/AnalysisChat', () =>
   jest.fn(() => <div data-testid="analysis-chat" />)
 );
 
-jest.mock("@/components/AnalysisFilters/AnalysisFilters", () => {
+jest.mock('@/components/AnalysisFilters/AnalysisFilters', () => {
   const Mock = () => <div data-testid="analysis-filters" />;
-  Mock.displayName = "MockAnalysisFilters";
+  Mock.displayName = 'MockAnalysisFilters';
   return Mock;
 });
 
-jest.mock("@/components/AnalysisHeader/AnalysisHeader", () => {
+jest.mock('@/components/AnalysisHeader/AnalysisHeader', () => {
   const Mock = () => <div data-testid="analysis-header" />;
-  Mock.displayName = "MockAnalysisHeader";
+  Mock.displayName = 'MockAnalysisHeader';
   return Mock;
 });
 
 const mockUseAnalysisFilters = jest.fn();
-jest.mock("@/hooks/useAnalysisFilters", () => ({
+jest.mock('@/hooks/useAnalysisFilters', () => ({
   useAnalysisFilters: jest.fn((initialFilters, onUserChange) =>
     mockUseAnalysisFilters(initialFilters, onUserChange)
   ),
@@ -30,7 +30,7 @@ jest.mock("@/hooks/useAnalysisFilters", () => ({
 
 const mockUseChat = jest.fn();
 const mockUpdateChat = jest.fn();
-jest.mock("@/hooks/chats", () => ({
+jest.mock('@/hooks/chats', () => ({
   useChat: () => mockUseChat(),
   useUpdateChat: () => ({
     mutate: mockUpdateChat,
@@ -38,15 +38,15 @@ jest.mock("@/hooks/chats", () => ({
 }));
 
 const mockUseAutoSave = jest.fn();
-jest.mock("@/hooks/useAutoSave", () => ({
+jest.mock('@/hooks/useAutoSave', () => ({
   useAutoSave: jest.fn((options) => mockUseAutoSave(options)),
 }));
 
-const mockGenerateAnalysisName = jest.fn(() => "Generated Analysis Name");
+const mockGenerateAnalysisName = jest.fn(() => 'Generated Analysis Name');
 const mockUseSequentialNaming = jest.fn(() => ({
   generateAnalysisName: mockGenerateAnalysisName,
 }));
-jest.mock("@/contexts/SequentialNamingContext", () => ({
+jest.mock('@/contexts/SequentialNamingContext', () => ({
   SequentialNamingProvider: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="sequential-naming-provider">{children}</div>
   ),
@@ -57,7 +57,7 @@ const mockUseAutosaveUI = jest.fn(() => ({
   activateAutosaveUI: jest.fn(),
   showAutoSaved: false,
 }));
-jest.mock("@/contexts/AutosaveUIProvider", () => ({
+jest.mock('@/contexts/AutosaveUIProvider', () => ({
   AutosaveUIProvider: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="autosave-ui-provider">{children}</div>
   ),
@@ -65,7 +65,7 @@ jest.mock("@/contexts/AutosaveUIProvider", () => ({
 }));
 
 // Get the mocked component
-import AnalysisChat from "@/components/AnalysisChat/AnalysisChat";
+import AnalysisChat from '@/components/AnalysisChat/AnalysisChat';
 const mockAnalysisChat = jest.mocked(AnalysisChat);
 
 // Helper function to render with providers
@@ -77,12 +77,12 @@ const renderWithProviders = (component: React.ReactElement) => {
   );
 };
 
-describe("AnalysisContainer", () => {
+describe('AnalysisContainer', () => {
   const mockUseParams = useParams as jest.MockedFunction<typeof useParams>;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    mockUseParams.mockReturnValue({ id: "test-analysis-id" });
+    mockUseParams.mockReturnValue({ id: 'test-analysis-id' });
     mockUseAnalysisFilters.mockReturnValue({
       filters: {},
       availableOptions: {},
@@ -102,13 +102,13 @@ describe("AnalysisContainer", () => {
     });
   });
 
-  it("renders loading state", () => {
+  it('renders loading state', () => {
     mockUseChat.mockReturnValue({ isLoading: true, isValidating: false });
     renderWithProviders(<AnalysisContainer />);
-    expect(screen.getByTestId("ui5-busy-indicator")).toBeInTheDocument();
+    expect(screen.getByTestId('ui5-busy-indicator')).toBeInTheDocument();
   });
 
-  it("renders error state with fallback message if error.message is falsy", () => {
+  it('renders error state with fallback message if error.message is falsy', () => {
     mockUseChat.mockReturnValue({
       isLoading: false,
       isValidating: false,
@@ -116,18 +116,18 @@ describe("AnalysisContainer", () => {
       mutate: undefined,
     });
     renderWithProviders(<AnalysisContainer />);
-    expect(screen.getByText("Unable to Load Analysis")).toBeInTheDocument();
+    expect(screen.getByText('Unable to Load Analysis')).toBeInTheDocument();
     expect(
       screen.getByText(
-        "Something went wrong while fetching the analysis data. Please try again."
+        'Something went wrong while fetching the analysis data. Please try again.'
       )
     ).toBeInTheDocument();
   });
 
-  it("renders successful state with analysis data", () => {
+  it('renders successful state with analysis data', () => {
     const mockAnalysisData = {
-      id: "test-analysis-id",
-      name: "Test Analysis Name",
+      id: 'test-analysis-id',
+      name: 'Test Analysis Name',
     };
 
     mockUseChat.mockReturnValue({
@@ -140,12 +140,12 @@ describe("AnalysisContainer", () => {
 
     renderWithProviders(<AnalysisContainer />);
 
-    expect(screen.getByTestId("analysis-filters")).toBeInTheDocument();
-    expect(screen.getByTestId("analysis-header")).toBeInTheDocument();
-    expect(screen.getByTestId("analysis-chat")).toBeInTheDocument();
+    expect(screen.getByTestId('analysis-filters')).toBeInTheDocument();
+    expect(screen.getByTestId('analysis-header')).toBeInTheDocument();
+    expect(screen.getByTestId('analysis-chat')).toBeInTheDocument();
   });
 
-  it("passes empty values to AnalysisChat when data is not available", () => {
+  it('passes empty values to AnalysisChat when data is not available', () => {
     mockUseChat.mockReturnValue({
       isLoading: false,
       isValidating: false,
@@ -158,18 +158,18 @@ describe("AnalysisContainer", () => {
 
     expect(mockAnalysisChat).toHaveBeenCalledWith(
       {
-        chatId: "",
+        chatId: '',
         previousMessages: [],
-        draft: "",
+        draft: '',
       },
       undefined
     );
   });
 
-  it("should execute the callback function that sets hasUserModifiedRef.current to true", () => {
+  it('should execute the callback function that sets hasUserModifiedRef.current to true', () => {
     const mockAnalysisData = {
-      id: "test-analysis-id",
-      title: "Test Analysis Title",
+      id: 'test-analysis-id',
+      title: 'Test Analysis Title',
     };
 
     mockUseChat.mockReturnValue({
@@ -218,10 +218,10 @@ describe("AnalysisContainer", () => {
     }
   });
 
-  it("should call updateChat with correct parameters when useAutoSave onSave is triggered", async () => {
+  it('should call updateChat with correct parameters when useAutoSave onSave is triggered', async () => {
     const mockAnalysisData = {
-      id: "test-analysis-id",
-      title: "Test Analysis Title",
+      id: 'test-analysis-id',
+      title: 'Test Analysis Title',
     };
 
     mockUseChat.mockReturnValue({
@@ -233,11 +233,11 @@ describe("AnalysisContainer", () => {
     });
 
     const mockFilters = {
-      analysis: ["filter1", "filter2"],
-      organizations: ["org1"],
-      CM: ["cm1", "cm2"],
-      SKU: ["sku1"],
-      NVPN: ["nvpn1", "nvpn2"],
+      analysis: ['filter1', 'filter2'],
+      organizations: ['org1'],
+      CM: ['cm1', 'cm2'],
+      SKU: ['sku1'],
+      NVPN: ['nvpn1', 'nvpn2'],
     };
 
     mockUseAnalysisFilters.mockReturnValue({
@@ -262,14 +262,14 @@ describe("AnalysisContainer", () => {
     renderWithProviders(<AnalysisContainer />);
 
     expect(capturedOnSave).toBeDefined();
-    expect(typeof capturedOnSave).toBe("function");
+    expect(typeof capturedOnSave).toBe('function');
 
     if (capturedOnSave) {
       await capturedOnSave();
     }
 
     expect(mockUpdateChat).toHaveBeenCalledWith({
-      id: "test-analysis-id",
+      id: 'test-analysis-id',
       metadata: {
         analysis: mockFilters.analysis,
         organizations: mockFilters.organizations,
@@ -280,10 +280,10 @@ describe("AnalysisContainer", () => {
     });
   });
 
-  it("should call activateAutosaveUI when useAutoSave onSuccess is triggered", () => {
+  it('should call activateAutosaveUI when useAutoSave onSuccess is triggered', () => {
     const mockAnalysisData = {
-      id: "test-analysis-id",
-      title: "Test Analysis Title",
+      id: 'test-analysis-id',
+      title: 'Test Analysis Title',
     };
 
     mockUseChat.mockReturnValue({
@@ -314,7 +314,7 @@ describe("AnalysisContainer", () => {
     renderWithProviders(<AnalysisContainer />);
 
     expect(capturedOnSuccess).toBeDefined();
-    expect(typeof capturedOnSuccess).toBe("function");
+    expect(typeof capturedOnSuccess).toBe('function');
 
     if (capturedOnSuccess) {
       capturedOnSuccess();
@@ -323,10 +323,10 @@ describe("AnalysisContainer", () => {
     expect(mockActivateAutosaveUI).toHaveBeenCalled();
   });
 
-  it("should call onError when useAutoSave onError is triggered", () => {
+  it('should call onError when useAutoSave onError is triggered', () => {
     const mockAnalysisData = {
-      id: "test-analysis-id",
-      title: "Test Analysis Title",
+      id: 'test-analysis-id',
+      title: 'Test Analysis Title',
     };
 
     mockUseChat.mockReturnValue({
@@ -337,7 +337,7 @@ describe("AnalysisContainer", () => {
       mutate: jest.fn(),
     });
 
-    const consoleSpy = jest.spyOn(console, "error").mockImplementation();
+    const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
 
     let capturedOnError: (() => void) | undefined;
     mockUseAutoSave.mockImplementation((options) => {
@@ -353,28 +353,28 @@ describe("AnalysisContainer", () => {
     renderWithProviders(<AnalysisContainer />);
 
     expect(capturedOnError).toBeDefined();
-    expect(typeof capturedOnError).toBe("function");
+    expect(typeof capturedOnError).toBe('function');
 
     if (capturedOnError) {
       capturedOnError();
     }
 
-    expect(consoleSpy).toHaveBeenCalledWith("Autosave failed");
+    expect(consoleSpy).toHaveBeenCalledWith('Autosave failed');
 
     consoleSpy.mockRestore();
   });
 
-  it("handles analysis with empty title", () => {
+  it('handles analysis with empty title', () => {
     const mockAnalysisWithEmptyTitle = {
       data: {
-        id: "analysis-1",
-        title: "", // Empty title
+        id: 'analysis-1',
+        title: '', // Empty title
         metadata: {
-          analysis: ["test"],
-          organizations: ["org1"],
-          CM: ["cm1"],
-          SKU: ["sku1"],
-          NVPN: ["nvpn1"],
+          analysis: ['test'],
+          organizations: ['org1'],
+          CM: ['cm1'],
+          SKU: ['sku1'],
+          NVPN: ['nvpn1'],
         },
       },
       isLoading: false,
@@ -386,11 +386,11 @@ describe("AnalysisContainer", () => {
     renderWithProviders(<AnalysisContainer />);
 
     // Component should render without errors even with empty title
-    expect(screen.getByTestId("analysis-header")).toBeInTheDocument();
-    expect(screen.getByTestId("analysis-filters")).toBeInTheDocument();
+    expect(screen.getByTestId('analysis-header')).toBeInTheDocument();
+    expect(screen.getByTestId('analysis-filters')).toBeInTheDocument();
   });
 
-  it("handles analysis without data", () => {
+  it('handles analysis without data', () => {
     const mockAnalysisWithoutData = {
       data: null,
       isLoading: false,
@@ -402,20 +402,20 @@ describe("AnalysisContainer", () => {
     renderWithProviders(<AnalysisContainer />);
 
     // Should handle null data gracefully
-    expect(screen.getByTestId("analysis-header")).toBeInTheDocument();
+    expect(screen.getByTestId('analysis-header')).toBeInTheDocument();
   });
 
-  it("handles metadata initialization with existing data", () => {
+  it('handles metadata initialization with existing data', () => {
     const mockAnalysisWithMetadata = {
       data: {
-        id: "analysis-1",
-        title: "Test Analysis",
+        id: 'analysis-1',
+        title: 'Test Analysis',
         metadata: {
-          analysis: ["custom"],
-          organizations: ["custom-org"],
-          CM: ["custom-cm"],
-          SKU: ["custom-sku"],
-          NVPN: ["custom-nvpn"],
+          analysis: ['custom'],
+          organizations: ['custom-org'],
+          CM: ['custom-cm'],
+          SKU: ['custom-sku'],
+          NVPN: ['custom-nvpn'],
         },
       },
       isLoading: false,
@@ -426,17 +426,19 @@ describe("AnalysisContainer", () => {
 
     let capturedInitialFilters: any;
     let capturedOnUserChange: any;
-    
-    mockUseAnalysisFilters.mockImplementation((initialFilters, onUserChange) => {
-      capturedInitialFilters = initialFilters;
-      capturedOnUserChange = onUserChange;
-      return {
-        filters: initialFilters,
-        availableOptions: {},
-        isDisabled: false,
-        handleFilterChange: jest.fn(),
-      };
-    });
+
+    mockUseAnalysisFilters.mockImplementation(
+      (initialFilters, onUserChange) => {
+        capturedInitialFilters = initialFilters;
+        capturedOnUserChange = onUserChange;
+        return {
+          filters: initialFilters,
+          availableOptions: {},
+          isDisabled: false,
+          handleFilterChange: jest.fn(),
+        };
+      }
+    );
 
     renderWithProviders(<AnalysisContainer />);
 
@@ -458,13 +460,13 @@ describe("AnalysisContainer", () => {
     }
   });
 
-  it("handles autosave with user-modified filters", async () => {
+  it('handles autosave with user-modified filters', async () => {
     const mockFilters = {
-      analysis: ["test"],
-      organizations: ["org1"],
-      CM: ["cm1"],
-      SKU: ["sku1"],
-      NVPN: ["nvpn1"],
+      analysis: ['test'],
+      organizations: ['org1'],
+      CM: ['cm1'],
+      SKU: ['sku1'],
+      NVPN: ['nvpn1'],
     };
 
     mockUseAnalysisFilters.mockReturnValue({
@@ -495,13 +497,13 @@ describe("AnalysisContainer", () => {
     if (capturedAutoSaveOptions.onSave) {
       await capturedAutoSaveOptions.onSave();
       expect(mockUpdateChat).toHaveBeenCalledWith({
-        id: "test-analysis-id",
+        id: 'test-analysis-id',
         metadata: {
-          analysis: ["test"],
-          organizations: ["org1"],
-          CM: ["cm1"],
-          SKU: ["sku1"],
-          NVPN: ["nvpn1"],
+          analysis: ['test'],
+          organizations: ['org1'],
+          CM: ['cm1'],
+          SKU: ['sku1'],
+          NVPN: ['nvpn1'],
         },
       });
     }

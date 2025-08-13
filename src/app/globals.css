@@ -1,6 +1,6 @@
 @layer theme, base, components, utilities;
-@import "tailwindcss/theme.css" layer(theme);
-@import "tailwindcss/utilities.css" layer(utilities);
+@import 'tailwindcss/theme.css' layer(theme);
+@import 'tailwindcss/utilities.css' layer(utilities);
 
 :root {
   --background: var(--sapBackgroundColor);
@@ -67,4 +67,7 @@ ui5-card.chat-history-card ui5-panel::part(content) {
 }
 
 /* Zoomable cursor helpers */
-.zoomable-cursor-move, .zoomable-cursor-move * { cursor: move !important; }
+.zoomable-cursor-move,
+.zoomable-cursor-move * {
+  cursor: move !important;
+}

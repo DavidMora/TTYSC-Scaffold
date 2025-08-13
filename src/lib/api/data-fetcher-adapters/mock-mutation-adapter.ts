@@ -1,9 +1,9 @@
-import { HttpClientResponse } from "@/lib/types/api/http-client";
+import { HttpClientResponse } from '@/lib/types/api/http-client';
 import {
   MutationAdapter,
   MutationOptions,
   MutationResponse,
-} from "@/lib/types/api/data-fetcher";
+} from '@/lib/types/api/data-fetcher';
 
 export class MockMutationAdapter implements MutationAdapter {
   mutateData<TData = unknown, TVariables = unknown>(
@@ -35,7 +35,8 @@ export class MockMutationAdapter implements MutationAdapter {
 
         return response.data;
       } catch (err) {
-        const errorObj = err instanceof Error ? err : new Error("Mutation failed");
+        const errorObj =
+          err instanceof Error ? err : new Error('Mutation failed');
         state.error = errorObj;
 
         if (options.onError) {
