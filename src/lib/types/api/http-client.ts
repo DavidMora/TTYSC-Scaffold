@@ -22,6 +22,8 @@ export interface HttpStreamConfig extends HttpClientConfig {
   signal?: AbortSignal;
   // Maximum accumulated buffer size in bytes for buffered parsers (json, ndjson, sse). Default 10MB.
   maxBufferSize?: number;
+  // Maximum time (ms) to wait for a complete JSON object when parser="json" before timing out. Default 15000ms.
+  jsonParserTimeoutMs?: number;
 }
 
 export interface HttpSSEEvent<TData = string> {

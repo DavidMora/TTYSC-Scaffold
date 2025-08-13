@@ -123,4 +123,127 @@ describe("AxiosAdapter.stream extra coverage", () => {
     for await (const c of res) out.push(c as string);
     expect(out).toEqual(["abc"]);
   });
+
+  it("throws when NDJSON buffer exceeds maxBufferSize", async () => {
+    const line = '{"a":1}\n';
+    mockAxiosInstance.get.mockResolvedValue({
+      data: bufferStream([line]),
+      status: 200,
+      statusText: "OK",
+      headers: {},
+    });
+    const res = await adapter.stream("/ndjson-big", {
+      parser: "ndjson",
+      maxBufferSize: 5,
+    });
+    let caught: Error | undefined;
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      for await (const __chunk of res) {
+        // consume
+      }
+    } catch (e) {
+      caught = e as Error;
+    }
+    expect(caught).toBeDefined();
+    expect(String(caught)).toMatch(/NDJSON buffer exceeded/);
+  });
+
+  it("throws when SSE buffer exceeds maxBufferSize", async () => {
+    const evt = "data:0123456789\n\n";
+    mockAxiosInstance.get.mockResolvedValue({
+      data: bufferStream([evt]),
+      status: 200,
+      statusText: "OK",
+      headers: {},
+    });
+    const res = await adapter.stream("/sse-big", {
+      parser: "sse",
+      maxBufferSize: 5,
+    });
+    let caught: Error | undefined;
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      for await (const __chunk of res) {
+        // consume
+      }
+    } catch (e) {
+      caught = e as Error;
+    }
+    expect(caught).toBeDefined();
+    expect(String(caught)).toMatch(/SSE buffer exceeded/);
+  });
+
+  it("throws on invalid NDJSON line", async () => {
+    mockAxiosInstance.get.mockResolvedValue({
+      data: bufferStream(['{"a":1}\n{"b":}\n']),
+      status: 200,
+      statusText: "OK",
+      headers: {},
+    });
+    const res = await adapter.stream("/ndjson-invalid", { parser: "ndjson" });
+    let caught: Error | undefined;
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      for await (const __c of res) {
+        /* consume */
+      }
+    } catch (e) {
+      caught = e as Error;
+    }
+    expect(caught).toBeDefined();
+  });
+
+  it("throws on leftover invalid NDJSON", async () => {
+    mockAxiosInstance.get.mockResolvedValue({
+      data: bufferStream(['{"a":1}\n{"b":']),
+      status: 200,
+      statusText: "OK",
+      headers: {},
+    });
+    const res = await adapter.stream("/ndjson-leftover", { parser: "ndjson" });
+    let caught: Error | undefined;
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      for await (const __c of res) {
+        /* consume */
+      }
+    } catch (e) {
+      caught = e as Error;
+    }
+    expect(caught).toBeDefined();
+  });
+
+  it("throws on leftover SSE parse error (mocked)", async () => {
+    jest.resetModules();
+    jest.doMock("@/lib/api/stream/parse-sse", () => ({
+      parseSSEBlock: () => {
+        throw new Error("boom");
+      },
+    }));
+    const { AxiosAdapter: LocalAxios } = await import(
+      "@/lib/api/http-client-adapters/axios-adapter"
+    );
+    // new instance after mock
+    (mockedAxios.create as jest.Mock).mockReturnValue(mockAxiosInstance);
+    const local = new LocalAxios();
+    mockAxiosInstance.get.mockResolvedValue({
+      data: bufferStream(["data:only"]), // leftover no blank line
+      status: 200,
+      statusText: "OK",
+      headers: {},
+    });
+    const res = await local.stream("/sse-leftover-error", { parser: "sse" });
+    let caught: Error | undefined;
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      for await (const __c of res) {
+        /* consume */
+      }
+    } catch (e) {
+      caught = e as Error;
+    }
+    expect(caught).toBeDefined();
+    jest.dontMock("@/lib/api/stream/parse-sse");
+  });
 });

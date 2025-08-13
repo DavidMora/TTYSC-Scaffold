@@ -102,4 +102,123 @@ describe("FetchAdapter.stream extra coverage", () => {
     expect(first.done).toBe(false);
     expect(second.done).toBe(true);
   });
+
+  it("errors when JSON buffer exceeds maxBufferSize", async () => {
+    const big = '{"a":1234567890}';
+    mockFetch.mockResolvedValue(buildResponse([big.slice(0, 5), big.slice(5)]));
+    const stream = await adapter.stream("/json-big", {
+      parser: "json",
+      maxBufferSize: 6, // will overflow on second chunk
+    });
+    let caught: Error | undefined;
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      for await (const __chunk of stream) {
+        // consume
+      }
+    } catch (e) {
+      caught = e as Error;
+    }
+    expect(caught).toBeDefined();
+    expect(String(caught)).toMatch(/JSON buffer exceeded/);
+  });
+
+  it("errors when NDJSON buffer exceeds maxBufferSize", async () => {
+    const line = '{"v":1}\n';
+    mockFetch.mockResolvedValue(buildResponse([line]));
+    const stream = await adapter.stream("/ndjson-big", {
+      parser: "ndjson",
+      maxBufferSize: 5, // smaller than line length
+    });
+    let caught: Error | undefined;
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      for await (const __chunk of stream) {
+        // consume
+      }
+    } catch (e) {
+      caught = e as Error;
+    }
+    expect(caught).toBeDefined();
+    expect(String(caught)).toMatch(/NDJSON buffer exceeded/);
+  });
+
+  it("times out JSON parsing when incomplete for too long", async () => {
+    // Custom reader adding delay before second chunk
+    const enc = new TextEncoder();
+    const chunks = ['{"a":', "1}"];
+    let i = 0;
+    const reader = {
+      read: jest.fn(async () => {
+        if (i === 0) {
+          return { value: enc.encode(chunks[i++]), done: false } as const;
+        }
+        // Delay to exceed timeout
+        await new Promise((r) => setTimeout(r, 15));
+        return { value: enc.encode(chunks[i++]), done: false } as const;
+      }),
+    };
+    mockFetch.mockResolvedValue({
+      ok: true,
+      status: 200,
+      statusText: "OK",
+      headers: new Headers(),
+      body: { getReader: () => reader },
+    });
+    const stream = await adapter.stream("/json-timeout", {
+      parser: "json",
+      jsonParserTimeoutMs: 1, // very low timeout
+    });
+    let caught: Error | undefined;
+    const start = Date.now();
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      for await (const __chunk of stream) {
+        // consume
+      }
+    } catch (e) {
+      caught = e as Error;
+    }
+    const elapsed = Date.now() - start;
+    expect(caught).toBeDefined();
+    expect(String(caught)).toMatch(/JSON stream parse timeout/);
+    expect(elapsed).toBeGreaterThanOrEqual(1);
+  });
+
+  it("throws on invalid NDJSON line parse error", async () => {
+    mockFetch.mockResolvedValue(buildResponse(['{"a":1}\n{"b":}\n']));
+    const stream = await adapter.stream("/ndjson-invalid-line", {
+      parser: "ndjson",
+    });
+    let caught: Error | undefined;
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      for await (const __chunk of stream) {
+        // consume
+      }
+    } catch (e) {
+      caught = e as Error;
+    }
+    expect(caught).toBeDefined();
+    expect(String(caught)).toMatch(/Failed to parse NDJSON line/);
+  });
+
+  it("throws when SSE buffer exceeds maxBufferSize", async () => {
+    mockFetch.mockResolvedValue(buildResponse(["data:0123456789\n\n"]));
+    const stream = await adapter.stream("/sse-big", {
+      parser: "sse",
+      maxBufferSize: 5,
+    });
+    let caught: Error | undefined;
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      for await (const __chunk of stream) {
+        // consume
+      }
+    } catch (e) {
+      caught = e as Error;
+    }
+    expect(caught).toBeDefined();
+    expect(String(caught)).toMatch(/SSE buffer exceeded/);
+  });
 });
