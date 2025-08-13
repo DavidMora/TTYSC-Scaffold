@@ -11,14 +11,19 @@ jest.mock("@/components/AICharts/AIChartContainer", () => ({
   AIChartContainer: ({
     chartId,
     isFullscreen,
+    onTitleChange,
   }: {
     chartId: string;
     isFullscreen: boolean;
+    onTitleChange?: (title: string) => void;
   }) => (
     <div
       data-testid="ai-chart-container"
       data-id={chartId}
       data-full={String(isFullscreen)}
+      data-on-title-change={
+        typeof onTitleChange === "function" ? "true" : "false"
+      }
     />
   ),
 }));

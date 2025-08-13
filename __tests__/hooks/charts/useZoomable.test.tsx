@@ -65,7 +65,7 @@ describe("useZoomable", () => {
           deltaX: 10,
           deltaY: 5,
           preventDefault: () => {},
-        } as any);
+        } as unknown as React.WheelEvent<HTMLDivElement>);
       });
       expect(result.current.offset.x).toBeLessThanOrEqual(0);
     });
@@ -122,8 +122,14 @@ describe("useZoomable", () => {
 
       const startWindow = result.current.viewWindow;
       act(() => {
-        result.current.onMouseDown({ clientX: 100, clientY: 0 } as React.MouseEvent<HTMLDivElement>);
-        result.current.onMouseMove({ clientX: 120, clientY: 0 } as React.MouseEvent<HTMLDivElement>);
+        result.current.onMouseDown({
+          clientX: 100,
+          clientY: 0,
+        } as React.MouseEvent<HTMLDivElement>);
+        result.current.onMouseMove({
+          clientX: 120,
+          clientY: 0,
+        } as React.MouseEvent<HTMLDivElement>);
       });
 
       // viewWindow should have been scheduled to update; flush RAF by calling scheduled handler synchronously
@@ -191,7 +197,9 @@ describe("useZoomable", () => {
       globalThis.requestAnimationFrame = immediateRAF;
       rafSpyWin = jest
         .spyOn(window, "requestAnimationFrame")
-        .mockImplementation(immediateRAF as any);
+        .mockImplementation(
+          immediateRAF as unknown as (callback: FrameRequestCallback) => number
+        );
     });
 
     afterEach(() => {

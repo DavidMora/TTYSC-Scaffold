@@ -17,8 +17,9 @@ import {
   RadarChartRenderer,
   UnsupportedChartRenderer,
   MultiSeriesRequiredRenderer,
+  AreaChartRenderer,
 } from "@/components/Charts/renderers";
-import ZoomableContainer from "@/components/Charts/ZoomableContainer";
+import { ZoomableContainer } from "@/components/Charts/ZoomableContainer";
 
 interface ChartFactoryProps {
   chartType: string;
@@ -126,9 +127,17 @@ export const ChartFactory: React.FC<ChartFactoryProps> = ({
       ));
 
     case "line":
-    case "area":
       return wrapDataX(dataset, (sliced) => (
         <LineChartRenderer
+          dataset={sliced}
+          dimensions={dimensions}
+          measures={measures}
+        />
+      ));
+
+    case "area":
+      return wrapDataX(dataset, (sliced) => (
+        <AreaChartRenderer
           dataset={sliced}
           dimensions={dimensions}
           measures={measures}
