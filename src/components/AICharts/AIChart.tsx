@@ -7,20 +7,36 @@ import { ChartFactory } from "@/components/Charts/ChartFactory";
 
 interface AIChartProps {
   data: AIChartData;
+  chartId?: string;
+  isFullscreen?: boolean;
+  onDateRangeChange?: (from: string, to: string) => void;
+  onRegionChange?: (region: string) => void;
+  dateRange?: string;
+  region?: string;
 }
 
-export function AIChart({ data }: Readonly<AIChartProps>) {
+export function AIChart({
+  data,
+  chartId,
+  isFullscreen = false,
+  onDateRangeChange,
+  onRegionChange,
+  dateRange,
+  region,
+}: Readonly<AIChartProps>) {
   const { headline, preamble, content, chart } = data;
 
   const chartDataInfo = getChartDataInfo(chart);
 
   return (
     <div>
-      <Title level={TitleLevel.H2} style={{ marginBottom: 16 }}>
-        {headline}
-      </Title>
+      {!isFullscreen && (
+        <Title level={TitleLevel.H2} style={{ marginBottom: 16 }}>
+          {headline}
+        </Title>
+      )}
 
-      {preamble && (
+      {preamble && !isFullscreen && (
         <p
           style={{
             marginBottom: 12,
@@ -33,7 +49,7 @@ export function AIChart({ data }: Readonly<AIChartProps>) {
         </p>
       )}
 
-      {content && (
+      {content && !isFullscreen && (
         <p
           style={{
             color: "var(--sapTextColor)",
@@ -45,19 +61,17 @@ export function AIChart({ data }: Readonly<AIChartProps>) {
         </p>
       )}
 
-      <div
-        style={{
-          borderRadius: 8,
-          padding: 16,
-          background: "#fff",
-          width: "100%",
-          height: 400,
-          marginBottom: 16,
-          marginTop: 16,
-        }}
-      >
-        <ChartFactory chartType={chart.type} chartDataInfo={chartDataInfo} />
-      </div>
+      <ChartFactory
+        height={isFullscreen ? 800 : 400}
+        chartType={chart.type}
+        chartDataInfo={chartDataInfo}
+        title={headline}
+        chartIdForFullscreen={isFullscreen ? undefined : chartId}
+        onDateRangeChange={onDateRangeChange}
+        onRegionChange={onRegionChange}
+        dateRange={dateRange}
+        region={region}
+      />
     </div>
   );
 }

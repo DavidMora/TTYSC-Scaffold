@@ -17,16 +17,32 @@ import {
   RadarChartRenderer,
   UnsupportedChartRenderer,
   MultiSeriesRequiredRenderer,
+  AreaChartRenderer,
 } from "@/components/Charts/renderers";
+import { ZoomableContainer } from "@/components/Charts/ZoomableContainer";
 
 interface ChartFactoryProps {
   chartType: string;
   chartDataInfo: ChartDataInfo;
+  title?: string;
+  chartIdForFullscreen?: string;
+  height?: number;
+  onDateRangeChange?: (from: string, to: string) => void;
+  onRegionChange?: (region: string) => void;
+  dateRange?: string;
+  region?: string;
 }
 
 export const ChartFactory: React.FC<ChartFactoryProps> = ({
   chartType,
   chartDataInfo,
+  title,
+  chartIdForFullscreen,
+  height = 400,
+  onDateRangeChange,
+  onRegionChange,
+  dateRange,
+  region,
 }) => {
   const { isMulti, dataset, measures, seriesData } = chartDataInfo;
 
@@ -34,38 +50,103 @@ export const ChartFactory: React.FC<ChartFactoryProps> = ({
     { accessor: "name", formatter: (v: string) => v },
   ];
 
+  const wrapVisual = (node: React.ReactNode) => (
+    <ZoomableContainer
+      height={height}
+      mode="visual"
+      title={title}
+      chartIdForFullscreen={chartIdForFullscreen}
+      dataLength={(dataset as (SingleDataPoint | MultiDataPoint)[]).length}
+      exportContext={{ dataset, dimensions, measures, isMulti, seriesData }}
+      onDateRangeChange={onDateRangeChange}
+      onRegionChange={onRegionChange}
+      dateRange={dateRange}
+      region={region}
+    >
+      {node}
+    </ZoomableContainer>
+  );
+
+  const wrapDataX = (
+    datasetArray: SingleDataPoint[] | MultiDataPoint[],
+    render: (sliced: SingleDataPoint[] | MultiDataPoint[]) => React.ReactNode
+  ) => {
+    return (
+      <ZoomableContainer
+        height={height}
+        mode="dataX"
+        title={title}
+        chartIdForFullscreen={chartIdForFullscreen}
+        dataLength={datasetArray.length}
+        exportContext={{
+          dataset: datasetArray,
+          dimensions,
+          measures,
+          isMulti,
+          seriesData,
+        }}
+        onDateRangeChange={onDateRangeChange}
+        onRegionChange={onRegionChange}
+        dateRange={dateRange}
+        region={region}
+        renderContent={({ start, end }) => {
+          const len = datasetArray.length;
+          if (len === 0) return render([]);
+          const span = end - start;
+          const desiredCount = Math.max(1, Math.round(span * len));
+          const centerIndex = ((start + end) / 2) * len;
+          let from = Math.round(centerIndex - desiredCount / 2);
+          from = Math.max(0, Math.min(len - desiredCount, from));
+          const to = Math.min(len, from + desiredCount);
+          const sliced = datasetArray.slice(from, to);
+          return render(sliced);
+        }}
+      >
+        {null}
+      </ZoomableContainer>
+    );
+  };
+
   switch (chartType) {
     case "bar":
-      return (
+      return wrapDataX(dataset, (sliced) => (
         <BarChartRenderer
-          dataset={dataset}
+          dataset={sliced}
           dimensions={dimensions}
           measures={measures}
         />
-      );
+      ));
 
     case "column":
-      return (
+      return wrapDataX(dataset, (sliced) => (
         <ColumnChartRenderer
-          dataset={dataset}
+          dataset={sliced}
           dimensions={dimensions}
           measures={measures}
         />
-      );
+      ));
 
     case "line":
-    case "area":
-      return (
+      return wrapDataX(dataset, (sliced) => (
         <LineChartRenderer
-          dataset={dataset}
+          dataset={sliced}
           dimensions={dimensions}
           measures={measures}
         />
-      );
+      ));
+
+    case "area":
+      return wrapDataX(dataset, (sliced) => (
+        <AreaChartRenderer
+          dataset={sliced}
+          dimensions={dimensions}
+          measures={measures}
+        />
+      ));
 
     case "pie":
       if (!isMulti) {
-        return (
+        return wrapVisual(
           <PieChartRenderer
             dataset={dataset as SingleDataPoint[]}
             dimension={dimensions[0]}
@@ -77,7 +158,7 @@ export const ChartFactory: React.FC<ChartFactoryProps> = ({
 
     case "doughnut":
       if (!isMulti) {
-        return (
+        return wrapVisual(
           <DonutChartRenderer
             dataset={dataset as SingleDataPoint[]}
             dimension={dimensions[0]}
@@ -89,39 +170,39 @@ export const ChartFactory: React.FC<ChartFactoryProps> = ({
 
     case "bullet":
       if (isMulti && seriesData) {
-        return (
+        return wrapDataX(dataset, (sliced) => (
           <BulletChartRenderer
-            dataset={dataset as MultiDataPoint[]}
+            dataset={sliced as MultiDataPoint[]}
             dimensions={dimensions}
             seriesData={seriesData}
           />
-        );
+        ));
       }
       return <MultiSeriesRequiredRenderer chartType="BulletChart" />;
 
     case "columnWithTrend":
       if (isMulti && seriesData) {
-        return (
+        return wrapDataX(dataset, (sliced) => (
           <ColumnWithTrendRenderer
-            dataset={dataset as MultiDataPoint[]}
+            dataset={sliced as MultiDataPoint[]}
             dimensions={dimensions}
             seriesData={seriesData}
           />
-        );
+        ));
       }
       return <MultiSeriesRequiredRenderer chartType="ColumnChartWithTrend" />;
 
     case "composed":
-      return (
+      return wrapDataX(dataset, (sliced) => (
         <ComposedChartRenderer
-          dataset={dataset}
+          dataset={sliced}
           dimensions={dimensions}
           measures={measures}
         />
-      );
+      ));
 
     case "radar":
-      return (
+      return wrapVisual(
         <RadarChartRenderer
           dataset={dataset}
           dimensions={dimensions}
