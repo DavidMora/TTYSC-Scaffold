@@ -95,16 +95,17 @@ export default function AnalysisContainer() {
 
   useAutoSave({
     valueToWatch: hasUserModifiedRef.current ? filters : undefined,
-    onSave: () => void updateChat({
-      id: analysisId,
-      metadata: {
-        analysis: filters.analysis,
-        organizations: filters.organizations,
-        CM: filters.CM,
-        SKU: filters.SKU,
-        NVPN: filters.NVPN,
-      },
-    }),
+    onSave: () =>
+      void updateChat({
+        id: analysisId,
+        metadata: {
+          analysis: filters.analysis,
+          organizations: filters.organizations,
+          CM: filters.CM,
+          SKU: filters.SKU,
+          NVPN: filters.NVPN,
+        },
+      }),
     delayMs: 3000,
     onSuccess: () => {
       activateAutosaveUI();
@@ -132,9 +133,9 @@ export default function AnalysisContainer() {
             isDisabled={isDisabled}
             handleFilterChange={handleFilterChange}
           />
-          <hr
+          <div
             style={{
-              height: "2px",
+              height: "1px",
               backgroundColor: "var(--sapToolbar_SeparatorColor)",
             }}
           />

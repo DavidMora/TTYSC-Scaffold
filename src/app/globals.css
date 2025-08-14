@@ -81,8 +81,9 @@ ui5-card.chat-history-card ui5-panel::part(content) {
 .markdown table,
 .markdown th,
 .markdown td {
+  background-color: var(--sapBackgroundColor) !important;
   border: 1px solid #d1d5db !important;
-  margin: 0.25rem 0 0.25rem 1.25rem !important;
+  margin: 1rem 0 0.25rem 0rem !important;
   font-size: var(--sapFontSize) !important;
   color: var(--sapTextColor) !important;
 }
@@ -98,17 +99,17 @@ ui5-card.chat-history-card ui5-panel::part(content) {
 
 .markdown p {
   margin: 0.25rem 0 !important;
-  line-height: 1.5 !important;
+  line-height: 1.2 !important;
   font-size: var(--sapFontSize) !important;
   color: var(--sapTextColor) !important;
 }
 .markdown ul,
 .markdown ol {
-  margin: 0.25rem 0 0.25rem 1.25rem !important;
+  margin: 0.25rem 0 0.25rem 0.25rem !important;
   font-size: var(--sapFontSize) !important;
   color: var(--sapTextColor) !important;
 }
 .markdown li {
   margin: 0.125rem 0 !important;
-  line-height: 1.5 !important;
+  line-height: 1.2 !important;
 }
