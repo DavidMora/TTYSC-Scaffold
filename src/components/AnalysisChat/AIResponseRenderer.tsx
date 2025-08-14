@@ -36,22 +36,22 @@ export function AIResponseRenderer({
       // Add text before this match
       if (match.index > lastIndex) {
         parts.push({
-          type: "text",
+          type: 'text',
           content: content.slice(lastIndex, match.index),
         });
       }
 
       // Add the match
-      if (match.type === "code") {
+      if (match.type === 'code') {
         parts.push({
-          type: "code",
-          content: match.content?.trim() ?? "",
-          language: match.language || "text",
+          type: 'code',
+          content: match.content?.trim() ?? '',
+          language: match.language || 'text',
         });
-      } else if (match.type === "table") {
-        parts.push({ type: "table" });
-      } else if (match.type === "chart") {
-        parts.push({ type: "chart", chartId: match.chartId });
+      } else if (match.type === 'table') {
+        parts.push({ type: 'table' });
+      } else if (match.type === 'chart') {
+        parts.push({ type: 'chart', chartId: match.chartId });
       }
 
       lastIndex = match.index + (match.matchLength || 0);
@@ -60,7 +60,7 @@ export function AIResponseRenderer({
     // Add any remaining text
     if (lastIndex < content.length) {
       parts.push({
-        type: "text",
+        type: 'text',
         content: content.slice(lastIndex),
       });
     }
@@ -68,30 +68,30 @@ export function AIResponseRenderer({
     // Render parts
     return parts.map((part, idx) => {
       const key = `${part.type}-${idx}-${
-        part.content?.slice(0, 20) || "empty"
+        part.content?.slice(0, 20) || 'empty'
       }`;
 
-      if (part.type === "code") {
+      if (part.type === 'code') {
         return (
           <CodeBlock
             key={key}
-            code={part.content ?? ""}
+            code={part.content ?? ''}
             language={part.language}
             showLineNumbers
           />
         );
       }
-      if (part.type === "table") {
+      if (part.type === 'table') {
         return (
-          <div key={key} style={{ marginTop: "1rem", width: "100%" }}>
+          <div key={key} style={{ marginTop: '1rem', width: '100%' }}>
             <BaseDataTable data={tableData} tableClassName="h-96" />
           </div>
         );
       }
-      if (part.type === "chart") {
+      if (part.type === 'chart') {
         return (
-          <div key={key} style={{ marginTop: "1rem", width: "100%" }}>
-            <AIChartContainer chartId={part.chartId ?? ""} />
+          <div key={key} style={{ marginTop: '1rem', width: '100%' }}>
+            <AIChartContainer chartId={part.chartId ?? ''} />
           </div>
         );
       }
@@ -105,5 +105,5 @@ export function AIResponseRenderer({
     });
   }, [content]);
 
-  return <div style={{ width: "100%" }}>{renderedContent}</div>;
+  return <div style={{ width: '100%' }}>{renderedContent}</div>;
 }

@@ -1,4 +1,4 @@
-import type { BaseResponse } from "@/lib/types/http/responses";
+import type { BaseResponse } from '@/lib/types/http/responses';
 
 export interface OptionTable {
   id: string;

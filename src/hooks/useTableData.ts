@@ -1,12 +1,12 @@
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback } from 'react';
 import {
   TableDataRow,
   Filter,
   FilterChangeEvent,
   TableToolbarFilter,
   FilterOption,
-} from "@/lib/types/datatable";
-import { getValueByAccessor } from "@/lib/utils/tableHelpers";
+} from '@/lib/types/datatable';
+import { getValueByAccessor } from '@/lib/utils/tableHelpers';
 
 interface UseTableDataProps {
   rows: TableDataRow[];
@@ -36,16 +36,16 @@ function getUniqueValuesFromData(
     const value = getValueByAccessor(row, accessorKey);
     if (value !== undefined && value !== null) {
       // Handle different types safely
-      if (typeof value === "object") {
+      if (typeof value === 'object') {
         try {
           uniqueValues.add(JSON.stringify(value));
         } catch {
-          uniqueValues.add("[Complex Object]");
+          uniqueValues.add('[Complex Object]');
         }
       } else if (
-        typeof value === "string" ||
-        typeof value === "number" ||
-        typeof value === "boolean"
+        typeof value === 'string' ||
+        typeof value === 'number' ||
+        typeof value === 'boolean'
       ) {
         uniqueValues.add(value.toString());
       }
@@ -59,9 +59,9 @@ function getUniqueValuesFromData(
 
 // Convert TableToolbarFilter to Filter
 function convertToTableToolbarFilter(filter: TableToolbarFilter): Filter {
-  if (filter.type === "select") {
+  if (filter.type === 'select') {
     return {
-      type: "select" as const,
+      type: 'select' as const,
       key: filter.key,
       label: filter.label,
       placeholder: filter.placeholder,
@@ -70,7 +70,7 @@ function convertToTableToolbarFilter(filter: TableToolbarFilter): Filter {
     };
   } else {
     return {
-      type: "date" as const,
+      type: 'date' as const,
       key: filter.key,
       label: filter.label,
       placeholder: filter.placeholder,
@@ -85,7 +85,7 @@ function processFilters(
   tableRows: TableDataRow[]
 ): Filter[] {
   return filters.map((filter) => {
-    if (filter.type === "select" && filter.accessorKey && !filter.options) {
+    if (filter.type === 'select' && filter.accessorKey && !filter.options) {
       const processedFilter = {
         ...filter,
         options: getUniqueValuesFromData(tableRows, filter.accessorKey),
@@ -104,18 +104,18 @@ function buildSearchText(
   return headers
     .map(({ accessorKey }) => {
       const value = getValueByAccessor(row, accessorKey);
-      if (value === null || value === undefined) return "";
-      if (typeof value === "object") return JSON.stringify(value);
+      if (value === null || value === undefined) return '';
+      if (typeof value === 'object') return JSON.stringify(value);
       if (
-        typeof value === "string" ||
-        typeof value === "number" ||
-        typeof value === "boolean"
+        typeof value === 'string' ||
+        typeof value === 'number' ||
+        typeof value === 'boolean'
       ) {
         return value.toString();
       }
-      return "";
+      return '';
     })
-    .join(" ")
+    .join(' ')
     .toLowerCase();
 }
 
@@ -123,29 +123,29 @@ function buildSearchText(
 function isFilterValueEmpty(filterValue: unknown): boolean {
   return (
     !filterValue ||
-    filterValue === "" ||
+    filterValue === '' ||
     (Array.isArray(filterValue) && filterValue.length === 0)
   );
 }
 
 // Helper function to convert value to string for comparison
 function valueToString(value: unknown): string {
-  if (value === null || value === undefined) return "";
-  if (typeof value === "object") return JSON.stringify(value);
+  if (value === null || value === undefined) return '';
+  if (typeof value === 'object') return JSON.stringify(value);
   if (
-    typeof value === "string" ||
-    typeof value === "number" ||
-    typeof value === "boolean"
+    typeof value === 'string' ||
+    typeof value === 'number' ||
+    typeof value === 'boolean'
   ) {
     return value.toString();
   }
-  return "";
+  return '';
 }
 
 // Helper function to match select filter
 function matchSelectFilter(rowValue: unknown, filterValue: unknown): boolean {
   const rowValueStr = valueToString(rowValue);
-  const filterValueStr = typeof filterValue === "string" ? filterValue : "";
+  const filterValueStr = typeof filterValue === 'string' ? filterValue : '';
   return rowValueStr === filterValueStr;
 }
 
@@ -176,9 +176,9 @@ function applyFilters(
 
       const rowValue = getValueByAccessor(row, filter.key);
 
-      if (filter.type === "select") {
+      if (filter.type === 'select') {
         return matchSelectFilter(rowValue, filterValue);
-      } else if (filter.type === "date") {
+      } else if (filter.type === 'date') {
         return matchDateFilter(rowValue, filterValue);
       } else {
         console.warn(`Unhandled filter type: ${filter.type}`);
@@ -193,7 +193,7 @@ export const useTableData = ({
   headers,
   filters = [],
 }: UseTableDataProps): UseTableDataReturn => {
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState('');
   const [activeFilters, setActiveFilters] = useState<Record<string, unknown>>(
     {}
   );
@@ -246,7 +246,7 @@ export const useTableData = ({
 
   const clearFilters = useCallback(() => {
     setActiveFilters({});
-    setSearchTerm("");
+    setSearchTerm('');
   }, []);
 
   const hasResults = filteredRows.length > 0;

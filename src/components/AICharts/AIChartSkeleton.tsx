@@ -1,5 +1,5 @@
-import { Button, Icon, Title } from "@ui5/webcomponents-react";
-import TitleLevel from "@ui5/webcomponents/dist/types/TitleLevel.js";
+import { Button, Icon, Title } from '@ui5/webcomponents-react';
+import TitleLevel from '@ui5/webcomponents/dist/types/TitleLevel.js';
 
 // Constants for skeleton items
 const SKELETON_ITEMS = [1, 2, 3];
@@ -9,13 +9,13 @@ export const ChartSkeleton: React.FC = () => (
     style={{
       borderRadius: 8,
       padding: 16,
-      background: "#fff",
-      width: "100%",
+      background: '#fff',
+      width: '100%',
       height: 500,
       marginBottom: 16,
       marginTop: 16,
-      display: "flex",
-      flexDirection: "column",
+      display: 'flex',
+      flexDirection: 'column',
       gap: 12,
     }}
   >
@@ -23,19 +23,19 @@ export const ChartSkeleton: React.FC = () => (
       style={{
         flex: 1,
         background:
-          "linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)",
-        backgroundSize: "200% 100%",
-        animation: "loading 1.5s infinite",
+          'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
+        backgroundSize: '200% 100%',
+        animation: 'loading 1.5s infinite',
         borderRadius: 4,
       }}
     />
-    <div style={{ display: "flex", gap: 16, justifyContent: "center" }}>
+    <div style={{ display: 'flex', gap: 16, justifyContent: 'center' }}>
       {SKELETON_ITEMS.map((item) => (
         <div
           key={item}
           style={{
-            display: "flex",
-            alignItems: "center",
+            display: 'flex',
+            alignItems: 'center',
             gap: 8,
           }}
         >
@@ -43,15 +43,15 @@ export const ChartSkeleton: React.FC = () => (
             style={{
               width: 12,
               height: 12,
-              borderRadius: "50%",
-              background: "#f0f0f0",
+              borderRadius: '50%',
+              background: '#f0f0f0',
             }}
           />
           <div
             style={{
               width: 60,
               height: 12,
-              background: "#f0f0f0",
+              background: '#f0f0f0',
               borderRadius: 2,
             }}
           />
@@ -71,30 +71,30 @@ export const ChartError: React.FC<ChartErrorProps> = ({ onRetry, error }) => (
     style={{
       borderRadius: 8,
       padding: 16,
-      background: "#fff",
-      width: "100%",
+      background: '#fff',
+      width: '100%',
       height: 500,
       marginBottom: 16,
       marginTop: 16,
-      display: "flex",
-      flexDirection: "column",
-      justifyContent: "center",
-      alignItems: "center",
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'center',
+      alignItems: 'center',
       gap: 12,
-      border: "1px solid #ccc",
+      border: '1px solid #ccc',
     }}
   >
     <Icon
       name="error"
       style={{
         fontSize: 48,
-        color: "#666",
+        color: '#666',
       }}
     />
     <Title
       level={TitleLevel.H3}
       style={{
-        color: "#333",
+        color: '#333',
         margin: 0,
       }}
     >
@@ -103,8 +103,8 @@ export const ChartError: React.FC<ChartErrorProps> = ({ onRetry, error }) => (
     {error && (
       <p
         style={{
-          color: "#666",
-          textAlign: "center",
+          color: '#666',
+          textAlign: 'center',
           margin: 0,
         }}
       >

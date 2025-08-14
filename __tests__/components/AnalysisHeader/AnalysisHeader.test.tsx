@@ -1,24 +1,24 @@
-import React from "react";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import AnalysisHeader from "@/components/AnalysisHeader/AnalysisHeader";
-import { Chat } from "@/lib/types/chats";
+import React from 'react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import AnalysisHeader from '@/components/AnalysisHeader/AnalysisHeader';
+import { Chat } from '@/lib/types/chats';
 
 const mockPush = jest.fn();
 
-jest.mock("next/navigation", () => ({
+jest.mock('next/navigation', () => ({
   useRouter: () => ({
     push: mockPush,
   }),
 }));
 
-jest.mock("@/contexts/SequentialNamingContext", () => ({
+jest.mock('@/contexts/SequentialNamingContext', () => ({
   useSequentialNaming: () => ({
-    generateAnalysisName: jest.fn(() => "Analysis One"),
+    generateAnalysisName: jest.fn(() => 'Analysis One'),
     currentCounter: 1,
   }),
 }));
 
-jest.mock("@/components/AnalysisHeader/AnalysisRenaming", () => ({
+jest.mock('@/components/AnalysisHeader/AnalysisRenaming', () => ({
   AnalysisRenaming: function MockAnalysisRenaming({
     analysisName,
     onNameChange,
@@ -41,7 +41,7 @@ jest.mock("@/components/AnalysisHeader/AnalysisRenaming", () => ({
   },
 }));
 
-jest.mock("@/components/AnalysisHeader/CreateAnalysis", () => ({
+jest.mock('@/components/AnalysisHeader/CreateAnalysis', () => ({
   CreateAnalysis: function MockCreateAnalysis({
     onCreateAnalysis,
     isCreating,
@@ -55,13 +55,13 @@ jest.mock("@/components/AnalysisHeader/CreateAnalysis", () => ({
         onClick={onCreateAnalysis}
         disabled={isCreating}
       >
-        {isCreating ? "Creating..." : "Create Analysis"}
+        {isCreating ? 'Creating...' : 'Create Analysis'}
       </button>
     );
   },
 }));
 
-jest.mock("@/components/Modals/ConfirmationModal", () => {
+jest.mock('@/components/Modals/ConfirmationModal', () => {
   return function MockConfirmationModal({
     isOpen,
     title,
@@ -98,12 +98,12 @@ interface UseCreateAnalysisOptions {
   onSuccess?: (data: Chat) => void;
 }
 
-jest.mock("@/hooks/chats", () => ({
+jest.mock('@/hooks/chats', () => ({
   useCreateChat: (options: UseCreateAnalysisOptions) =>
     mockUseCreateAnalysis(options),
 }));
 
-describe("Analysis Header", () => {
+describe('Analysis Header', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockUseCreateAnalysis.mockReturnValue({
@@ -114,47 +114,47 @@ describe("Analysis Header", () => {
     });
   });
 
-  it("should render with default analysis name", () => {
+  it('should render with default analysis name', () => {
     render(<AnalysisHeader />);
 
-    expect(screen.getByDisplayValue("")).toBeInTheDocument();
+    expect(screen.getByDisplayValue('')).toBeInTheDocument();
   });
 
-  it("should not call onFiltersReset when not provided", () => {
+  it('should not call onFiltersReset when not provided', () => {
     render(<AnalysisHeader />);
 
     expect(() => {
-      fireEvent.click(screen.getByTestId("create-analysis"));
+      fireEvent.click(screen.getByTestId('create-analysis'));
     }).not.toThrow();
   });
 
-  it("should navigate on successful analysis creation", async () => {
+  it('should navigate on successful analysis creation', async () => {
     const mockAnalysisData: Chat = {
-      id: "test-analysis-id",
-      title: "Test Analysis",
-      date: "2021-01-01",
+      id: 'test-analysis-id',
+      title: 'Test Analysis',
+      date: '2021-01-01',
       messages: [],
-      draft: "",
+      draft: '',
       metadata: {
         analysis: {
-          key: "test-analysis-key",
-          name: "Test Analysis",
+          key: 'test-analysis-key',
+          name: 'Test Analysis',
         },
         organizations: {
-          key: "test-organization-key",
-          name: "Test Organization",
+          key: 'test-organization-key',
+          name: 'Test Organization',
         },
         CM: {
-          key: "test-cm-key",
-          name: "Test CM",
+          key: 'test-cm-key',
+          name: 'Test CM',
         },
         SKU: {
-          key: "test-sku-key",
-          name: "Test SKU",
+          key: 'test-sku-key',
+          name: 'Test SKU',
         },
         NVPN: {
-          key: "test-nvpn-key",
-          name: "Test NVPN",
+          key: 'test-nvpn-key',
+          name: 'Test NVPN',
         },
       },
     };
@@ -177,7 +177,7 @@ describe("Analysis Header", () => {
     }
 
     await waitFor(() => {
-      expect(mockPush).toHaveBeenCalledWith("/test-analysis-id");
+      expect(mockPush).toHaveBeenCalledWith('/test-analysis-id');
     });
   });
 });

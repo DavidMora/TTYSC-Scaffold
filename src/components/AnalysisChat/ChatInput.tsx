@@ -1,14 +1,14 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
 import {
   TextArea,
   Button,
   Ui5CustomEvent,
   TextAreaDomRef,
-} from "@ui5/webcomponents-react";
-import { useAutosaveUI } from "@/contexts/AutosaveUIProvider";
-import { useAutoSave } from "@/hooks/useAutoSave";
-import { useUpdateChat } from "@/hooks/chats";
-import { useParams } from "next/navigation";
+} from '@ui5/webcomponents-react';
+import { useAutosaveUI } from '@/contexts/AutosaveUIProvider';
+import { useAutoSave } from '@/hooks/useAutoSave';
+import { useUpdateChat } from '@/hooks/chats';
+import { useParams } from 'next/navigation';
 
 interface ChatInputProps {
   onSendMessage: (message: string) => void;
@@ -21,7 +21,7 @@ export function ChatInput({
   isLoading,
   draft,
 }: Readonly<ChatInputProps>) {
-  const [input, setInput] = useState(draft || "");
+  const [input, setInput] = useState(draft || '');
   const { id } = useParams();
 
   const { activateAutosaveUI } = useAutosaveUI();
@@ -40,14 +40,14 @@ export function ChatInput({
       activateAutosaveUI();
     },
     onError: () => {
-      console.error("Autosave failed");
+      console.error('Autosave failed');
     },
   });
 
   const handleSend = () => {
     if (!input.trim()) return;
     onSendMessage(input);
-    setInput("");
+    setInput('');
   };
 
   const handleInput = (event: Ui5CustomEvent<TextAreaDomRef>) => {
@@ -55,7 +55,7 @@ export function ChatInput({
   };
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (event.key === "Enter" && !event.shiftKey) {
+    if (event.key === 'Enter' && !event.shiftKey) {
       event.preventDefault();
       handleSend();
     }
@@ -64,26 +64,26 @@ export function ChatInput({
   return (
     <div
       style={{
-        width: "100%",
-        background: "white",
+        width: '100%',
+        background: 'white',
         zIndex: 10,
-        padding: "0.5rem 0",
+        padding: '0.5rem 0',
       }}
     >
       <div
         style={{
-          position: "relative",
-          width: "98%",
-          margin: "0 auto",
-          display: "flex",
-          alignItems: "center",
+          position: 'relative',
+          width: '98%',
+          margin: '0 auto',
+          display: 'flex',
+          alignItems: 'center',
         }}
       >
         <TextArea
           className="analysis-chat-input"
           placeholder="Write your lines here"
           aria-label="Chat message input"
-          style={{ width: "100%" }}
+          style={{ width: '100%' }}
           value={input}
           rows={3}
           onKeyDown={handleKeyDown}
@@ -93,13 +93,13 @@ export function ChatInput({
         <Button
           icon="paper-plane"
           style={{
-            position: "absolute",
-            right: "5px",
-            top: "5px",
-            width: "32px",
-            height: "26px",
-            color: "var(--sapButton_Emphasized_TextColor)",
-            background: "var(--sapButton_Emphasized_Background_Color)",
+            position: 'absolute',
+            right: '5px',
+            top: '5px',
+            width: '32px',
+            height: '26px',
+            color: 'var(--sapButton_Emphasized_TextColor)',
+            background: 'var(--sapButton_Emphasized_Background_Color)',
           }}
           onClick={handleSend}
           disabled={isLoading}

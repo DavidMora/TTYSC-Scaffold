@@ -1,37 +1,36 @@
-"use client";
+'use client';
 
-import { useFeatureFlags } from "@/hooks/useFeatureFlags";
-import { SessionProviderWrapper } from "./SessionProviderWrapper";
-import { SuspenseAuthProvider } from "../hooks/useAuth";
-import AuthWrapper from "./AuthWrapper";
-import ThemeProvider from "../providers/ThemeProvider";
-import AppLayout from "./AppLayout/AppLayout";
-import { SequentialNamingProvider } from "../contexts/SequentialNamingContext";
-import { usePathname } from "next/navigation";
+import { useFeatureFlags } from '@/hooks/useFeatureFlags';
+import { SessionProviderWrapper } from './SessionProviderWrapper';
+import { SuspenseAuthProvider } from '../hooks/useAuth';
+import AuthWrapper from './AuthWrapper';
+import ThemeProvider from '../providers/ThemeProvider';
+import AppLayout from './AppLayout/AppLayout';
+import { SequentialNamingProvider } from '../contexts/SequentialNamingContext';
+import { usePathname } from 'next/navigation';
 
 interface ConditionalAuthLayoutProps {
   readonly children: React.ReactNode;
 }
 
-export default function ConditionalAuthLayout({ children }: ConditionalAuthLayoutProps) {
+export default function ConditionalAuthLayout({
+  children,
+}: ConditionalAuthLayoutProps) {
   const { flags, loading, error } = useFeatureFlags();
   const pathname = usePathname();
   const isAuthRoute = pathname.startsWith('/auth/');
 
   // Common provider wrapper with optional auth inclusion
-  const wrapWithProviders = (content: React.ReactNode, includeAuth: boolean = false) => {
-    const wrappedContent = (
-      <ThemeProvider>
-        {content}
-      </ThemeProvider>
-    );
+  const wrapWithProviders = (
+    content: React.ReactNode,
+    includeAuth: boolean = false
+  ) => {
+    const wrappedContent = <ThemeProvider>{content}</ThemeProvider>;
 
     return (
       <SessionProviderWrapper>
         {includeAuth ? (
-          <SuspenseAuthProvider>
-            {wrappedContent}
-          </SuspenseAuthProvider>
+          <SuspenseAuthProvider>{wrappedContent}</SuspenseAuthProvider>
         ) : (
           wrappedContent
         )}
@@ -49,13 +48,15 @@ export default function ConditionalAuthLayout({ children }: ConditionalAuthLayou
   if (loading) {
     return wrapWithProviders(
       <SequentialNamingProvider>
-        <div style={{ 
-          display: 'flex', 
-          justifyContent: 'center', 
-          alignItems: 'center', 
-          height: '100vh',
-          fontFamily: 'system-ui, sans-serif'
-        }}>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            height: '100vh',
+            fontFamily: 'system-ui, sans-serif',
+          }}
+        >
           Loading...
         </div>
       </SequentialNamingProvider>
@@ -64,7 +65,10 @@ export default function ConditionalAuthLayout({ children }: ConditionalAuthLayou
 
   // Handle error state - fallback to no authentication but keep SessionProvider
   if (error || !flags) {
-    console.warn('Feature flags failed to load, defaulting to no authentication:', error);
+    console.warn(
+      'Feature flags failed to load, defaulting to no authentication:',
+      error
+    );
     return wrapWithProviders(appContent);
   }
 
@@ -76,10 +80,5 @@ export default function ConditionalAuthLayout({ children }: ConditionalAuthLayou
   }
 
   // Authentication is enabled, use AuthWrapper to control rendering
-  return wrapWithProviders(
-    <AuthWrapper>
-      {appContent}
-    </AuthWrapper>,
-    true
-  );
+  return wrapWithProviders(<AuthWrapper>{appContent}</AuthWrapper>, true);
 }

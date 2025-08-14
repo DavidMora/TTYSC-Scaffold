@@ -1,8 +1,8 @@
-import React from "react";
-import { render, screen } from "@testing-library/react";
-import "@testing-library/jest-dom";
+import React from 'react';
+import { render, screen } from '@testing-library/react';
+import '@testing-library/jest-dom';
 
-jest.mock("@/hooks/settings", () => ({
+jest.mock('@/hooks/settings', () => ({
   useSettings: () => ({
     data: undefined,
     isLoading: true,
@@ -11,11 +11,11 @@ jest.mock("@/hooks/settings", () => ({
   }),
 }));
 
-import SettingsNavigationItem from "@/components/AppLayout/SidebarItems/SettingsNavigationItem";
+import SettingsNavigationItem from '@/components/AppLayout/SidebarItems/SettingsNavigationItem';
 
-describe("SettingsNavigationItem loading state", () => {
-  it("shows loading label when isLoadingSettings is true", () => {
+describe('SettingsNavigationItem loading state', () => {
+  it('shows loading label when isLoadingSettings is true', () => {
     render(<SettingsNavigationItem />);
-    expect(screen.getByText("Loading settings...")).toBeInTheDocument();
+    expect(screen.getByText('Loading settings...')).toBeInTheDocument();
   });
 });

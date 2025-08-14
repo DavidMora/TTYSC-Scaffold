@@ -1,16 +1,16 @@
-import React from "react";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import { useRouter } from "next/navigation";
-import HeaderBar from "@/components/AppLayout/HeaderBar";
-import { SUPPLY_CHAIN_MENU } from "@/lib/constants/UI/HeaderBar";
+import React from 'react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { useRouter } from 'next/navigation';
+import HeaderBar from '@/components/AppLayout/HeaderBar';
+import { SUPPLY_CHAIN_MENU } from '@/lib/constants/UI/HeaderBar';
 
 // Mock Next.js router
-jest.mock("next/navigation", () => ({
+jest.mock('next/navigation', () => ({
   useRouter: jest.fn(),
 }));
 
 // Mock UI5 Web Components React
-jest.mock("@ui5/webcomponents-react", () => ({
+jest.mock('@ui5/webcomponents-react', () => ({
   FlexBox: ({
     children,
     style,
@@ -23,10 +23,10 @@ jest.mock("@ui5/webcomponents-react", () => ({
     </div>
   ),
   FlexBoxJustifyContent: {
-    SpaceBetween: "SpaceBetween",
+    SpaceBetween: 'SpaceBetween',
   },
   FlexBoxAlignItems: {
-    Center: "Center",
+    Center: 'Center',
   },
   Title: ({
     children,
@@ -66,7 +66,7 @@ jest.mock("@ui5/webcomponents-react", () => ({
   }) => (
     <div
       data-testid="popover"
-      style={{ display: open ? "block" : "none" }}
+      style={{ display: open ? 'block' : 'none' }}
       onClick={(e) => {
         if (e.target === e.currentTarget && onClose) {
           onClose();
@@ -115,7 +115,7 @@ jest.mock("@ui5/webcomponents-react", () => ({
   ButtonDomRef: {},
 }));
 
-Object.defineProperty(window, "print", {
+Object.defineProperty(window, 'print', {
   value: jest.fn(),
   writable: true,
 });
@@ -130,175 +130,175 @@ const mockRouter = {
   refresh: jest.fn(),
 };
 
-describe("HeaderBar Component", () => {
+describe('HeaderBar Component', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     (useRouter as jest.Mock).mockReturnValue(mockRouter);
   });
 
-  describe("Basic Rendering", () => {
-    it("renders title and subtitle correctly", () => {
+  describe('Basic Rendering', () => {
+    it('renders title and subtitle correctly', () => {
       render(<HeaderBar title="Test Title" subtitle="Test Subtitle" />);
 
-      expect(screen.getByTestId("title")).toHaveTextContent("Test Title");
-      expect(screen.getByTestId("text")).toHaveTextContent("Test Subtitle");
+      expect(screen.getByTestId('title')).toHaveTextContent('Test Title');
+      expect(screen.getByTestId('text')).toHaveTextContent('Test Subtitle');
     });
 
-    it("renders actions button when actions are available", () => {
+    it('renders actions button when actions are available', () => {
       render(
         <HeaderBar
           title="Test Title"
           subtitle="Test Subtitle"
-          actions={["RETRY", "SETTINGS"]}
+          actions={['RETRY', 'SETTINGS']}
         />
       );
 
-      expect(screen.getByTestId("button")).toBeInTheDocument();
-      expect(screen.getByTestId("icon-overflow")).toBeInTheDocument();
+      expect(screen.getByTestId('button')).toBeInTheDocument();
+      expect(screen.getByTestId('icon-overflow')).toBeInTheDocument();
     });
   });
 
-  describe("Popover Functionality", () => {
-    it("opens popover when button is clicked", async () => {
+  describe('Popover Functionality', () => {
+    it('opens popover when button is clicked', async () => {
       render(
         <HeaderBar
           title="Test Title"
           subtitle="Test Subtitle"
-          actions={["RETRY", "SETTINGS"]}
+          actions={['RETRY', 'SETTINGS']}
         />
       );
 
-      const button = screen.getByTestId("button");
+      const button = screen.getByTestId('button');
       fireEvent.click(button);
 
       await waitFor(() => {
-        expect(screen.getByTestId("popover")).toHaveStyle({ display: "block" });
+        expect(screen.getByTestId('popover')).toHaveStyle({ display: 'block' });
       });
     });
 
-    it("renders correct menu items in popover", () => {
+    it('renders correct menu items in popover', () => {
       render(
         <HeaderBar
           title="Test Title"
           subtitle="Test Subtitle"
-          actions={["RETRY", "SETTINGS"]}
+          actions={['RETRY', 'SETTINGS']}
         />
       );
 
-      const button = screen.getByTestId("button");
+      const button = screen.getByTestId('button');
       fireEvent.click(button);
 
       // Check if menu items are rendered
-      expect(screen.getByTestId("icon-refresh")).toBeInTheDocument();
-      expect(screen.getByTestId("icon-action-settings")).toBeInTheDocument();
-      expect(screen.getByText("Rerun")).toBeInTheDocument();
-      expect(screen.getByText("Settings")).toBeInTheDocument();
+      expect(screen.getByTestId('icon-refresh')).toBeInTheDocument();
+      expect(screen.getByTestId('icon-action-settings')).toBeInTheDocument();
+      expect(screen.getByText('Rerun')).toBeInTheDocument();
+      expect(screen.getByText('Settings')).toBeInTheDocument();
     });
   });
 
-  describe("Action Execution", () => {
-    it("executes default PRINT action", () => {
-      const printSpy = jest.spyOn(window, "print");
+  describe('Action Execution', () => {
+    it('executes default PRINT action', () => {
+      const printSpy = jest.spyOn(window, 'print');
 
       render(
         <HeaderBar
           title="Test Title"
           subtitle="Test Subtitle"
-          actions={["PRINT"]}
+          actions={['PRINT']}
         />
       );
 
-      const button = screen.getByTestId("button");
+      const button = screen.getByTestId('button');
       fireEvent.click(button);
 
-      const listItems = screen.getAllByTestId("list-item");
+      const listItems = screen.getAllByTestId('list-item');
       fireEvent.click(listItems[0]);
 
       expect(printSpy).toHaveBeenCalled();
     });
 
-    it("executes default ABOUT action", () => {
+    it('executes default ABOUT action', () => {
       render(
         <HeaderBar
           title="Test Title"
           subtitle="Test Subtitle"
-          actions={["ABOUT"]}
+          actions={['ABOUT']}
         />
       );
 
-      const button = screen.getByTestId("button");
+      const button = screen.getByTestId('button');
       fireEvent.click(button);
 
-      const listItems = screen.getAllByTestId("list-item");
+      const listItems = screen.getAllByTestId('list-item');
       fireEvent.click(listItems[0]);
 
-      expect(mockPush).toHaveBeenCalledWith("/about");
+      expect(mockPush).toHaveBeenCalledWith('/about');
     });
 
-    it("executes default RETRY action", () => {
-      const consoleSpy = jest.spyOn(console, "log").mockImplementation();
+    it('executes default RETRY action', () => {
+      const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
 
       render(
         <HeaderBar
           title="Test Title"
           subtitle="Test Subtitle"
-          actions={["RETRY"]}
+          actions={['RETRY']}
         />
       );
 
-      const button = screen.getByTestId("button");
+      const button = screen.getByTestId('button');
       fireEvent.click(button);
 
-      const listItems = screen.getAllByTestId("list-item");
+      const listItems = screen.getAllByTestId('list-item');
       fireEvent.click(listItems[0]);
 
-      expect(consoleSpy).toHaveBeenCalledWith("Default retry...");
+      expect(consoleSpy).toHaveBeenCalledWith('Default retry...');
       consoleSpy.mockRestore();
     });
 
-    it("executes default SETTINGS action", () => {
-      const consoleSpy = jest.spyOn(console, "log").mockImplementation();
+    it('executes default SETTINGS action', () => {
+      const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
 
       render(
         <HeaderBar
           title="Test Title"
           subtitle="Test Subtitle"
-          actions={["SETTINGS"]}
+          actions={['SETTINGS']}
         />
       );
 
-      const button = screen.getByTestId("button");
+      const button = screen.getByTestId('button');
       fireEvent.click(button);
 
-      const listItems = screen.getAllByTestId("list-item");
+      const listItems = screen.getAllByTestId('list-item');
       fireEvent.click(listItems[0]);
 
-      expect(consoleSpy).toHaveBeenCalledWith("Settings...");
+      expect(consoleSpy).toHaveBeenCalledWith('Settings...');
       consoleSpy.mockRestore();
     });
 
-    it("executes default RECORD_SCREENCAST action", () => {
-      const consoleSpy = jest.spyOn(console, "log").mockImplementation();
+    it('executes default RECORD_SCREENCAST action', () => {
+      const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
 
       render(
         <HeaderBar
           title="Test Title"
           subtitle="Test Subtitle"
-          actions={["RECORD_SCREENCAST"]}
+          actions={['RECORD_SCREENCAST']}
         />
       );
 
-      const button = screen.getByTestId("button");
+      const button = screen.getByTestId('button');
       fireEvent.click(button);
 
-      const listItems = screen.getAllByTestId("list-item");
+      const listItems = screen.getAllByTestId('list-item');
       fireEvent.click(listItems[0]);
 
-      expect(consoleSpy).toHaveBeenCalledWith("Recording...");
+      expect(consoleSpy).toHaveBeenCalledWith('Recording...');
       consoleSpy.mockRestore();
     });
 
-    it("executes override actions", () => {
+    it('executes override actions', () => {
       const customAction = jest.fn();
       const overrides = {
         RETRY: customAction,
@@ -308,69 +308,69 @@ describe("HeaderBar Component", () => {
         <HeaderBar
           title="Test Title"
           subtitle="Test Subtitle"
-          actions={["RETRY"]}
+          actions={['RETRY']}
           overrides={overrides}
         />
       );
 
-      const button = screen.getByTestId("button");
+      const button = screen.getByTestId('button');
       fireEvent.click(button);
 
-      const listItems = screen.getAllByTestId("list-item");
+      const listItems = screen.getAllByTestId('list-item');
       fireEvent.click(listItems[0]);
 
       expect(customAction).toHaveBeenCalled();
     });
   });
 
-  describe("Popover Behavior", () => {
-    it("closes popover when onClose is triggered", async () => {
+  describe('Popover Behavior', () => {
+    it('closes popover when onClose is triggered', async () => {
       render(
         <HeaderBar
           title="Test Title"
           subtitle="Test Subtitle"
-          actions={["RETRY"]}
+          actions={['RETRY']}
         />
       );
 
-      const button = screen.getByTestId("button");
+      const button = screen.getByTestId('button');
       fireEvent.click(button);
 
       await waitFor(() => {
-        expect(screen.getByTestId("popover")).toHaveStyle({ display: "block" });
+        expect(screen.getByTestId('popover')).toHaveStyle({ display: 'block' });
       });
 
-      const popover = screen.getByTestId("popover");
+      const popover = screen.getByTestId('popover');
       fireEvent.click(popover);
 
       await waitFor(() => {
-        expect(screen.getByTestId("popover")).toHaveStyle({ display: "none" });
+        expect(screen.getByTestId('popover')).toHaveStyle({ display: 'none' });
       });
     });
   });
 
-  describe("Action Filtering", () => {
-    it("shows specified actions when actions prop is provided", () => {
+  describe('Action Filtering', () => {
+    it('shows specified actions when actions prop is provided', () => {
       render(
         <HeaderBar
           title="Test Title"
           subtitle="Test Subtitle"
-          actions={["RETRY", "PRINT"]}
+          actions={['RETRY', 'PRINT']}
         />
       );
 
-      const button = screen.getByTestId("button");
+      const button = screen.getByTestId('button');
       fireEvent.click(button);
 
-      expect(screen.getByText("Rerun")).toBeInTheDocument();
-      expect(screen.getByText("Print")).toBeInTheDocument();
-      expect(screen.queryByText("Settings")).not.toBeInTheDocument();
+      expect(screen.getByText('Rerun')).toBeInTheDocument();
+      expect(screen.getByText('Print')).toBeInTheDocument();
+      expect(screen.queryByText('Settings')).not.toBeInTheDocument();
     });
 
-    it("shows all available actions when no actions prop is provided", () => {
+    it('shows all available actions when no actions prop is provided', () => {
       render(<HeaderBar title="Test Title" subtitle="Test Subtitle" />);
 
-      const button = screen.getByTestId("button");
+      const button = screen.getByTestId('button');
       fireEvent.click(button);
 
       Object.values(SUPPLY_CHAIN_MENU).forEach((item) => {
@@ -379,26 +379,26 @@ describe("HeaderBar Component", () => {
     });
   });
 
-  describe("Mouse Events", () => {
-    it("applies hover styles on mouse enter", () => {
+  describe('Mouse Events', () => {
+    it('applies hover styles on mouse enter', () => {
       render(
         <HeaderBar
           title="Test Title"
           subtitle="Test Subtitle"
-          actions={["RETRY"]}
+          actions={['RETRY']}
         />
       );
 
-      const button = screen.getByTestId("button");
+      const button = screen.getByTestId('button');
       fireEvent.click(button);
 
-      const listItems = screen.getAllByTestId("list-item");
+      const listItems = screen.getAllByTestId('list-item');
       const firstItem = listItems[0];
 
-      Object.defineProperty(firstItem, "style", {
+      Object.defineProperty(firstItem, 'style', {
         value: {
-          backgroundColor: "",
-          borderBottomColor: "",
+          backgroundColor: '',
+          borderBottomColor: '',
         },
         writable: true,
         configurable: true,
@@ -407,33 +407,33 @@ describe("HeaderBar Component", () => {
       fireEvent.mouseEnter(firstItem);
 
       expect(firstItem.style.backgroundColor).toBe(
-        "var(--sapContent_Selected_Hover_Background)"
+        'var(--sapContent_Selected_Hover_Background)'
       );
       expect(firstItem.style.borderBottomColor).toBe(
-        "var(--sapHighlightColor)"
+        'var(--sapHighlightColor)'
       );
     });
 
-    it("removes hover styles on mouse leave", () => {
+    it('removes hover styles on mouse leave', () => {
       render(
         <HeaderBar
           title="Test Title"
           subtitle="Test Subtitle"
-          actions={["RETRY"]}
+          actions={['RETRY']}
         />
       );
 
-      const button = screen.getByTestId("button");
+      const button = screen.getByTestId('button');
       fireEvent.click(button);
 
-      const listItems = screen.getAllByTestId("list-item");
+      const listItems = screen.getAllByTestId('list-item');
       const firstItem = listItems[0];
 
       // Mock the currentTarget style property
-      Object.defineProperty(firstItem, "style", {
+      Object.defineProperty(firstItem, 'style', {
         value: {
-          backgroundColor: "var(--sapContent_Selected_Hover_Background)",
-          borderBottomColor: "var(--sapHighlightColor)",
+          backgroundColor: 'var(--sapContent_Selected_Hover_Background)',
+          borderBottomColor: 'var(--sapHighlightColor)',
         },
         writable: true,
         configurable: true,
@@ -441,30 +441,30 @@ describe("HeaderBar Component", () => {
 
       fireEvent.mouseLeave(firstItem);
 
-      expect(firstItem.style.backgroundColor).toBe("");
-      expect(firstItem.style.borderBottomColor).toBe("transparent");
+      expect(firstItem.style.backgroundColor).toBe('');
+      expect(firstItem.style.borderBottomColor).toBe('transparent');
     });
   });
 
-  describe("Styling", () => {
-    it("applies correct styles to title", () => {
+  describe('Styling', () => {
+    it('applies correct styles to title', () => {
       render(<HeaderBar title="Test Title" subtitle="Test Subtitle" />);
 
-      const title = screen.getByTestId("title");
+      const title = screen.getByTestId('title');
       expect(title).toHaveStyle({
-        color: "var(--sapHighlightColor)",
-        fontSize: "var(--sapFontHeader3Size)",
-        fontWeight: "bolder",
+        color: 'var(--sapHighlightColor)',
+        fontSize: 'var(--sapFontHeader3Size)',
+        fontWeight: 'bolder',
       });
     });
 
-    it("applies correct styles to subtitle", () => {
+    it('applies correct styles to subtitle', () => {
       render(<HeaderBar title="Test Title" subtitle="Test Subtitle" />);
 
-      const subtitle = screen.getByTestId("text");
+      const subtitle = screen.getByTestId('text');
       expect(subtitle).toHaveStyle({
-        color: "var(--sapTextColor)",
-        fontSize: "var(--sapFontSmallSize)",
+        color: 'var(--sapTextColor)',
+        fontSize: 'var(--sapFontSmallSize)',
       });
     });
   });

@@ -1,5 +1,5 @@
-import { useSettings } from "@/hooks/settings";
-import { UpdateSettingsRequest } from "@/lib/types/settings";
+import { useSettings } from '@/hooks/settings';
+import { UpdateSettingsRequest } from '@/lib/types/settings';
 import {
   SideNavigationItem,
   FlexBox,
@@ -7,9 +7,9 @@ import {
   Switch,
   Label,
   RadioButton,
-} from "@ui5/webcomponents-react";
-import { useEffect, useState } from "react";
-import { updateSettings as updateSettingsService } from "@/lib/services/settings.service";
+} from '@ui5/webcomponents-react';
+import { useEffect, useState } from 'react';
+import { updateSettings as updateSettingsService } from '@/lib/services/settings.service';
 
 export default function SettingsNavigationItem() {
   const {
@@ -51,8 +51,8 @@ export default function SettingsNavigationItem() {
       if (response.ok) {
         mutateSettings?.();
       } else {
-        setUpdateError("Failed to update settings");
-        console.error("Failed to update settings:", response.statusText);
+        setUpdateError('Failed to update settings');
+        console.error('Failed to update settings:', response.statusText);
       }
     } finally {
       setIsUpdating(false);
@@ -73,27 +73,27 @@ export default function SettingsNavigationItem() {
   let content = null;
   if (isLoadingSettings) {
     content = (
-      <FlexBox direction={FlexBoxDirection.Column} style={{ padding: "1rem" }}>
+      <FlexBox direction={FlexBoxDirection.Column} style={{ padding: '1rem' }}>
         <Label>Loading settings...</Label>
       </FlexBox>
     );
   } else if (errorLoadingSettings) {
     content = (
-      <FlexBox direction={FlexBoxDirection.Column} style={{ padding: "1rem" }}>
-        <Label style={{ color: "red" }}>Error loading settings.</Label>
+      <FlexBox direction={FlexBoxDirection.Column} style={{ padding: '1rem' }}>
+        <Label style={{ color: 'red' }}>Error loading settings.</Label>
       </FlexBox>
     );
   } else {
     content = (
-      <FlexBox direction={FlexBoxDirection.Column} style={{ padding: "1rem" }}>
+      <FlexBox direction={FlexBoxDirection.Column} style={{ padding: '1rem' }}>
         {/* Toggle Switch */}
-        <FlexBox style={{ paddingBlockEnd: "1rem" }}>
+        <FlexBox style={{ paddingBlockEnd: '1rem' }}>
           <Switch
             checked={shareChatsEnabled}
             disabled={isUpdating}
             onChange={handleShareChatsToggle}
           />
-          <Label style={{ paddingInlineStart: "1rem" }}>
+          <Label style={{ paddingInlineStart: '1rem' }}>
             Share chats for development
           </Label>
         </FlexBox>
@@ -101,11 +101,11 @@ export default function SettingsNavigationItem() {
         {/* Radio Buttons */}
         <FlexBox direction={FlexBoxDirection.Column}>
           <Label>Hide the index of tables</Label>
-          <FlexBox style={{ paddingTop: "0.5rem" }}>
+          <FlexBox style={{ paddingTop: '0.5rem' }}>
             <RadioButton
               name="tableIndex"
               text="Yes"
-              style={{ marginRight: "1rem" }}
+              style={{ marginRight: '1rem' }}
               checked={hideTableIndex === true}
               disabled={isUpdating}
               onChange={() => handleTableIndexChange(true)}
@@ -120,12 +120,12 @@ export default function SettingsNavigationItem() {
           </FlexBox>
         </FlexBox>
         {isUpdating && (
-          <Label style={{ marginTop: "1rem", color: "#888" }}>
+          <Label style={{ marginTop: '1rem', color: '#888' }}>
             Updating settings...
           </Label>
         )}
         {updateError && (
-          <Label style={{ marginTop: "1rem", color: "red" }}>
+          <Label style={{ marginTop: '1rem', color: 'red' }}>
             {updateError}
           </Label>
         )}

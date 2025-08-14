@@ -1,4 +1,4 @@
-import { FeatureFlags, FeatureFlagKey } from "@/lib/types/feature-flags";
+import { FeatureFlags, FeatureFlagKey } from '@/lib/types/feature-flags';
 
 // Default values if no file exists or parsing fails
 export const DEFAULT_FLAGS: FeatureFlags = {
@@ -32,7 +32,7 @@ const loadFromGeneratedFile = async (
       return featureFlags.default as FeatureFlags;
     } else {
       // Production path - static import for better webpack analysis
-      const featureFlags = await import("../../../feature-flags.json");
+      const featureFlags = await import('../../../feature-flags.json');
       return featureFlags.default as FeatureFlags;
     }
   } catch {
@@ -50,8 +50,8 @@ const parseBool = (
 ): boolean => {
   if (value == null) return defaultValue;
   const normalized = String(value).trim().toLowerCase();
-  if (["true", "1", "yes", "y", "on"].includes(normalized)) return true;
-  if (["false", "0", "no", "n", "off"].includes(normalized)) return false;
+  if (['true', '1', 'yes', 'y', 'on'].includes(normalized)) return true;
+  if (['false', '0', 'no', 'n', 'off'].includes(normalized)) return false;
   // If a value is provided but it's invalid, treat it as false to match previous behavior
   return false;
 };

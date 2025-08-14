@@ -55,13 +55,16 @@ afterAll(() => {
 
 describe('LoggedOutPage', () => {
   const mockSignIn = signIn as jest.MockedFunction<typeof signIn>;
-  const mockPerformCompleteLogoutCleanup = performCompleteLogoutCleanup as jest.MockedFunction<typeof performCompleteLogoutCleanup>;
+  const mockPerformCompleteLogoutCleanup =
+    performCompleteLogoutCleanup as jest.MockedFunction<
+      typeof performCompleteLogoutCleanup
+    >;
 
   beforeEach(() => {
     jest.clearAllMocks();
     jest.clearAllTimers();
     jest.useFakeTimers();
-    
+
     // Reset localStorage mocks
     mockLocalStorage.getItem.mockReturnValue('true');
     mockPerformCompleteLogoutCleanup.mockResolvedValue(undefined);
@@ -75,7 +78,7 @@ describe('LoggedOutPage', () => {
   describe('Initial loading and setup', () => {
     it('should show loading state initially', () => {
       render(<LoggedOutPage />);
-      
+
       expect(screen.getByText('Loading...')).toBeInTheDocument();
     });
 
@@ -83,24 +86,41 @@ describe('LoggedOutPage', () => {
       render(<LoggedOutPage />);
 
       expect(logoutState.setManuallyLoggedOut).toHaveBeenCalled();
-      expect(mockLocalStorage.setItem).toHaveBeenCalledWith('user_manually_logged_out', 'true');
-      expect(mockLocalStorage.setItem).toHaveBeenCalledWith('logout_timestamp', expect.any(String));
+      expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
+        'user_manually_logged_out',
+        'true'
+      );
+      expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
+        'logout_timestamp',
+        expect.any(String)
+      );
       expect(mockPerformCompleteLogoutCleanup).toHaveBeenCalled();
-      expect(mockConsole.log).toHaveBeenCalledWith('[LoggedOut] Enforcing logout state on page load');
+      expect(mockConsole.log).toHaveBeenCalledWith(
+        '[LoggedOut] Enforcing logout state on page load'
+      );
     });
 
     it('should complete cleanup process successfully', async () => {
       render(<LoggedOutPage />);
 
       // Wait for the performCleanup to complete
-      await waitFor(() => {
-        expect(screen.queryByText('Loading...')).not.toBeInTheDocument();
-      }, { timeout: 1000 });
-      
+      await waitFor(
+        () => {
+          expect(screen.queryByText('Loading...')).not.toBeInTheDocument();
+        },
+        { timeout: 1000 }
+      );
+
       // Verify that cleanup process was completed
       expect(logoutState.setManuallyLoggedOut).toHaveBeenCalled();
-      expect(mockLocalStorage.setItem).toHaveBeenCalledWith('user_manually_logged_out', 'true');
-      expect(mockLocalStorage.setItem).toHaveBeenCalledWith('logout_timestamp', expect.any(String));
+      expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
+        'user_manually_logged_out',
+        'true'
+      );
+      expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
+        'logout_timestamp',
+        expect.any(String)
+      );
       expect(mockPerformCompleteLogoutCleanup).toHaveBeenCalled();
     });
   });
@@ -108,22 +128,29 @@ describe('LoggedOutPage', () => {
   describe('Rendered content when ready', () => {
     beforeEach(async () => {
       render(<LoggedOutPage />);
-      
+
       // Wait for component to be ready
-      await waitFor(() => {
-        expect(screen.queryByText('Loading...')).not.toBeInTheDocument();
-      }, { timeout: 1000 });
+      await waitFor(
+        () => {
+          expect(screen.queryByText('Loading...')).not.toBeInTheDocument();
+        },
+        { timeout: 1000 }
+      );
     });
 
     it('should render logout success message', () => {
       expect(screen.getByText('You have been logged out')).toBeInTheDocument();
       expect(screen.getByText('✓ Logout Successful')).toBeInTheDocument();
-      expect(screen.getByText(/You have been successfully logged out/)).toBeInTheDocument();
+      expect(
+        screen.getByText(/You have been successfully logged out/)
+      ).toBeInTheDocument();
     });
 
     it('should render security information', () => {
       expect(screen.getByText(/To maintain security/)).toBeInTheDocument();
-      expect(screen.getByText(/For security reasons, please close your browser/)).toBeInTheDocument();
+      expect(
+        screen.getByText(/For security reasons, please close your browser/)
+      ).toBeInTheDocument();
     });
 
     it('should render sign in button', () => {
@@ -137,16 +164,19 @@ describe('LoggedOutPage', () => {
   describe('Sign in functionality', () => {
     beforeEach(async () => {
       render(<LoggedOutPage />);
-      
+
       // Wait for component to be ready
-      await waitFor(() => {
-        expect(screen.queryByText('Loading...')).not.toBeInTheDocument();
-      }, { timeout: 1000 });
+      await waitFor(
+        () => {
+          expect(screen.queryByText('Loading...')).not.toBeInTheDocument();
+        },
+        { timeout: 1000 }
+      );
     });
 
     it('should handle sign in button click', async () => {
       const signInButton = screen.getByTestId('ui5-button');
-      
+
       fireEvent.click(signInButton);
 
       expect(logoutState.clearLogoutState).toHaveBeenCalled();
@@ -155,15 +185,17 @@ describe('LoggedOutPage', () => {
         redirect: true,
         prompt: 'select_account',
       });
-      expect(mockConsole.log).toHaveBeenCalledWith('[LoggedOut] Manual login initiated');
+      expect(mockConsole.log).toHaveBeenCalledWith(
+        '[LoggedOut] Manual login initiated'
+      );
     });
 
     it('should show loading state during sign in', async () => {
       const signInButton = screen.getByTestId('ui5-button');
-      
+
       // Mock signIn to be a pending promise
       mockSignIn.mockImplementation(() => new Promise(() => {}));
-      
+
       fireEvent.click(signInButton);
 
       expect(screen.getByText('Signing In...')).toBeInTheDocument();
@@ -173,9 +205,9 @@ describe('LoggedOutPage', () => {
     it('should handle sign in errors', async () => {
       const signInButton = screen.getByTestId('ui5-button');
       const error = new Error('Sign in failed');
-      
+
       mockSignIn.mockRejectedValueOnce(error);
-      
+
       fireEvent.click(signInButton);
 
       await waitFor(() => {
@@ -191,19 +223,21 @@ describe('LoggedOutPage', () => {
       mockLocalStorage.getItem
         .mockReturnValueOnce('true') // Initial setup
         .mockReturnValueOnce('true') // After cleanup verification
-        .mockReturnValueOnce(null)   // During monitoring (state lost)
-        .mockReturnValue('true');    // Subsequent checks
+        .mockReturnValueOnce(null) // During monitoring (state lost)
+        .mockReturnValue('true'); // Subsequent checks
 
       render(<LoggedOutPage />);
-      
+
       // Fast-forward through initial setup
       jest.runAllTimers();
-      
+
       // Advance time to trigger monitoring interval
       jest.advanceTimersByTime(100);
 
       await waitFor(() => {
-        expect(mockConsole.warn).toHaveBeenCalledWith('[LoggedOut] Logout state was lost, restoring...');
+        expect(mockConsole.warn).toHaveBeenCalledWith(
+          '[LoggedOut] Logout state was lost, restoring...'
+        );
         expect(logoutState.setManuallyLoggedOut).toHaveBeenCalled();
       });
     });
@@ -212,26 +246,31 @@ describe('LoggedOutPage', () => {
       mockLocalStorage.getItem.mockReturnValue(null);
 
       render(<LoggedOutPage />);
-      
+
       // Advance time but shouldn't trigger monitoring yet
       jest.advanceTimersByTime(1000);
 
-      expect(mockConsole.warn).not.toHaveBeenCalledWith('[LoggedOut] Logout state was lost, restoring...');
+      expect(mockConsole.warn).not.toHaveBeenCalledWith(
+        '[LoggedOut] Logout state was lost, restoring...'
+      );
     });
 
     it('should clear monitoring interval on unmount', async () => {
       const { unmount } = render(<LoggedOutPage />);
-      
+
       // Wait for component to be ready and monitoring to start
-      await waitFor(() => {
-        expect(screen.queryByText('Loading...')).not.toBeInTheDocument();
-      }, { timeout: 1000 });
-      
+      await waitFor(
+        () => {
+          expect(screen.queryByText('Loading...')).not.toBeInTheDocument();
+        },
+        { timeout: 1000 }
+      );
+
       // Advance timers to start monitoring
       jest.advanceTimersByTime(100);
-      
+
       const clearIntervalSpy = jest.spyOn(global, 'clearInterval');
-      
+
       unmount();
 
       expect(clearIntervalSpy).toHaveBeenCalled();
@@ -242,11 +281,14 @@ describe('LoggedOutPage', () => {
   describe('Component styling and layout', () => {
     beforeEach(async () => {
       render(<LoggedOutPage />);
-      
+
       // Wait for component to be ready
-      await waitFor(() => {
-        expect(screen.queryByText('Loading...')).not.toBeInTheDocument();
-      }, { timeout: 1000 });
+      await waitFor(
+        () => {
+          expect(screen.queryByText('Loading...')).not.toBeInTheDocument();
+        },
+        { timeout: 1000 }
+      );
     });
 
     it('should apply correct styling to main container', () => {
@@ -271,11 +313,14 @@ describe('LoggedOutPage', () => {
   describe('Accessibility', () => {
     beforeEach(async () => {
       render(<LoggedOutPage />);
-      
+
       // Wait for component to be ready
-      await waitFor(() => {
-        expect(screen.queryByText('Loading...')).not.toBeInTheDocument();
-      }, { timeout: 1000 });
+      await waitFor(
+        () => {
+          expect(screen.queryByText('Loading...')).not.toBeInTheDocument();
+        },
+        { timeout: 1000 }
+      );
     });
 
     it('should have proper button accessibility', () => {
@@ -291,7 +336,7 @@ describe('LoggedOutPage', () => {
 
     it('should be keyboard navigable', () => {
       const button = screen.getByTestId('ui5-button');
-      
+
       button.focus();
       expect(document.activeElement).toBe(button);
     });
@@ -300,17 +345,27 @@ describe('LoggedOutPage', () => {
   describe('Console logging', () => {
     beforeEach(async () => {
       render(<LoggedOutPage />);
-      
+
       // Wait for component to be ready
-      await waitFor(() => {
-        expect(screen.queryByText('Loading...')).not.toBeInTheDocument();
-      }, { timeout: 1000 });
+      await waitFor(
+        () => {
+          expect(screen.queryByText('Loading...')).not.toBeInTheDocument();
+        },
+        { timeout: 1000 }
+      );
     });
 
     it('should log cleanup and state information', () => {
-      expect(mockConsole.log).toHaveBeenCalledWith('[LoggedOut] Enforcing logout state on page load');
-      expect(mockConsole.log).toHaveBeenCalledWith('[LoggedOut] Starting token cleanup while preserving logout state');
-      expect(mockConsole.log).toHaveBeenCalledWith('[LoggedOut] Final logout state:', 'true');
+      expect(mockConsole.log).toHaveBeenCalledWith(
+        '[LoggedOut] Enforcing logout state on page load'
+      );
+      expect(mockConsole.log).toHaveBeenCalledWith(
+        '[LoggedOut] Starting token cleanup while preserving logout state'
+      );
+      expect(mockConsole.log).toHaveBeenCalledWith(
+        '[LoggedOut] Final logout state:',
+        'true'
+      );
     });
   });
 });

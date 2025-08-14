@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import AnalysisChat from "@/components/AnalysisChat/AnalysisChat";
-import AnalysisFilter from "@/components/AnalysisFilters/AnalysisFilters";
-import AnalysisHeader from "@/components/AnalysisHeader/AnalysisHeader";
-import { useAnalysisFilters } from "@/hooks/useAnalysisFilters";
+import AnalysisChat from '@/components/AnalysisChat/AnalysisChat';
+import AnalysisFilter from '@/components/AnalysisFilters/AnalysisFilters';
+import AnalysisHeader from '@/components/AnalysisHeader/AnalysisHeader';
+import { useAnalysisFilters } from '@/hooks/useAnalysisFilters';
 import {
   BusyIndicator,
   Button,
@@ -11,13 +11,13 @@ import {
   FlexBoxDirection,
   Text,
   Title,
-} from "@ui5/webcomponents-react";
-import { useEffect, useState, useRef } from "react";
-import { useParams } from "next/navigation";
-import { useChat, useUpdateChat } from "@/hooks/chats";
-import { useAutosaveUI } from "@/contexts/AutosaveUIProvider";
-import { useAutoSave } from "@/hooks/useAutoSave";
-import { INITIAL_FILTERS } from "@/lib/constants/UI/analysisFilters";
+} from '@ui5/webcomponents-react';
+import { useEffect, useState, useRef } from 'react';
+import { useParams } from 'next/navigation';
+import { useChat, useUpdateChat } from '@/hooks/chats';
+import { useAutosaveUI } from '@/contexts/AutosaveUIProvider';
+import { useAutoSave } from '@/hooks/useAutoSave';
+import { INITIAL_FILTERS } from '@/lib/constants/UI/analysisFilters';
 
 const ErrorDisplay = ({
   error,
@@ -29,21 +29,21 @@ const ErrorDisplay = ({
   <FlexBox
     direction={FlexBoxDirection.Column}
     style={{
-      padding: "2rem",
-      alignItems: "center",
-      justifyContent: "center",
-      textAlign: "center",
-      gap: "1rem",
-      backgroundColor: "var(--sapGroup_ContentBackground)",
+      padding: '2rem',
+      alignItems: 'center',
+      justifyContent: 'center',
+      textAlign: 'center',
+      gap: '1rem',
+      backgroundColor: 'var(--sapGroup_ContentBackground)',
     }}
   >
-    <Title level="H3" style={{ color: "var(--sapNeutralTextColor)" }}>
+    <Title level="H3" style={{ color: 'var(--sapNeutralTextColor)' }}>
       Unable to Load Analysis
     </Title>
 
-    <Text style={{ maxWidth: "400px", color: "var(--sapNeutralTextColor)" }}>
+    <Text style={{ maxWidth: '400px', color: 'var(--sapNeutralTextColor)' }}>
       {error.message ||
-        "Something went wrong while fetching the analysis data. Please try again."}
+        'Something went wrong while fetching the analysis data. Please try again.'}
     </Text>
 
     {onRetry && (
@@ -57,9 +57,9 @@ const ErrorDisplay = ({
 const LoadingDisplay = () => (
   <FlexBox
     style={{
-      padding: "2rem",
-      justifyContent: "center",
-      alignItems: "center",
+      padding: '2rem',
+      justifyContent: 'center',
+      alignItems: 'center',
     }}
   >
     <BusyIndicator active size="L" text="Loading analysis..." />
@@ -69,7 +69,7 @@ const LoadingDisplay = () => (
 export default function AnalysisContainer() {
   const params = useParams();
   const analysisId = params.id as string;
-  const [analysisName, setAnalysisName] = useState<string>("");
+  const [analysisName, setAnalysisName] = useState<string>('');
 
   const {
     data: analysis,
@@ -111,7 +111,7 @@ export default function AnalysisContainer() {
       activateAutosaveUI();
     },
     onError: () => {
-      console.error("Autosave failed");
+      console.error('Autosave failed');
     },
   });
 
@@ -135,8 +135,8 @@ export default function AnalysisContainer() {
           />
           <div
             style={{
-              height: "1px",
-              backgroundColor: "var(--sapToolbar_SeparatorColor)",
+              height: '1px',
+              backgroundColor: 'var(--sapToolbar_SeparatorColor)',
             }}
           />
           {error ? (
@@ -149,9 +149,9 @@ export default function AnalysisContainer() {
                 showAutoSaved={showAutoSaved}
               />
               <AnalysisChat
-                chatId={analysis?.data?.id || ""}
+                chatId={analysis?.data?.id || ''}
                 previousMessages={analysis?.data?.messages || []}
-                draft={analysis?.data?.draft || ""}
+                draft={analysis?.data?.draft || ''}
               />
             </>
           )}

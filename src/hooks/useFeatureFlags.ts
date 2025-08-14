@@ -1,6 +1,6 @@
-import { FeatureFlags, FeatureFlagKey } from "@/lib/types/feature-flags";
-import { DEFAULT_FLAGS } from "@/lib/utils/feature-flags";
-import { useState, useEffect } from "react";
+import { FeatureFlags, FeatureFlagKey } from '@/lib/types/feature-flags';
+import { DEFAULT_FLAGS } from '@/lib/utils/feature-flags';
+import { useState, useEffect } from 'react';
 
 /**
  * Hook to get feature flags on the client side
@@ -15,10 +15,10 @@ export function useFeatureFlags() {
     let cancelled = false;
     const fetchFlags = async () => {
       try {
-        const response = await fetch("/api/feature-flags");
+        const response = await fetch('/api/feature-flags');
         if (cancelled) return;
         if (!response.ok) {
-          throw new Error("Failed to fetch feature flags");
+          throw new Error('Failed to fetch feature flags');
         }
         const data = await response.json();
         if (cancelled) return;
@@ -26,8 +26,8 @@ export function useFeatureFlags() {
         setError(null);
       } catch (err) {
         if (cancelled) return;
-        console.error("Error fetching feature flags:", err);
-        setError(err instanceof Error ? err.message : "Unknown error");
+        console.error('Error fetching feature flags:', err);
+        setError(err instanceof Error ? err.message : 'Unknown error');
         // Set default flags as fallback using centralized defaults
         setFlags(DEFAULT_FLAGS);
       } finally {
@@ -66,5 +66,5 @@ export function useFeatureFlag(key: FeatureFlagKey): {
  * Hook specifically for authentication feature flag
  */
 export function useAuthenticationEnabled(): boolean {
-  return useFeatureFlag("enableAuthentication").flag;
+  return useFeatureFlag('enableAuthentication').flag;
 }

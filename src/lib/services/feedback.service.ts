@@ -1,11 +1,11 @@
-import { httpClient } from "@/lib/api";
-import { HttpClientResponse } from "@/lib/types/api/http-client";
-import { FEEDBACKS, FEEDBACK } from "@/lib/constants/api/routes";
+import { httpClient } from '@/lib/api';
+import { HttpClientResponse } from '@/lib/types/api/http-client';
+import { FEEDBACKS, FEEDBACK } from '@/lib/constants/api/routes';
 import {
   Feedback,
   CreateFeedbackRequest,
   UpdateFeedbackRequest,
-} from "@/lib/types/feedback";
+} from '@/lib/types/feedback';
 
 export const getFeedbacks = async (): Promise<
   HttpClientResponse<Feedback[]>

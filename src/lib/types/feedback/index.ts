@@ -9,7 +9,7 @@ export interface Feedback {
 
 export type CreateFeedbackRequest = Omit<
   Feedback,
-  "id" | "userId" | "timestamp" | "status"
+  'id' | 'userId' | 'timestamp' | 'status'
 >;
 
 export type UpdateFeedbackRequest = Partial<Feedback> & { id: string };

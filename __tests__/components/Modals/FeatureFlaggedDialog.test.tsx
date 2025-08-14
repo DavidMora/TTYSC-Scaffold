@@ -1,20 +1,20 @@
-import React from "react";
-import { render, screen } from "@testing-library/react";
-import FeatureFlaggedDialog from "@/components/Modals/FeatureFlaggedDialog";
+import React from 'react';
+import { render, screen } from '@testing-library/react';
+import FeatureFlaggedDialog from '@/components/Modals/FeatureFlaggedDialog';
 
 // Mock the hook to control flag state
-jest.mock("@/hooks/useFeatureFlags", () => ({
+jest.mock('@/hooks/useFeatureFlags', () => ({
   useFeatureFlag: jest.fn(),
 }));
 
-import { useFeatureFlag } from "@/hooks/useFeatureFlags";
+import { useFeatureFlag } from '@/hooks/useFeatureFlags';
 
-describe("FeatureFlaggedDialog", () => {
+describe('FeatureFlaggedDialog', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  it("renders Dialog when loading is true (no flicker)", () => {
+  it('renders Dialog when loading is true (no flicker)', () => {
     (useFeatureFlag as jest.Mock).mockReturnValue({
       flag: false,
       loading: true,
@@ -27,10 +27,12 @@ describe("FeatureFlaggedDialog", () => {
       </FeatureFlaggedDialog>
     );
 
-    expect(document.querySelector('[data-testid="ui5-dialog"]')).toBeInTheDocument();
+    expect(
+      document.querySelector('[data-testid="ui5-dialog"]')
+    ).toBeInTheDocument();
   });
 
-  it("renders fallback when flag disabled and not loading", () => {
+  it('renders fallback when flag disabled and not loading', () => {
     (useFeatureFlag as jest.Mock).mockReturnValue({
       flag: false,
       loading: false,
@@ -46,11 +48,13 @@ describe("FeatureFlaggedDialog", () => {
       </FeatureFlaggedDialog>
     );
 
-    expect(document.querySelector('[data-testid="ui5-dialog"]')).not.toBeInTheDocument();
-    expect(screen.getByTestId("fallback")).toBeInTheDocument();
+    expect(
+      document.querySelector('[data-testid="ui5-dialog"]')
+    ).not.toBeInTheDocument();
+    expect(screen.getByTestId('fallback')).toBeInTheDocument();
   });
 
-  it("renders Dialog when flag enabled", () => {
+  it('renders Dialog when flag enabled', () => {
     (useFeatureFlag as jest.Mock).mockReturnValue({
       flag: true,
       loading: false,
@@ -59,6 +63,8 @@ describe("FeatureFlaggedDialog", () => {
 
     render(<FeatureFlaggedDialog open>Content</FeatureFlaggedDialog>);
 
-    expect(document.querySelector('[data-testid="ui5-dialog"]')).toBeInTheDocument();
+    expect(
+      document.querySelector('[data-testid="ui5-dialog"]')
+    ).toBeInTheDocument();
   });
 });

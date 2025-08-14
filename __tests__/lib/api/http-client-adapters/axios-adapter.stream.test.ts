@@ -1,8 +1,8 @@
 /** @jest-environment node */
-import { AxiosAdapter } from "@/lib/api/http-client-adapters/axios-adapter";
-import axios from "axios";
+import { AxiosAdapter } from '@/lib/api/http-client-adapters/axios-adapter';
+import axios from 'axios';
 
-jest.mock("axios");
+jest.mock('axios');
 const mockedAxios = axios as jest.Mocked<typeof axios>;
 
 // Helper to build async iterable over Buffers
@@ -26,7 +26,7 @@ interface MockAxiosInstance {
   get: jest.Mock;
 }
 
-describe("AxiosAdapter.stream", () => {
+describe('AxiosAdapter.stream', () => {
   let adapter: AxiosAdapter;
   let mockAxiosInstance: MockAxiosInstance;
 
@@ -39,83 +39,83 @@ describe("AxiosAdapter.stream", () => {
     delete (global as any).window;
   });
 
-  it("streams text chunks", async () => {
+  it('streams text chunks', async () => {
     mockAxiosInstance.get.mockResolvedValue({
-      data: bufferStream(["hello ", "world"]),
+      data: bufferStream(['hello ', 'world']),
       status: 200,
-      statusText: "OK",
+      statusText: 'OK',
       headers: {},
     });
-    const res = await adapter.stream<string>("/text", { parser: "text" });
+    const res = await adapter.stream<string>('/text', { parser: 'text' });
     const out: string[] = [];
     for await (const c of res) out.push(c as string);
-    expect(out).toEqual(["hello ", "world"]);
+    expect(out).toEqual(['hello ', 'world']);
   });
 
-  it("parses JSON after buffering and aborts", async () => {
+  it('parses JSON after buffering and aborts', async () => {
     const json = JSON.stringify({ a: 1 });
     mockAxiosInstance.get.mockResolvedValue({
       data: bufferStream([json.slice(0, 4), json.slice(4)]),
       status: 200,
-      statusText: "OK",
+      statusText: 'OK',
       headers: {},
     });
-    const res = await adapter.stream<Record<string, number>>("/json", {
-      parser: "json",
+    const res = await adapter.stream<Record<string, number>>('/json', {
+      parser: 'json',
     });
     const received: Record<string, number>[] = [];
     for await (const v of res) received.push(v as Record<string, number>);
     expect(received).toEqual([{ a: 1 }]);
   });
 
-  it("parses NDJSON lines including final buffered line", async () => {
+  it('parses NDJSON lines including final buffered line', async () => {
     mockAxiosInstance.get.mockResolvedValue({
       data: bufferStream(['{"x":1}\n{"x":2}']),
       status: 200,
-      statusText: "OK",
+      statusText: 'OK',
       headers: {},
     });
-    const res = await adapter.stream<{ x: number }>("/ndjson", {
-      parser: "ndjson",
+    const res = await adapter.stream<{ x: number }>('/ndjson', {
+      parser: 'ndjson',
     });
     const xs: number[] = [];
     for await (const v of res) xs.push((v as { x: number }).x);
     expect(xs).toEqual([1, 2]);
   });
 
-  it("parses SSE events including final buffered block", async () => {
-    const evt1 = "id:1\ndata:hello\n\n";
-    const evt2 = "id:2\nevent:note\ndata:world"; // normalized field names (no leading space) & no trailing blank -> final flush
+  it('parses SSE events including final buffered block', async () => {
+    const evt1 = 'id:1\ndata:hello\n\n';
+    const evt2 = 'id:2\nevent:note\ndata:world'; // normalized field names (no leading space) & no trailing blank -> final flush
     mockAxiosInstance.get.mockResolvedValue({
       data: bufferStream([evt1.slice(0, 5), evt1.slice(5), evt2]),
       status: 200,
-      statusText: "OK",
+      statusText: 'OK',
       headers: {},
     });
-    const res = await adapter.stream<Record<string, unknown>>("/sse", {
-      parser: "sse",
+    const res = await adapter.stream<Record<string, unknown>>('/sse', {
+      parser: 'sse',
     });
     const events: Record<string, unknown>[] = [];
     for await (const e of res) events.push(e as Record<string, unknown>);
     expect(events).toHaveLength(2);
-    expect(events[0]).toMatchObject({ id: "1", data: "hello" });
-    expect(events[1]).toMatchObject({ id: "2" });
+    expect(events[0]).toMatchObject({ id: '1', data: 'hello' });
+    expect(events[1]).toMatchObject({ id: '2' });
   });
 
-  it("streams raw bytes", async () => {
+  it('streams raw bytes', async () => {
     mockAxiosInstance.get.mockResolvedValue({
-      data: bufferStream(["abc"]),
+      data: bufferStream(['abc']),
       status: 200,
-      statusText: "OK",
+      statusText: 'OK',
       headers: {},
     });
-    const res = await adapter.stream<Buffer>("/bytes", { parser: "bytes" });
+    const res = await adapter.stream<Buffer>('/bytes', { parser: 'bytes' });
     const chunks: Buffer[] = [];
     for await (const c of res) chunks.push(c as Buffer);
     expect(chunks[0]).toBeInstanceOf(Buffer);
   });
 
-  it("enforces maxBufferSize for json parser", async () => {
+  it('enforces maxBufferSize for json parser', async () => {
     // Create JSON that exceeds the custom small limit only when second chunk arrives
     const bigJson = '{"large":"value_exceeding"}';
     const first = bigJson.slice(0, 10); // below limit
@@ -123,11 +123,11 @@ describe("AxiosAdapter.stream", () => {
     mockAxiosInstance.get.mockResolvedValue({
       data: bufferStream([first, second]),
       status: 200,
-      statusText: "OK",
+      statusText: 'OK',
       headers: {},
     });
-    const res = await adapter.stream<Record<string, unknown>>("/json-big", {
-      parser: "json",
+    const res = await adapter.stream<Record<string, unknown>>('/json-big', {
+      parser: 'json',
       maxBufferSize: 12, // small limit to trigger
     });
     let caught: Error | undefined;
@@ -143,12 +143,12 @@ describe("AxiosAdapter.stream", () => {
     expect(String(caught)).toMatch(/JSON buffer exceeded/);
   });
 
-  it("throws in browser environment", async () => {
+  it('throws in browser environment', async () => {
     // Simulate browser: define window
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (global as any).window = {};
     mockAxiosInstance.get.mockResolvedValue({});
-    await expect(adapter.stream("/fail")).rejects.toThrow(
+    await expect(adapter.stream('/fail')).rejects.toThrow(
       /not supported in browser/
     );
     // cleanup

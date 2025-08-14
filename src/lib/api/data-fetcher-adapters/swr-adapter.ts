@@ -1,11 +1,11 @@
-import { HttpClientResponse } from "@/lib/types/api/http-client";
+import { HttpClientResponse } from '@/lib/types/api/http-client';
 import {
   DataFetcherAdapter,
   DataFetcherKey,
   DataFetcherOptions,
   DataFetcherResponse,
-} from "@/lib/types/api/data-fetcher";
-import useSWR from "swr";
+} from '@/lib/types/api/data-fetcher';
+import useSWR from 'swr';
 
 // Note: This adapter requires SWR to be installed
 // yarn add swr
@@ -56,7 +56,7 @@ export class SWRAdapter implements DataFetcherAdapter {
 
     // Calculate retry count
     let errorRetryCount = 0;
-    if (typeof options.retry === "number") {
+    if (typeof options.retry === 'number') {
       errorRetryCount = options.retry;
     } else if (options.retry) {
       errorRetryCount = 3;

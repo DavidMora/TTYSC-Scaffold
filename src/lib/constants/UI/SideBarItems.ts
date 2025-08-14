@@ -1,4 +1,4 @@
-import { NavBarItem } from "../../types/NavBarItems";
+import { NavBarItem } from '../../types/NavBarItems';
 
 export const sideBarItems: NavBarItem[] = [
   // {

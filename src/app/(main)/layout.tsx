@@ -1,4 +1,4 @@
-import ConditionalAuthLayout from "../../components/ConditionalAuthLayout";
+import ConditionalAuthLayout from '../../components/ConditionalAuthLayout';
 
 export default function MainLayout({
   children,

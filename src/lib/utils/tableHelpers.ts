@@ -1,4 +1,4 @@
-import { TableDataRow } from "@/lib/types/datatable";
+import { TableDataRow } from '@/lib/types/datatable';
 
 /**
  * Helper function to get value by accessor path from a table row.
@@ -13,10 +13,10 @@ export function getValueByAccessor(
   accessor: string
 ): unknown {
   return accessor
-    .split(".")
+    .split('.')
     .reduce(
       (acc: unknown, key) =>
-        acc && typeof acc === "object" && acc !== null && key in acc
+        acc && typeof acc === 'object' && acc !== null && key in acc
           ? (acc as Record<string, unknown>)[key]
           : undefined,
       obj
@@ -38,16 +38,16 @@ export function getFormattedValueByAccessor(
   const value = getValueByAccessor(obj, accessor);
 
   if (value === null || value === undefined) {
-    return "";
-  } else if (typeof value === "object") {
+    return '';
+  } else if (typeof value === 'object') {
     return JSON.stringify(value);
   } else if (
-    typeof value === "string" ||
-    typeof value === "number" ||
-    typeof value === "boolean"
+    typeof value === 'string' ||
+    typeof value === 'number' ||
+    typeof value === 'boolean'
   ) {
     return String(value);
   } else {
-    return "";
+    return '';
   }
 }

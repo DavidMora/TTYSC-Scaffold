@@ -11,7 +11,9 @@ jest.mock('next-auth/react', () => ({
   )),
 }));
 
-const mockSessionProvider = SessionProvider as jest.MockedFunction<typeof SessionProvider>;
+const mockSessionProvider = SessionProvider as jest.MockedFunction<
+  typeof SessionProvider
+>;
 
 describe('SessionProviderWrapper', () => {
   beforeEach(() => {
@@ -38,11 +40,11 @@ describe('SessionProviderWrapper', () => {
 
     // Verificar que el componente fue llamado al menos una vez
     expect(mockSessionProvider).toHaveBeenCalled();
-    
+
     // Obtener la primera llamada
     const firstCall = mockSessionProvider.mock.calls[0];
     const props = firstCall[0];
-    
+
     // Verificar las propiedades específicas
     expect(props.refetchInterval).toBe(60);
     expect(props.refetchOnWindowFocus).toBe(true);
@@ -66,13 +68,13 @@ describe('SessionProviderWrapper', () => {
 
   it('handles empty children', () => {
     const { container } = render(
-      <SessionProviderWrapper>
-        {null}
-      </SessionProviderWrapper>
+      <SessionProviderWrapper>{null}</SessionProviderWrapper>
     );
 
     expect(screen.getByTestId('session-provider')).toBeInTheDocument();
-    expect(container.querySelector('[data-testid="session-provider"]')).toBeInTheDocument();
+    expect(
+      container.querySelector('[data-testid="session-provider"]')
+    ).toBeInTheDocument();
   });
 
   it('renders with complex nested children', () => {

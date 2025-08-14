@@ -1,9 +1,9 @@
-import React from "react";
-import { Title } from "@ui5/webcomponents-react";
-import TitleLevel from "@ui5/webcomponents/dist/types/TitleLevel.js";
-import { AIChartData } from "@/lib/types/charts";
-import { getChartDataInfo } from "@/lib/utils/chartUtils";
-import { ChartFactory } from "@/components/Charts/ChartFactory";
+import React from 'react';
+import { Title } from '@ui5/webcomponents-react';
+import TitleLevel from '@ui5/webcomponents/dist/types/TitleLevel.js';
+import { AIChartData } from '@/lib/types/charts';
+import { getChartDataInfo } from '@/lib/utils/chartUtils';
+import { ChartFactory } from '@/components/Charts/ChartFactory';
 
 interface AIChartProps {
   data: AIChartData;

@@ -11,53 +11,71 @@ function clearAuthCookies(response: NextResponse): void {
     'next-auth.csrf-token',
     'next-auth.callback-url',
     '__Secure-next-auth.session-token',
-    '__Host-next-auth.csrf-token'
+    '__Host-next-auth.csrf-token',
   ];
-  
-  cookiesToClear.forEach(cookieName => {
+
+  cookiesToClear.forEach((cookieName) => {
     response.cookies.set(cookieName, '', {
       expires: new Date(0),
       path: '/',
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax'
+      sameSite: 'lax',
     });
   });
 }
 
-function buildFederatedLogoutUrl(logoutUrl: string, idToken: string, baseUrl: string): URL {
+function buildFederatedLogoutUrl(
+  logoutUrl: string,
+  idToken: string,
+  baseUrl: string
+): URL {
   const federatedLogoutUrl = new URL(logoutUrl);
   federatedLogoutUrl.searchParams.set('id_token_hint', idToken);
-  federatedLogoutUrl.searchParams.set('post_logout_redirect_uri', `${baseUrl}/auth/logged-out`);
+  federatedLogoutUrl.searchParams.set(
+    'post_logout_redirect_uri',
+    `${baseUrl}/auth/logged-out`
+  );
   federatedLogoutUrl.searchParams.set('logout_hint', 'user_logout');
   return federatedLogoutUrl;
 }
 
-async function handleBackgroundLogout(logoutUrl: string, idToken: string, baseUrl: string): Promise<NextResponse> {
+async function handleBackgroundLogout(
+  logoutUrl: string,
+  idToken: string,
+  baseUrl: string
+): Promise<NextResponse> {
   try {
-    const federatedLogoutUrl = buildFederatedLogoutUrl(logoutUrl, idToken, baseUrl);
+    const federatedLogoutUrl = buildFederatedLogoutUrl(
+      logoutUrl,
+      idToken,
+      baseUrl
+    );
     federatedLogoutUrl.searchParams.set('post_logout_redirect_uri', baseUrl);
-    
+
     console.log('[Auth] Performing background federated logout');
-    
+
     const logoutResponse = await fetch(federatedLogoutUrl.toString(), {
       method: 'GET',
-      redirect: 'manual'
+      redirect: 'manual',
     });
 
-    console.log('[Auth] Background logout response status:', logoutResponse.status);
-    
-    return NextResponse.json({ 
-      success: true, 
+    console.log(
+      '[Auth] Background logout response status:',
+      logoutResponse.status
+    );
+
+    return NextResponse.json({
+      success: true,
       message: 'Background federated logout completed',
-      status: logoutResponse.status
+      status: logoutResponse.status,
     });
   } catch (error) {
     console.error('[Auth] Background federated logout failed:', error);
-    return NextResponse.json({ 
-      success: false, 
+    return NextResponse.json({
+      success: false,
       message: 'Background federated logout failed',
-      error: error instanceof Error ? error.message : 'Unknown error'
+      error: error instanceof Error ? error.message : 'Unknown error',
     });
   }
 }
@@ -127,12 +145,18 @@ async function getLogoutUrl(): Promise<string | null> {
   // Try to fetch from well-known endpoint
   if (oauthConfig.wellKnownUrl) {
     try {
-      console.log('[Auth] Fetching logout URL from well-known endpoint:', oauthConfig.wellKnownUrl);
+      console.log(
+        '[Auth] Fetching logout URL from well-known endpoint:',
+        oauthConfig.wellKnownUrl
+      );
       const response = await fetch(oauthConfig.wellKnownUrl);
       const wellKnown = await response.json();
-      
+
       if (wellKnown.end_session_endpoint) {
-        console.log('[Auth] Found end_session_endpoint:', wellKnown.end_session_endpoint);
+        console.log(
+          '[Auth] Found end_session_endpoint:',
+          wellKnown.end_session_endpoint
+        );
         return wellKnown.end_session_endpoint;
       }
     } catch (error) {
@@ -155,19 +179,23 @@ async function getLogoutUrl(): Promise<string | null> {
 
 export async function GET(req: NextRequest): Promise<NextResponse> {
   const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
-  
+
   try {
     console.log('[Auth] Starting federated sign-out process');
-    
+
     const { searchParams } = new URL(req.url);
     const isBackground = searchParams.get('background') === 'true';
-    
+
     // Try to get session first, then fallback to query parameter
     const session = await getServerSession(authOptions);
-    
+
     // Type assertion to access our custom session properties
-    const extendedSession = session as { idToken?: string; accessToken?: string; refreshToken?: string } | null;
-    
+    const extendedSession = session as {
+      idToken?: string;
+      accessToken?: string;
+      refreshToken?: string;
+    } | null;
+
     const idToken = extendedSession?.idToken ?? searchParams.get('idToken');
     const accessToken = extendedSession?.accessToken;
     const refreshToken = extendedSession?.refreshToken;
@@ -184,7 +212,10 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     if (!idToken) {
       console.warn('[Auth] No ID token available for federated logout');
       if (isBackground) {
-        return NextResponse.json({ success: false, message: 'No ID token available' });
+        return NextResponse.json({
+          success: false,
+          message: 'No ID token available',
+        });
       }
       return NextResponse.redirect(`${baseUrl}/auth/logged-out`, 302);
     }
@@ -193,7 +224,10 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     if (!logoutUrl) {
       console.error('[Auth] Unable to determine logout URL');
       if (isBackground) {
-        return NextResponse.json({ success: false, message: 'Unable to determine logout URL' });
+        return NextResponse.json({
+          success: false,
+          message: 'Unable to determine logout URL',
+        });
       }
       return NextResponse.redirect(`${baseUrl}/auth/logged-out`, 302);
     }
@@ -206,32 +240,39 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     }
 
     // Regular logout with redirect (legacy behavior)
-    const federatedLogoutUrl = buildFederatedLogoutUrl(logoutUrl, idToken, baseUrl);
+    const federatedLogoutUrl = buildFederatedLogoutUrl(
+      logoutUrl,
+      idToken,
+      baseUrl
+    );
 
-    console.log('[Auth] Federated logout URL constructed:', federatedLogoutUrl.toString());
+    console.log(
+      '[Auth] Federated logout URL constructed:',
+      federatedLogoutUrl.toString()
+    );
     console.log('[Auth] Redirect URL:', `${baseUrl}/auth/logged-out`);
     console.log('[Auth] ID token length:', idToken.length);
-    
+
     // Create response with headers to clear cookies
     const response = NextResponse.redirect(federatedLogoutUrl.toString(), 302);
     clearAuthCookies(response);
-    
+
     return response;
   } catch (error) {
     console.error('[Auth] Error during federated sign-out:', error);
-    
+
     const { searchParams } = new URL(req.url);
     if (searchParams.get('background') === 'true') {
-      return NextResponse.json({ 
-        success: false, 
+      return NextResponse.json({
+        success: false,
         message: 'Federated logout failed',
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       });
     }
-    
+
     const response = NextResponse.redirect(`${baseUrl}/auth/logged-out`, 302);
     clearAuthCookies(response);
-    
+
     return response;
   }
-} 
+}

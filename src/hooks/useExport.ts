@@ -1,7 +1,7 @@
-import { downloadFile } from "@/lib/utils/exportFile";
-import { getExportTable } from "@/lib/services/export.service";
-import { ExportFormat } from "@/lib/types/export";
-import { useState } from "react";
+import { downloadFile } from '@/lib/utils/exportFile';
+import { getExportTable } from '@/lib/services/export.service';
+import { ExportFormat } from '@/lib/types/export';
+import { useState } from 'react';
 
 export const useExportTable = (tableId: string) => {
   const [isExporting, setIsExporting] = useState(false);
@@ -19,7 +19,7 @@ export const useExportTable = (tableId: string) => {
       });
 
       if (!response.data) {
-        throw new Error("Error getting export table");
+        throw new Error('Error getting export table');
       }
 
       const now = new Date();
@@ -29,11 +29,11 @@ export const useExportTable = (tableId: string) => {
       downloadFile({
         blob: response.data,
         filename: `${filename}${formatConfig.fileExtension}`,
-        contentType: response.headers["content-type"] || formatConfig.mimeType,
+        contentType: response.headers['content-type'] || formatConfig.mimeType,
       });
     } catch (error) {
       setError(
-        error instanceof Error ? error.message : "An unknown error occurred"
+        error instanceof Error ? error.message : 'An unknown error occurred'
       );
     } finally {
       setIsExporting(false);

@@ -62,7 +62,7 @@ Object.defineProperty(window, 'sessionStorage', {
 // Test component that uses the hook
 function TestComponent() {
   const auth = useAuth();
-  
+
   return (
     <div>
       <div data-testid="auth-process">{auth.authProcess}</div>
@@ -78,11 +78,11 @@ function TestComponent() {
 
 describe('useAuth Hook', () => {
   const mockUpdate = jest.fn();
-  
+
   beforeEach(() => {
     jest.clearAllMocks();
     jest.spyOn(console, 'log').mockImplementation(() => {});
-    
+
     // Clear localStorage and sessionStorage mock calls
     mockLocalStorage.getItem.mockClear();
     mockLocalStorage.setItem.mockClear();
@@ -90,24 +90,30 @@ describe('useAuth Hook', () => {
     mockSessionStorage.getItem.mockClear();
     mockSessionStorage.setItem.mockClear();
     mockSessionStorage.removeItem.mockClear();
-    
+
     // Default mock implementations
     mockUseSession.mockReturnValue({
       data: null,
       status: 'loading',
       update: mockUpdate,
     });
-    
+
     mockFetch.mockResolvedValue({
       ok: true,
-      json: () => Promise.resolve({
-        authProcess: 'azure',
-        isAuthDisabled: false,
-        autoLogin: false,
-      }),
+      json: () =>
+        Promise.resolve({
+          authProcess: 'azure',
+          isAuthDisabled: false,
+          autoLogin: false,
+        }),
     } as Response);
-    
-    mockSignIn.mockResolvedValue({ ok: true, error: null, status: 200, url: '' });
+
+    mockSignIn.mockResolvedValue({
+      ok: true,
+      error: null,
+      status: 200,
+      url: '',
+    });
   });
 
   afterEach(() => {
@@ -119,12 +125,14 @@ describe('useAuth Hook', () => {
   });
 
   it('throws error when used outside AuthProvider', () => {
-    const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
-    
+    const consoleSpy = jest
+      .spyOn(console, 'error')
+      .mockImplementation(() => {});
+
     expect(() => {
       render(<TestComponent />);
     }).toThrow('useAuth must be used within an AuthProvider component');
-    
+
     consoleSpy.mockRestore();
   });
 
@@ -143,11 +151,12 @@ describe('useAuth Hook', () => {
   it('loads auth configuration successfully', async () => {
     mockFetch.mockResolvedValue({
       ok: true,
-      json: () => Promise.resolve({
-        authProcess: 'azure',
-        isAuthDisabled: false,
-        autoLogin: true,
-      }),
+      json: () =>
+        Promise.resolve({
+          authProcess: 'azure',
+          isAuthDisabled: false,
+          autoLogin: true,
+        }),
     } as Response);
 
     render(
@@ -173,7 +182,9 @@ describe('useAuth Hook', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByTestId('auth-error')).toHaveTextContent('Configuration error: Network error');
+      expect(screen.getByTestId('auth-error')).toHaveTextContent(
+        'Configuration error: Network error'
+      );
     });
 
     // Should fallback to default configuration
@@ -195,18 +206,21 @@ describe('useAuth Hook', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByTestId('auth-error')).toHaveTextContent('Configuration error: HTTP 404: Not Found');
+      expect(screen.getByTestId('auth-error')).toHaveTextContent(
+        'Configuration error: HTTP 404: Not Found'
+      );
     });
   });
 
   it('triggers auto-login when enabled', async () => {
     mockFetch.mockResolvedValue({
       ok: true,
-      json: () => Promise.resolve({
-        authProcess: 'azure',
-        isAuthDisabled: false,
-        autoLogin: true,
-      }),
+      json: () =>
+        Promise.resolve({
+          authProcess: 'azure',
+          isAuthDisabled: false,
+          autoLogin: true,
+        }),
     } as Response);
 
     mockUseSession.mockReturnValue({
@@ -234,11 +248,12 @@ describe('useAuth Hook', () => {
   it('does not trigger auto-login when disabled', async () => {
     mockFetch.mockResolvedValue({
       ok: true,
-      json: () => Promise.resolve({
-        authProcess: 'azure',
-        isAuthDisabled: false,
-        autoLogin: false,
-      }),
+      json: () =>
+        Promise.resolve({
+          authProcess: 'azure',
+          isAuthDisabled: false,
+          autoLogin: false,
+        }),
     } as Response);
 
     mockUseSession.mockReturnValue({
@@ -263,11 +278,12 @@ describe('useAuth Hook', () => {
   it('does not trigger auto-login when auth is disabled', async () => {
     mockFetch.mockResolvedValue({
       ok: true,
-      json: () => Promise.resolve({
-        authProcess: 'azure',
-        isAuthDisabled: true,
-        autoLogin: true,
-      }),
+      json: () =>
+        Promise.resolve({
+          authProcess: 'azure',
+          isAuthDisabled: true,
+          autoLogin: true,
+        }),
     } as Response);
 
     mockUseSession.mockReturnValue({
@@ -388,18 +404,21 @@ describe('useAuth Hook', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByTestId('auth-error')).toHaveTextContent('RefreshAccessTokenError');
+      expect(screen.getByTestId('auth-error')).toHaveTextContent(
+        'RefreshAccessTokenError'
+      );
     });
   });
 
   it('handles auto-login failure', async () => {
     mockFetch.mockResolvedValue({
       ok: true,
-      json: () => Promise.resolve({
-        authProcess: 'azure',
-        isAuthDisabled: false,
-        autoLogin: true,
-      }),
+      json: () =>
+        Promise.resolve({
+          authProcess: 'azure',
+          isAuthDisabled: false,
+          autoLogin: true,
+        }),
     } as Response);
 
     mockUseSession.mockReturnValue({
@@ -417,18 +436,21 @@ describe('useAuth Hook', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByTestId('auth-error')).toHaveTextContent('Auto-login failed: Login failed');
+      expect(screen.getByTestId('auth-error')).toHaveTextContent(
+        'Auto-login failed: Login failed'
+      );
     });
   });
 
   it('stops retrying after max attempts', async () => {
     mockFetch.mockResolvedValue({
       ok: true,
-      json: () => Promise.resolve({
-        authProcess: 'azure',
-        isAuthDisabled: false,
-        autoLogin: true,
-      }),
+      json: () =>
+        Promise.resolve({
+          authProcess: 'azure',
+          isAuthDisabled: false,
+          autoLogin: true,
+        }),
     } as Response);
 
     mockUseSession.mockReturnValue({
@@ -437,7 +459,12 @@ describe('useAuth Hook', () => {
       update: mockUpdate,
     });
 
-    mockSignIn.mockResolvedValue({ ok: true, error: null, status: 200, url: '' });
+    mockSignIn.mockResolvedValue({
+      ok: true,
+      error: null,
+      status: 200,
+      url: '',
+    });
 
     render(
       <AuthProvider>
@@ -477,11 +504,12 @@ describe('useAuth Hook', () => {
   it('handles loading states with auto-login enabled', async () => {
     mockFetch.mockResolvedValue({
       ok: true,
-      json: () => Promise.resolve({
-        authProcess: 'azure',
-        isAuthDisabled: false,
-        autoLogin: true,
-      }),
+      json: () =>
+        Promise.resolve({
+          authProcess: 'azure',
+          isAuthDisabled: false,
+          autoLogin: true,
+        }),
     } as Response);
 
     mockUseSession.mockReturnValue({
@@ -507,11 +535,12 @@ describe('useAuth Hook', () => {
   it('handles retry count logic properly', async () => {
     mockFetch.mockResolvedValue({
       ok: true,
-      json: () => Promise.resolve({
-        authProcess: 'azure',
-        isAuthDisabled: false,
-        autoLogin: true,
-      }),
+      json: () =>
+        Promise.resolve({
+          authProcess: 'azure',
+          isAuthDisabled: false,
+          autoLogin: true,
+        }),
     } as Response);
 
     mockUseSession.mockReturnValue({
@@ -520,7 +549,12 @@ describe('useAuth Hook', () => {
       update: mockUpdate,
     });
 
-    mockSignIn.mockResolvedValue({ ok: true, error: null, status: 200, url: '' });
+    mockSignIn.mockResolvedValue({
+      ok: true,
+      error: null,
+      status: 200,
+      url: '',
+    });
 
     render(
       <AuthProvider>
@@ -542,7 +576,7 @@ describe('useAuth Hook', () => {
   it('handles request cancellation on component unmount', async () => {
     // Create a promise that we can control
     let configResolve: (value: Response) => void;
-    const configPromise = new Promise<Response>(resolve => {
+    const configPromise = new Promise<Response>((resolve) => {
       configResolve = resolve;
     });
 
@@ -560,16 +594,17 @@ describe('useAuth Hook', () => {
     // Now resolve the config - this should be ignored due to cancellation
     configResolve!({
       ok: true,
-      json: () => Promise.resolve({
-        authProcess: 'azure',
-        isAuthDisabled: false,
-        autoLogin: true,
-      }),
+      json: () =>
+        Promise.resolve({
+          authProcess: 'azure',
+          isAuthDisabled: false,
+          autoLogin: true,
+        }),
     } as Response);
 
     // Give it a moment to process
     await act(async () => {
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
     });
 
     // The test passes if no errors are thrown during unmount/cleanup
@@ -579,11 +614,12 @@ describe('useAuth Hook', () => {
   it('covers various edge cases in auto-login conditions', async () => {
     mockFetch.mockResolvedValue({
       ok: true,
-      json: () => Promise.resolve({
-        authProcess: 'azure',
-        isAuthDisabled: false,
-        autoLogin: true,
-      }),
+      json: () =>
+        Promise.resolve({
+          authProcess: 'azure',
+          isAuthDisabled: false,
+          autoLogin: true,
+        }),
     } as Response);
 
     // Test scenario with existing auth error
@@ -596,23 +632,27 @@ describe('useAuth Hook', () => {
     const TestComponentWithState = () => {
       const auth = useAuth();
       const [stateError, setStateError] = React.useState(false);
-      
+
       React.useEffect(() => {
         // Simulate an auth error being present
         if (auth.retryCount === 1 && !stateError) {
           setStateError(true);
         }
       }, [auth.retryCount, stateError]);
-      
+
       return (
         <div>
           <div data-testid="auth-process">{auth.authProcess}</div>
           <div data-testid="auto-login">{auth.autoLogin.toString()}</div>
-          <div data-testid="is-auth-disabled">{auth.isAuthDisabled.toString()}</div>
+          <div data-testid="is-auth-disabled">
+            {auth.isAuthDisabled.toString()}
+          </div>
           <div data-testid="is-loading">{auth.isLoading.toString()}</div>
           <div data-testid="auth-error">{auth.authError || 'none'}</div>
           <div data-testid="retry-count">{auth.retryCount}</div>
-          <div data-testid="session">{auth.session ? 'authenticated' : 'none'}</div>
+          <div data-testid="session">
+            {auth.session ? 'authenticated' : 'none'}
+          </div>
           <div data-testid="state-error">{stateError.toString()}</div>
         </div>
       );
@@ -635,11 +675,12 @@ describe('useAuth Hook', () => {
   it('handles non-azure auth process provider mapping', async () => {
     mockFetch.mockResolvedValue({
       ok: true,
-      json: () => Promise.resolve({
-        authProcess: 'google',
-        isAuthDisabled: false,
-        autoLogin: true,
-      }),
+      json: () =>
+        Promise.resolve({
+          authProcess: 'google',
+          isAuthDisabled: false,
+          autoLogin: true,
+        }),
     } as Response);
 
     mockUseSession.mockReturnValue({
@@ -668,11 +709,12 @@ describe('useAuth Hook', () => {
   it('handles auth error state properly', async () => {
     mockFetch.mockResolvedValue({
       ok: true,
-      json: () => Promise.resolve({
-        authProcess: 'azure',
-        isAuthDisabled: false,
-        autoLogin: true,
-      }),
+      json: () =>
+        Promise.resolve({
+          authProcess: 'azure',
+          isAuthDisabled: false,
+          autoLogin: true,
+        }),
     } as Response);
 
     mockUseSession.mockReturnValue({
@@ -690,7 +732,9 @@ describe('useAuth Hook', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByTestId('auth-error')).toHaveTextContent('Auto-login failed: Network error');
+      expect(screen.getByTestId('auth-error')).toHaveTextContent(
+        'Auto-login failed: Network error'
+      );
     });
 
     // After error, no further auto-login attempts should be made
@@ -700,17 +744,27 @@ describe('useAuth Hook', () => {
   it('prevents auto-login when already tried', async () => {
     mockFetch.mockResolvedValue({
       ok: true,
-      json: () => Promise.resolve({
-        authProcess: 'azure',
-        isAuthDisabled: false,
-        autoLogin: true,
-      }),
+      json: () =>
+        Promise.resolve({
+          authProcess: 'azure',
+          isAuthDisabled: false,
+          autoLogin: true,
+        }),
     } as Response);
 
-    let sessionState = { data: null, status: 'unauthenticated' as const, update: mockUpdate };
+    let sessionState = {
+      data: null,
+      status: 'unauthenticated' as const,
+      update: mockUpdate,
+    };
     mockUseSession.mockImplementation(() => sessionState);
 
-    mockSignIn.mockResolvedValue({ ok: true, error: null, status: 200, url: '' });
+    mockSignIn.mockResolvedValue({
+      ok: true,
+      error: null,
+      status: 200,
+      url: '',
+    });
 
     const { rerender } = render(
       <AuthProvider>
@@ -733,7 +787,7 @@ describe('useAuth Hook', () => {
     );
 
     await act(async () => {
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
     });
 
     // Should not have been called again
@@ -743,11 +797,12 @@ describe('useAuth Hook', () => {
   it('handles session loading state correctly', async () => {
     mockFetch.mockResolvedValue({
       ok: true,
-      json: () => Promise.resolve({
-        authProcess: 'azure',
-        isAuthDisabled: false,
-        autoLogin: true,
-      }),
+      json: () =>
+        Promise.resolve({
+          authProcess: 'azure',
+          isAuthDisabled: false,
+          autoLogin: true,
+        }),
     } as Response);
 
     mockUseSession.mockReturnValue({
@@ -775,11 +830,12 @@ describe('useAuth Hook', () => {
     // Set up auth config that enables auto-login
     mockFetch.mockResolvedValue({
       ok: true,
-      json: () => Promise.resolve({
-        authProcess: 'azure',
-        isAuthDisabled: false,
-        autoLogin: true,
-      }),
+      json: () =>
+        Promise.resolve({
+          authProcess: 'azure',
+          isAuthDisabled: false,
+          autoLogin: true,
+        }),
     } as Response);
 
     // Mock no session to trigger auto-login
@@ -794,12 +850,14 @@ describe('useAuth Hook', () => {
 
     const TestComponent = () => {
       const { retryCount, authError, autoLogin } = useAuth();
-      
+
       return (
         <div>
           <div data-testid="retry-count">{retryCount}</div>
           <div data-testid="auth-error">{authError || ''}</div>
-          <div data-testid="auto-login-enabled">{autoLogin ? 'true' : 'false'}</div>
+          <div data-testid="auto-login-enabled">
+            {autoLogin ? 'true' : 'false'}
+          </div>
         </div>
       );
     };
@@ -812,24 +870,32 @@ describe('useAuth Hook', () => {
 
     // Wait for auto-login to be enabled
     await waitFor(() => {
-      expect(screen.getByTestId('auto-login-enabled')).toHaveTextContent('true');
+      expect(screen.getByTestId('auto-login-enabled')).toHaveTextContent(
+        'true'
+      );
     });
 
     // Wait for error message to appear after login attempts
-    await waitFor(() => {
-      const errorElement = screen.getByTestId('auth-error');
-      expect(errorElement.textContent).toMatch(/Auto-login failed:|Maximum login attempts exceeded/);
-    }, { timeout: 3000 });
+    await waitFor(
+      () => {
+        const errorElement = screen.getByTestId('auth-error');
+        expect(errorElement.textContent).toMatch(
+          /Auto-login failed:|Maximum login attempts exceeded/
+        );
+      },
+      { timeout: 3000 }
+    );
   });
 
   it('handles maximum retry limit reached scenario', async () => {
     mockFetch.mockResolvedValue({
       ok: true,
-      json: () => Promise.resolve({
-        authProcess: 'azure',
-        isAuthDisabled: false,
-        autoLogin: true,
-      }),
+      json: () =>
+        Promise.resolve({
+          authProcess: 'azure',
+          isAuthDisabled: false,
+          autoLogin: true,
+        }),
     } as Response);
 
     mockUseSession.mockReturnValue({
@@ -841,8 +907,8 @@ describe('useAuth Hook', () => {
     // Create a custom test component that can manipulate retry count
     const TestComponentWithRetryManipulation = () => {
       const auth = useAuth();
-      const [, forceRerender] = React.useReducer(x => x + 1, 0);
-      
+      const [, forceRerender] = React.useReducer((x) => x + 1, 0);
+
       React.useEffect(() => {
         // Force the retry count to reach max (3) by triggering re-renders
         // This simulates the scenario where retryCount >= maxRetries
@@ -853,16 +919,20 @@ describe('useAuth Hook', () => {
           setTimeout(() => forceRerender(), 150);
         }
       }, [auth.retryCount]);
-      
+
       return (
         <div>
           <div data-testid="auth-process">{auth.authProcess}</div>
           <div data-testid="auto-login">{auth.autoLogin.toString()}</div>
-          <div data-testid="is-auth-disabled">{auth.isAuthDisabled.toString()}</div>
+          <div data-testid="is-auth-disabled">
+            {auth.isAuthDisabled.toString()}
+          </div>
           <div data-testid="is-loading">{auth.isLoading.toString()}</div>
           <div data-testid="auth-error">{auth.authError || 'none'}</div>
           <div data-testid="retry-count">{auth.retryCount}</div>
-          <div data-testid="session">{auth.session ? 'authenticated' : 'none'}</div>
+          <div data-testid="session">
+            {auth.session ? 'authenticated' : 'none'}
+          </div>
         </div>
       );
     };
@@ -885,11 +955,12 @@ describe('useAuth Hook', () => {
   it('handles auto-login error with undefined message', async () => {
     mockFetch.mockResolvedValue({
       ok: true,
-      json: () => Promise.resolve({
-        authProcess: 'azure',
-        isAuthDisabled: false,
-        autoLogin: true,
-      }),
+      json: () =>
+        Promise.resolve({
+          authProcess: 'azure',
+          isAuthDisabled: false,
+          autoLogin: true,
+        }),
     } as Response);
 
     mockUseSession.mockReturnValue({
@@ -910,13 +981,15 @@ describe('useAuth Hook', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByTestId('auth-error')).toHaveTextContent('Auto-login failed: Unknown error');
+      expect(screen.getByTestId('auth-error')).toHaveTextContent(
+        'Auto-login failed: Unknown error'
+      );
     });
   });
 
   it('handles config loading with abort signal properly', async () => {
     let abortController: AbortController | undefined;
-    
+
     // Mock fetch to capture the abort controller
     mockFetch.mockImplementation((url, options) => {
       abortController = new AbortController();
@@ -926,14 +999,15 @@ describe('useAuth Hook', () => {
           abortController?.abort();
         });
       }
-      
+
       return Promise.resolve({
         ok: true,
-        json: () => Promise.resolve({
-          authProcess: 'azure',
-          isAuthDisabled: false,
-          autoLogin: false,
-        }),
+        json: () =>
+          Promise.resolve({
+            authProcess: 'azure',
+            isAuthDisabled: false,
+            autoLogin: false,
+          }),
       } as Response);
     });
 
@@ -945,7 +1019,7 @@ describe('useAuth Hook', () => {
 
     // Wait a moment for the fetch to start
     await act(async () => {
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
     });
 
     // Unmount to trigger abort
@@ -971,23 +1045,26 @@ describe('useAuth Hook', () => {
 
     mockFetch.mockResolvedValue({
       ok: true,
-      json: () => Promise.resolve({
-        authProcess: 'azure',
-        isAuthDisabled: false,
-        autoLogin: false,
-      }),
+      json: () =>
+        Promise.resolve({
+          authProcess: 'azure',
+          isAuthDisabled: false,
+          autoLogin: false,
+        }),
     } as Response);
 
     mockSignOut.mockResolvedValue({} as any);
 
     function TestLogoutComponent() {
       const { logout, session } = useAuth();
-      
+
       return (
         <div>
-          <div data-testid="session-status">{session ? 'authenticated' : 'none'}</div>
-          <button 
-            data-testid="logout-button" 
+          <div data-testid="session-status">
+            {session ? 'authenticated' : 'none'}
+          </div>
+          <button
+            data-testid="logout-button"
             onClick={() => {
               // Test that logout function exists and can be called
               expect(typeof logout).toBe('function');
@@ -1008,7 +1085,9 @@ describe('useAuth Hook', () => {
 
     // Verify initial authenticated state
     await waitFor(() => {
-      expect(screen.getByTestId('session-status')).toHaveTextContent('authenticated');
+      expect(screen.getByTestId('session-status')).toHaveTextContent(
+        'authenticated'
+      );
     });
 
     // Verify logout function is available
@@ -1033,16 +1112,17 @@ describe('useAuth Hook', () => {
 
     mockFetch.mockResolvedValue({
       ok: true,
-      json: () => Promise.resolve({
-        authProcess: 'azure',
-        isAuthDisabled: false,
-        autoLogin: false,
-      }),
+      json: () =>
+        Promise.resolve({
+          authProcess: 'azure',
+          isAuthDisabled: false,
+          autoLogin: false,
+        }),
     } as Response);
 
     function TestLogoutFunctionComponent() {
       const { logout } = useAuth();
-      
+
       return (
         <div>
           <div data-testid="logout-function-type">{typeof logout}</div>
@@ -1057,7 +1137,9 @@ describe('useAuth Hook', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByTestId('logout-function-type')).toHaveTextContent('function');
+      expect(screen.getByTestId('logout-function-type')).toHaveTextContent(
+        'function'
+      );
     });
   });
 
@@ -1092,11 +1174,12 @@ describe('useAuth Hook', () => {
     // Test logic for auto-login blocking without mocking window.location
     mockFetch.mockResolvedValue({
       ok: true,
-      json: () => Promise.resolve({
-        authProcess: 'azure',
-        isAuthDisabled: false,
-        autoLogin: true,
-      }),
+      json: () =>
+        Promise.resolve({
+          authProcess: 'azure',
+          isAuthDisabled: false,
+          autoLogin: true,
+        }),
     } as Response);
 
     mockUseSession.mockReturnValue({
@@ -1122,11 +1205,12 @@ describe('useAuth Hook', () => {
   it('provides manual login function', async () => {
     mockFetch.mockResolvedValue({
       ok: true,
-      json: () => Promise.resolve({
-        authProcess: 'azure',
-        isAuthDisabled: false,
-        autoLogin: false,
-      }),
+      json: () =>
+        Promise.resolve({
+          authProcess: 'azure',
+          isAuthDisabled: false,
+          autoLogin: false,
+        }),
     } as Response);
 
     mockUseSession.mockReturnValue({
@@ -1137,12 +1221,9 @@ describe('useAuth Hook', () => {
 
     function TestLoginComponent() {
       const { login } = useAuth();
-      
+
       return (
-        <button 
-          data-testid="login-button" 
-          onClick={() => login()}
-        >
+        <button data-testid="login-button" onClick={() => login()}>
           Login
         </button>
       );
@@ -1169,7 +1250,7 @@ describe('useAuth Hook', () => {
       expect(mockSignIn).toHaveBeenCalledWith('nvlogin', {
         callbackUrl: '/',
         redirect: true,
-        prompt: 'select_account'
+        prompt: 'select_account',
       });
     });
   });
@@ -1177,11 +1258,12 @@ describe('useAuth Hook', () => {
   it('handles manual login error', async () => {
     mockFetch.mockResolvedValue({
       ok: true,
-      json: () => Promise.resolve({
-        authProcess: 'azure',
-        isAuthDisabled: false,
-        autoLogin: false,
-      }),
+      json: () =>
+        Promise.resolve({
+          authProcess: 'azure',
+          isAuthDisabled: false,
+          autoLogin: false,
+        }),
     } as Response);
 
     mockUseSession.mockReturnValue({
@@ -1194,13 +1276,10 @@ describe('useAuth Hook', () => {
 
     function TestLoginErrorComponent() {
       const { login, authError } = useAuth();
-      
+
       return (
         <div>
-          <button 
-            data-testid="login-error-button" 
-            onClick={() => login()}
-          >
+          <button data-testid="login-error-button" onClick={() => login()}>
             Login with Error
           </button>
           <div data-testid="login-error">{authError || 'none'}</div>
@@ -1226,7 +1305,9 @@ describe('useAuth Hook', () => {
 
     // Wait for error to appear
     await waitFor(() => {
-      expect(screen.getByTestId('login-error')).toHaveTextContent('Login failed: Login failed');
+      expect(screen.getByTestId('login-error')).toHaveTextContent(
+        'Login failed: Login failed'
+      );
     });
   });
 
@@ -1245,19 +1326,22 @@ describe('useAuth Hook', () => {
 
     mockFetch.mockResolvedValue({
       ok: true,
-      json: () => Promise.resolve({
-        authProcess: 'azure',
-        isAuthDisabled: false,
-        autoLogin: false,
-      }),
+      json: () =>
+        Promise.resolve({
+          authProcess: 'azure',
+          isAuthDisabled: false,
+          autoLogin: false,
+        }),
     } as Response);
 
     function TestSessionComponent() {
       const { session } = useAuth();
-      
+
       return (
         <div>
-          <div data-testid="has-id-token">{(session as any)?.idToken ? 'true' : 'false'}</div>
+          <div data-testid="has-id-token">
+            {(session as any)?.idToken ? 'true' : 'false'}
+          </div>
         </div>
       );
     }
@@ -1277,7 +1361,7 @@ describe('useAuth Hook', () => {
     // Create a direct component that bypasses useAuth hook's auto-login logic
     function TestDirectGoogleLoginComponent() {
       const [authConfig, setAuthConfig] = React.useState(null);
-      
+
       React.useEffect(() => {
         setAuthConfig({
           authProcess: 'google',
@@ -1285,21 +1369,21 @@ describe('useAuth Hook', () => {
           autoLogin: false,
         });
       }, []);
-      
+
       const handleLogin = async () => {
-        const providerId = authConfig?.authProcess === 'azure' ? 'nvlogin' : (authConfig?.authProcess || 'nvlogin');
-        await signIn(providerId, { 
-          callbackUrl: "/",
+        const providerId =
+          authConfig?.authProcess === 'azure'
+            ? 'nvlogin'
+            : authConfig?.authProcess || 'nvlogin';
+        await signIn(providerId, {
+          callbackUrl: '/',
           redirect: true,
-          prompt: 'select_account'
+          prompt: 'select_account',
         });
       };
-      
+
       return (
-        <button 
-          data-testid="google-login-button" 
-          onClick={handleLogin}
-        >
+        <button data-testid="google-login-button" onClick={handleLogin}>
           Google Login
         </button>
       );
@@ -1322,7 +1406,7 @@ describe('useAuth Hook', () => {
       expect(mockSignIn).toHaveBeenCalledWith('google', {
         callbackUrl: '/',
         redirect: true,
-        prompt: 'select_account'
+        prompt: 'select_account',
       });
     });
   });
@@ -1330,30 +1414,33 @@ describe('useAuth Hook', () => {
   it('handles max retry logic when conditions are met', async () => {
     mockFetch.mockResolvedValue({
       ok: true,
-      json: () => Promise.resolve({
-        authProcess: 'azure',
-        isAuthDisabled: false,
-        autoLogin: true,
-      }),
+      json: () =>
+        Promise.resolve({
+          authProcess: 'azure',
+          isAuthDisabled: false,
+          autoLogin: true,
+        }),
     } as Response);
 
     // Create a test component that can simulate retry conditions
     function TestMaxRetryLogicComponent() {
       const auth = useAuth();
       const [simulateMaxRetries, setSimulateMaxRetries] = React.useState(false);
-      
+
       // Simulate reaching max retries condition
       React.useEffect(() => {
         if (auth.retryCount >= 1 && !simulateMaxRetries) {
           setSimulateMaxRetries(true);
         }
       }, [auth.retryCount, simulateMaxRetries]);
-      
+
       return (
         <div>
           <div data-testid="retry-count">{auth.retryCount}</div>
           <div data-testid="auto-login">{auth.autoLogin.toString()}</div>
-          <div data-testid="simulate-max-retries">{simulateMaxRetries.toString()}</div>
+          <div data-testid="simulate-max-retries">
+            {simulateMaxRetries.toString()}
+          </div>
         </div>
       );
     }
@@ -1381,18 +1468,19 @@ describe('useAuth Hook', () => {
 
   it('handles logout state synchronization from utilities', async () => {
     const { logoutState } = require('@/lib/utils/logout-state');
-    
+
     // Test logout state utility integration
     logoutState.isManuallyLoggedOut.mockReturnValue(true);
     logoutState.hasLogoutUrlParams.mockReturnValue(true);
 
     mockFetch.mockResolvedValue({
       ok: true,
-      json: () => Promise.resolve({
-        authProcess: 'azure',
-        isAuthDisabled: false,
-        autoLogin: true,
-      }),
+      json: () =>
+        Promise.resolve({
+          authProcess: 'azure',
+          isAuthDisabled: false,
+          autoLogin: true,
+        }),
     } as Response);
 
     mockUseSession.mockReturnValue({
@@ -1401,7 +1489,9 @@ describe('useAuth Hook', () => {
       update: mockUpdate,
     });
 
-    const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+    const consoleLogSpy = jest
+      .spyOn(console, 'log')
+      .mockImplementation(() => {});
 
     render(
       <AuthProvider>
@@ -1416,7 +1506,7 @@ describe('useAuth Hook', () => {
     // Verify logout state utility methods were called
     expect(logoutState.isManuallyLoggedOut).toHaveBeenCalled();
     expect(logoutState.hasLogoutUrlParams).toHaveBeenCalled();
-    
+
     // Verify auto-login is blocked due to logout state
     expect(mockSignIn).not.toHaveBeenCalled();
 
@@ -1431,11 +1521,12 @@ describe('useAuth Hook', () => {
 
     mockFetch.mockResolvedValue({
       ok: true,
-      json: () => Promise.resolve({
-        authProcess: 'azure',
-        isAuthDisabled: false,
-        autoLogin: false,
-      }),
+      json: () =>
+        Promise.resolve({
+          authProcess: 'azure',
+          isAuthDisabled: false,
+          autoLogin: false,
+        }),
     } as Response);
 
     // Start without session
@@ -1475,11 +1566,12 @@ describe('useAuth Hook', () => {
   it('logs comprehensive auth state information', async () => {
     mockFetch.mockResolvedValue({
       ok: true,
-      json: () => Promise.resolve({
-        authProcess: 'azure',
-        isAuthDisabled: false,
-        autoLogin: true,
-      }),
+      json: () =>
+        Promise.resolve({
+          authProcess: 'azure',
+          isAuthDisabled: false,
+          autoLogin: true,
+        }),
     } as Response);
 
     mockUseSession.mockReturnValue({
@@ -1488,7 +1580,9 @@ describe('useAuth Hook', () => {
       update: mockUpdate,
     });
 
-    const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+    const consoleLogSpy = jest
+      .spyOn(console, 'log')
+      .mockImplementation(() => {});
 
     render(
       <AuthProvider>
@@ -1501,23 +1595,29 @@ describe('useAuth Hook', () => {
     });
 
     // Verify that comprehensive logging was called
-    expect(consoleLogSpy).toHaveBeenCalledWith('[Auth] Auto-login check:', expect.objectContaining({
-      hasAuthConfig: true,
-      isAuthDisabled: false,
-      autoLogin: true,
-      hasSession: false,
-      hasTriedAutoLogin: false,
-      hasAuthError: false,
-      retryCount: 0,
-      maxRetries: 3,
-    }));
+    expect(consoleLogSpy).toHaveBeenCalledWith(
+      '[Auth] Auto-login check:',
+      expect.objectContaining({
+        hasAuthConfig: true,
+        isAuthDisabled: false,
+        autoLogin: true,
+        hasSession: false,
+        hasTriedAutoLogin: false,
+        hasAuthError: false,
+        retryCount: 0,
+        maxRetries: 3,
+      })
+    );
 
-    expect(consoleLogSpy).toHaveBeenCalledWith('[Auth] Current state:', expect.objectContaining({
-      autoLogin: true,
-      isAuthDisabled: false,
-      hasSession: false,
-      sessionStatus: 'unauthenticated',
-    }));
+    expect(consoleLogSpy).toHaveBeenCalledWith(
+      '[Auth] Current state:',
+      expect.objectContaining({
+        autoLogin: true,
+        isAuthDisabled: false,
+        hasSession: false,
+        sessionStatus: 'unauthenticated',
+      })
+    );
 
     consoleLogSpy.mockRestore();
   });
@@ -1526,11 +1626,12 @@ describe('useAuth Hook', () => {
     // Test that max retry logic path exists by verifying basic retry functionality
     mockFetch.mockResolvedValue({
       ok: true,
-      json: () => Promise.resolve({
-        authProcess: 'azure',
-        isAuthDisabled: false,
-        autoLogin: true,
-      }),
+      json: () =>
+        Promise.resolve({
+          authProcess: 'azure',
+          isAuthDisabled: false,
+          autoLogin: true,
+        }),
     } as Response);
 
     mockUseSession.mockReturnValue({
@@ -1563,11 +1664,12 @@ describe('useAuth Hook', () => {
 
     mockFetch.mockResolvedValue({
       ok: true,
-      json: () => Promise.resolve({
-        authProcess: 'azure',
-        isAuthDisabled: true,
-        autoLogin: false,
-      }),
+      json: () =>
+        Promise.resolve({
+          authProcess: 'azure',
+          isAuthDisabled: true,
+          autoLogin: false,
+        }),
     } as Response);
 
     mockUseSession.mockReturnValue({
@@ -1576,7 +1678,9 @@ describe('useAuth Hook', () => {
       update: mockUpdate,
     });
 
-    const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+    const consoleLogSpy = jest
+      .spyOn(console, 'log')
+      .mockImplementation(() => {});
 
     render(
       <AuthProvider>
@@ -1590,12 +1694,15 @@ describe('useAuth Hook', () => {
 
     // Wait for both auto-login check logging and current state logging
     await waitFor(() => {
-      expect(consoleLogSpy).toHaveBeenCalledWith('[Auth] Current state:', expect.objectContaining({
-        autoLogin: false,
-        isAuthDisabled: true,
-        hasSession: true,
-        sessionStatus: 'authenticated',
-      }));
+      expect(consoleLogSpy).toHaveBeenCalledWith(
+        '[Auth] Current state:',
+        expect.objectContaining({
+          autoLogin: false,
+          isAuthDisabled: true,
+          hasSession: true,
+          sessionStatus: 'authenticated',
+        })
+      );
     });
 
     consoleLogSpy.mockRestore();
@@ -1605,11 +1712,12 @@ describe('useAuth Hook', () => {
     // Test that login function exists and can map provider IDs
     mockFetch.mockResolvedValue({
       ok: true,
-      json: () => Promise.resolve({
-        authProcess: 'custom-provider',
-        isAuthDisabled: false,
-        autoLogin: false,
-      }),
+      json: () =>
+        Promise.resolve({
+          authProcess: 'custom-provider',
+          isAuthDisabled: false,
+          autoLogin: false,
+        }),
     } as Response);
 
     mockUseSession.mockReturnValue({
@@ -1620,7 +1728,7 @@ describe('useAuth Hook', () => {
 
     function TestProviderLoginComponent() {
       const auth = useAuth();
-      
+
       return (
         <div>
           <div data-testid="auth-process">{auth.authProcess}</div>
@@ -1636,7 +1744,9 @@ describe('useAuth Hook', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByTestId('login-function-exists')).toHaveTextContent('function');
+      expect(screen.getByTestId('login-function-exists')).toHaveTextContent(
+        'function'
+      );
     });
 
     // Verify the auth process is handled (even though it returns 'azure' as simplified)
@@ -1647,10 +1757,16 @@ describe('useAuth Hook', () => {
     // Create URL with logged_out and prompt parameters
     const mockURL = {
       searchParams: {
-        has: jest.fn().mockImplementation((param) => param === 'logged_out' || param === 'prompt'),
+        has: jest
+          .fn()
+          .mockImplementation(
+            (param) => param === 'logged_out' || param === 'prompt'
+          ),
         delete: jest.fn(),
       },
-      toString: jest.fn().mockReturnValue('http://localhost:3000/dashboard?other=param'),
+      toString: jest
+        .fn()
+        .mockReturnValue('http://localhost:3000/dashboard?other=param'),
     };
 
     const mockHistory = {
@@ -1677,11 +1793,12 @@ describe('useAuth Hook', () => {
 
     mockFetch.mockResolvedValue({
       ok: true,
-      json: () => Promise.resolve({
-        authProcess: 'azure',
-        isAuthDisabled: false,
-        autoLogin: false,
-      }),
+      json: () =>
+        Promise.resolve({
+          authProcess: 'azure',
+          isAuthDisabled: false,
+          autoLogin: false,
+        }),
     } as Response);
 
     // Start without session, then add session to trigger URL cleanup
@@ -1738,11 +1855,12 @@ describe('useAuth Hook', () => {
 
     mockFetch.mockResolvedValue({
       ok: true,
-      json: () => Promise.resolve({
-        authProcess: 'azure',
-        isAuthDisabled: false,
-        autoLogin: false,
-      }),
+      json: () =>
+        Promise.resolve({
+          authProcess: 'azure',
+          isAuthDisabled: false,
+          autoLogin: false,
+        }),
     } as Response);
 
     // Start without session
@@ -1775,7 +1893,7 @@ describe('useAuth Hook', () => {
       expect(screen.getByTestId('session')).toHaveTextContent('authenticated');
     });
 
-    // The URL cleanup logic is covered by the session effect, 
+    // The URL cleanup logic is covered by the session effect,
     // even if we can't easily test the actual URL manipulation
     expect(screen.getByTestId('session')).toBeInTheDocument();
   });
@@ -1784,11 +1902,12 @@ describe('useAuth Hook', () => {
     // Test that auto-login can be blocked (even if we can't test the exact path check)
     mockFetch.mockResolvedValue({
       ok: true,
-      json: () => Promise.resolve({
-        authProcess: 'azure',
-        isAuthDisabled: false,
-        autoLogin: true,
-      }),
+      json: () =>
+        Promise.resolve({
+          authProcess: 'azure',
+          isAuthDisabled: false,
+          autoLogin: true,
+        }),
     } as Response);
 
     // Set logout state to blocked to prevent auto-login
@@ -1802,7 +1921,9 @@ describe('useAuth Hook', () => {
       update: mockUpdate,
     });
 
-    const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+    const consoleLogSpy = jest
+      .spyOn(console, 'log')
+      .mockImplementation(() => {});
 
     render(
       <AuthProvider>
@@ -1818,28 +1939,34 @@ describe('useAuth Hook', () => {
     expect(mockSignIn).not.toHaveBeenCalled();
 
     // Verify auto-login check logging was called
-    expect(consoleLogSpy).toHaveBeenCalledWith('[Auth] Auto-login check:', expect.objectContaining({
-      isManuallyLoggedOut: true,
-      hasLoggedOutParam: true
-    }));
+    expect(consoleLogSpy).toHaveBeenCalledWith(
+      '[Auth] Auto-login check:',
+      expect.objectContaining({
+        isManuallyLoggedOut: true,
+        hasLoggedOutParam: true,
+      })
+    );
 
     consoleLogSpy.mockRestore();
   });
 
   it('covers logout state update from local state mismatch', async () => {
     const { logoutState } = require('@/lib/utils/logout-state');
-    
+
     // Mock logout state to return different values to trigger state update (covers lines 138-140)
-    logoutState.isManuallyLoggedOut.mockReturnValueOnce(true).mockReturnValueOnce(false);
+    logoutState.isManuallyLoggedOut
+      .mockReturnValueOnce(true)
+      .mockReturnValueOnce(false);
     logoutState.hasLogoutUrlParams.mockReturnValue(false);
 
     mockFetch.mockResolvedValue({
       ok: true,
-      json: () => Promise.resolve({
-        authProcess: 'azure',
-        isAuthDisabled: false,
-        autoLogin: true,
-      }),
+      json: () =>
+        Promise.resolve({
+          authProcess: 'azure',
+          isAuthDisabled: false,
+          autoLogin: true,
+        }),
     } as Response);
 
     mockUseSession.mockReturnValue({

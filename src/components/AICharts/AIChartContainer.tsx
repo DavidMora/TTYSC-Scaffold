@@ -1,7 +1,7 @@
-import React, { useCallback, useEffect, useMemo } from "react";
-import { useChart, ChartFilters } from "@/hooks/charts";
-import { AIChart } from "./AIChart";
-import { ChartError, ChartSkeleton } from "./AIChartSkeleton";
+import React, { useCallback, useEffect, useMemo } from 'react';
+import { useChart, ChartFilters } from '@/hooks/charts';
+import { AIChart } from './AIChart';
+import { ChartError, ChartSkeleton } from './AIChartSkeleton';
 
 interface AIChartContainerProps {
   chartId: string;
@@ -21,13 +21,13 @@ export const AIChartContainer: React.FC<AIChartContainerProps> = ({
 
   const errorMessage = useMemo(() => {
     if (!error) return undefined;
-    return error instanceof Error ? error.message : "Unknown error occurred";
+    return error instanceof Error ? error.message : 'Unknown error occurred';
   }, [error]);
 
   useEffect(() => {
     if (!onTitleChange) return;
     if (data?.data) {
-      onTitleChange(data.data.headline ?? "");
+      onTitleChange(data.data.headline ?? '');
     }
   }, [data?.data?.headline, onTitleChange, data?.data]);
 

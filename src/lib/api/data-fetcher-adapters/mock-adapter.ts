@@ -1,10 +1,10 @@
-import { HttpClientResponse } from "@/lib/types/api/http-client";
+import { HttpClientResponse } from '@/lib/types/api/http-client';
 import {
   DataFetcherAdapter,
   DataFetcherKey,
   DataFetcherOptions,
   DataFetcherResponse,
-} from "@/lib/types/api/data-fetcher";
+} from '@/lib/types/api/data-fetcher';
 
 /**
  * MockAdapter provides a simple implementation of DataFetcherAdapter
@@ -20,9 +20,9 @@ export class MockAdapter implements DataFetcherAdapter {
     // This is not a real data fetching solution but allows tests to run
     // Parameters are intentionally unused but kept for interface compliance
     console.debug(
-      "MockAdapter.fetchData called with key:",
+      'MockAdapter.fetchData called with key:',
       key,
-      "options:",
+      'options:',
       options
     );
 

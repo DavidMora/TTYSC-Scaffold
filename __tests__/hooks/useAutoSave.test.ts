@@ -1,13 +1,13 @@
-import { renderHook, act } from "@testing-library/react";
-import { useAutoSave } from "@/hooks/useAutoSave";
+import { renderHook, act } from '@testing-library/react';
+import { useAutoSave } from '@/hooks/useAutoSave';
 
-describe("useAutoSave", () => {
+describe('useAutoSave', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  describe("Initial State", () => {
-    it("should initialize with default state", () => {
+  describe('Initial State', () => {
+    it('should initialize with default state', () => {
       const mockOnSave = jest.fn();
       const { result } = renderHook(() =>
         useAutoSave({
@@ -20,11 +20,11 @@ describe("useAutoSave", () => {
       expect(result.current.error).toBe(null);
     });
 
-    it("should not trigger autosave on initial mount", () => {
+    it('should not trigger autosave on initial mount', () => {
       const mockOnSave = jest.fn();
       renderHook(() =>
         useAutoSave({
-          valueToWatch: "initial-value",
+          valueToWatch: 'initial-value',
           onSave: mockOnSave,
         })
       );
@@ -33,8 +33,8 @@ describe("useAutoSave", () => {
     });
   });
 
-  describe("Autosave Triggering", () => {
-    it("should trigger autosave when valueToWatch changes", async () => {
+  describe('Autosave Triggering', () => {
+    it('should trigger autosave when valueToWatch changes', async () => {
       const mockOnSave = jest.fn().mockResolvedValue(undefined);
       const { result, rerender } = renderHook(
         ({ value }) =>
@@ -43,10 +43,10 @@ describe("useAutoSave", () => {
             onSave: mockOnSave,
             delayMs: 100,
           }),
-        { initialProps: { value: "initial" } }
+        { initialProps: { value: 'initial' } }
       );
 
-      rerender({ value: "changed" });
+      rerender({ value: 'changed' });
 
       // Wait for the short delay
       await new Promise((resolve) => setTimeout(resolve, 300));
@@ -57,7 +57,7 @@ describe("useAutoSave", () => {
       expect(result.current.error).toBe(null);
     });
 
-    it("should use custom delay when provided", async () => {
+    it('should use custom delay when provided', async () => {
       const mockOnSave = jest.fn().mockResolvedValue(undefined);
       const { result, rerender } = renderHook(
         ({ value }) =>
@@ -66,10 +66,10 @@ describe("useAutoSave", () => {
             onSave: mockOnSave,
             delayMs: 200,
           }),
-        { initialProps: { value: "initial" } }
+        { initialProps: { value: 'initial' } }
       );
 
-      rerender({ value: "changed" });
+      rerender({ value: 'changed' });
 
       // Should not trigger before delay
       await new Promise((resolve) => setTimeout(resolve, 100));
@@ -81,7 +81,7 @@ describe("useAutoSave", () => {
       expect(result.current.isSaving).toBe(false);
     });
 
-    it("should not trigger autosave when valueToWatch is the same", () => {
+    it('should not trigger autosave when valueToWatch is the same', () => {
       const mockOnSave = jest.fn();
       const { rerender } = renderHook(
         ({ value }) =>
@@ -89,17 +89,17 @@ describe("useAutoSave", () => {
             valueToWatch: value,
             onSave: mockOnSave,
           }),
-        { initialProps: { value: "same-value" } }
+        { initialProps: { value: 'same-value' } }
       );
 
-      rerender({ value: "same-value" });
+      rerender({ value: 'same-value' });
 
       expect(mockOnSave).not.toHaveBeenCalled();
     });
   });
 
-  describe("Debouncing", () => {
-    it("should debounce multiple rapid changes", async () => {
+  describe('Debouncing', () => {
+    it('should debounce multiple rapid changes', async () => {
       const mockOnSave = jest.fn().mockResolvedValue(undefined);
       const { result, rerender } = renderHook(
         ({ value }) =>
@@ -108,12 +108,12 @@ describe("useAutoSave", () => {
             onSave: mockOnSave,
             delayMs: 100,
           }),
-        { initialProps: { value: "initial" } }
+        { initialProps: { value: 'initial' } }
       );
 
-      rerender({ value: "change1" });
-      rerender({ value: "change2" });
-      rerender({ value: "change3" });
+      rerender({ value: 'change1' });
+      rerender({ value: 'change2' });
+      rerender({ value: 'change3' });
 
       await new Promise((resolve) => setTimeout(resolve, 150));
 
@@ -122,8 +122,8 @@ describe("useAutoSave", () => {
     });
   });
 
-  describe("Success Handling", () => {
-    it("should call onSuccess callback when save succeeds", async () => {
+  describe('Success Handling', () => {
+    it('should call onSuccess callback when save succeeds', async () => {
       const mockOnSave = jest.fn().mockResolvedValue(undefined);
       const mockOnSuccess = jest.fn();
       const { rerender } = renderHook(
@@ -134,10 +134,10 @@ describe("useAutoSave", () => {
             onSuccess: mockOnSuccess,
             delayMs: 100,
           }),
-        { initialProps: { value: "initial" } }
+        { initialProps: { value: 'initial' } }
       );
 
-      rerender({ value: "changed" });
+      rerender({ value: 'changed' });
 
       // Wait for the short delay
       await new Promise((resolve) => setTimeout(resolve, 150));
@@ -146,12 +146,12 @@ describe("useAutoSave", () => {
     });
   });
 
-  describe("Error Handling", () => {
-    it("should handle save errors and call onError callback", async () => {
-      const mockError = new Error("Save failed");
+  describe('Error Handling', () => {
+    it('should handle save errors and call onError callback', async () => {
+      const mockError = new Error('Save failed');
       const mockOnSave = jest.fn().mockRejectedValue(mockError);
       const mockOnError = jest.fn();
-      const consoleSpy = jest.spyOn(console, "error").mockImplementation();
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
 
       const { result, rerender } = renderHook(
         ({ value }) =>
@@ -161,10 +161,10 @@ describe("useAutoSave", () => {
             onError: mockOnError,
             delayMs: 100,
           }),
-        { initialProps: { value: "initial" } }
+        { initialProps: { value: 'initial' } }
       );
 
-      rerender({ value: "changed" });
+      rerender({ value: 'changed' });
 
       // Wait for the delay and the async operation to complete
       await new Promise((resolve) => setTimeout(resolve, 200));
@@ -177,14 +177,14 @@ describe("useAutoSave", () => {
       expect(mockOnError).toHaveBeenCalledWith(mockError);
       expect(result.current.error).toBe(mockError);
       expect(result.current.isSaving).toBe(false);
-      expect(consoleSpy).toHaveBeenCalledWith("Autosave failed:", mockError);
+      expect(consoleSpy).toHaveBeenCalledWith('Autosave failed:', mockError);
 
       consoleSpy.mockRestore();
     });
   });
 
-  describe("Cleanup", () => {
-    it("should clear timeout on unmount", () => {
+  describe('Cleanup', () => {
+    it('should clear timeout on unmount', () => {
       const mockOnSave = jest.fn();
       const { rerender, unmount } = renderHook(
         ({ value }) =>
@@ -192,10 +192,10 @@ describe("useAutoSave", () => {
             valueToWatch: value,
             onSave: mockOnSave,
           }),
-        { initialProps: { value: "initial" } }
+        { initialProps: { value: 'initial' } }
       );
 
-      rerender({ value: "changed" });
+      rerender({ value: 'changed' });
 
       unmount();
 
@@ -203,8 +203,8 @@ describe("useAutoSave", () => {
     });
   });
 
-  describe("Edge Cases", () => {
-    it("should not trigger autosave when valueToWatch is undefined", () => {
+  describe('Edge Cases', () => {
+    it('should not trigger autosave when valueToWatch is undefined', () => {
       const mockOnSave = jest.fn();
       const { rerender } = renderHook(
         ({ value }: { value: unknown }) =>
@@ -212,7 +212,7 @@ describe("useAutoSave", () => {
             valueToWatch: value,
             onSave: mockOnSave,
           }),
-        { initialProps: { value: "initial" as unknown } }
+        { initialProps: { value: 'initial' as unknown } }
       );
 
       rerender({ value: undefined });
@@ -220,7 +220,7 @@ describe("useAutoSave", () => {
       expect(mockOnSave).not.toHaveBeenCalled();
     });
 
-    it("should not trigger autosave when valueToWatch is null", () => {
+    it('should not trigger autosave when valueToWatch is null', () => {
       const mockOnSave = jest.fn();
       const { rerender } = renderHook(
         ({ value }: { value: unknown }) =>
@@ -228,7 +228,7 @@ describe("useAutoSave", () => {
             valueToWatch: value,
             onSave: mockOnSave,
           }),
-        { initialProps: { value: "initial" as unknown } }
+        { initialProps: { value: 'initial' as unknown } }
       );
 
       rerender({ value: null });

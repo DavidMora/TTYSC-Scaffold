@@ -35,7 +35,7 @@ const mockUsePathname = usePathname as jest.MockedFunction<typeof usePathname>;
 
 describe('AuthWrapper', () => {
   const mockReplace = jest.fn();
-  
+
   beforeEach(() => {
     jest.clearAllMocks();
     mockUseRouter.mockReturnValue({

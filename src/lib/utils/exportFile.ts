@@ -1,5 +1,5 @@
-import { ExportTableResponse } from "@/lib/types/export";
-import { EXPORT_CONFIG } from "../constants/UI/export";
+import { ExportTableResponse } from '@/lib/types/export';
+import { EXPORT_CONFIG } from '../constants/UI/export';
 
 export function downloadFile(response: ExportTableResponse): void {
   try {
@@ -11,10 +11,10 @@ export function downloadFile(response: ExportTableResponse): void {
     }
 
     const url = window.URL.createObjectURL(response.blob);
-    const link = document.createElement("a");
+    const link = document.createElement('a');
     link.href = url;
     link.download = response.filename;
-    link.style.display = "none";
+    link.style.display = 'none';
 
     document.body.appendChild(link);
     link.click();
@@ -23,6 +23,6 @@ export function downloadFile(response: ExportTableResponse): void {
     document.body.removeChild(link);
     window.URL.revokeObjectURL(url);
   } catch {
-    throw new Error("Download error");
+    throw new Error('Download error');
   }
 }

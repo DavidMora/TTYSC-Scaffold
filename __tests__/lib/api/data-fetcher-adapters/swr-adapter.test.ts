@@ -1,51 +1,51 @@
-import { SWRAdapter } from "../../../../src/lib/api/data-fetcher-adapters/swr-adapter";
-import { HttpClientResponse } from "../../../../src/lib/types/api/http-client";
+import { SWRAdapter } from '../../../../src/lib/api/data-fetcher-adapters/swr-adapter';
+import { HttpClientResponse } from '../../../../src/lib/types/api/http-client';
 
 // Mock SWR
-jest.mock("swr");
+jest.mock('swr');
 
-describe("SWRAdapter", () => {
+describe('SWRAdapter', () => {
   let adapter: SWRAdapter;
 
   beforeEach(() => {
     adapter = new SWRAdapter();
   });
 
-  describe("constructor", () => {
-    it("should create adapter instance", () => {
+  describe('constructor', () => {
+    it('should create adapter instance', () => {
       expect(adapter).toBeInstanceOf(SWRAdapter);
     });
 
-    it("should create adapter instance without parameters using default SWR", () => {
+    it('should create adapter instance without parameters using default SWR', () => {
       const defaultAdapter = new SWRAdapter();
       expect(defaultAdapter).toBeInstanceOf(SWRAdapter);
     });
   });
 
-  describe("fetchData", () => {
-    it("should test the adapter with mocked SWR", () => {
+  describe('fetchData', () => {
+    it('should test the adapter with mocked SWR', () => {
       // Create a mock SWR hook
       const mockUseSWR = jest.fn();
       const swrAdapter = new SWRAdapter(mockUseSWR);
 
       const mockResponse: HttpClientResponse<unknown> = {
-        data: { test: "data" },
+        data: { test: 'data' },
         status: 200,
-        statusText: "OK",
+        statusText: 'OK',
         headers: {},
       };
 
       const mockFetcher = jest.fn().mockResolvedValue(mockResponse);
 
       mockUseSWR.mockReturnValue({
-        data: { test: "data" },
+        data: { test: 'data' },
         error: undefined,
         isLoading: false,
         isValidating: false,
         mutate: jest.fn(),
       });
 
-      const result = swrAdapter.fetchData("test-key", mockFetcher, {
+      const result = swrAdapter.fetchData('test-key', mockFetcher, {
         enabled: true,
         retry: 3,
         refreshInterval: 1000,
@@ -56,7 +56,7 @@ describe("SWRAdapter", () => {
       });
 
       expect(mockUseSWR).toHaveBeenCalledWith(
-        "test-key",
+        'test-key',
         expect.any(Function),
         expect.objectContaining({
           revalidateOnFocus: true,
@@ -70,7 +70,7 @@ describe("SWRAdapter", () => {
       );
 
       expect(result).toEqual({
-        data: { test: "data" },
+        data: { test: 'data' },
         error: undefined,
         isLoading: false,
         isValidating: false,
@@ -78,7 +78,7 @@ describe("SWRAdapter", () => {
       });
     });
 
-    it("should handle different retry configurations", () => {
+    it('should handle different retry configurations', () => {
       const mockUseSWR = jest.fn();
       const swrAdapter = new SWRAdapter(mockUseSWR);
 
@@ -93,9 +93,9 @@ describe("SWRAdapter", () => {
       });
 
       // Test with retry as boolean
-      swrAdapter.fetchData("test-key", mockFetcher, { retry: true });
+      swrAdapter.fetchData('test-key', mockFetcher, { retry: true });
       expect(mockUseSWR).toHaveBeenCalledWith(
-        "test-key",
+        'test-key',
         expect.any(Function),
         expect.objectContaining({
           errorRetryCount: 3,
@@ -103,9 +103,9 @@ describe("SWRAdapter", () => {
       );
 
       // Test with retry as number
-      swrAdapter.fetchData("test-key", mockFetcher, { retry: 5 });
+      swrAdapter.fetchData('test-key', mockFetcher, { retry: 5 });
       expect(mockUseSWR).toHaveBeenCalledWith(
-        "test-key",
+        'test-key',
         expect.any(Function),
         expect.objectContaining({
           errorRetryCount: 5,
@@ -113,9 +113,9 @@ describe("SWRAdapter", () => {
       );
 
       // Test with retry as false
-      swrAdapter.fetchData("test-key", mockFetcher, { retry: false });
+      swrAdapter.fetchData('test-key', mockFetcher, { retry: false });
       expect(mockUseSWR).toHaveBeenCalledWith(
-        "test-key",
+        'test-key',
         expect.any(Function),
         expect.objectContaining({
           errorRetryCount: 0,
@@ -123,7 +123,7 @@ describe("SWRAdapter", () => {
       );
     });
 
-    it("should handle isPaused function", () => {
+    it('should handle isPaused function', () => {
       const mockUseSWR = jest.fn();
       const swrAdapter = new SWRAdapter(mockUseSWR);
 
@@ -137,24 +137,24 @@ describe("SWRAdapter", () => {
         mutate: jest.fn(),
       });
 
-      swrAdapter.fetchData("test-key", mockFetcher, { enabled: false });
+      swrAdapter.fetchData('test-key', mockFetcher, { enabled: false });
 
       const callArgs = mockUseSWR.mock.calls[0][2];
       expect(callArgs.isPaused()).toBe(true);
 
-      swrAdapter.fetchData("test-key", mockFetcher, { enabled: true });
+      swrAdapter.fetchData('test-key', mockFetcher, { enabled: true });
       const callArgs2 = mockUseSWR.mock.calls[1][2];
       expect(callArgs2.isPaused()).toBe(false);
     });
 
-    it("should transform fetcher correctly", async () => {
+    it('should transform fetcher correctly', async () => {
       const mockUseSWR = jest.fn();
       const swrAdapter = new SWRAdapter(mockUseSWR);
 
       const mockResponse: HttpClientResponse<{ id: number }> = {
         data: { id: 123 },
         status: 200,
-        statusText: "OK",
+        statusText: 'OK',
         headers: {},
       };
 
@@ -168,7 +168,7 @@ describe("SWRAdapter", () => {
         mutate: jest.fn(),
       });
 
-      swrAdapter.fetchData("test-key", mockFetcher);
+      swrAdapter.fetchData('test-key', mockFetcher);
 
       // Get the transformed fetcher function
       const transformedFetcher = mockUseSWR.mock.calls[0][1];
@@ -179,17 +179,17 @@ describe("SWRAdapter", () => {
     });
   });
 
-  describe("export", () => {
-    it("should export SWRAdapter as default", async () => {
+  describe('export', () => {
+    it('should export SWRAdapter as default', async () => {
       const swrAdapterModule = await import(
-        "../../../../src/lib/api/data-fetcher-adapters/swr-adapter"
+        '../../../../src/lib/api/data-fetcher-adapters/swr-adapter'
       );
       expect(swrAdapterModule.default).toBe(SWRAdapter);
     });
 
-    it("should be exportable for conditional usage", () => {
+    it('should be exportable for conditional usage', () => {
       expect(SWRAdapter).toBeDefined();
-      expect(typeof SWRAdapter).toBe("function");
+      expect(typeof SWRAdapter).toBe('function');
     });
   });
 });

@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { useAuth } from "../hooks/useAuth";
-import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useAuth } from '../hooks/useAuth';
+import { usePathname, useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 interface AuthWrapperProps {
   readonly children: React.ReactNode;

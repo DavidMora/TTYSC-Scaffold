@@ -1,22 +1,22 @@
-import React from "react";
-import { render, screen, fireEvent } from "@testing-library/react";
-import { ConfirmationModal } from "@/components/Modals/ConfirmationModal";
+import React from 'react';
+import { render, screen, fireEvent } from '@testing-library/react';
+import { ConfirmationModal } from '@/components/Modals/ConfirmationModal';
 
-describe("ConfirmationModal", () => {
+describe('ConfirmationModal', () => {
   const defaultProps = {
     isOpen: true,
     onClose: jest.fn(),
-    title: "Test Title",
-    message: "Test message",
+    title: 'Test Title',
+    message: 'Test message',
     actions: [
       {
-        label: "Cancel",
-        design: "Transparent" as const,
+        label: 'Cancel',
+        design: 'Transparent' as const,
         onClick: jest.fn(),
       },
       {
-        label: "Confirm",
-        design: "Emphasized" as const,
+        label: 'Confirm',
+        design: 'Emphasized' as const,
         onClick: jest.fn(),
       },
     ],
@@ -26,21 +26,21 @@ describe("ConfirmationModal", () => {
     jest.clearAllMocks();
   });
 
-  it("should call action onClick when button is clicked", () => {
+  it('should call action onClick when button is clicked', () => {
     const cancelAction = jest.fn();
     const confirmAction = jest.fn();
 
     const props = {
       ...defaultProps,
       actions: [
-        { label: "Cancel", onClick: cancelAction },
-        { label: "Confirm", onClick: confirmAction },
+        { label: 'Cancel', onClick: cancelAction },
+        { label: 'Confirm', onClick: confirmAction },
       ],
     };
 
     render(<ConfirmationModal {...props} />);
 
-    const buttons = screen.getAllByTestId("ui5-button");
+    const buttons = screen.getAllByTestId('ui5-button');
 
     fireEvent.click(buttons[0]);
     expect(cancelAction).toHaveBeenCalledTimes(1);
