@@ -167,7 +167,7 @@ export default function AnalysisChat({
 
     let md = '### Workflow progress\n';
     for (const st of stepLines) md += `- ${st}\n`;
-    md += '\n### Query Results\n';
+    md += '\n';
     md += recordsToMarkdownTable(rows, [
       'nvpn',
       'description',

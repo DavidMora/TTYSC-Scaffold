@@ -49,7 +49,7 @@ export default function AppLayout({ children }: Readonly<AppLayoutProps>) {
             "
           >
             <HeaderBar {...HEADER_BAR_CONFIG.supplyChain} />
-            <hr className="h-[2px] bg-[var(--sapToolbar_SeparatorColor)]" />
+            <div className="h-[2px] bg-[var(--sapToolbar_SeparatorColor)]" />
             {children}
             <RawDataModalWithContext />
           </div>
