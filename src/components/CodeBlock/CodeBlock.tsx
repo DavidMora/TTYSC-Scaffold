@@ -96,7 +96,7 @@ export function CodeBlock({
           style={{
             fontSize: 'var(--sapFontSmallSize)',
           }}
-          design='Transparent'
+          design="Transparent"
           icon={copied ? 'accept' : 'copy'}
         >
           {copied ? 'Copied!' : 'Copy Code'}

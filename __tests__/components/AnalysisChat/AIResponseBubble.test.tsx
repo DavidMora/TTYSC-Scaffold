@@ -16,10 +16,10 @@ jest.mock('@/hooks/chats', () => ({
 }));
 
 // Mock AIResponseRenderer to avoid async markdown fetch and heavy children
-jest.mock("@/components/AnalysisChat/AIResponseRenderer", () => ({
+jest.mock('@/components/AnalysisChat/AIResponseRenderer', () => ({
   __esModule: true,
   AIResponseRenderer: ({ content }: { content: string }) => (
-    <div style={{ width: "100%" }}>
+    <div style={{ width: '100%' }}>
       <div className="markdown">{content}</div>
       {/\[show_table\]/i.test(content) ? (
         <div data-testid="base-data-table" />
@@ -29,7 +29,7 @@ jest.mock("@/components/AnalysisChat/AIResponseRenderer", () => ({
 }));
 
 // Mock MarkdownRenderer to render raw markdown text synchronously
-jest.mock("@/components/Markdown/MarkdownRenderer", () => {
+jest.mock('@/components/Markdown/MarkdownRenderer', () => {
   const MockMarkdownRenderer = ({
     markdown,
     className,
@@ -40,17 +40,17 @@ jest.mock("@/components/Markdown/MarkdownRenderer", () => {
     <div
       className={className}
       data-testid="ui5-text"
-      style={{ whiteSpace: "pre-wrap" }}
+      style={{ whiteSpace: 'pre-wrap' }}
     >
       {markdown}
     </div>
   );
-  MockMarkdownRenderer.displayName = "MockMarkdownRenderer";
+  MockMarkdownRenderer.displayName = 'MockMarkdownRenderer';
   return { default: MockMarkdownRenderer };
 });
 
 // Mock heavy subcomponents used by AIResponseRenderer
-jest.mock("@/components/Tables/BaseDataTable", () => {
+jest.mock('@/components/Tables/BaseDataTable', () => {
   const MockBaseDataTable = ({
     tableClassName,
   }: {
@@ -60,17 +60,17 @@ jest.mock("@/components/Tables/BaseDataTable", () => {
       Mock Table
     </div>
   );
-  MockBaseDataTable.displayName = "MockBaseDataTable";
+  MockBaseDataTable.displayName = 'MockBaseDataTable';
   return MockBaseDataTable;
 });
 
-jest.mock("@/components/AICharts/AIChartContainer", () => {
+jest.mock('@/components/AICharts/AIChartContainer', () => {
   const MockAIChartContainer = ({ chartId }: { chartId: string }) => (
     <div data-testid="ai-chart-container" data-chart-id={chartId}>
       Mock Chart
     </div>
   );
-  MockAIChartContainer.displayName = "MockAIChartContainer";
+  MockAIChartContainer.displayName = 'MockAIChartContainer';
   return { AIChartContainer: MockAIChartContainer };
 });
 

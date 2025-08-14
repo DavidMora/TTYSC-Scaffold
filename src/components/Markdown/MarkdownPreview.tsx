@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import React from "react";
-import type { SafeHtml } from "@/lib/utils/markdown";
+import React from 'react';
+import type { SafeHtml } from '@/lib/utils/markdown';
 
 type MarkdownPreviewProps = Readonly<{
   html: SafeHtml;

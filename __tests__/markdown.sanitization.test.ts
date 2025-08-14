@@ -1,35 +1,37 @@
-import { renderMarkdownToSafeHtml } from "@/lib/utils/markdown";
+import { renderMarkdownToSafeHtml } from '@/lib/utils/markdown';
 
-describe("Markdown sanitization", () => {
-  it("removes <script> tags", async () => {
-    const md = "Hello<script>alert(1)</script>World";
+describe('Markdown sanitization', () => {
+  it('removes <script> tags', async () => {
+    const md = 'Hello<script>alert(1)</script>World';
     const html = await renderMarkdownToSafeHtml(md);
-    expect(html).not.toContain("<script>");
-    expect(html).toContain("Hello");
-    expect(html).toContain("World");
+    expect(html).not.toContain('<script>');
+    expect(html).toContain('Hello');
+    expect(html).toContain('World');
   });
 
-  it("removes on* attributes", async () => {
+  it('removes on* attributes', async () => {
     const md = '<img src="data:image/png;base64,i" onerror="alert(1)" />';
     const html = await renderMarkdownToSafeHtml(md);
     expect(html).not.toMatch(/on\w+=/i);
   });
 
-  it("blocks javascript: URLs", async () => {
-    const md = "[x](javascript:alert(1))";
+  it('blocks javascript: URLs', async () => {
+    const md = '[x](javascript:alert(1))';
     const html = await renderMarkdownToSafeHtml(md);
     // The anchor should lose href or be removed; ensure javascript: does not appear
     expect(html).not.toMatch(/javascript:/i);
   });
 
-  it("adds target and rel to anchor tags", async () => {
-    const md = "[example](https://example.com)";
+  it('adds target and rel to anchor tags', async () => {
+    const md = '[example](https://example.com)';
     const html = await renderMarkdownToSafeHtml(md);
     expect(html).toMatch(/<a[^>]*target="_blank"/);
-    expect(html).toMatch(/<a[^>]*rel="[^"]*noopener[^"]*noreferrer[^"]*nofollow[^"]*"/);
+    expect(html).toMatch(
+      /<a[^>]*rel="[^"]*noopener[^"]*noreferrer[^"]*nofollow[^"]*"/
+    );
   });
 
-  it("snapshot: tables and code blocks", async () => {
+  it('snapshot: tables and code blocks', async () => {
     const md = `
 | h1 | h2 |
 |----|----|
@@ -44,7 +46,7 @@ console.log(x);
     expect(html).toMatchSnapshot();
   });
 
-  it("blocks known tricky payloads", async () => {
+  it('blocks known tricky payloads', async () => {
     const payloads: string[] = [
       // outerHTML fragments with event handlers
       '<div onclick="alert(1)">Click</div>',
@@ -55,11 +57,11 @@ console.log(x);
       // vbscript: (legacy)
       '<a href="vbscript:msgbox(1)">vb</a>',
       // malformed tags trying to smuggle script
-      "<scr<script>ipt>alert(1)</scr</script>ipt>",
+      '<scr<script>ipt>alert(1)</scr</script>ipt>',
       // data:text payloads should not pass through
-      "[x](data:text/html;base64,PHNjcmlwdD5hbGVydCgxKTwvc2NyaXB0Pg==)",
+      '[x](data:text/html;base64,PHNjcmlwdD5hbGVydCgxKTwvc2NyaXB0Pg==)',
       // svg payloads (disallowed in URI allowlist)
-      "![x](data:image/svg+xml;base64,PHN2ZyBvbmxvYWQ9YWxlcnQoMSk+PC9zdmc+)",
+      '![x](data:image/svg+xml;base64,PHN2ZyBvbmxvYWQ9YWxlcnQoMSk+PC9zdmc+)',
     ];
 
     for (const md of payloads) {

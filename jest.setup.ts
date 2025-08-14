@@ -152,6 +152,6 @@ global.CSSStyleSheet = class {
 } as any;
 
 // Polyfill TextEncoder/TextDecoder for jsdom + jsdom dependencies
-import { TextEncoder, TextDecoder } from "util";
+import { TextEncoder, TextDecoder } from 'util';
 global.TextEncoder = TextEncoder;
 global.TextDecoder = TextDecoder as unknown as typeof globalThis.TextDecoder;

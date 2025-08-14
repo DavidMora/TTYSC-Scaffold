@@ -1,13 +1,13 @@
 'use client';
 
-import React, { useMemo } from "react";
-import { CodeBlock } from "@/components/CodeBlock/CodeBlock";
-import BaseDataTable from "@/components/Tables/BaseDataTable";
-import { tableData } from "@/lib/constants/mocks/dataTable";
-import { parseContent } from "@/lib/utils/aiContentParser";
-import { AIChartContainer } from "@/components/AICharts/AIChartContainer";
-import { ParsedContentItemType } from "@/lib/types/chatContent";
-import MarkdownRenderer from "@/components/Markdown/MarkdownRenderer";
+import React, { useMemo } from 'react';
+import { CodeBlock } from '@/components/CodeBlock/CodeBlock';
+import BaseDataTable from '@/components/Tables/BaseDataTable';
+import { tableData } from '@/lib/constants/mocks/dataTable';
+import { parseContent } from '@/lib/utils/aiContentParser';
+import { AIChartContainer } from '@/components/AICharts/AIChartContainer';
+import { ParsedContentItemType } from '@/lib/types/chatContent';
+import MarkdownRenderer from '@/components/Markdown/MarkdownRenderer';
 
 interface AIResponseRendererProps {
   content: string;
@@ -101,7 +101,7 @@ export function AIResponseRenderer({
         <MarkdownRenderer
           key={key}
           className="markdown"
-          markdown={part.content ?? ""}
+          markdown={part.content ?? ''}
         />
       );
     });

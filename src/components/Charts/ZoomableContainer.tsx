@@ -1,26 +1,26 @@
-"use client";
+'use client';
 
-import React from "react";
-import ChartToolbar from "@/components/Charts/ChartToolbar";
-import { useRouter } from "next/navigation";
-import { FULL_SCREEN_CHART } from "@/lib/constants/routes/Dashboard";
-import { Title } from "@ui5/webcomponents-react";
-import TitleLevel from "@ui5/webcomponents/dist/types/TitleLevel.js";
+import React from 'react';
+import ChartToolbar from '@/components/Charts/ChartToolbar';
+import { useRouter } from 'next/navigation';
+import { FULL_SCREEN_CHART } from '@/lib/constants/routes/Dashboard';
+import { Title } from '@ui5/webcomponents-react';
+import TitleLevel from '@ui5/webcomponents/dist/types/TitleLevel.js';
 import {
   ChartDimension,
   ChartMeasure,
   MultiDataPoint,
   SingleDataPoint,
   ChartSeries,
-} from "@/lib/types/charts";
-import { useZoomable } from "@/hooks/charts/useZoomable";
+} from '@/lib/types/charts';
+import { useZoomable } from '@/hooks/charts/useZoomable';
 import {
   buildCsv,
   downloadChartAsPng,
   getCurrentSlice,
   sanitizeFilename,
   triggerFileDownload,
-} from "@/lib/utils/chartExport";
+} from '@/lib/utils/chartExport';
 
 interface ZoomableContainerProps {
   children: React.ReactNode;
@@ -29,7 +29,7 @@ interface ZoomableContainerProps {
   maxZoom?: number;
   step?: number;
   className?: string;
-  mode?: "visual" | "dataX"; // visual = CSS scale/pan, dataX = update window [start,end]
+  mode?: 'visual' | 'dataX'; // visual = CSS scale/pan, dataX = update window [start,end]
   onWindowChange?: (window: { start: number; end: number }) => void;
   renderContent?: (viewWindow: {
     start: number;
@@ -57,7 +57,7 @@ export const ZoomableContainer: React.FC<Readonly<ZoomableContainerProps>> = ({
   minZoom = 1,
   maxZoom = 5,
   step = 0.4,
-  mode = "visual",
+  mode = 'visual',
   onWindowChange,
   renderContent,
   title,
@@ -88,7 +88,7 @@ export const ZoomableContainer: React.FC<Readonly<ZoomableContainerProps>> = ({
   } = useZoomable({ mode, minZoom, maxZoom, step, onWindowChange, dataLength });
 
   return (
-    <div style={{ width: "100%" }}>
+    <div style={{ width: '100%' }}>
       <ChartToolbar
         showZoom={(dataLength ?? exportContext?.dataset?.length ?? 0) > 1}
         showFullScreen={Boolean(chartIdForFullscreen)}
@@ -109,9 +109,9 @@ export const ZoomableContainer: React.FC<Readonly<ZoomableContainerProps>> = ({
           router.push(FULL_SCREEN_CHART(chartIdForFullscreen));
         }}
         onDownloadOption={(type) => {
-          if (type === "png") {
+          if (type === 'png') {
             downloadChartAsPng(viewportRef.current, title);
-          } else if (type === "csv") {
+          } else if (type === 'csv') {
             if (exportContext) {
               const baseData = exportContext.dataset as (
                 | SingleDataPoint
@@ -125,8 +125,8 @@ export const ZoomableContainer: React.FC<Readonly<ZoomableContainerProps>> = ({
               );
               triggerFileDownload(
                 csv,
-                sanitizeFilename(title || "chart") + ".csv",
-                "text/csv;charset=utf-8"
+                sanitizeFilename(title || 'chart') + '.csv',
+                'text/csv;charset=utf-8'
               );
             }
           }
@@ -137,15 +137,15 @@ export const ZoomableContainer: React.FC<Readonly<ZoomableContainerProps>> = ({
         ref={viewportRef}
         aria-label="Zoomable chart area"
         role="application"
-        className={`${zoomActive ? "zoomable-cursor-move" : ""}`}
+        className={`${zoomActive ? 'zoomable-cursor-move' : ''}`}
         style={{
-          position: "relative",
-          width: "100%",
+          position: 'relative',
+          width: '100%',
           height,
-          overflow: "hidden",
-          background: "#fff",
-          borderRadius: "0 0 10px 10px",
-          userSelect: isPanning ? "none" : undefined,
+          overflow: 'hidden',
+          background: '#fff',
+          borderRadius: '0 0 10px 10px',
+          userSelect: isPanning ? 'none' : undefined,
         }}
         onPointerDown={onMouseDown}
         onPointerMove={onMouseMove}
@@ -153,24 +153,24 @@ export const ZoomableContainer: React.FC<Readonly<ZoomableContainerProps>> = ({
         onPointerLeave={endPan}
         onWheel={onWheel}
       >
-        {mode === "visual" ? (
+        {mode === 'visual' ? (
           <div
             style={{
-              position: "absolute",
+              position: 'absolute',
               top: 0,
               left: 0,
-              width: "100%",
-              height: "100%",
+              width: '100%',
+              height: '100%',
               transform,
-              transformOrigin: "0 0",
-              willChange: "transform",
-              transition: isPanning ? undefined : "transform 60ms ease-out",
+              transformOrigin: '0 0',
+              willChange: 'transform',
+              transition: isPanning ? undefined : 'transform 60ms ease-out',
             }}
           >
-            <div style={{ width: "100%", height: "100%" }}>{children}</div>
+            <div style={{ width: '100%', height: '100%' }}>{children}</div>
           </div>
         ) : (
-          <div style={{ position: "absolute", inset: 0 }}>
+          <div style={{ position: 'absolute', inset: 0 }}>
             {renderContent ? renderContent(viewWindow) : children}
           </div>
         )}
