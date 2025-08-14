@@ -1,35 +1,35 @@
-import { renderHook, waitFor } from "@testing-library/react";
-import { useChart, CHART_KEY } from "@/hooks/charts";
-import { dataFetcher } from "@/lib/api";
-import { getChart } from "@/lib/services/charts.service";
-import { AIChartData } from "@/lib/types/charts";
-import { BaseResponse } from "@/lib/types/http/responses";
+import { renderHook, waitFor } from '@testing-library/react';
+import { useChart, CHART_KEY } from '@/hooks/charts';
+import { dataFetcher } from '@/lib/api';
+import { getChart } from '@/lib/services/charts.service';
+import { AIChartData } from '@/lib/types/charts';
+import { BaseResponse } from '@/lib/types/http/responses';
 
 // Mock the dataFetcher
-jest.mock("@/lib/api", () => ({
+jest.mock('@/lib/api', () => ({
   dataFetcher: {
     fetchData: jest.fn(),
   },
 }));
 
 // Mock the getChart service
-jest.mock("@/lib/services/charts.service", () => ({
+jest.mock('@/lib/services/charts.service', () => ({
   getChart: jest.fn(),
 }));
 
 const mockDataFetcher = dataFetcher as jest.Mocked<typeof dataFetcher>;
 const mockGetChart = getChart as jest.MockedFunction<typeof getChart>;
 
-describe("useChart", () => {
-  const mockChartId = "test-chart-id";
+describe('useChart', () => {
+  const mockChartId = 'test-chart-id';
   const mockChartData: AIChartData = {
-    headline: "Test Chart",
-    timestamp: "2024-01-01T00:00:00Z",
-    preamble: "Test preamble",
-    content: "Test content",
+    headline: 'Test Chart',
+    timestamp: '2024-01-01T00:00:00Z',
+    preamble: 'Test preamble',
+    content: 'Test content',
     chart: {
-      type: "bar",
-      labels: ["A", "B", "C"],
+      type: 'bar',
+      labels: ['A', 'B', 'C'],
       data: [1, 2, 3],
     },
   };
@@ -37,24 +37,24 @@ describe("useChart", () => {
   const mockResponse: BaseResponse<AIChartData> = {
     success: true,
     data: mockChartData,
-    message: "Chart loaded successfully",
+    message: 'Chart loaded successfully',
   };
 
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  describe("CHART_KEY", () => {
-    it("should generate correct chart key", () => {
-      const chartId = "test-123";
-      const expectedKey = "chart-test-123";
-      
+  describe('CHART_KEY', () => {
+    it('should generate correct chart key', () => {
+      const chartId = 'test-123';
+      const expectedKey = 'chart-test-123';
+
       expect(CHART_KEY(chartId)).toBe(expectedKey);
     });
   });
 
-  describe("useChart hook", () => {
-    it("should call dataFetcher.fetchData with correct parameters", () => {
+  describe('useChart hook', () => {
+    it('should call dataFetcher.fetchData with correct parameters', () => {
       const mockFetchDataReturn = {
         data: mockResponse,
         isLoading: false,
@@ -77,7 +77,7 @@ describe("useChart", () => {
       expect(result.current).toEqual(mockFetchDataReturn);
     });
 
-    it("should pass getChart function to dataFetcher", () => {
+    it('should pass getChart function to dataFetcher', () => {
       const mockFetchDataReturn = {
         data: mockResponse,
         isLoading: false,
@@ -98,7 +98,7 @@ describe("useChart", () => {
       expect(mockGetChart).toHaveBeenCalledWith(mockChartId, undefined);
     });
 
-    it("should return loading state when dataFetcher returns loading", () => {
+    it('should return loading state when dataFetcher returns loading', () => {
       const mockFetchDataReturn = {
         data: undefined,
         isLoading: true,
@@ -115,8 +115,8 @@ describe("useChart", () => {
       expect(result.current.error).toBeUndefined();
     });
 
-    it("should return error state when dataFetcher returns error", () => {
-      const mockError = new Error("Failed to fetch chart");
+    it('should return error state when dataFetcher returns error', () => {
+      const mockError = new Error('Failed to fetch chart');
       const mockFetchDataReturn = {
         data: undefined,
         isLoading: false,
@@ -133,7 +133,7 @@ describe("useChart", () => {
       expect(result.current.error).toBe(mockError);
     });
 
-    it("should return data when dataFetcher returns successful response", () => {
+    it('should return data when dataFetcher returns successful response', () => {
       const mockFetchDataReturn = {
         data: mockResponse,
         isLoading: false,
@@ -150,7 +150,7 @@ describe("useChart", () => {
       expect(result.current.error).toBeUndefined();
     });
 
-    it("should call dataFetcher with correct options", () => {
+    it('should call dataFetcher with correct options', () => {
       const mockFetchDataReturn = {
         data: mockResponse,
         isLoading: false,
@@ -170,9 +170,9 @@ describe("useChart", () => {
       });
     });
 
-    it("should handle different chart IDs correctly", () => {
-      const chartId1 = "chart-1";
-      const chartId2 = "chart-2";
+    it('should handle different chart IDs correctly', () => {
+      const chartId1 = 'chart-1';
+      const chartId2 = 'chart-2';
 
       const mockFetchDataReturn = {
         data: mockResponse,
@@ -199,7 +199,7 @@ describe("useChart", () => {
       );
     });
 
-    it("includes filters in key and forwards filters to getChart", () => {
+    it('includes filters in key and forwards filters to getChart', () => {
       const mockFetchDataReturn = {
         data: mockResponse,
         isLoading: false,
@@ -209,18 +209,18 @@ describe("useChart", () => {
 
       mockDataFetcher.fetchData.mockReturnValue(mockFetchDataReturn);
 
-      const filters = { from: "2024-01-01", to: "2024-01-31", region: "north" };
+      const filters = { from: '2024-01-01', to: '2024-01-31', region: 'north' };
       renderHook(() => useChart(mockChartId, filters));
 
       const [key, fetcher] = mockDataFetcher.fetchData.mock.calls[0];
       expect(key).toContain(CHART_KEY(mockChartId));
-      expect(key).toContain("2024-01-01");
-      expect(key).toContain("2024-01-31");
-      expect(key).toContain("north");
+      expect(key).toContain('2024-01-01');
+      expect(key).toContain('2024-01-31');
+      expect(key).toContain('north');
 
       // invoke fetcher to assert forwarding
       (fetcher as () => Promise<void>)();
       expect(mockGetChart).toHaveBeenCalledWith(mockChartId, filters);
     });
   });
-}); 
+});

@@ -1,36 +1,36 @@
-import { render, waitFor, screen, fireEvent } from "@testing-library/react";
-import Home from "@/app/(main)/page";
-import "@testing-library/jest-dom";
-import React from "react";
-import { useCreateChat } from "@/hooks/chats";
+import { render, waitFor, screen, fireEvent } from '@testing-library/react';
+import Home from '@/app/(main)/page';
+import '@testing-library/jest-dom';
+import React from 'react';
+import { useCreateChat } from '@/hooks/chats';
 import {
   useSequentialNaming,
   SequentialNamingProvider,
-} from "@/contexts/SequentialNamingContext";
+} from '@/contexts/SequentialNamingContext';
 
 const mockPush = jest.fn();
 const mockMutate = jest.fn();
 const mockGenerateAnalysisName = jest.fn();
 const mockUseFeatureFlag = jest.fn();
 
-jest.mock("next/navigation", () => ({
+jest.mock('next/navigation', () => ({
   useRouter: () => ({
     push: mockPush,
   }),
-  usePathname: () => "/",
+  usePathname: () => '/',
 }));
 
-jest.mock("@/hooks/chats", () => ({
+jest.mock('@/hooks/chats', () => ({
   useCreateChat: jest.fn(),
 }));
 
-jest.mock("@/contexts/SequentialNamingContext", () => ({
+jest.mock('@/contexts/SequentialNamingContext', () => ({
   useSequentialNaming: jest.fn(),
   SequentialNamingProvider: ({ children }: { children: React.ReactNode }) =>
     children,
 }));
 
-jest.mock("@/hooks/useFeatureFlags", () => ({
+jest.mock('@/hooks/useFeatureFlags', () => ({
   useFeatureFlag: () => mockUseFeatureFlag(),
 }));
 
@@ -49,7 +49,7 @@ const renderWithProvider = (component: React.ReactElement) => {
   );
 };
 
-describe("Home page", () => {
+describe('Home page', () => {
   beforeEach(() => {
     mockPush.mockClear();
     mockMutate.mockClear();
@@ -83,12 +83,12 @@ describe("Home page", () => {
     });
   });
 
-  it("renders loading display by default", () => {
-    mockGenerateAnalysisName.mockReturnValue("Analysis One");
+  it('renders loading display by default', () => {
+    mockGenerateAnalysisName.mockReturnValue('Analysis One');
 
     renderWithProvider(<Home />);
 
-    expect(screen.getByText("Creating Your Analysis...")).toBeInTheDocument();
+    expect(screen.getByText('Creating Your Analysis...')).toBeInTheDocument();
     expect(
       screen.getByText(
         "Setting up your analysis dashboard. You'll be redirected automatically."
@@ -96,8 +96,8 @@ describe("Home page", () => {
     ).toBeInTheDocument();
   });
 
-  it("calls createAnalysis on mount with generated name", async () => {
-    mockGenerateAnalysisName.mockReturnValue("Analysis One");
+  it('calls createAnalysis on mount with generated name', async () => {
+    mockGenerateAnalysisName.mockReturnValue('Analysis One');
 
     renderWithProvider(<Home />);
 
@@ -105,21 +105,21 @@ describe("Home page", () => {
       expect(mockGenerateAnalysisName).toHaveBeenCalledTimes(1);
       expect(mockMutate).toHaveBeenCalledTimes(1);
       expect(mockMutate).toHaveBeenCalledWith({
-        title: "Analysis One",
+        title: 'Analysis One',
       });
     });
   });
 
-  it("navigates to analysis page on successful creation", async () => {
+  it('navigates to analysis page on successful creation', async () => {
     const mockAnalysis = {
-      id: "test-analysis-id",
-      date: "2021-01-01",
+      id: 'test-analysis-id',
+      date: '2021-01-01',
       participants: [],
-      title: "Test Analysis",
+      title: 'Test Analysis',
       messages: [],
     };
 
-    mockGenerateAnalysisName.mockReturnValue("Analysis One");
+    mockGenerateAnalysisName.mockReturnValue('Analysis One');
 
     // Mock the hook to simulate success
     mockUseCreateChat.mockImplementation(({ onSuccess }) => {
@@ -146,17 +146,17 @@ describe("Home page", () => {
     renderWithProvider(<Home />);
 
     await waitFor(() => {
-      expect(mockPush).toHaveBeenCalledWith("/test-analysis-id");
+      expect(mockPush).toHaveBeenCalledWith('/test-analysis-id');
     });
   });
 
-  it("handles retry functionality correctly", async () => {
+  it('handles retry functionality correctly', async () => {
     const consoleSpy = jest
-      .spyOn(console, "error")
+      .spyOn(console, 'error')
       .mockImplementation(() => {});
-    const testError = new Error("Failed to create analysis");
+    const testError = new Error('Failed to create analysis');
 
-    mockGenerateAnalysisName.mockReturnValue("Analysis One");
+    mockGenerateAnalysisName.mockReturnValue('Analysis One');
 
     // Mock the hook to simulate error
     mockUseCreateChat.mockImplementation(({ onError }) => {
@@ -182,27 +182,27 @@ describe("Home page", () => {
     renderWithProvider(<Home />);
 
     await waitFor(() => {
-      expect(screen.getByText("Something went wrong")).toBeInTheDocument();
+      expect(screen.getByText('Something went wrong')).toBeInTheDocument();
     });
 
     mockMutate.mockClear();
-    mockGenerateAnalysisName.mockReturnValue("Analysis Two");
+    mockGenerateAnalysisName.mockReturnValue('Analysis Two');
 
-    const retryButton = screen.getByText("Try again");
+    const retryButton = screen.getByText('Try again');
     fireEvent.click(retryButton);
 
     await waitFor(() => {
       expect(mockGenerateAnalysisName).toHaveBeenCalledTimes(2);
       expect(mockMutate).toHaveBeenCalledTimes(1);
       expect(mockMutate).toHaveBeenCalledWith({
-        title: "Analysis Two",
+        title: 'Analysis Two',
       });
     });
 
     consoleSpy.mockRestore();
   });
 
-  it("renders loading display when feature flag is loading", () => {
+  it('renders loading display when feature flag is loading', () => {
     mockUseFeatureFlag.mockReturnValue({
       flag: false,
       loading: true,
@@ -210,7 +210,7 @@ describe("Home page", () => {
 
     renderWithProvider(<Home />);
 
-    expect(screen.getByText("Creating Your Analysis...")).toBeInTheDocument();
+    expect(screen.getByText('Creating Your Analysis...')).toBeInTheDocument();
     expect(
       screen.getByText(
         "Setting up your analysis dashboard. You'll be redirected automatically."
@@ -218,7 +218,7 @@ describe("Home page", () => {
     ).toBeInTheDocument();
   });
 
-  it("renders feature not available when feature flag is disabled", () => {
+  it('renders feature not available when feature flag is disabled', () => {
     mockUseFeatureFlag.mockReturnValue({
       flag: false,
       loading: false,
@@ -226,7 +226,9 @@ describe("Home page", () => {
 
     renderWithProvider(<Home />);
 
-    expect(screen.getByText("Feature Not Available")).toBeInTheDocument();
-    expect(screen.getByText("Chat analysis functionality is currently disabled.")).toBeInTheDocument();
+    expect(screen.getByText('Feature Not Available')).toBeInTheDocument();
+    expect(
+      screen.getByText('Chat analysis functionality is currently disabled.')
+    ).toBeInTheDocument();
   });
 });

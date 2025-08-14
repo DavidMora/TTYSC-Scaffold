@@ -1,15 +1,15 @@
-import { apiClient } from "@/lib/api";
-import { CASE_ANALYSIS, CASES_BY_ANALYSIS } from "@/lib/constants/api/routes";
+import { apiClient } from '@/lib/api';
+import { CASE_ANALYSIS, CASES_BY_ANALYSIS } from '@/lib/constants/api/routes';
 import {
   getCasesAnalysis,
   getCasesByAnalysis,
-} from "@/lib/services/cases.service";
+} from '@/lib/services/cases.service';
 import {
   CasesAnalysisResponse,
   CasesResponse,
-} from "@/lib/types/analysisFilters";
+} from '@/lib/types/analysisFilters';
 
-jest.mock("@/lib/api", () => ({
+jest.mock('@/lib/api', () => ({
   apiClient: { get: jest.fn() },
 }));
 
@@ -17,15 +17,15 @@ const mockHttpClient = apiClient as jest.Mocked<typeof apiClient>;
 const mockResponse = (data: unknown, status = 200) => ({
   data,
   status,
-  statusText: "OK",
+  statusText: 'OK',
   headers: {},
 });
 
 const mockCasesAnalysisData: CasesAnalysisResponse = {
   data: {
     analysis: [
-      { key: "analysis1", name: "Analysis 1" },
-      { key: "analysis2", name: "Analysis 2" },
+      { key: 'analysis1', name: 'Analysis 1' },
+      { key: 'analysis2', name: 'Analysis 2' },
     ],
   },
 };
@@ -34,24 +34,24 @@ const mockCasesData: CasesResponse = {
   data: {
     analysis: [
       {
-        key: "analysis1",
-        name: "Analysis Cases",
+        key: 'analysis1',
+        name: 'Analysis Cases',
       },
     ],
-    CM: [{ key: "cm1", name: "CM 1" }],
-    SKU: [{ key: "sku2", name: "SKU 2" }],
-    NVPN: [{ key: "nvpn1", name: "NVPN 1" }],
-    organizations: [{ key: "org1", name: "Organization 1" }],
+    CM: [{ key: 'cm1', name: 'CM 1' }],
+    SKU: [{ key: 'sku2', name: 'SKU 2' }],
+    NVPN: [{ key: 'nvpn1', name: 'NVPN 1' }],
+    organizations: [{ key: 'org1', name: 'Organization 1' }],
   },
 };
 
-describe("casesService", () => {
+describe('casesService', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  describe("getCasesAnalysis", () => {
-    it("should fetch cases analysis successfully", async () => {
+  describe('getCasesAnalysis', () => {
+    it('should fetch cases analysis successfully', async () => {
       const response = mockResponse(mockCasesAnalysisData);
       mockHttpClient.get.mockResolvedValue(response);
 
@@ -63,31 +63,31 @@ describe("casesService", () => {
     });
   });
 
-  describe("getCasesByAnalysis", () => {
-    it("should fetch cases by analysis successfully", async () => {
+  describe('getCasesByAnalysis', () => {
+    it('should fetch cases by analysis successfully', async () => {
       const response = mockResponse(mockCasesData);
       mockHttpClient.get.mockResolvedValue(response);
 
-      const result = await getCasesByAnalysis("test-analysis");
+      const result = await getCasesByAnalysis('test-analysis');
 
       expect(mockHttpClient.get).toHaveBeenCalledWith(
-        CASES_BY_ANALYSIS("test-analysis")
+        CASES_BY_ANALYSIS('test-analysis')
       );
       expect(mockHttpClient.get).toHaveBeenCalledTimes(1);
       expect(result).toEqual(response);
     });
 
-    it("should handle network errors", async () => {
-      const error = new Error("Network error");
+    it('should handle network errors', async () => {
+      const error = new Error('Network error');
       mockHttpClient.get.mockRejectedValue(error);
-      await expect(getCasesByAnalysis("test-analysis")).rejects.toThrow(
-        "Network error"
+      await expect(getCasesByAnalysis('test-analysis')).rejects.toThrow(
+        'Network error'
       );
     });
 
-    it("should throw an error if analysis name type is not provided", async () => {
-      await expect(getCasesByAnalysis("")).rejects.toThrow(
-        "Analysis name type is required"
+    it('should throw an error if analysis name type is not provided', async () => {
+      await expect(getCasesByAnalysis('')).rejects.toThrow(
+        'Analysis name type is required'
       );
     });
   });

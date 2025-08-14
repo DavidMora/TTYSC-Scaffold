@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, ReactNode } from "react";
+import React, { createContext, useContext, useState, ReactNode } from 'react';
 
 interface RawDataModalContextType {
   isOpen: boolean;
@@ -36,7 +36,7 @@ export const useRawDataModal = () => {
   const context = useContext(RawDataModalContext);
   if (!context) {
     throw new Error(
-      "useRawDataModal must be used within a RawDataModalProvider"
+      'useRawDataModal must be used within a RawDataModalProvider'
     );
   }
   return context;

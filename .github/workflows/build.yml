@@ -44,8 +44,8 @@ jobs:
         id: setup-node
         uses: actions/setup-node@v4
         with:
-          node-version: "22.17.0"
-          cache: "yarn"
+          node-version: '22.17.0'
+          cache: 'yarn'
 
       - name: Install dependencies
         run: yarn install --frozen-lockfile
@@ -69,8 +69,8 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "22.17.0"
-          cache: "yarn"
+          node-version: '22.17.0'
+          cache: 'yarn'
 
       - name: Restore dependencies
         uses: actions/cache@v4
@@ -97,8 +97,8 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "22.17.0"
-          cache: "yarn"
+          node-version: '22.17.0'
+          cache: 'yarn'
 
       - name: Restore dependencies
         uses: actions/cache@v4
@@ -125,8 +125,8 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "22.17.0"
-          cache: "yarn"
+          node-version: '22.17.0'
+          cache: 'yarn'
 
       - name: Restore dependencies
         uses: actions/cache@v4
@@ -160,8 +160,8 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "22.17.0"
-          cache: "yarn"
+          node-version: '22.17.0'
+          cache: 'yarn'
 
       - name: Restore dependencies
         uses: actions/cache@v4
@@ -197,8 +197,8 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "22.17.0"
-          cache: "yarn"
+          node-version: '22.17.0'
+          cache: 'yarn'
 
       - name: Restore dependencies
         uses: actions/cache@v4

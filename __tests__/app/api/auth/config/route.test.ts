@@ -1,8 +1,8 @@
-import { GET } from "@/app/api/auth/config/route";
-import { NextRequest } from "next/server";
+import { GET } from '@/app/api/auth/config/route';
+import { NextRequest } from 'next/server';
 
 // Mock NextResponse first
-jest.mock("next/server", () => ({
+jest.mock('next/server', () => ({
   NextResponse: {
     json: jest.fn((data: any) => ({
       json: () => Promise.resolve(data),
@@ -14,11 +14,14 @@ jest.mock("next/server", () => ({
 }));
 
 // Import the mocked NextResponse to get the mock function
-import { NextResponse } from "next/server";
+import { NextResponse } from 'next/server';
 const mockNextResponse = NextResponse as jest.Mocked<typeof NextResponse>;
 
 // Helper function to create mock NextRequest
-function createMockRequest(url: string = 'http://localhost:3000/api/auth/config', referer?: string): NextRequest {
+function createMockRequest(
+  url: string = 'http://localhost:3000/api/auth/config',
+  referer?: string
+): NextRequest {
   const mockRequest = {
     url,
     headers: {
@@ -28,11 +31,11 @@ function createMockRequest(url: string = 'http://localhost:3000/api/auth/config'
       }),
     },
   } as unknown as NextRequest;
-  
+
   return mockRequest;
 }
 
-describe("/api/auth/config", () => {
+describe('/api/auth/config', () => {
   const originalEnv = process.env;
 
   beforeEach(() => {
@@ -46,7 +49,7 @@ describe("/api/auth/config", () => {
     process.env = originalEnv;
   });
 
-  it("should return default config when no environment variables are set", async () => {
+  it('should return default config when no environment variables are set', async () => {
     // Remove auth-related env vars
     delete process.env.AUTH_PROCESS;
     delete process.env.AUTO_LOGIN;
@@ -60,7 +63,7 @@ describe("/api/auth/config", () => {
     });
   });
 
-  it("should return azure auth process when AUTH_PROCESS is set to azure", async () => {
+  it('should return azure auth process when AUTH_PROCESS is set to azure', async () => {
     process.env.AUTH_PROCESS = 'azure';
     process.env.AUTO_LOGIN = 'false';
 
@@ -73,7 +76,7 @@ describe("/api/auth/config", () => {
     });
   });
 
-  it("should return disabled auth when AUTH_PROCESS is none", async () => {
+  it('should return disabled auth when AUTH_PROCESS is none', async () => {
     process.env.AUTH_PROCESS = 'none';
     process.env.AUTO_LOGIN = 'false';
 
@@ -86,7 +89,7 @@ describe("/api/auth/config", () => {
     });
   });
 
-  it("should return auto login when AUTO_LOGIN is true", async () => {
+  it('should return auto login when AUTO_LOGIN is true', async () => {
     process.env.AUTH_PROCESS = 'azure';
     process.env.AUTO_LOGIN = 'true';
 
@@ -99,7 +102,7 @@ describe("/api/auth/config", () => {
     });
   });
 
-  it("should handle different AUTH_PROCESS values", async () => {
+  it('should handle different AUTH_PROCESS values', async () => {
     process.env.AUTH_PROCESS = 'custom';
     process.env.AUTO_LOGIN = 'false';
 
@@ -112,7 +115,7 @@ describe("/api/auth/config", () => {
     });
   });
 
-  it("should handle AUTO_LOGIN with non-true values", async () => {
+  it('should handle AUTO_LOGIN with non-true values', async () => {
     process.env.AUTH_PROCESS = 'azure';
     process.env.AUTO_LOGIN = 'false';
 
@@ -135,13 +138,17 @@ describe("/api/auth/config", () => {
     });
   });
 
-  it("should disable auto-login when logged_out param is present", async () => {
+  it('should disable auto-login when logged_out param is present', async () => {
     process.env.AUTH_PROCESS = 'azure';
     process.env.AUTO_LOGIN = 'true';
 
-    const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+    const consoleLogSpy = jest
+      .spyOn(console, 'log')
+      .mockImplementation(() => {});
 
-    await GET(createMockRequest('http://localhost:3000/api/auth/config?logged_out=true'));
+    await GET(
+      createMockRequest('http://localhost:3000/api/auth/config?logged_out=true')
+    );
 
     expect(mockNextResponse.json).toHaveBeenCalledWith({
       authProcess: 'azure',
@@ -155,23 +162,27 @@ describe("/api/auth/config", () => {
         hasLoggedOutParam: true,
         isFromLogout: undefined,
         isOnLogoutPage: undefined,
-        referer: null
+        referer: null,
       }
     );
 
     consoleLogSpy.mockRestore();
   });
 
-  it("should disable auto-login when referer contains logged_out=true", async () => {
+  it('should disable auto-login when referer contains logged_out=true', async () => {
     process.env.AUTH_PROCESS = 'azure';
     process.env.AUTO_LOGIN = 'true';
 
-    const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+    const consoleLogSpy = jest
+      .spyOn(console, 'log')
+      .mockImplementation(() => {});
 
-    await GET(createMockRequest(
-      'http://localhost:3000/api/auth/config',
-      'http://localhost:3000/some-page?logged_out=true'
-    ));
+    await GET(
+      createMockRequest(
+        'http://localhost:3000/api/auth/config',
+        'http://localhost:3000/some-page?logged_out=true'
+      )
+    );
 
     expect(mockNextResponse.json).toHaveBeenCalledWith({
       authProcess: 'azure',
@@ -185,23 +196,27 @@ describe("/api/auth/config", () => {
         hasLoggedOutParam: false,
         isFromLogout: true,
         isOnLogoutPage: false,
-        referer: 'http://localhost:3000/some-page?logged_out=true'
+        referer: 'http://localhost:3000/some-page?logged_out=true',
       }
     );
 
     consoleLogSpy.mockRestore();
   });
 
-  it("should disable auto-login when referer contains provider-sign-out", async () => {
+  it('should disable auto-login when referer contains provider-sign-out', async () => {
     process.env.AUTH_PROCESS = 'azure';
     process.env.AUTO_LOGIN = 'true';
 
-    const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+    const consoleLogSpy = jest
+      .spyOn(console, 'log')
+      .mockImplementation(() => {});
 
-    await GET(createMockRequest(
-      'http://localhost:3000/api/auth/config',
-      'http://localhost:3000/auth/provider-sign-out'
-    ));
+    await GET(
+      createMockRequest(
+        'http://localhost:3000/api/auth/config',
+        'http://localhost:3000/auth/provider-sign-out'
+      )
+    );
 
     expect(mockNextResponse.json).toHaveBeenCalledWith({
       authProcess: 'azure',
@@ -215,23 +230,27 @@ describe("/api/auth/config", () => {
         hasLoggedOutParam: false,
         isFromLogout: true,
         isOnLogoutPage: false,
-        referer: 'http://localhost:3000/auth/provider-sign-out'
+        referer: 'http://localhost:3000/auth/provider-sign-out',
       }
     );
 
     consoleLogSpy.mockRestore();
   });
 
-  it("should disable auto-login when referer contains /auth/logged-out", async () => {
+  it('should disable auto-login when referer contains /auth/logged-out', async () => {
     process.env.AUTH_PROCESS = 'azure';
     process.env.AUTO_LOGIN = 'true';
 
-    const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+    const consoleLogSpy = jest
+      .spyOn(console, 'log')
+      .mockImplementation(() => {});
 
-    await GET(createMockRequest(
-      'http://localhost:3000/api/auth/config',
-      'http://localhost:3000/auth/logged-out'
-    ));
+    await GET(
+      createMockRequest(
+        'http://localhost:3000/api/auth/config',
+        'http://localhost:3000/auth/logged-out'
+      )
+    );
 
     expect(mockNextResponse.json).toHaveBeenCalledWith({
       authProcess: 'azure',
@@ -245,7 +264,7 @@ describe("/api/auth/config", () => {
         hasLoggedOutParam: false,
         isFromLogout: false,
         isOnLogoutPage: true,
-        referer: 'http://localhost:3000/auth/logged-out'
+        referer: 'http://localhost:3000/auth/logged-out',
       }
     );
 

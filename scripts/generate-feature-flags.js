@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 
-const fs = require("fs");
-const path = require("path");
+const fs = require('fs');
+const path = require('path');
 
 // Load environment variables from .env.local
-require("dotenv").config({ path: ".env.local" });
+require('dotenv').config({ path: '.env.local' });
 
 /**
  * Generates feature-flags.json from environment variables
@@ -26,7 +26,7 @@ const DEFAULT_FLAGS = {
 const handleEnvFlag = (key, envKey, defaultValue) => {
   const envValue = process.env[envKey];
   if (envValue !== undefined) {
-    return envValue.toLowerCase() === "true";
+    return envValue.toLowerCase() === 'true';
   } else {
     process.env[envKey] = String(defaultValue);
     return defaultValue;
@@ -37,11 +37,11 @@ const handleEnvFlag = (key, envKey, defaultValue) => {
 const flags = {};
 
 const ENV_KEYS = {
-  enableAuthentication: "FEATURE_FLAG_ENABLE_AUTHENTICATION",
-  FF_Chat_Analysis_Screen: "FEATURE_FLAG_FF_CHAT_ANALYSIS_SCREEN",
-  FF_Full_Page_Navigation: "FF_FULL_PAGE_NAVIGATION",
-  FF_Side_NavBar: "FF_SIDE_NAVBAR",
-  FF_Modals: "FF_MODALS",
+  enableAuthentication: 'FEATURE_FLAG_ENABLE_AUTHENTICATION',
+  FF_Chat_Analysis_Screen: 'FEATURE_FLAG_FF_CHAT_ANALYSIS_SCREEN',
+  FF_Full_Page_Navigation: 'FF_FULL_PAGE_NAVIGATION',
+  FF_Side_NavBar: 'FF_SIDE_NAVBAR',
+  FF_Modals: 'FF_MODALS',
 };
 
 Object.keys(DEFAULT_FLAGS).forEach((key) => {
@@ -57,7 +57,7 @@ Object.keys(DEFAULT_FLAGS).forEach((key) => {
 const jsonContent = JSON.stringify(flags, null, 2);
 
 // 1. Write to src/ for import usage (primary location)
-const srcFlagsPath = path.join(process.cwd(), "src", "feature-flags.json");
+const srcFlagsPath = path.join(process.cwd(), 'src', 'feature-flags.json');
 
 try {
   // Ensure src directory exists
@@ -68,12 +68,12 @@ try {
 
   fs.writeFileSync(srcFlagsPath, jsonContent);
 } catch (error) {
-  console.error("❌ Error generating src/feature-flags.json:", error.message);
+  console.error('❌ Error generating src/feature-flags.json:', error.message);
   process.exit(1);
 }
 
 // 2. Write to root for backward compatibility (development/debugging)
-const rootFlagsPath = path.join(process.cwd(), "feature-flags.json");
+const rootFlagsPath = path.join(process.cwd(), 'feature-flags.json');
 
 try {
   fs.writeFileSync(rootFlagsPath, jsonContent);
@@ -84,8 +84,8 @@ try {
 // 3. Write to public/ for client-side access if needed
 const publicFlagsPath = path.join(
   process.cwd(),
-  "public",
-  "feature-flags.json"
+  'public',
+  'feature-flags.json'
 );
 
 try {
@@ -98,15 +98,15 @@ try {
   fs.writeFileSync(publicFlagsPath, jsonContent);
 } catch (error) {
   // Silent fail for public file
-  console.warn("Failed to write public feature-flags.json:", error.message);
+  console.warn('Failed to write public feature-flags.json:', error.message);
 }
 
 // 4. Update .env.local if it doesn't exist for local development
-const envLocalPath = path.join(process.cwd(), ".env.local");
-let envContent = "";
+const envLocalPath = path.join(process.cwd(), '.env.local');
+let envContent = '';
 
 if (fs.existsSync(envLocalPath)) {
-  envContent = fs.readFileSync(envLocalPath, "utf8");
+  envContent = fs.readFileSync(envLocalPath, 'utf8');
 }
 
 // Add feature flag environment variables if they don't exist

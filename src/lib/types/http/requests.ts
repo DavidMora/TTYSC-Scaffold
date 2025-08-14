@@ -5,7 +5,7 @@ export interface PaginationParams {
 
 export interface SortParams {
   _sort?: string;
-  _order?: "asc" | "desc";
+  _order?: 'asc' | 'desc';
 }
 
 export interface FullTextSearchParams {

@@ -1,31 +1,31 @@
-import React from "react";
-import { render, screen, fireEvent } from "@testing-library/react";
-import { ChatInput } from "@/components/AnalysisChat/ChatInput";
-const { useAutoSave } = require("@/hooks/useAutoSave"); // eslint-disable-line @typescript-eslint/no-require-imports
+import React from 'react';
+import { render, screen, fireEvent } from '@testing-library/react';
+import { ChatInput } from '@/components/AnalysisChat/ChatInput';
+const { useAutoSave } = require('@/hooks/useAutoSave'); // eslint-disable-line @typescript-eslint/no-require-imports
 
 // Mock the hooks
 const mockActivateAutosaveUI = jest.fn();
 const mockUpdateChat = jest.fn();
 
-jest.mock("@/contexts/AutosaveUIProvider", () => ({
+jest.mock('@/contexts/AutosaveUIProvider', () => ({
   useAutosaveUI: () => ({
     activateAutosaveUI: mockActivateAutosaveUI,
   }),
 }));
 
-jest.mock("@/hooks/useAutoSave", () => ({
+jest.mock('@/hooks/useAutoSave', () => ({
   useAutoSave: jest.fn(),
 }));
 
-jest.mock("@/hooks/chats", () => ({
+jest.mock('@/hooks/chats', () => ({
   useUpdateChat: () => ({
     mutate: mockUpdateChat,
   }),
 }));
 
 // Mock useParams to return an id
-jest.mock("next/navigation", () => ({
-  useParams: () => ({ id: "test-chat-id" }),
+jest.mock('next/navigation', () => ({
+  useParams: () => ({ id: 'test-chat-id' }),
   useRouter: () => ({
     push: jest.fn(),
     replace: jest.fn(),
@@ -35,18 +35,18 @@ jest.mock("next/navigation", () => ({
     refresh: jest.fn(),
   }),
   useSearchParams: () => new URLSearchParams(),
-  usePathname: () => "/",
+  usePathname: () => '/',
 }));
 
 const mockOnSendMessage = jest.fn();
 
-describe("ChatInput", () => {
+describe('ChatInput', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  describe("Sending messages", () => {
-    it("clears input state after sending message via Enter key", () => {
+  describe('Sending messages', () => {
+    it('clears input state after sending message via Enter key', () => {
       render(
         <ChatInput
           onSendMessage={mockOnSendMessage}
@@ -55,22 +55,22 @@ describe("ChatInput", () => {
         />
       );
       const textarea: HTMLTextAreaElement = screen.getByPlaceholderText(
-        "Write your lines here"
+        'Write your lines here'
       );
 
       // Set input value
-      fireEvent.input(textarea, { target: { value: "Test message" } });
-      expect(textarea.value).toBe("Test message");
+      fireEvent.input(textarea, { target: { value: 'Test message' } });
+      expect(textarea.value).toBe('Test message');
 
       // Send message via Enter key
-      fireEvent.keyDown(textarea, { key: "Enter", code: "Enter" });
+      fireEvent.keyDown(textarea, { key: 'Enter', code: 'Enter' });
 
       // Verify input is cleared
-      expect(textarea.value).toBe("");
-      expect(mockOnSendMessage).toHaveBeenCalledWith("Test message");
+      expect(textarea.value).toBe('');
+      expect(mockOnSendMessage).toHaveBeenCalledWith('Test message');
     });
 
-    it("does not send when input is empty", () => {
+    it('does not send when input is empty', () => {
       render(
         <ChatInput
           onSendMessage={mockOnSendMessage}
@@ -78,14 +78,14 @@ describe("ChatInput", () => {
           draft=""
         />
       );
-      const button = screen.getByRole("button");
+      const button = screen.getByRole('button');
 
       fireEvent.click(button);
 
       expect(mockOnSendMessage).not.toHaveBeenCalled();
     });
 
-    it("does not send message when enter key is pressed and shift key is pressed", () => {
+    it('does not send message when enter key is pressed and shift key is pressed', () => {
       render(
         <ChatInput
           onSendMessage={mockOnSendMessage}
@@ -93,12 +93,12 @@ describe("ChatInput", () => {
           draft=""
         />
       );
-      const textarea = screen.getByPlaceholderText("Write your lines here");
+      const textarea = screen.getByPlaceholderText('Write your lines here');
 
-      fireEvent.input(textarea, { target: { value: "Test message" } });
+      fireEvent.input(textarea, { target: { value: 'Test message' } });
       fireEvent.keyDown(textarea, {
-        key: "Enter",
-        code: "Enter",
+        key: 'Enter',
+        code: 'Enter',
         shiftKey: true,
       });
 
@@ -106,8 +106,8 @@ describe("ChatInput", () => {
     });
   });
 
-  describe("useAutoSave integration", () => {
-    it("should call activateAutosaveUI when useAutoSave onSuccess is triggered", () => {
+  describe('useAutoSave integration', () => {
+    it('should call activateAutosaveUI when useAutoSave onSuccess is triggered', () => {
       render(
         <ChatInput
           onSendMessage={mockOnSendMessage}
@@ -122,7 +122,7 @@ describe("ChatInput", () => {
       expect(mockActivateAutosaveUI).toHaveBeenCalled();
     });
 
-    it("should call onError when useAutoSave onError is triggered", () => {
+    it('should call onError when useAutoSave onError is triggered', () => {
       render(
         <ChatInput
           onSendMessage={mockOnSendMessage}
@@ -135,7 +135,7 @@ describe("ChatInput", () => {
       useAutoSaveCall.onError();
     });
 
-    it("should call updateChat with correct parameters when onSave is triggered", async () => {
+    it('should call updateChat with correct parameters when onSave is triggered', async () => {
       render(
         <ChatInput
           onSendMessage={mockOnSendMessage}
@@ -151,8 +151,8 @@ describe("ChatInput", () => {
       await useAutoSaveCall.onSave();
 
       expect(mockUpdateChat).toHaveBeenCalledWith({
-        id: "test-chat-id",
-        draft: "",
+        id: 'test-chat-id',
+        draft: '',
       });
     });
   });

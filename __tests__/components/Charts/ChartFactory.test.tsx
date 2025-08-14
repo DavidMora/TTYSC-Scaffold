@@ -1,21 +1,21 @@
-import React from "react";
-import { render, screen } from "@testing-library/react";
-import { ChartFactory } from "@/components/Charts/ChartFactory";
+import React from 'react';
+import { render, screen } from '@testing-library/react';
+import { ChartFactory } from '@/components/Charts/ChartFactory';
 import {
   ChartDataInfo,
   SingleDataPoint,
   MultiDataPoint,
   ChartSeries,
-} from "@/lib/types/charts";
+} from '@/lib/types/charts';
 
 // Mock all chart renderers
-jest.mock("@/components/Charts/renderers", () => ({
+jest.mock('@/components/Charts/renderers', () => ({
   BarChartRenderer: ({ dataset, dimensions, measures }: any) => {
     // Test the formatter function from line 34
     if (dimensions && dimensions[0] && dimensions[0].formatter) {
       const formatter = dimensions[0].formatter;
       // Execute the formatter to ensure line 34 is covered
-      formatter("test");
+      formatter('test');
     }
 
     return (
@@ -54,7 +54,7 @@ jest.mock("@/components/Charts/renderers", () => ({
     if (dimension && dimension.formatter) {
       const formatter = dimension.formatter;
       // Execute the formatter to ensure line 34 is covered
-      formatter("test");
+      formatter('test');
     }
 
     return (
@@ -73,7 +73,7 @@ jest.mock("@/components/Charts/renderers", () => ({
     if (dimension && dimension.formatter) {
       const formatter = dimension.formatter;
       // Execute the formatter to ensure line 34 is covered
-      formatter("test");
+      formatter('test');
     }
 
     return (
@@ -146,38 +146,38 @@ jest.mock("@/components/Charts/renderers", () => ({
   ),
 }));
 
-describe("ChartFactory", () => {
+describe('ChartFactory', () => {
   const mockSingleDataPoint: SingleDataPoint[] = [
-    { name: "Category 1", value: 100 },
-    { name: "Category 2", value: 200 },
-    { name: "Category 3", value: 150 },
+    { name: 'Category 1', value: 100 },
+    { name: 'Category 2', value: 200 },
+    { name: 'Category 3', value: 150 },
   ];
 
   const mockMultiDataPoint: MultiDataPoint[] = [
-    { name: "Category 1", series0: 100, series1: 150 },
-    { name: "Category 2", series0: 200, series1: 250 },
-    { name: "Category 3", series0: 150, series1: 200 },
+    { name: 'Category 1', series0: 100, series1: 150 },
+    { name: 'Category 2', series0: 200, series1: 250 },
+    { name: 'Category 3', series0: 150, series1: 200 },
   ];
 
   const mockMeasures = [
     {
-      accessor: "value",
-      label: "Value",
+      accessor: 'value',
+      label: 'Value',
       formatter: (v: number) => v.toString(),
-      axis: "y",
+      axis: 'y',
     },
   ];
 
   const mockSeriesData: ChartSeries[] = [
     {
-      name: "Series 1",
+      name: 'Series 1',
       data: [100, 200, 150],
-      color: "#0070f3",
+      color: '#0070f3',
     },
     {
-      name: "Series 2",
+      name: 'Series 2',
       data: [150, 250, 200],
-      color: "#ff6b6b",
+      color: '#ff6b6b',
     },
   ];
 
@@ -194,9 +194,9 @@ describe("ChartFactory", () => {
     seriesData: mockSeriesData,
   };
 
-  describe("Basic Chart Types", () => {
-    describe("Line Chart", () => {
-      it("renders LineChartRenderer for line chart type", () => {
+  describe('Basic Chart Types', () => {
+    describe('Line Chart', () => {
+      it('renders LineChartRenderer for line chart type', () => {
         render(
           <ChartFactory
             chartType="line"
@@ -204,27 +204,27 @@ describe("ChartFactory", () => {
           />
         );
 
-        const lineChart = screen.getByTestId("line-chart-renderer");
+        const lineChart = screen.getByTestId('line-chart-renderer');
         expect(lineChart).toBeInTheDocument();
         expect(lineChart).toHaveAttribute(
-          "data-dataset",
+          'data-dataset',
           JSON.stringify(mockSingleDataPoint)
         );
         expect(lineChart).toHaveAttribute(
-          "data-dimensions",
+          'data-dimensions',
           '[{"accessor":"name"}]'
         );
         expect(lineChart).toHaveAttribute(
-          "data-measures",
+          'data-measures',
           JSON.stringify(mockMeasures)
         );
       });
     });
   });
 
-  describe("Single Data Point Chart Types", () => {
-    describe("Pie Chart", () => {
-      it("renders PieChartRenderer for single data pie chart", () => {
+  describe('Single Data Point Chart Types', () => {
+    describe('Pie Chart', () => {
+      it('renders PieChartRenderer for single data pie chart', () => {
         render(
           <ChartFactory
             chartType="pie"
@@ -232,23 +232,23 @@ describe("ChartFactory", () => {
           />
         );
 
-        const pieChart = screen.getByTestId("pie-chart-renderer");
+        const pieChart = screen.getByTestId('pie-chart-renderer');
         expect(pieChart).toBeInTheDocument();
         expect(pieChart).toHaveAttribute(
-          "data-dataset",
+          'data-dataset',
           JSON.stringify(mockSingleDataPoint)
         );
         expect(pieChart).toHaveAttribute(
-          "data-dimension",
+          'data-dimension',
           '{"accessor":"name"}'
         );
         expect(pieChart).toHaveAttribute(
-          "data-measure",
+          'data-measure',
           JSON.stringify(mockMeasures[0])
         );
       });
 
-      it("renders MultiSeriesRequiredRenderer for multi data pie chart", () => {
+      it('renders MultiSeriesRequiredRenderer for multi data pie chart', () => {
         render(
           <ChartFactory
             chartType="pie"
@@ -257,18 +257,18 @@ describe("ChartFactory", () => {
         );
 
         const multiSeriesRenderer = screen.getByTestId(
-          "multi-series-required-renderer"
+          'multi-series-required-renderer'
         );
         expect(multiSeriesRenderer).toBeInTheDocument();
         expect(multiSeriesRenderer).toHaveAttribute(
-          "data-chart-type",
-          "PieChart"
+          'data-chart-type',
+          'PieChart'
         );
       });
     });
 
-    describe("Doughnut Chart", () => {
-      it("renders DonutChartRenderer for single data doughnut chart", () => {
+    describe('Doughnut Chart', () => {
+      it('renders DonutChartRenderer for single data doughnut chart', () => {
         render(
           <ChartFactory
             chartType="doughnut"
@@ -276,23 +276,23 @@ describe("ChartFactory", () => {
           />
         );
 
-        const donutChart = screen.getByTestId("donut-chart-renderer");
+        const donutChart = screen.getByTestId('donut-chart-renderer');
         expect(donutChart).toBeInTheDocument();
         expect(donutChart).toHaveAttribute(
-          "data-dataset",
+          'data-dataset',
           JSON.stringify(mockSingleDataPoint)
         );
         expect(donutChart).toHaveAttribute(
-          "data-dimension",
+          'data-dimension',
           '{"accessor":"name"}'
         );
         expect(donutChart).toHaveAttribute(
-          "data-measure",
+          'data-measure',
           JSON.stringify(mockMeasures[0])
         );
       });
 
-      it("renders MultiSeriesRequiredRenderer for multi data doughnut chart", () => {
+      it('renders MultiSeriesRequiredRenderer for multi data doughnut chart', () => {
         render(
           <ChartFactory
             chartType="doughnut"
@@ -301,20 +301,20 @@ describe("ChartFactory", () => {
         );
 
         const multiSeriesRenderer = screen.getByTestId(
-          "multi-series-required-renderer"
+          'multi-series-required-renderer'
         );
         expect(multiSeriesRenderer).toBeInTheDocument();
         expect(multiSeriesRenderer).toHaveAttribute(
-          "data-chart-type",
-          "DonutChart"
+          'data-chart-type',
+          'DonutChart'
         );
       });
     });
   });
 
-  describe("Multi-Series Chart Types", () => {
-    describe("Bullet Chart", () => {
-      it("renders BulletChartRenderer for multi data bullet chart with series data", () => {
+  describe('Multi-Series Chart Types', () => {
+    describe('Bullet Chart', () => {
+      it('renders BulletChartRenderer for multi data bullet chart with series data', () => {
         render(
           <ChartFactory
             chartType="bullet"
@@ -322,23 +322,23 @@ describe("ChartFactory", () => {
           />
         );
 
-        const bulletChart = screen.getByTestId("bullet-chart-renderer");
+        const bulletChart = screen.getByTestId('bullet-chart-renderer');
         expect(bulletChart).toBeInTheDocument();
         expect(bulletChart).toHaveAttribute(
-          "data-dataset",
+          'data-dataset',
           JSON.stringify(mockMultiDataPoint)
         );
         expect(bulletChart).toHaveAttribute(
-          "data-dimensions",
+          'data-dimensions',
           '[{"accessor":"name"}]'
         );
         expect(bulletChart).toHaveAttribute(
-          "data-series-data",
+          'data-series-data',
           JSON.stringify(mockSeriesData)
         );
       });
 
-      it("renders MultiSeriesRequiredRenderer for single data bullet chart", () => {
+      it('renders MultiSeriesRequiredRenderer for single data bullet chart', () => {
         render(
           <ChartFactory
             chartType="bullet"
@@ -347,18 +347,18 @@ describe("ChartFactory", () => {
         );
 
         const multiSeriesRenderer = screen.getByTestId(
-          "multi-series-required-renderer"
+          'multi-series-required-renderer'
         );
         expect(multiSeriesRenderer).toBeInTheDocument();
         expect(multiSeriesRenderer).toHaveAttribute(
-          "data-chart-type",
-          "BulletChart"
+          'data-chart-type',
+          'BulletChart'
         );
       });
     });
 
-    describe("Column With Trend Chart", () => {
-      it("renders ColumnWithTrendRenderer for multi data column with trend chart with series data", () => {
+    describe('Column With Trend Chart', () => {
+      it('renders ColumnWithTrendRenderer for multi data column with trend chart with series data', () => {
         render(
           <ChartFactory
             chartType="columnWithTrend"
@@ -367,24 +367,24 @@ describe("ChartFactory", () => {
         );
 
         const columnWithTrendChart = screen.getByTestId(
-          "column-with-trend-renderer"
+          'column-with-trend-renderer'
         );
         expect(columnWithTrendChart).toBeInTheDocument();
         expect(columnWithTrendChart).toHaveAttribute(
-          "data-dataset",
+          'data-dataset',
           JSON.stringify(mockMultiDataPoint)
         );
         expect(columnWithTrendChart).toHaveAttribute(
-          "data-dimensions",
+          'data-dimensions',
           '[{"accessor":"name"}]'
         );
         expect(columnWithTrendChart).toHaveAttribute(
-          "data-series-data",
+          'data-series-data',
           JSON.stringify(mockSeriesData)
         );
       });
 
-      it("renders MultiSeriesRequiredRenderer for single data column with trend chart", () => {
+      it('renders MultiSeriesRequiredRenderer for single data column with trend chart', () => {
         render(
           <ChartFactory
             chartType="columnWithTrend"
@@ -393,12 +393,12 @@ describe("ChartFactory", () => {
         );
 
         const multiSeriesRenderer = screen.getByTestId(
-          "multi-series-required-renderer"
+          'multi-series-required-renderer'
         );
         expect(multiSeriesRenderer).toBeInTheDocument();
         expect(multiSeriesRenderer).toHaveAttribute(
-          "data-chart-type",
-          "ColumnChartWithTrend"
+          'data-chart-type',
+          'ColumnChartWithTrend'
         );
       });
     });

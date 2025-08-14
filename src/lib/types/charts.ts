@@ -6,16 +6,16 @@ export interface ChartSeries {
 
 export interface ChartData {
   type:
-    | "bar"
-    | "line"
-    | "pie"
-    | "doughnut"
-    | "area"
-    | "column"
-    | "bullet"
-    | "columnWithTrend"
-    | "composed"
-    | "radar";
+    | 'bar'
+    | 'line'
+    | 'pie'
+    | 'doughnut'
+    | 'area'
+    | 'column'
+    | 'bullet'
+    | 'columnWithTrend'
+    | 'composed'
+    | 'radar';
   labels: string[];
   data: number[] | ChartSeries[];
 }
@@ -53,7 +53,7 @@ export interface MultiDataPoint extends Record<string, unknown> {
 
 // AIChart specific types
 export interface BulletMeasure extends ChartMeasure {
-  type: "primary" | "comparison" | "additional";
+  type: 'primary' | 'comparison' | 'additional';
 }
 
 export interface ChartMeasureWithType extends ChartMeasure {

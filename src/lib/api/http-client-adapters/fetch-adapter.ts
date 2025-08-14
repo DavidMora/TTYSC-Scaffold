@@ -4,9 +4,9 @@ import {
   HttpClientResponse,
   HttpStreamConfig,
   HttpStreamResponse,
-} from "@/lib/types/api/http-client";
-import { v6 as uuidv6 } from "uuid";
-import { parseSSEBlock } from "@/lib/api/stream/parse-sse";
+} from '@/lib/types/api/http-client';
+import { v6 as uuidv6 } from 'uuid';
+import { parseSSEBlock } from '@/lib/api/stream/parse-sse';
 
 export class FetchAdapter implements HttpClientAdapter {
   private readonly defaultConfig: HttpClientConfig;
@@ -16,7 +16,7 @@ export class FetchAdapter implements HttpClientAdapter {
       timeout: 30000,
       baseURL: config.baseURL,
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
         ...config.headers,
       },
       auth: config.auth,
@@ -48,8 +48,8 @@ export class FetchAdapter implements HttpClientAdapter {
       };
 
       // Add request ID if not already provided
-      if (!mergedHeaders["X-Request-Id"]) {
-        mergedHeaders["X-Request-Id"] = uuidv6();
+      if (!mergedHeaders['X-Request-Id']) {
+        mergedHeaders['X-Request-Id'] = uuidv6();
       }
 
       // Add Basic Authentication if configured
@@ -73,17 +73,17 @@ export class FetchAdapter implements HttpClientAdapter {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 
-      const contentType = response.headers.get("content-type");
+      const contentType = response.headers.get('content-type');
 
       let data: T;
-      if (contentType?.includes("application/json")) {
+      if (contentType?.includes('application/json')) {
         data = await response.json();
       } else if (
         contentType?.includes(
-          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
         ) ||
-        contentType?.includes("application/vnd.ms-excel") ||
-        contentType?.includes("text/csv")
+        contentType?.includes('application/vnd.ms-excel') ||
+        contentType?.includes('text/csv')
       ) {
         data = (await response.blob()) as T;
       } else {
@@ -108,7 +108,7 @@ export class FetchAdapter implements HttpClientAdapter {
       if (error instanceof Error) {
         throw error;
       }
-      throw new Error("Unknown error occurred");
+      throw new Error('Unknown error occurred');
     }
   }
 
@@ -116,7 +116,7 @@ export class FetchAdapter implements HttpClientAdapter {
     url: string,
     config?: HttpClientConfig
   ): Promise<HttpClientResponse<T>> {
-    return this.request<T>(url, { method: "GET" }, config);
+    return this.request<T>(url, { method: 'GET' }, config);
   }
 
   async post<T = unknown>(
@@ -127,7 +127,7 @@ export class FetchAdapter implements HttpClientAdapter {
     return this.request<T>(
       url,
       {
-        method: "POST",
+        method: 'POST',
         body: data ? JSON.stringify(data) : undefined,
       },
       config
@@ -142,7 +142,7 @@ export class FetchAdapter implements HttpClientAdapter {
     return this.request<T>(
       url,
       {
-        method: "PUT",
+        method: 'PUT',
         body: data ? JSON.stringify(data) : undefined,
       },
       config
@@ -153,7 +153,7 @@ export class FetchAdapter implements HttpClientAdapter {
     url: string,
     config?: HttpClientConfig
   ): Promise<HttpClientResponse<T>> {
-    return this.request<T>(url, { method: "DELETE" }, config);
+    return this.request<T>(url, { method: 'DELETE' }, config);
   }
 
   async patch<T = unknown>(
@@ -164,7 +164,7 @@ export class FetchAdapter implements HttpClientAdapter {
     return this.request<T>(
       url,
       {
-        method: "PATCH",
+        method: 'PATCH',
         body: data ? JSON.stringify(data) : undefined,
       },
       config
@@ -188,7 +188,7 @@ export class FetchAdapter implements HttpClientAdapter {
       if (externalSignal.aborted) controller.abort();
       else {
         abortListener = () => controller.abort();
-        externalSignal.addEventListener("abort", abortListener);
+        externalSignal.addEventListener('abort', abortListener);
       }
     }
 
@@ -199,14 +199,14 @@ export class FetchAdapter implements HttpClientAdapter {
 
     // Always request streaming where relevant
     if (!headers.Accept) {
-      let accept = "*/*";
-      if (mergedConfig.parser === "sse") accept = "text/event-stream";
-      else if (mergedConfig.parser === "json") accept = "application/json";
+      let accept = '*/*';
+      if (mergedConfig.parser === 'sse') accept = 'text/event-stream';
+      else if (mergedConfig.parser === 'json') accept = 'application/json';
       headers.Accept = accept;
     }
 
     const response = await fetch(fullUrl, {
-      method: "GET",
+      method: 'GET',
       headers,
       signal: controller.signal,
     });
@@ -219,12 +219,12 @@ export class FetchAdapter implements HttpClientAdapter {
     };
 
     if (!response.body) {
-      throw new Error("ReadableStream not supported in this environment");
+      throw new Error('ReadableStream not supported in this environment');
     }
 
     const reader = response.body.getReader();
     const textDecoder = new TextDecoder();
-    const parser = mergedConfig.parser || "text";
+    const parser = mergedConfig.parser || 'text';
     const jsonParserTimeoutMs = mergedConfig.jsonParserTimeoutMs ?? 15000;
     const maxBufferSize = mergedConfig.maxBufferSize ?? 10 * 1024 * 1024; // 10MB default
     const ensureSize = (name: string, size: number) => {
@@ -237,20 +237,20 @@ export class FetchAdapter implements HttpClientAdapter {
     };
 
     // SSE specific buffering
-    let sseBuffer = "";
-    let ndjsonBuffer = "";
+    let sseBuffer = '';
+    let ndjsonBuffer = '';
     let ndjsonLineNumber = 0; // for diagnostic errors
-    let jsonBuffer = "";
+    let jsonBuffer = '';
 
     const flushLeftoverNDJSON = function* () {
       const trimmed = ndjsonBuffer.trim();
       if (!trimmed) return;
-      ndjsonBuffer = "";
+      ndjsonBuffer = '';
       try {
         yield JSON.parse(trimmed) as TChunk;
       } catch (e) {
         const snippet =
-          trimmed.slice(0, 200) + (trimmed.length > 200 ? "…" : "");
+          trimmed.slice(0, 200) + (trimmed.length > 200 ? '…' : '');
         throw new Error(
           `Failed to parse leftover NDJSON on stream end: ${
             e instanceof Error ? e.message : String(e)
@@ -262,12 +262,12 @@ export class FetchAdapter implements HttpClientAdapter {
     const flushLeftoverSSE = function* () {
       if (!sseBuffer.length) return;
       const raw = sseBuffer;
-      sseBuffer = "";
+      sseBuffer = '';
       try {
         const evt = parseSSEBlock(raw) as unknown as TChunk;
         yield evt;
       } catch (e) {
-        const snippet = raw.slice(0, 200) + (raw.length > 200 ? "…" : "");
+        const snippet = raw.slice(0, 200) + (raw.length > 200 ? '…' : '');
         throw new Error(
           `Failed to parse leftover SSE block on stream end: ${
             e instanceof Error ? e.message : String(e)
@@ -281,11 +281,11 @@ export class FetchAdapter implements HttpClientAdapter {
       void,
       unknown
     > {
-      if (parser === "ndjson") {
+      if (parser === 'ndjson') {
         for (const v of flushLeftoverNDJSON()) yield v;
         return;
       }
-      if (parser === "sse") {
+      if (parser === 'sse') {
         for (const v of flushLeftoverSSE()) yield v;
       }
     };
@@ -293,7 +293,7 @@ export class FetchAdapter implements HttpClientAdapter {
     const processBytes = function* (
       value: Uint8Array
     ): Generator<TChunk, void, unknown> {
-      if (parser === "bytes") {
+      if (parser === 'bytes') {
         yield value as unknown as TChunk;
       }
     };
@@ -305,7 +305,7 @@ export class FetchAdapter implements HttpClientAdapter {
     let jsonStartTime: number | null = null;
     let jsonTimeoutTriggered = false;
     const handleJSON = function* (chunkStr: string) {
-      ensureSize("JSON", jsonBuffer.length + chunkStr.length);
+      ensureSize('JSON', jsonBuffer.length + chunkStr.length);
       jsonBuffer += chunkStr;
       jsonStartTime ??= Date.now();
       // Timeout check
@@ -318,7 +318,7 @@ export class FetchAdapter implements HttpClientAdapter {
       }
       try {
         const obj = JSON.parse(jsonBuffer) as TChunk;
-        jsonBuffer = "";
+        jsonBuffer = '';
         controller.abort();
         yield obj;
       } catch {
@@ -327,9 +327,9 @@ export class FetchAdapter implements HttpClientAdapter {
     };
 
     const handleNDJSON = function* (chunkStr: string) {
-      ensureSize("NDJSON", ndjsonBuffer.length + chunkStr.length);
+      ensureSize('NDJSON', ndjsonBuffer.length + chunkStr.length);
       ndjsonBuffer += chunkStr;
-      let newlineIndex = ndjsonBuffer.indexOf("\n");
+      let newlineIndex = ndjsonBuffer.indexOf('\n');
       while (newlineIndex !== -1) {
         const line = ndjsonBuffer.slice(0, newlineIndex).trim();
         ndjsonBuffer = ndjsonBuffer.slice(newlineIndex + 1);
@@ -338,7 +338,7 @@ export class FetchAdapter implements HttpClientAdapter {
           try {
             yield JSON.parse(line) as TChunk;
           } catch (e) {
-            const snippet = line.length > 200 ? line.slice(0, 200) + "…" : line;
+            const snippet = line.length > 200 ? line.slice(0, 200) + '…' : line;
             throw new Error(
               `Failed to parse NDJSON line ${ndjsonLineNumber}: ${
                 e instanceof Error ? e.message : String(e)
@@ -346,20 +346,20 @@ export class FetchAdapter implements HttpClientAdapter {
             );
           }
         }
-        newlineIndex = ndjsonBuffer.indexOf("\n");
+        newlineIndex = ndjsonBuffer.indexOf('\n');
       }
     };
 
     const handleSSE = function* (chunkStr: string) {
-      ensureSize("SSE", sseBuffer.length + chunkStr.length);
+      ensureSize('SSE', sseBuffer.length + chunkStr.length);
       sseBuffer += chunkStr;
-      let eventEndIdx = sseBuffer.indexOf("\n\n");
+      let eventEndIdx = sseBuffer.indexOf('\n\n');
       while (eventEndIdx !== -1) {
         const rawEvent = sseBuffer.slice(0, eventEndIdx);
         sseBuffer = sseBuffer.slice(eventEndIdx + 2);
         const evt = parseSSEBlock(rawEvent) as unknown as TChunk;
         yield evt;
-        eventEndIdx = sseBuffer.indexOf("\n\n");
+        eventEndIdx = sseBuffer.indexOf('\n\n');
       }
     };
 
@@ -367,13 +367,13 @@ export class FetchAdapter implements HttpClientAdapter {
       chunkStr: string
     ): Generator<TChunk, void, unknown> {
       switch (parser) {
-        case "text":
+        case 'text':
           return yield* handleText(chunkStr);
-        case "json":
+        case 'json':
           return yield* handleJSON(chunkStr);
-        case "ndjson":
+        case 'ndjson':
           return yield* handleNDJSON(chunkStr);
-        case "sse":
+        case 'sse':
           return yield* handleSSE(chunkStr);
         default:
           return yield* handleText(chunkStr); // fallback
@@ -388,7 +388,7 @@ export class FetchAdapter implements HttpClientAdapter {
           if (!value) continue;
           // Decide which parser to use and yield any resulting chunks
           const iterable: Iterable<TChunk> = ((): Iterable<TChunk> => {
-            if (parser === "bytes")
+            if (parser === 'bytes')
               return processBytes(value) as unknown as Iterable<TChunk>;
             const str = textDecoder.decode(value, { stream: true });
             return processTextParsers(str) as unknown as Iterable<TChunk>;
@@ -406,7 +406,7 @@ export class FetchAdapter implements HttpClientAdapter {
         }
         // Clear JSON state to help GC if timeout triggered
         if (jsonTimeoutTriggered) {
-          jsonBuffer = "";
+          jsonBuffer = '';
         }
         try {
           reader.releaseLock();
@@ -414,7 +414,7 @@ export class FetchAdapter implements HttpClientAdapter {
           // ignore
         }
         if (externalSignal && abortListener) {
-          externalSignal.removeEventListener("abort", abortListener);
+          externalSignal.removeEventListener('abort', abortListener);
         }
       }
     }

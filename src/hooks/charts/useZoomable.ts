@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type React from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import type React from 'react';
 import {
   EPSILON,
   deltaFromPixels,
@@ -9,11 +9,11 @@ import {
   zoomInWindow,
   zoomOutWindow,
   snapWindowSpanToCount,
-} from "@/lib/utils/zoomWindow";
-import type { ViewWindow } from "@/lib/utils/zoomWindow";
+} from '@/lib/utils/zoomWindow';
+import type { ViewWindow } from '@/lib/utils/zoomWindow';
 
 export interface UseZoomableOptions {
-  mode?: "visual" | "dataX";
+  mode?: 'visual' | 'dataX';
   minZoom?: number;
   maxZoom?: number;
   step?: number;
@@ -22,7 +22,7 @@ export interface UseZoomableOptions {
 }
 
 export function useZoomable({
-  mode = "visual",
+  mode = 'visual',
   minZoom = 1,
   maxZoom = 5,
   step = 0.4,
@@ -76,7 +76,7 @@ export function useZoomable({
   const canZoomIn = useMemo(() => {
     if (!hasMultipleItems) return false;
     if (visibleCount !== null && visibleCount <= 2) return false;
-    if (mode === "visual") return zoom < maxZoom - EPSILON;
+    if (mode === 'visual') return zoom < maxZoom - EPSILON;
     let next = zoomInWindow(viewWindow, step, maxZoom);
     if (dataLength) next = snapWindowSpanToCount(next, dataLength);
     const changed =
@@ -97,7 +97,7 @@ export function useZoomable({
 
   const canZoomOut = useMemo(() => {
     if (!hasMultipleItems) return false;
-    if (mode === "visual") return zoom > minZoom + EPSILON;
+    if (mode === 'visual') return zoom > minZoom + EPSILON;
     let next = zoomOutWindow(viewWindow, step, minZoom);
     if (dataLength) next = snapWindowSpanToCount(next, dataLength);
     const changed =
@@ -149,7 +149,7 @@ export function useZoomable({
   );
 
   const handleZoomIn = useCallback(() => {
-    if (mode === "visual") {
+    if (mode === 'visual') {
       setZoom((z) => {
         const next = Math.min(maxZoom, z + step);
         const bounded = next <= 1 + EPSILON ? 1 : +next.toFixed(6);
@@ -183,7 +183,7 @@ export function useZoomable({
   }, [mode, maxZoom, step, onWindowChange, clampOffsetToBounds, dataLength]);
 
   const handleZoomOut = useCallback(() => {
-    if (mode === "visual") {
+    if (mode === 'visual') {
       setZoom((z) => {
         const next = Math.max(minZoom, z - step);
         const bounded = +next.toFixed(6);
@@ -223,14 +223,14 @@ export function useZoomable({
 
   const onMouseDown = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
-      if (mode === "visual" && zoom <= 1) return;
+      if (mode === 'visual' && zoom <= 1) return;
       setIsPanning(true);
       panStartRef.current = {
         x: e.clientX,
         y: e.clientY,
         ox: offset.x,
         oy: offset.y,
-        windowAtStart: mode === "dataX" ? { ...viewWindow } : undefined,
+        windowAtStart: mode === 'dataX' ? { ...viewWindow } : undefined,
       };
     },
     [mode, zoom, offset.x, offset.y, viewWindow]
@@ -240,7 +240,7 @@ export function useZoomable({
     (e: React.MouseEvent<HTMLDivElement>) => {
       const panStart = panStartRef.current;
       if (!panStart) return;
-      if (mode === "visual") {
+      if (mode === 'visual') {
         const dx = e.clientX - panStart.x;
         const dy = e.clientY - panStart.y;
         const proposed = {
@@ -258,7 +258,7 @@ export function useZoomable({
         });
         return;
       }
-      if (mode === "dataX" && hasMultipleItems) {
+      if (mode === 'dataX' && hasMultipleItems) {
         const viewport = viewportRef.current;
         if (!viewport) return;
         const startWin = panStart.windowAtStart;
@@ -356,8 +356,8 @@ export function useZoomable({
         onWindowChange?.(next);
       };
 
-      if (mode === "visual") return handleWheelVisual();
-      if (mode === "dataX") return handleWheelDataX();
+      if (mode === 'visual') return handleWheelVisual();
+      if (mode === 'dataX') return handleWheelDataX();
     },
     [
       mode,
@@ -378,7 +378,7 @@ export function useZoomable({
 
   const zoomActive = useMemo(
     () =>
-      mode === "visual"
+      mode === 'visual'
         ? zoom > 1
         : hasMultipleItems && viewWindow.end - viewWindow.start < 1 - EPSILON,
     [mode, zoom, viewWindow.end, viewWindow.start, hasMultipleItems]

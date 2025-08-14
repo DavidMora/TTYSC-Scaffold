@@ -6,10 +6,10 @@ import {
   MutationAdapter,
   MutationOptions,
   MutationResponse,
-} from "@/lib/types/api/data-fetcher";
-import { HttpClientResponse } from "../types/api/http-client";
-import SWRAdapter from "./data-fetcher-adapters/swr-adapter";
-import SWRMutationAdapter from "./data-fetcher-adapters/swr-mutation-adapter";
+} from '@/lib/types/api/data-fetcher';
+import { HttpClientResponse } from '../types/api/http-client';
+import SWRAdapter from './data-fetcher-adapters/swr-adapter';
+import SWRMutationAdapter from './data-fetcher-adapters/swr-mutation-adapter';
 
 class DataFetcher {
   private readonly adapter: DataFetcherAdapter;

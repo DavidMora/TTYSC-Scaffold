@@ -1,17 +1,17 @@
-import React from "react";
-import { render, screen, fireEvent, act } from "@testing-library/react";
-import AnalysisChat from "@/components/AnalysisChat/AnalysisChat";
-import { ChatMessage, BotResponse } from "@/lib/types/chats";
-import { useSendChatMessage } from "@/hooks/chats";
-import "@testing-library/jest-dom";
+import React from 'react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
+import AnalysisChat from '@/components/AnalysisChat/AnalysisChat';
+import { ChatMessage, BotResponse } from '@/lib/types/chats';
+import { useSendChatMessage } from '@/hooks/chats';
+import '@testing-library/jest-dom';
 
 // Mock hooks
-jest.mock("@/hooks/chats", () => ({
+jest.mock('@/hooks/chats', () => ({
   useSendChatMessage: jest.fn(),
 }));
 
 // Mock components
-jest.mock("@/components/AnalysisChat/MessageBubble", () => ({
+jest.mock('@/components/AnalysisChat/MessageBubble', () => ({
   MessageBubble: ({
     message,
     user,
@@ -21,12 +21,12 @@ jest.mock("@/components/AnalysisChat/MessageBubble", () => ({
   }) => (
     <div data-testid={`message-${message.id}`} data-role={message.role}>
       <div data-testid="message-content">{message.content}</div>
-      <div data-testid="user-name">{user?.name || "Unknown"}</div>
+      <div data-testid="user-name">{user?.name || 'Unknown'}</div>
     </div>
   ),
 }));
 
-jest.mock("@/components/AnalysisChat/ChatInput", () => ({
+jest.mock('@/components/AnalysisChat/ChatInput', () => ({
   ChatInput: ({
     onSendMessage,
     isLoading,
@@ -34,7 +34,7 @@ jest.mock("@/components/AnalysisChat/ChatInput", () => ({
     onSendMessage: (msg: string) => void;
     isLoading: boolean;
   }) => {
-    const [inputValue, setInputValue] = React.useState("");
+    const [inputValue, setInputValue] = React.useState('');
 
     return (
       <div data-testid="chat-input">
@@ -49,7 +49,7 @@ jest.mock("@/components/AnalysisChat/ChatInput", () => ({
           data-testid="send-button"
           onClick={() => {
             onSendMessage(inputValue);
-            setInputValue("");
+            setInputValue('');
           }}
           disabled={isLoading}
         >
@@ -64,27 +64,27 @@ const mockUseSendChatMessage = useSendChatMessage as jest.MockedFunction<
   typeof useSendChatMessage
 >;
 
-describe("AnalysisChat", () => {
+describe('AnalysisChat', () => {
   const mockMutate = jest.fn();
 
   const mockPreviousMessages: ChatMessage[] = [
     {
-      id: "1",
-      role: "user",
-      content: "Hello",
-      created: "2024-01-01T10:00:00Z",
+      id: '1',
+      role: 'user',
+      content: 'Hello',
+      created: '2024-01-01T10:00:00Z',
     },
     {
-      id: "2",
-      role: "assistant",
-      content: "Hi there!",
-      title: "Assistant Response",
-      created: "2024-01-01T10:01:00Z",
+      id: '2',
+      role: 'assistant',
+      content: 'Hi there!',
+      title: 'Assistant Response',
+      created: '2024-01-01T10:01:00Z',
     },
   ];
 
   const defaultProps = {
-    chatId: "test-chat-id",
+    chatId: 'test-chat-id',
     previousMessages: mockPreviousMessages,
   };
 
@@ -103,32 +103,32 @@ describe("AnalysisChat", () => {
     HTMLDivElement.prototype.scrollTo = jest.fn();
   });
 
-  describe("Component Rendering", () => {
-    it("should render the chat component with correct structure", () => {
+  describe('Component Rendering', () => {
+    it('should render the chat component with correct structure', () => {
       render(<AnalysisChat {...defaultProps} />);
 
-      expect(screen.getByTestId("chat-input")).toBeInTheDocument();
-      expect(screen.getByTestId("message-1")).toBeInTheDocument();
-      expect(screen.getByTestId("message-2")).toBeInTheDocument();
+      expect(screen.getByTestId('chat-input')).toBeInTheDocument();
+      expect(screen.getByTestId('message-1')).toBeInTheDocument();
+      expect(screen.getByTestId('message-2')).toBeInTheDocument();
     });
 
-    it("should render with empty previous messages", () => {
+    it('should render with empty previous messages', () => {
       render(<AnalysisChat chatId="test-chat-id" previousMessages={[]} />);
 
-      expect(screen.getByTestId("chat-input")).toBeInTheDocument();
-      expect(screen.queryByTestId("message-1")).not.toBeInTheDocument();
+      expect(screen.getByTestId('chat-input')).toBeInTheDocument();
+      expect(screen.queryByTestId('message-1')).not.toBeInTheDocument();
     });
 
-    it("should initialize messages state with previous messages", () => {
+    it('should initialize messages state with previous messages', () => {
       render(<AnalysisChat {...defaultProps} />);
 
-      expect(screen.getByTestId("message-1")).toBeInTheDocument();
-      expect(screen.getByTestId("message-2")).toBeInTheDocument();
+      expect(screen.getByTestId('message-1')).toBeInTheDocument();
+      expect(screen.getByTestId('message-2')).toBeInTheDocument();
     });
   });
 
-  describe("Hook Integration", () => {
-    it("should handle loading state", () => {
+  describe('Hook Integration', () => {
+    it('should handle loading state', () => {
       mockUseSendChatMessage.mockReturnValue({
         mutate: mockMutate,
         isLoading: true,
@@ -139,30 +139,30 @@ describe("AnalysisChat", () => {
 
       render(<AnalysisChat {...defaultProps} />);
 
-      const input = screen.getByTestId("message-input");
-      const sendButton = screen.getByTestId("send-button");
+      const input = screen.getByTestId('message-input');
+      const sendButton = screen.getByTestId('send-button');
 
       expect(input).toBeDisabled();
       expect(sendButton).toBeDisabled();
     });
 
-    it("should handle successful message response", () => {
+    it('should handle successful message response', () => {
       mockUseSendChatMessage.mockReturnValue({
         mutate: mockMutate,
         isLoading: false,
         data: {
-          id: "test-id",
-          object: "chat.completion",
-          model: "gpt-4",
-          created: "2024-01-01T10:00:00Z",
+          id: 'test-id',
+          object: 'chat.completion',
+          model: 'gpt-4',
+          created: '2024-01-01T10:00:00Z',
           choices: [
             {
               message: {
-                content: "This is a successful response",
-                role: "assistant",
-                title: "Assistant Response",
+                content: 'This is a successful response',
+                role: 'assistant',
+                title: 'Assistant Response',
               },
-              finish_reason: "stop",
+              finish_reason: 'stop',
               index: 0,
             },
           ],
@@ -178,17 +178,17 @@ describe("AnalysisChat", () => {
 
       render(<AnalysisChat {...defaultProps} />);
 
-      const input = screen.getByTestId("message-input");
-      const sendButton = screen.getByTestId("send-button");
+      const input = screen.getByTestId('message-input');
+      const sendButton = screen.getByTestId('send-button');
 
-      fireEvent.change(input, { target: { value: "Test message" } });
+      fireEvent.change(input, { target: { value: 'Test message' } });
       fireEvent.click(sendButton);
 
       // Verify that the success callback would be called with the response data
       expect(mockMutate).toHaveBeenCalled();
     });
 
-    it("should test onError callback behavior", () => {
+    it('should test onError callback behavior', () => {
       let capturedOnError: ((error: Error) => void) | undefined;
 
       mockUseSendChatMessage.mockImplementation((options) => {
@@ -216,12 +216,12 @@ describe("AnalysisChat", () => {
       if (capturedOnError) {
         // Call the onError callback
         act(() => {
-          capturedOnError!(new Error("Test error"));
+          capturedOnError!(new Error('Test error'));
         });
       }
     });
 
-    it("should test onSuccess callback with empty content", () => {
+    it('should test onSuccess callback with empty content', () => {
       let capturedOnSuccess: ((data: BotResponse) => void) | undefined;
 
       mockUseSendChatMessage.mockImplementation((options) => {
@@ -239,17 +239,17 @@ describe("AnalysisChat", () => {
 
       if (capturedOnSuccess) {
         const mockBotResponse: BotResponse = {
-          id: "test-id",
-          object: "chat.completion",
-          model: "gpt-4",
-          created: "2024-01-01T10:00:00Z",
+          id: 'test-id',
+          object: 'chat.completion',
+          model: 'gpt-4',
+          created: '2024-01-01T10:00:00Z',
           choices: [
             {
               message: {
-                content: "",
-                role: "assistant",
+                content: '',
+                role: 'assistant',
               },
-              finish_reason: "stop",
+              finish_reason: 'stop',
               index: 0,
             },
           ],
@@ -266,7 +266,7 @@ describe("AnalysisChat", () => {
       }
     });
 
-    it("should test onSuccess callback with undefined choices", () => {
+    it('should test onSuccess callback with undefined choices', () => {
       let capturedOnSuccess: ((data: BotResponse) => void) | undefined;
 
       mockUseSendChatMessage.mockImplementation((options) => {
@@ -284,10 +284,10 @@ describe("AnalysisChat", () => {
 
       if (capturedOnSuccess) {
         const mockBotResponse: BotResponse = {
-          id: "test-id",
-          object: "chat.completion",
-          model: "gpt-4",
-          created: "2024-01-01T10:00:00Z",
+          id: 'test-id',
+          object: 'chat.completion',
+          model: 'gpt-4',
+          created: '2024-01-01T10:00:00Z',
           choices: [],
           usage: {
             prompt_tokens: 10,
@@ -302,8 +302,8 @@ describe("AnalysisChat", () => {
       }
     });
 
-    it("should call scrollToBottom when sending messages", () => {
-      Object.defineProperty(window, "setTimeout", {
+    it('should call scrollToBottom when sending messages', () => {
+      Object.defineProperty(window, 'setTimeout', {
         value: jest.fn((callback) => {
           callback();
           return 1;
@@ -312,49 +312,49 @@ describe("AnalysisChat", () => {
       });
 
       const mockScrollTo = jest.fn();
-      Object.defineProperty(HTMLElement.prototype, "scrollTo", {
+      Object.defineProperty(HTMLElement.prototype, 'scrollTo', {
         value: mockScrollTo,
         writable: true,
       });
 
       render(<AnalysisChat {...defaultProps} draft="" />);
 
-      const input = screen.getByTestId("message-input");
-      const sendButton = screen.getByTestId("send-button");
+      const input = screen.getByTestId('message-input');
+      const sendButton = screen.getByTestId('send-button');
 
-      fireEvent.change(input, { target: { value: "Test message" } });
+      fireEvent.change(input, { target: { value: 'Test message' } });
       fireEvent.click(sendButton);
 
       expect(mockMutate).toHaveBeenCalled();
     });
 
-    it("should not send message when input is empty", () => {
+    it('should not send message when input is empty', () => {
       const mockScrollTo = jest.fn();
-      Object.defineProperty(HTMLElement.prototype, "scrollTo", {
+      Object.defineProperty(HTMLElement.prototype, 'scrollTo', {
         value: mockScrollTo,
         writable: true,
       });
 
       render(<AnalysisChat {...defaultProps} draft="" />);
 
-      const sendButton = screen.getByTestId("send-button");
+      const sendButton = screen.getByTestId('send-button');
       fireEvent.click(sendButton);
 
       expect(mockMutate).not.toHaveBeenCalled();
     });
 
-    it("should test scrollToBottom with immediate=false (line 27)", () => {
+    it('should test scrollToBottom with immediate=false (line 27)', () => {
       const mockSetTimeout = jest.fn((callback) => {
         callback();
         return 1;
       });
-      Object.defineProperty(window, "setTimeout", {
+      Object.defineProperty(window, 'setTimeout', {
         value: mockSetTimeout,
         writable: true,
       });
 
       const mockScrollTo = jest.fn();
-      Object.defineProperty(HTMLElement.prototype, "scrollTo", {
+      Object.defineProperty(HTMLElement.prototype, 'scrollTo', {
         value: mockScrollTo,
         writable: true,
       });
@@ -362,19 +362,19 @@ describe("AnalysisChat", () => {
       render(<AnalysisChat {...defaultProps} />);
 
       // Trigger a state change that calls scrollToBottom with immediate=false
-      const input = screen.getByTestId("message-input");
-      const sendButton = screen.getByTestId("send-button");
+      const input = screen.getByTestId('message-input');
+      const sendButton = screen.getByTestId('send-button');
 
-      fireEvent.change(input, { target: { value: "Test message" } });
+      fireEvent.change(input, { target: { value: 'Test message' } });
       fireEvent.click(sendButton);
 
       // Verify setTimeout was called (which happens when immediate=false)
       expect(mockSetTimeout).toHaveBeenCalledWith(expect.any(Function), 50);
     });
 
-    it("should test onError callback with smooth scroll (line 78)", () => {
+    it('should test onError callback with smooth scroll (line 78)', () => {
       jest.useFakeTimers();
-      
+
       let capturedOnError: ((error: Error) => void) | undefined;
       const mockScrollTo = jest.fn();
       // Override the global mock for this specific test
@@ -407,7 +407,7 @@ describe("AnalysisChat", () => {
 
       if (capturedOnError) {
         // Simulate an error that would trigger the onError callback
-        const error = new Error("Test error");
+        const error = new Error('Test error');
         act(() => {
           capturedOnError!(error);
         });
@@ -421,15 +421,15 @@ describe("AnalysisChat", () => {
       // Verify scrollTo was called with smooth behavior
       expect(mockScrollTo).toHaveBeenCalledWith({
         top: expect.any(Number),
-        behavior: "smooth",
+        behavior: 'smooth',
       });
 
       jest.useRealTimers();
     });
 
-    it("handles immediate scroll behavior", () => {
+    it('handles immediate scroll behavior', () => {
       jest.useFakeTimers();
-      
+
       const mockScrollTo = jest.fn();
       // Override the global mock for this specific test
       HTMLDivElement.prototype.scrollTo = mockScrollTo;
@@ -451,10 +451,10 @@ describe("AnalysisChat", () => {
 
       // Test immediate scroll with auto behavior
       // This would be triggered by some interaction, let's simulate via message sending
-      const messageInput = screen.getByTestId("message-input");
-      const sendButton = screen.getByTestId("send-button");
+      const messageInput = screen.getByTestId('message-input');
+      const sendButton = screen.getByTestId('send-button');
 
-      fireEvent.change(messageInput, { target: { value: "Test message" } });
+      fireEvent.change(messageInput, { target: { value: 'Test message' } });
       fireEvent.click(sendButton);
 
       // Fast forward timers to execute the scroll behavior
@@ -462,20 +462,20 @@ describe("AnalysisChat", () => {
         jest.runAllTimers();
       });
 
-      // The immediate scroll is usually triggered internally, 
+      // The immediate scroll is usually triggered internally,
       // but we can test the behavior by checking the scroll calls
       expect(mockScrollTo).toHaveBeenCalled();
-      
+
       jest.useRealTimers();
     });
 
-    it("handles onSuccess callback with default values", () => {
+    it('handles onSuccess callback with default values', () => {
       jest.useFakeTimers();
-      
+
       const mockScrollTo = jest.fn();
       // Override the global mock for this specific test
       HTMLDivElement.prototype.scrollTo = mockScrollTo;
-      
+
       let capturedOnSuccess: ((botMsg: BotResponse) => void) | undefined;
 
       (useSendChatMessage as jest.Mock).mockImplementation((options) => {
@@ -506,18 +506,18 @@ describe("AnalysisChat", () => {
       // Simulate onSuccess with minimal bot response
       if (capturedOnSuccess) {
         const botMsg: BotResponse = {
-          id: "test-bot-response",
-          object: "chat.completion",
-          model: "test-model",
+          id: 'test-bot-response',
+          object: 'chat.completion',
+          model: 'test-model',
           created: new Date().toISOString(),
           choices: [
             {
               message: {
-                content: "", // Test fallback to empty string
-                role: "assistant",    // Test fallback to "assistant"
-                title: "",   // Test fallback to empty string
+                content: '', // Test fallback to empty string
+                role: 'assistant', // Test fallback to "assistant"
+                title: '', // Test fallback to empty string
               },
-              finish_reason: "stop",
+              finish_reason: 'stop',
               index: 0,
             },
           ],
@@ -541,9 +541,9 @@ describe("AnalysisChat", () => {
       // Verify scrollTo was called after adding message
       expect(mockScrollTo).toHaveBeenCalledWith({
         top: expect.any(Number),
-        behavior: "smooth",
+        behavior: 'smooth',
       });
-      
+
       jest.useRealTimers();
     });
   });

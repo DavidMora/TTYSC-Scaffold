@@ -1,9 +1,9 @@
-import React from "react";
-import { render, screen, fireEvent } from "@testing-library/react";
-import "@testing-library/jest-dom";
+import React from 'react';
+import { render, screen, fireEvent } from '@testing-library/react';
+import '@testing-library/jest-dom';
 
 // Mock with hideIndexTable: true to test the 'No' radio button branch
-jest.mock("@/hooks/settings", () => ({
+jest.mock('@/hooks/settings', () => ({
   useSettings: () => ({
     data: { shareChats: true, hideIndexTable: true },
     isLoading: false,
@@ -13,23 +13,23 @@ jest.mock("@/hooks/settings", () => ({
 }));
 
 const mockUpdateSettings = jest.fn((settings: object = {}) =>
-  Promise.resolve({ ok: true, statusText: "OK", ...settings })
+  Promise.resolve({ ok: true, statusText: 'OK', ...settings })
 );
 
-jest.mock("@/lib/services/settings.service", () => ({
+jest.mock('@/lib/services/settings.service', () => ({
   updateSettings: (settings: object) => mockUpdateSettings(settings),
 }));
 
-import SettingsNavigationItem from "@/components/AppLayout/SidebarItems/SettingsNavigationItem";
+import SettingsNavigationItem from '@/components/AppLayout/SidebarItems/SettingsNavigationItem';
 
-describe("SettingsNavigationItem radio button No branch", () => {
+describe('SettingsNavigationItem radio button No branch', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  it("calls the radio button handler on click (No)", () => {
+  it('calls the radio button handler on click (No)', () => {
     render(<SettingsNavigationItem />);
-    const noRadio = screen.getByRole("radio", { name: "No" });
+    const noRadio = screen.getByRole('radio', { name: 'No' });
     fireEvent.click(noRadio);
     expect(mockUpdateSettings).toHaveBeenCalledTimes(1);
     expect(mockUpdateSettings).toHaveBeenCalledWith(

@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import React, {
   createContext,
@@ -8,7 +8,7 @@ import React, {
   useCallback,
   useMemo,
   useRef,
-} from "react";
+} from 'react';
 
 interface AutosaveUIContextType {
   showAutoSaved: boolean;
@@ -53,7 +53,7 @@ export const AutosaveUIProvider = ({ children }: { children: ReactNode }) => {
 export const useAutosaveUI = (): AutosaveUIContextType => {
   const context = useContext(AutosaveUIContext);
   if (!context) {
-    throw new Error("useAutosaveUI must be used within an AutosaveUIProvider");
+    throw new Error('useAutosaveUI must be used within an AutosaveUIProvider');
   }
 
   return context;

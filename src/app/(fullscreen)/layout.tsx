@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import ThemeProvider from "@/providers/ThemeProvider";
-import { Button, FlexBox, Icon, Label, Page } from "@ui5/webcomponents-react";
-import { useRouter } from "next/navigation";
-import { useFeatureFlag } from "@/hooks/useFeatureFlags";
-import { FeatureNotAvailable } from "@/components/FeatureNotAvailable";
-import "@ui5/webcomponents-icons/dist/arrow-left.js";
+import ThemeProvider from '@/providers/ThemeProvider';
+import { Button, FlexBox, Icon, Label, Page } from '@ui5/webcomponents-react';
+import { useRouter } from 'next/navigation';
+import { useFeatureFlag } from '@/hooks/useFeatureFlags';
+import { FeatureNotAvailable } from '@/components/FeatureNotAvailable';
+import '@ui5/webcomponents-icons/dist/arrow-left.js';
 
 export default function FullscreenLayout({
   children,
@@ -14,7 +14,7 @@ export default function FullscreenLayout({
 }>) {
   const router = useRouter();
   const { flag: isNavigationEnabled, loading } = useFeatureFlag(
-    "FF_Full_Page_Navigation"
+    'FF_Full_Page_Navigation'
   );
 
   const handleBack = () => {

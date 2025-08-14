@@ -1,4 +1,4 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# TALK TO SUPPLY CHAIN FRONTEND (Next.js)
 
 ## Getting Started
 
@@ -75,7 +75,7 @@ export ENABLE_AUTHENTICATION=true
 import {
   useFeatureFlag,
   useAuthenticationEnabled,
-} from "@/hooks/useFeatureFlags";
+} from '@/hooks/useFeatureFlags';
 
 function MyComponent() {
   const isAuthEnabled = useAuthenticationEnabled();
@@ -87,7 +87,7 @@ function MyComponent() {
 #### Feature Gate Components
 
 ```tsx
-import { FeatureGate, ConditionalFeature } from "@/components/FeatureGate";
+import { FeatureGate, ConditionalFeature } from '@/components/FeatureGate';
 
 function App() {
   return (
@@ -116,21 +116,21 @@ function Header() {
 
 ```tsx
 // Regular server components and API routes
-import { isFeatureEnabled, getFeatureFlags } from "@/lib/utils/feature-flags";
+import { isFeatureEnabled, getFeatureFlags } from '@/lib/utils/feature-flags';
 
 export async function GET() {
-  if (await isFeatureEnabled("enableAuthentication")) {
+  if (await isFeatureEnabled('enableAuthentication')) {
     // Check authentication logic
   }
 
-  return Response.json({ data: "response" });
+  return Response.json({ data: 'response' });
 }
 
 // For edge runtime (middleware)
-import { isFeatureEnabledEdge } from "@/lib/utils/feature-flags-edge";
+import { isFeatureEnabledEdge } from '@/lib/utils/feature-flags-edge';
 
 export function middleware(request: NextRequest) {
-  if (isFeatureEnabledEdge("enableAuthentication")) {
+  if (isFeatureEnabledEdge('enableAuthentication')) {
     // Handle authentication
   }
 }
@@ -142,11 +142,11 @@ export function middleware(request: NextRequest) {
 import {
   isFeatureEnabledSync,
   getFeatureFlagsSync,
-} from "@/lib/utils/feature-flags";
+} from '@/lib/utils/feature-flags';
 
 // When you need synchronous access
 function ComponentWithSync() {
-  const isEnabled = isFeatureEnabledSync("enableAuthentication");
+  const isEnabled = isFeatureEnabledSync('enableAuthentication');
   // ...
 }
 ```

@@ -3,99 +3,99 @@ import {
   Chat,
   CreateChatMessageRequest,
   UpdateChatRequest,
-} from "@/lib/types/chats";
+} from '@/lib/types/chats';
 
-describe("Chat Types", () => {
-  describe("ChatMessage", () => {
-    it("should define correct interface structure", () => {
+describe('Chat Types', () => {
+  describe('ChatMessage', () => {
+    it('should define correct interface structure', () => {
       const message: ChatMessage = {
-        id: "msg123",
-        role: "user",
-        title: "Optional title",
-        created: "2023-07-17T10:00:00Z",
-        content: "Hello, this is a test message!",
+        id: 'msg123',
+        role: 'user',
+        title: 'Optional title',
+        created: '2023-07-17T10:00:00Z',
+        content: 'Hello, this is a test message!',
       };
 
-      expect(message.id).toBe("msg123");
-      expect(message.role).toBe("user");
-      expect(message.title).toBe("Optional title");
-      expect(message.content).toBe("Hello, this is a test message!");
-      expect(typeof message.id).toBe("string");
-      expect(typeof message.role).toBe("string");
-      expect(typeof message.title).toBe("string");
-      expect(typeof message.content).toBe("string");
+      expect(message.id).toBe('msg123');
+      expect(message.role).toBe('user');
+      expect(message.title).toBe('Optional title');
+      expect(message.content).toBe('Hello, this is a test message!');
+      expect(typeof message.id).toBe('string');
+      expect(typeof message.role).toBe('string');
+      expect(typeof message.title).toBe('string');
+      expect(typeof message.content).toBe('string');
     });
 
-    it("should allow messages without title", () => {
+    it('should allow messages without title', () => {
       const messageWithoutTitle: ChatMessage = {
-        id: "msg124",
-        role: "assistant",
-        created: "2023-07-17T10:00:00Z",
-        content: "Message without title",
+        id: 'msg124',
+        role: 'assistant',
+        created: '2023-07-17T10:00:00Z',
+        content: 'Message without title',
       };
 
       expect(messageWithoutTitle.title).toBeUndefined();
-      expect(messageWithoutTitle.id).toBe("msg124");
-      expect(messageWithoutTitle.role).toBe("assistant");
-      expect(messageWithoutTitle.content).toBe("Message without title");
+      expect(messageWithoutTitle.id).toBe('msg124');
+      expect(messageWithoutTitle.role).toBe('assistant');
+      expect(messageWithoutTitle.content).toBe('Message without title');
     });
 
-    it("should allow array of messages", () => {
+    it('should allow array of messages', () => {
       const messages: ChatMessage[] = [
         {
-          id: "msg1",
-          role: "user",
-          title: "First Message Title",
-          content: "First message",
-          created: "2023-07-17T10:00:00Z",
+          id: 'msg1',
+          role: 'user',
+          title: 'First Message Title',
+          content: 'First message',
+          created: '2023-07-17T10:00:00Z',
         },
         {
-          id: "msg2",
-          role: "assistant",
-          content: "Second message",
-          created: "2023-07-17T10:01:00Z",
+          id: 'msg2',
+          role: 'assistant',
+          content: 'Second message',
+          created: '2023-07-17T10:01:00Z',
         },
       ];
 
       expect(messages).toHaveLength(2);
-      expect(messages[0].content).toBe("First message");
-      expect(messages[0].title).toBe("First Message Title");
-      expect(messages[1].role).toBe("assistant");
+      expect(messages[0].content).toBe('First message');
+      expect(messages[0].title).toBe('First Message Title');
+      expect(messages[1].role).toBe('assistant');
       expect(messages[1].title).toBeUndefined();
     });
   });
 
-  describe("Chat", () => {
-    it("should define correct interface structure", () => {
+  describe('Chat', () => {
+    it('should define correct interface structure', () => {
       const chat: Chat = {
-        id: "chat123",
-        date: "2023-07-17",
-        title: "Team Meeting",
+        id: 'chat123',
+        date: '2023-07-17',
+        title: 'Team Meeting',
         messages: [
           {
-            id: "msg1",
-            role: "user",
-            content: "Hello everyone!",
-            created: "2023-07-17T10:00:00Z",
+            id: 'msg1',
+            role: 'user',
+            content: 'Hello everyone!',
+            created: '2023-07-17T10:00:00Z',
           },
         ],
       };
 
-      expect(chat.id).toBe("chat123");
-      expect(chat.date).toBe("2023-07-17");
-      expect(chat.title).toBe("Team Meeting");
+      expect(chat.id).toBe('chat123');
+      expect(chat.date).toBe('2023-07-17');
+      expect(chat.title).toBe('Team Meeting');
       expect(chat.messages).toHaveLength(1);
-      expect(typeof chat.id).toBe("string");
-      expect(typeof chat.date).toBe("string");
-      expect(typeof chat.title).toBe("string");
+      expect(typeof chat.id).toBe('string');
+      expect(typeof chat.date).toBe('string');
+      expect(typeof chat.title).toBe('string');
       expect(Array.isArray(chat.messages)).toBe(true);
     });
 
-    it("should allow empty messages", () => {
+    it('should allow empty messages', () => {
       const emptyChat: Chat = {
-        id: "empty-chat",
-        date: "2023-07-17",
-        title: "Empty Chat",
+        id: 'empty-chat',
+        date: '2023-07-17',
+        title: 'Empty Chat',
         messages: [],
       };
 
@@ -103,11 +103,11 @@ describe("Chat Types", () => {
     });
   });
 
-  describe("CreateChatMessageRequest - Minimal", () => {
-    it("should allow minimal chat message request creation", () => {
+  describe('CreateChatMessageRequest - Minimal', () => {
+    it('should allow minimal chat message request creation', () => {
       const minimalChat: CreateChatMessageRequest = {
-        chatId: "chat123",
-        messages: [{ role: "user", content: "This is a new message" }],
+        chatId: 'chat123',
+        messages: [{ role: 'user', content: 'This is a new message' }],
         use_knowledge_base: true,
       };
 
@@ -115,104 +115,104 @@ describe("Chat Types", () => {
     });
   });
 
-  describe("CreateChatMessageRequest - Structure validation", () => {
-    it("should omit id and timestamp from ChatMessage", () => {
+  describe('CreateChatMessageRequest - Structure validation', () => {
+    it('should omit id and timestamp from ChatMessage', () => {
       const createMessageRequest: CreateChatMessageRequest = {
-        chatId: "chat123",
-        messages: [{ role: "user", content: "This is a new message" }],
+        chatId: 'chat123',
+        messages: [{ role: 'user', content: 'This is a new message' }],
         use_knowledge_base: true,
       };
 
       expect(createMessageRequest.messages).toHaveLength(1);
       expect(createMessageRequest.messages[0].content).toBe(
-        "This is a new message"
+        'This is a new message'
       );
     });
 
-    it("should allow different message content", () => {
+    it('should allow different message content', () => {
       const messages: CreateChatMessageRequest[] = [
         {
-          chatId: "chat123",
-          messages: [{ role: "user", content: "Hello!" }],
+          chatId: 'chat123',
+          messages: [{ role: 'user', content: 'Hello!' }],
           use_knowledge_base: true,
         },
         {
-          chatId: "chat123",
-          messages: [{ role: "user", content: "How are you?" }],
+          chatId: 'chat123',
+          messages: [{ role: 'user', content: 'How are you?' }],
           use_knowledge_base: true,
         },
         {
-          chatId: "chat123",
-          messages: [{ role: "user", content: "I'm doing great, thanks!" }],
+          chatId: 'chat123',
+          messages: [{ role: 'user', content: "I'm doing great, thanks!" }],
           use_knowledge_base: true,
         },
       ];
 
       expect(messages).toHaveLength(3);
-      expect(messages[1].messages[0].content).toBe("How are you?");
+      expect(messages[1].messages[0].content).toBe('How are you?');
     });
   });
 
-  describe("UpdateChatRequest", () => {
-    it("should require id and allow partial Chat updates", () => {
+  describe('UpdateChatRequest', () => {
+    it('should require id and allow partial Chat updates', () => {
       const updateRequest: UpdateChatRequest = {
-        id: "chat-to-update",
-        title: "Updated Chat Title",
+        id: 'chat-to-update',
+        title: 'Updated Chat Title',
       };
 
-      expect(updateRequest.id).toBe("chat-to-update");
-      expect(updateRequest.title).toBe("Updated Chat Title");
+      expect(updateRequest.id).toBe('chat-to-update');
+      expect(updateRequest.title).toBe('Updated Chat Title');
     });
 
-    it("should allow updating with minimal fields", () => {
+    it('should allow updating with minimal fields', () => {
       const updateParticipants: UpdateChatRequest = {
-        id: "chat123",
+        id: 'chat123',
       };
 
-      expect(updateParticipants.id).toBe("chat123");
+      expect(updateParticipants.id).toBe('chat123');
     });
 
-    it("should allow updating multiple fields", () => {
+    it('should allow updating multiple fields', () => {
       const multiUpdate: UpdateChatRequest = {
-        id: "chat456",
-        title: "New Title",
+        id: 'chat456',
+        title: 'New Title',
         messages: [
           {
-            id: "msg1",
-            role: "user",
-            content: "Updated message",
-            created: "2023-07-17T12:00:00Z",
+            id: 'msg1',
+            role: 'user',
+            content: 'Updated message',
+            created: '2023-07-17T12:00:00Z',
           },
         ],
       };
 
-      expect(multiUpdate.id).toBe("chat456");
-      expect(multiUpdate.title).toBe("New Title");
+      expect(multiUpdate.id).toBe('chat456');
+      expect(multiUpdate.title).toBe('New Title');
       expect(multiUpdate.messages).toHaveLength(1);
     });
   });
 
-  describe("Type Compatibility", () => {
-    it("should allow ChatMessage to be created from CreateChatMessageRequest", () => {
+  describe('Type Compatibility', () => {
+    it('should allow ChatMessage to be created from CreateChatMessageRequest', () => {
       const createMessageRequest: CreateChatMessageRequest = {
-        chatId: "chat123",
-        messages: [{ role: "user", content: "Test message" }],
+        chatId: 'chat123',
+        messages: [{ role: 'user', content: 'Test message' }],
         use_knowledge_base: true,
       };
 
       const fullMessage: ChatMessage = {
-        id: "generated-msg-id",
-        role: "user",
-        created: "2023-07-17T10:00:00Z",
-        content: "Test message",
+        id: 'generated-msg-id',
+        role: 'user',
+        created: '2023-07-17T10:00:00Z',
+        content: 'Test message',
       };
 
       expect(fullMessage.role).toBe(createMessageRequest.messages[0].role);
       expect(fullMessage.content).toBe(
         createMessageRequest.messages[0].content
       );
-      expect(fullMessage.id).toBe("generated-msg-id");
-      expect(fullMessage.created).toBe("2023-07-17T10:00:00Z");
+      expect(fullMessage.id).toBe('generated-msg-id');
+      expect(fullMessage.created).toBe('2023-07-17T10:00:00Z');
     });
   });
 });

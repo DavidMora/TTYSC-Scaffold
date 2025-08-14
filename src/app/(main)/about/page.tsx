@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
   Page,
@@ -14,29 +14,29 @@ import {
   Panel,
   Icon,
   Link,
-} from "@ui5/webcomponents-react";
-import { useRouter } from "next/navigation";
+} from '@ui5/webcomponents-react';
+import { useRouter } from 'next/navigation';
 
 export default function About() {
   const router = useRouter();
 
   const handleBackToHome = () => {
-    router.push("/");
+    router.push('/');
   };
 
   return (
     <Page>
-      <FlexBox direction={FlexBoxDirection.Column} style={{ gap: "1.5rem" }}>
+      <FlexBox direction={FlexBoxDirection.Column} style={{ gap: '1.5rem' }}>
         {/* Header */}
         <FlexBox
           direction={FlexBoxDirection.Column}
           alignItems={FlexBoxAlignItems.Center}
-          style={{ padding: "2rem 0" }}
+          style={{ padding: '2rem 0' }}
         >
-          <Title level="H1" style={{ marginBottom: "1rem" }}>
+          <Title level="H1" style={{ marginBottom: '1rem' }}>
             About This Project
           </Title>
-          <Text style={{ textAlign: "center", maxWidth: "800px" }}>
+          <Text style={{ textAlign: 'center', maxWidth: '800px' }}>
             Learn more about this Next.js application integrated with SAPUI5
             React components, including the technologies used, features
             implemented, and how to extend it further.
@@ -49,22 +49,22 @@ export default function About() {
             titleText="Technology Stack"
             subtitleText="Modern technologies powering this application"
           />
-          <div style={{ padding: "1rem" }}>
+          <div style={{ padding: '1rem' }}>
             <FlexBox
               direction={FlexBoxDirection.Column}
-              style={{ gap: "1rem" }}
+              style={{ gap: '1rem' }}
             >
               <FlexBox
                 alignItems={FlexBoxAlignItems.Center}
-                style={{ gap: "0.5rem" }}
+                style={{ gap: '0.5rem' }}
               >
                 <Icon name="developer-settings" />
                 <div>
-                  <Text style={{ fontWeight: "bold" }}>Next.js 15</Text>
+                  <Text style={{ fontWeight: 'bold' }}>Next.js 15</Text>
                   <Text
                     style={{
-                      fontSize: "0.875rem",
-                      color: "var(--sapNeutralTextColor)",
+                      fontSize: '0.875rem',
+                      color: 'var(--sapNeutralTextColor)',
                     }}
                   >
                     React-based framework for production-ready applications
@@ -74,17 +74,17 @@ export default function About() {
 
               <FlexBox
                 alignItems={FlexBoxAlignItems.Center}
-                style={{ gap: "0.5rem" }}
+                style={{ gap: '0.5rem' }}
               >
                 <Icon name="ui-notifications" />
                 <div>
-                  <Text style={{ fontWeight: "bold" }}>
+                  <Text style={{ fontWeight: 'bold' }}>
                     SAPUI5 React Components
                   </Text>
                   <Text
                     style={{
-                      fontSize: "0.875rem",
-                      color: "var(--sapNeutralTextColor)",
+                      fontSize: '0.875rem',
+                      color: 'var(--sapNeutralTextColor)',
                     }}
                   >
                     Enterprise-grade UI components following SAP Fiori design
@@ -94,15 +94,15 @@ export default function About() {
 
               <FlexBox
                 alignItems={FlexBoxAlignItems.Center}
-                style={{ gap: "0.5rem" }}
+                style={{ gap: '0.5rem' }}
               >
                 <Icon name="technical-object" />
                 <div>
-                  <Text style={{ fontWeight: "bold" }}>TypeScript</Text>
+                  <Text style={{ fontWeight: 'bold' }}>TypeScript</Text>
                   <Text
                     style={{
-                      fontSize: "0.875rem",
-                      color: "var(--sapNeutralTextColor)",
+                      fontSize: '0.875rem',
+                      color: 'var(--sapNeutralTextColor)',
                     }}
                   >
                     Type-safe development with static type checking
@@ -112,15 +112,15 @@ export default function About() {
 
               <FlexBox
                 alignItems={FlexBoxAlignItems.Center}
-                style={{ gap: "0.5rem" }}
+                style={{ gap: '0.5rem' }}
               >
                 <Icon name="palette" />
                 <div>
-                  <Text style={{ fontWeight: "bold" }}>Tailwind CSS</Text>
+                  <Text style={{ fontWeight: 'bold' }}>Tailwind CSS</Text>
                   <Text
                     style={{
-                      fontSize: "0.875rem",
-                      color: "var(--sapNeutralTextColor)",
+                      fontSize: '0.875rem',
+                      color: 'var(--sapNeutralTextColor)',
                     }}
                   >
                     Utility-first CSS framework for rapid UI development
@@ -130,15 +130,15 @@ export default function About() {
 
               <FlexBox
                 alignItems={FlexBoxAlignItems.Center}
-                style={{ gap: "0.5rem" }}
+                style={{ gap: '0.5rem' }}
               >
                 <Icon name="database" />
                 <div>
-                  <Text style={{ fontWeight: "bold" }}>Yarn</Text>
+                  <Text style={{ fontWeight: 'bold' }}>Yarn</Text>
                   <Text
                     style={{
-                      fontSize: "0.875rem",
-                      color: "var(--sapNeutralTextColor)",
+                      fontSize: '0.875rem',
+                      color: 'var(--sapNeutralTextColor)',
                     }}
                   >
                     Package manager with efficient dependency resolution
@@ -152,50 +152,50 @@ export default function About() {
         {/* Features */}
         <FlexBox
           direction={FlexBoxDirection.Row}
-          style={{ gap: "1rem", flexWrap: "wrap" }}
+          style={{ gap: '1rem', flexWrap: 'wrap' }}
         >
-          <Card style={{ flex: 1, minWidth: "300px" }}>
+          <Card style={{ flex: 1, minWidth: '300px' }}>
             <CardHeader
               titleText="Key Features"
               subtitleText="What's included in this setup"
             />
-            <div style={{ padding: "1rem" }}>
+            <div style={{ padding: '1rem' }}>
               <Panel headerText="Application Features" collapsed={false}>
                 <FlexBox
                   direction={FlexBoxDirection.Column}
-                  style={{ gap: "0.75rem", padding: "1rem" }}
+                  style={{ gap: '0.75rem', padding: '1rem' }}
                 >
                   <FlexBox
                     alignItems={FlexBoxAlignItems.Center}
-                    style={{ gap: "0.5rem" }}
+                    style={{ gap: '0.5rem' }}
                   >
                     <Icon name="accept" />
                     <Text>Responsive SAPUI5 Layout</Text>
                   </FlexBox>
                   <FlexBox
                     alignItems={FlexBoxAlignItems.Center}
-                    style={{ gap: "0.5rem" }}
+                    style={{ gap: '0.5rem' }}
                   >
                     <Icon name="accept" />
                     <Text>Side Navigation with Routing</Text>
                   </FlexBox>
                   <FlexBox
                     alignItems={FlexBoxAlignItems.Center}
-                    style={{ gap: "0.5rem" }}
+                    style={{ gap: '0.5rem' }}
                   >
                     <Icon name="accept" />
                     <Text>Theme Integration (SAP Horizon)</Text>
                   </FlexBox>
                   <FlexBox
                     alignItems={FlexBoxAlignItems.Center}
-                    style={{ gap: "0.5rem" }}
+                    style={{ gap: '0.5rem' }}
                   >
                     <Icon name="accept" />
                     <Text>TypeScript Configuration</Text>
                   </FlexBox>
                   <FlexBox
                     alignItems={FlexBoxAlignItems.Center}
-                    style={{ gap: "0.5rem" }}
+                    style={{ gap: '0.5rem' }}
                   >
                     <Icon name="accept" />
                     <Text>Jest Testing Setup</Text>
@@ -205,30 +205,30 @@ export default function About() {
             </div>
           </Card>
 
-          <Card style={{ flex: 1, minWidth: "300px" }}>
+          <Card style={{ flex: 1, minWidth: '300px' }}>
             <CardHeader
               titleText="Getting Started"
               subtitleText="Next steps for development"
             />
-            <div style={{ padding: "1rem" }}>
-              <Text style={{ marginBottom: "1rem" }}>
+            <div style={{ padding: '1rem' }}>
+              <Text style={{ marginBottom: '1rem' }}>
                 To continue developing your application:
               </Text>
               <FlexBox
                 direction={FlexBoxDirection.Column}
-                style={{ gap: "0.75rem" }}
+                style={{ gap: '0.75rem' }}
               >
                 <FlexBox
                   alignItems={FlexBoxAlignItems.Center}
-                  style={{ gap: "0.5rem" }}
+                  style={{ gap: '0.5rem' }}
                 >
                   <Icon name="media-play" />
                   <div>
-                    <Text style={{ fontWeight: "bold" }}>Run yarn dev</Text>
+                    <Text style={{ fontWeight: 'bold' }}>Run yarn dev</Text>
                     <Text
                       style={{
-                        fontSize: "0.875rem",
-                        color: "var(--sapNeutralTextColor)",
+                        fontSize: '0.875rem',
+                        color: 'var(--sapNeutralTextColor)',
                       }}
                     >
                       Start the development server
@@ -238,15 +238,15 @@ export default function About() {
 
                 <FlexBox
                   alignItems={FlexBoxAlignItems.Center}
-                  style={{ gap: "0.5rem" }}
+                  style={{ gap: '0.5rem' }}
                 >
                   <Icon name="add-document" />
                   <div>
-                    <Text style={{ fontWeight: "bold" }}>Create Pages</Text>
+                    <Text style={{ fontWeight: 'bold' }}>Create Pages</Text>
                     <Text
                       style={{
-                        fontSize: "0.875rem",
-                        color: "var(--sapNeutralTextColor)",
+                        fontSize: '0.875rem',
+                        color: 'var(--sapNeutralTextColor)',
                       }}
                     >
                       Add new pages in src/app/
@@ -256,15 +256,15 @@ export default function About() {
 
                 <FlexBox
                   alignItems={FlexBoxAlignItems.Center}
-                  style={{ gap: "0.5rem" }}
+                  style={{ gap: '0.5rem' }}
                 >
                   <Icon name="puzzle" />
                   <div>
-                    <Text style={{ fontWeight: "bold" }}>Build Components</Text>
+                    <Text style={{ fontWeight: 'bold' }}>Build Components</Text>
                     <Text
                       style={{
-                        fontSize: "0.875rem",
-                        color: "var(--sapNeutralTextColor)",
+                        fontSize: '0.875rem',
+                        color: 'var(--sapNeutralTextColor)',
                       }}
                     >
                       Customize components in src/components/
@@ -274,15 +274,15 @@ export default function About() {
 
                 <FlexBox
                   alignItems={FlexBoxAlignItems.Center}
-                  style={{ gap: "0.5rem" }}
+                  style={{ gap: '0.5rem' }}
                 >
                   <Icon name="quality-issue" />
                   <div>
-                    <Text style={{ fontWeight: "bold" }}>Add Tests</Text>
+                    <Text style={{ fontWeight: 'bold' }}>Add Tests</Text>
                     <Text
                       style={{
-                        fontSize: "0.875rem",
-                        color: "var(--sapNeutralTextColor)",
+                        fontSize: '0.875rem',
+                        color: 'var(--sapNeutralTextColor)',
                       }}
                     >
                       Write tests in __tests__/
@@ -300,17 +300,17 @@ export default function About() {
             titleText="Useful Resources"
             subtitleText="Documentation and learning materials"
           />
-          <div style={{ padding: "1rem" }}>
+          <div style={{ padding: '1rem' }}>
             <FlexBox
               direction={FlexBoxDirection.Row}
-              style={{ gap: "1rem", flexWrap: "wrap" }}
+              style={{ gap: '1rem', flexWrap: 'wrap' }}
             >
               <Link href="https://ui5.sap.com/" target="_blank">
-                <Icon name="documents" style={{ marginRight: "0.5rem" }} />
+                <Icon name="documents" style={{ marginRight: '0.5rem' }} />
                 SAPUI5 Documentation
               </Link>
               <Link href="https://nextjs.org/docs" target="_blank">
-                <Icon name="laptop" style={{ marginRight: "0.5rem" }} />
+                <Icon name="laptop" style={{ marginRight: '0.5rem' }} />
                 Next.js Documentation
               </Link>
               <Link
@@ -319,7 +319,7 @@ export default function About() {
               >
                 <Icon
                   name="learning-assistant"
-                  style={{ marginRight: "0.5rem" }}
+                  style={{ marginRight: '0.5rem' }}
                 />
                 UI5 Web Components React
               </Link>
@@ -329,7 +329,7 @@ export default function About() {
               >
                 <Icon
                   name="business-objects-experience"
-                  style={{ marginRight: "0.5rem" }}
+                  style={{ marginRight: '0.5rem' }}
                 />
                 SAP Fiori Design Guidelines
               </Link>
@@ -340,7 +340,7 @@ export default function About() {
         {/* Back to Home */}
         <FlexBox
           justifyContent={FlexBoxJustifyContent.Center}
-          style={{ marginTop: "2rem", marginBottom: "2rem" }}
+          style={{ marginTop: '2rem', marginBottom: '2rem' }}
         >
           <Button
             design="Emphasized"

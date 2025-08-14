@@ -1,11 +1,11 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback } from 'react';
 import {
   FlexBox,
   FlexBoxAlignItems,
   Text,
   Icon,
-} from "@ui5/webcomponents-react";
-import { ConfirmationModal } from "../Modals/ConfirmationModal";
+} from '@ui5/webcomponents-react';
+import { ConfirmationModal } from '../Modals/ConfirmationModal';
 interface CreateAnalysisProps {
   onCreateAnalysis: () => Promise<unknown>;
   isCreating: boolean;
@@ -39,17 +39,17 @@ export const CreateAnalysis: React.FC<CreateAnalysisProps> = ({
         alignItems={FlexBoxAlignItems.Center}
         className="text-nowrap user-select-none"
         style={{
-          gap: "0.5rem",
-          cursor: "pointer",
-          padding: "0.25rem 0.5rem",
-          borderRadius: "0.25rem",
-          transition: "background-color 0.2s ease",
+          gap: '0.5rem',
+          cursor: 'pointer',
+          padding: '0.25rem 0.5rem',
+          borderRadius: '0.25rem',
+          transition: 'background-color 0.2s ease',
           backgroundColor: isHovered
-            ? "var(--sapContent_Hover_Background)"
-            : "transparent",
-          userSelect: "none",
-          WebkitUserSelect: "none",
-          MozUserSelect: "none",
+            ? 'var(--sapContent_Hover_Background)'
+            : 'transparent',
+          userSelect: 'none',
+          WebkitUserSelect: 'none',
+          MozUserSelect: 'none',
         }}
         onClick={openModal}
         onMouseEnter={() => setIsHovered(true)}
@@ -58,16 +58,16 @@ export const CreateAnalysis: React.FC<CreateAnalysisProps> = ({
         <Icon
           name="write-new-document"
           style={{
-            color: "var(--sapContent_IconColor)",
-            cursor: "pointer",
+            color: 'var(--sapContent_IconColor)',
+            cursor: 'pointer',
           }}
         />
         <Text
           style={{
-            fontSize: "var(--sapFontSize)",
-            color: "var(--sapContent_LabelColor)",
-            fontWeight: "400",
-            cursor: "pointer",
+            fontSize: 'var(--sapFontSize)',
+            color: 'var(--sapContent_LabelColor)',
+            fontWeight: '400',
+            cursor: 'pointer',
           }}
         >
           Create Analysis
@@ -82,14 +82,14 @@ export const CreateAnalysis: React.FC<CreateAnalysisProps> = ({
         width="442px"
         actions={[
           {
-            label: "Cancel",
-            design: "Transparent",
+            label: 'Cancel',
+            design: 'Transparent',
             disabled: isCreating,
             onClick: closeModal,
           },
           {
-            label: isCreating ? "Creating..." : "Start New",
-            design: "Emphasized",
+            label: isCreating ? 'Creating...' : 'Start New',
+            design: 'Emphasized',
             disabled: isCreating,
             onClick: () => {
               handleStartNew().catch(console.error);

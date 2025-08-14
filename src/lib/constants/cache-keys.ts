@@ -1,1 +1,1 @@
-export const SETTINGS_KEY = "settings";
+export const SETTINGS_KEY = 'settings';

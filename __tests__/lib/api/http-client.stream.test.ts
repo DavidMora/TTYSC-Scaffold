@@ -1,12 +1,12 @@
-import { HttpClient } from "@/lib/api/http-client";
+import { HttpClient } from '@/lib/api/http-client';
 import {
   HttpClientAdapter,
   HttpStreamResponse,
-} from "@/lib/types/api/http-client";
+} from '@/lib/types/api/http-client';
 
-describe("HttpClient.stream wrapper", () => {
-  it("delegates to adapter.stream when available", async () => {
-    const original = ["a", "b", "c"] as const;
+describe('HttpClient.stream wrapper', () => {
+  it('delegates to adapter.stream when available', async () => {
+    const original = ['a', 'b', 'c'] as const;
     const expected = [...original];
     let index = 0;
     const streamImpl = async (): Promise<HttpStreamResponse<string>> => {
@@ -21,7 +21,7 @@ describe("HttpClient.stream wrapper", () => {
       return Object.assign(iterable, {
         ok: true,
         status: 200,
-        statusText: "OK",
+        statusText: 'OK',
         headers: {} as Record<string, string>,
         cancel: jest.fn(),
         raw: undefined,
@@ -35,10 +35,10 @@ describe("HttpClient.stream wrapper", () => {
       delete: jest.fn(),
       patch: jest.fn(),
       // Loosely cast to match generic signature; logic tested at runtime
-      stream: streamMock as unknown as HttpClientAdapter["stream"],
+      stream: streamMock as unknown as HttpClientAdapter['stream'],
     };
     const client = new HttpClient(mockAdapter);
-    const res = await client.stream<string>("/test");
+    const res = await client.stream<string>('/test');
     const out: string[] = [];
     for await (const c of res) out.push(c);
     expect(out).toEqual(expected);
@@ -53,7 +53,7 @@ describe("HttpClient.stream wrapper", () => {
       delete: jest.fn(),
       patch: jest.fn(),
     } as HttpClientAdapter);
-    await expect(client.stream("/nope")).rejects.toThrow(
+    await expect(client.stream('/nope')).rejects.toThrow(
       /Streaming not supported/
     );
   });

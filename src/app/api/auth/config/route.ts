@@ -9,7 +9,9 @@ export async function GET(request: NextRequest) {
   const url = new URL(request.url);
   const hasLoggedOutParam = url.searchParams.get('logged_out') === 'true';
   const referer = request.headers.get('referer');
-  const isFromLogout = referer?.includes('logged_out=true') || referer?.includes('provider-sign-out');
+  const isFromLogout =
+    referer?.includes('logged_out=true') ||
+    referer?.includes('provider-sign-out');
   const isOnLogoutPage = referer?.includes('/auth/logged-out');
 
   // Disable auto-login if user was recently logged out or is on logout page
@@ -18,7 +20,7 @@ export async function GET(request: NextRequest) {
       hasLoggedOutParam,
       isFromLogout,
       isOnLogoutPage,
-      referer
+      referer,
     });
     autoLogin = false;
   }

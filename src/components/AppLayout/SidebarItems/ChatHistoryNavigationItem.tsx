@@ -9,8 +9,8 @@ import {
   BusyIndicator,
   Text,
   MessageStrip,
-} from "@ui5/webcomponents-react";
-import { Chat } from "@/lib/types/chats";
+} from '@ui5/webcomponents-react';
+import { Chat } from '@/lib/types/chats';
 
 interface ChatHistoryNavigationItemProps {
   chatHistory?: Chat[];
@@ -51,7 +51,7 @@ export default function ChatHistoryNavigationItem({
     <FlexBox direction={FlexBoxDirection.Column} className="gap-2 py-4">
       <MessageStrip design="Negative">
         {errorLoading?.message ||
-          "Error loading chat history. Please try again."}
+          'Error loading chat history. Please try again.'}
       </MessageStrip>
     </FlexBox>
   );

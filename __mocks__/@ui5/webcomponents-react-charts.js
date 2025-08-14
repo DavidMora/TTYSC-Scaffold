@@ -1,4 +1,4 @@
-const React = require("react");
+const React = require('react');
 
 // Mock chart components
 const BarChart = ({ dataset, dimensions, measures }) => (
@@ -51,11 +51,11 @@ const ColumnChart = ({ dataset, dimensions, measures, chartConfig }) => {
   if (Array.isArray(domain)) {
     const [minFn, maxFn] = domain;
 
-    if (typeof minFn === "function") {
+    if (typeof minFn === 'function') {
       minFn(100);
     }
 
-    if (typeof maxFn === "function") {
+    if (typeof maxFn === 'function') {
       maxFn(100);
     }
   }

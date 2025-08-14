@@ -1,11 +1,11 @@
-import type { BaseResponse } from "@/lib/types/http/responses";
-import { FilterState } from "../analysisFilters";
+import type { BaseResponse } from '@/lib/types/http/responses';
+import { FilterState } from '../analysisFilters';
 
-export type VoteType = "up" | "down" | null;
+export type VoteType = 'up' | 'down' | null;
 
 export interface ChatMessage {
   id: string;
-  role: "user" | "assistant";
+  role: 'user' | 'assistant';
   title?: string;
   content: string;
   created: string;
@@ -34,7 +34,7 @@ export type UpdateChatRequest = Partial<Chat> & { id: string };
 export interface CreateChatMessageRequest {
   chatId: string;
   messages: Array<{
-    role: "user" | "assistant";
+    role: 'user' | 'assistant';
     content: string;
   }>;
   use_knowledge_base: boolean;
@@ -48,7 +48,7 @@ export interface BotResponse {
   choices: Array<{
     message: {
       content: string;
-      role: "user" | "assistant";
+      role: 'user' | 'assistant';
       title?: string;
     };
     finish_reason: string;

@@ -1,8 +1,8 @@
-import React, { useRef, useState } from "react";
-import { Menu, MenuItem, ToolbarButton } from "@ui5/webcomponents-react";
-import { useExportTable } from "@/hooks/useExport";
-import { ExportFormat } from "@/lib/types/export";
-import { EXPORT_CONFIG } from "@/lib/constants/UI/export";
+import React, { useRef, useState } from 'react';
+import { Menu, MenuItem, ToolbarButton } from '@ui5/webcomponents-react';
+import { useExportTable } from '@/hooks/useExport';
+import { ExportFormat } from '@/lib/types/export';
+import { EXPORT_CONFIG } from '@/lib/constants/UI/export';
 
 interface ExportMenuProps {
   tableId: string;
@@ -15,8 +15,8 @@ interface ExportMenuProps {
 
 export const ExportMenu: React.FC<Readonly<ExportMenuProps>> = ({
   tableId,
-  buttonText = "Export",
-  buttonIcon = "excel-attachment",
+  buttonText = 'Export',
+  buttonIcon = 'excel-attachment',
   disabled = false,
   className,
   customFormats,
@@ -41,7 +41,7 @@ export const ExportMenu: React.FC<Readonly<ExportMenuProps>> = ({
     <>
       <ToolbarButton
         icon={buttonIcon}
-        endIcon={menuIsOpen ? "slim-arrow-up" : "slim-arrow-down"}
+        endIcon={menuIsOpen ? 'slim-arrow-up' : 'slim-arrow-down'}
         design="Transparent"
         onClick={() => setMenuIsOpen(true)}
         ref={menuRef}
@@ -71,10 +71,10 @@ export const ExportMenu: React.FC<Readonly<ExportMenuProps>> = ({
       {error && (
         <div
           style={{
-            color: "red",
-            fontSize: "0.875rem",
-            marginLeft: "0.5rem",
-            maxWidth: "200px",
+            color: 'red',
+            fontSize: '0.875rem',
+            marginLeft: '0.5rem',
+            maxWidth: '200px',
           }}
         >
           {error}

@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import React, { useRef, useState } from "react";
+import React, { useRef, useState } from 'react';
 import {
   Toolbar,
   ToolbarSpacer,
@@ -11,8 +11,8 @@ import {
   Ui5CustomEvent,
   Menu,
   MenuItem,
-} from "@ui5/webcomponents-react";
-import type { ButtonDomRef } from "@ui5/webcomponents-react";
+} from '@ui5/webcomponents-react';
+import type { ButtonDomRef } from '@ui5/webcomponents-react';
 
 interface ChartToolbarProps {
   leftContent?: React.ReactNode;
@@ -25,7 +25,7 @@ interface ChartToolbarProps {
   // Optional actions
   showDownload?: boolean;
   onDownloadClick?: () => void;
-  onDownloadOption?: (type: "png" | "csv") => void;
+  onDownloadOption?: (type: 'png' | 'csv') => void;
   showFullScreen?: boolean;
   onFullScreenClick?: () => void;
   // Filter actions
@@ -54,17 +54,17 @@ export const ChartToolbar: React.FC<Readonly<ChartToolbarProps>> = ({
   dateRange,
   region,
 }) => {
-  const [selectedDateRange, setSelectedDateRange] = useState("");
-  const [selectedRegion, setSelectedRegion] = useState("");
+  const [selectedDateRange, setSelectedDateRange] = useState('');
+  const [selectedRegion, setSelectedRegion] = useState('');
   const downloadBtnRef = useRef<ButtonDomRef | null>(null);
   const [downloadMenuOpen, setDownloadMenuOpen] = useState(false);
 
   const handleDateRangeChange = (
     event: Ui5CustomEvent<HTMLElement, { value?: string }>
   ) => {
-    const value = event.detail.value || "";
+    const value = event.detail.value || '';
     if (dateRange === undefined) setSelectedDateRange(value);
-    const [from, to] = value.split(" - ");
+    const [from, to] = value.split(' - ');
     if (from && to) {
       onDateRangeChange?.(from, to);
     }
@@ -73,13 +73,13 @@ export const ChartToolbar: React.FC<Readonly<ChartToolbarProps>> = ({
   const handleRegionChange = (
     event: Ui5CustomEvent<HTMLElement, { selectedOption?: { value?: string } }>
   ) => {
-    const value = event.detail.selectedOption?.value || "";
+    const value = event.detail.selectedOption?.value || '';
     if (region === undefined) setSelectedRegion(value);
     onRegionChange?.(value);
   };
 
   return (
-    <Toolbar style={{ border: "none", borderRadius: "10px 10px 0 0" }}>
+    <Toolbar style={{ border: 'none', borderRadius: '10px 10px 0 0' }}>
       {leftContent}
       <ToolbarSpacer />
       {showFilters && (
@@ -92,8 +92,8 @@ export const ChartToolbar: React.FC<Readonly<ChartToolbarProps>> = ({
             valueState="None"
             placeholder="Select date range"
             style={{
-              marginRight: "8px",
-              width: "220px",
+              marginRight: '8px',
+              width: '220px',
             }}
           />
           <Select
@@ -101,8 +101,8 @@ export const ChartToolbar: React.FC<Readonly<ChartToolbarProps>> = ({
             onChange={handleRegionChange}
             valueState="None"
             style={{
-              marginRight: "8px",
-              width: "120px",
+              marginRight: '8px',
+              width: '120px',
             }}
           >
             <Option value="">Region</Option>
@@ -160,7 +160,7 @@ export const ChartToolbar: React.FC<Readonly<ChartToolbarProps>> = ({
                 text="Download PNG"
                 onClick={() => {
                   setDownloadMenuOpen(false);
-                  onDownloadOption("png");
+                  onDownloadOption('png');
                 }}
               />
               <MenuItem
@@ -168,7 +168,7 @@ export const ChartToolbar: React.FC<Readonly<ChartToolbarProps>> = ({
                 text="Download CSV"
                 onClick={() => {
                   setDownloadMenuOpen(false);
-                  onDownloadOption("csv");
+                  onDownloadOption('csv');
                 }}
               />
             </Menu>

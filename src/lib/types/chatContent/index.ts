@@ -1,4 +1,4 @@
-export type ParsedContentItemType = "text" | "code" | "table" | "chart";
+export type ParsedContentItemType = 'text' | 'code' | 'table' | 'chart';
 
 export interface ParsedContentItem {
   type: ParsedContentItemType;

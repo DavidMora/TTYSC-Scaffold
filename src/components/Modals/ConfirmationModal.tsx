@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 import {
   FlexBox,
   FlexBoxJustifyContent,
@@ -8,12 +8,12 @@ import {
   Button,
   Title,
   FlexBoxDirection,
-} from "@ui5/webcomponents-react";
-import { FeatureFlaggedDialog } from "@/components/Modals/FeatureFlaggedDialog";
+} from '@ui5/webcomponents-react';
+import { FeatureFlaggedDialog } from '@/components/Modals/FeatureFlaggedDialog';
 
 interface ModalAction {
   label: string;
-  design?: "Emphasized" | "Transparent" | "Default";
+  design?: 'Emphasized' | 'Transparent' | 'Default';
   onClick: () => void;
   disabled?: boolean;
 }
@@ -35,9 +35,9 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   onClose,
   title,
   message,
-  iconName = "alert",
-  iconColor = "var(--sapCriticalElementColor)",
-  width = "400px",
+  iconName = 'alert',
+  iconColor = 'var(--sapCriticalElementColor)',
+  width = '400px',
   actions,
   description,
 }) => {
@@ -52,7 +52,7 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
         <Title
           id="modal-title"
           level="H3"
-          style={{ marginBlock: "0.5rem", width: "100%" }}
+          style={{ marginBlock: '0.5rem', width: '100%' }}
         >
           {title}
         </Title>
@@ -61,9 +61,9 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
         <FlexBox
           justifyContent={FlexBoxJustifyContent.End}
           style={{
-            gap: "1rem",
-            marginTop: "0.5rem",
-            width: "100%",
+            gap: '1rem',
+            marginTop: '0.5rem',
+            width: '100%',
           }}
         >
           {actions?.length === 0 && (
@@ -74,7 +74,7 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
           {actions.map((action, index) => (
             <Button
               key={`${action.label}-${index}`}
-              design={action.design || "Default"}
+              design={action.design || 'Default'}
               onClick={action.onClick}
               disabled={action.disabled}
             >
@@ -87,29 +87,29 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
       <FlexBox
         direction={FlexBoxDirection.Column}
         style={{
-          gap: "1rem",
-          marginTop: "0.5rem",
-          marginBottom: "0.5rem",
-          paddingInlineEnd: "1rem",
+          gap: '1rem',
+          marginTop: '0.5rem',
+          marginBottom: '0.5rem',
+          paddingInlineEnd: '1rem',
         }}
       >
         <FlexBox
           alignItems={FlexBoxAlignItems.Center}
           style={{
-            gap: "0.5rem",
+            gap: '0.5rem',
           }}
         >
           <Icon
             name={iconName}
             style={{
-              fontSize: "1rem",
+              fontSize: '1rem',
               color: iconColor,
             }}
           />
           <Text
             style={{
-              color: "var(--sapContent_LabelColor)",
-              fontSize: "var(--sapFontSize)",
+              color: 'var(--sapContent_LabelColor)',
+              fontSize: 'var(--sapFontSize)',
             }}
           >
             {message}
@@ -118,9 +118,9 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
         {description && (
           <Text
             style={{
-              color: "var(--sapContent_LabelColor)",
-              fontSize: "var(--sapFontSize)",
-              paddingInlineStart: "1.5rem",
+              color: 'var(--sapContent_LabelColor)',
+              fontSize: 'var(--sapFontSize)',
+              paddingInlineStart: '1.5rem',
             }}
           >
             {description}

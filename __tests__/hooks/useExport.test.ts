@@ -1,12 +1,12 @@
-import { renderHook, act } from "@testing-library/react";
-import { useExportTable } from "@/hooks/useExport";
-import { getExportTable } from "@/lib/services/export.service";
-import { downloadFile } from "@/lib/utils/exportFile";
-import { ExportFormat } from "@/lib/types/export";
+import { renderHook, act } from '@testing-library/react';
+import { useExportTable } from '@/hooks/useExport';
+import { getExportTable } from '@/lib/services/export.service';
+import { downloadFile } from '@/lib/utils/exportFile';
+import { ExportFormat } from '@/lib/types/export';
 
 // Mock the dependencies
-jest.mock("@/lib/services/export.service");
-jest.mock("@/lib/utils/exportFile");
+jest.mock('@/lib/services/export.service');
+jest.mock('@/lib/utils/exportFile');
 
 const mockGetExportTable = getExportTable as jest.MockedFunction<
   typeof getExportTable
@@ -15,22 +15,22 @@ const mockDownloadFile = downloadFile as jest.MockedFunction<
   typeof downloadFile
 >;
 
-describe("useExportTable", () => {
-  const mockTableId = "test-table-123";
+describe('useExportTable', () => {
+  const mockTableId = 'test-table-123';
   const mockFormat: ExportFormat = {
-    id: "csv",
-    name: "CSV",
-    icon: "csv-icon",
-    mimeType: "text/csv",
-    fileExtension: ".csv",
+    id: 'csv',
+    name: 'CSV',
+    icon: 'csv-icon',
+    mimeType: 'text/csv',
+    fileExtension: '.csv',
   };
 
-  const mockBlob = new Blob(["test,data"], { type: "text/csv" });
+  const mockBlob = new Blob(['test,data'], { type: 'text/csv' });
   const mockResponse = {
     data: mockBlob,
     status: 200,
-    statusText: "OK",
-    headers: { "content-type": "text/csv" },
+    statusText: 'OK',
+    headers: { 'content-type': 'text/csv' },
     ok: true,
   };
 
@@ -40,18 +40,18 @@ describe("useExportTable", () => {
     mockDownloadFile.mockImplementation(() => {});
   });
 
-  describe("Initial State", () => {
-    it("should initialize with default state", () => {
+  describe('Initial State', () => {
+    it('should initialize with default state', () => {
       const { result } = renderHook(() => useExportTable(mockTableId));
 
       expect(result.current.isExporting).toBe(false);
       expect(result.current.error).toBe(null);
-      expect(typeof result.current.exportToFormat).toBe("function");
+      expect(typeof result.current.exportToFormat).toBe('function');
     });
   });
 
-  describe("exportToFormat", () => {
-    it("should successfully export table to format", async () => {
+  describe('exportToFormat', () => {
+    it('should successfully export table to format', async () => {
       const { result } = renderHook(() => useExportTable(mockTableId));
 
       await act(async () => {
@@ -67,15 +67,15 @@ describe("useExportTable", () => {
       expect(mockDownloadFile).toHaveBeenCalledWith({
         blob: mockBlob,
         filename: expect.stringMatching(/table_test-table-123_.*\.csv$/),
-        contentType: "text/csv",
+        contentType: 'text/csv',
       });
 
       expect(result.current.isExporting).toBe(false);
       expect(result.current.error).toBe(null);
     });
 
-    it("should handle export service errors", async () => {
-      const errorMessage = "Network error";
+    it('should handle export service errors', async () => {
+      const errorMessage = 'Network error';
       mockGetExportTable.mockRejectedValue(new Error(errorMessage));
 
       const { result } = renderHook(() => useExportTable(mockTableId));
@@ -89,11 +89,11 @@ describe("useExportTable", () => {
       expect(mockDownloadFile).not.toHaveBeenCalled();
     });
 
-    it("should handle missing response data", async () => {
+    it('should handle missing response data', async () => {
       mockGetExportTable.mockResolvedValue({
         data: null as unknown as Blob,
         status: 200,
-        statusText: "OK",
+        statusText: 'OK',
         headers: {},
         ok: true,
       });
@@ -105,12 +105,12 @@ describe("useExportTable", () => {
       });
 
       expect(result.current.isExporting).toBe(false);
-      expect(result.current.error).toBe("Error getting export table");
+      expect(result.current.error).toBe('Error getting export table');
       expect(mockDownloadFile).not.toHaveBeenCalled();
     });
 
-    it("should handle unknown errors", async () => {
-      mockGetExportTable.mockRejectedValue("Unknown error");
+    it('should handle unknown errors', async () => {
+      mockGetExportTable.mockRejectedValue('Unknown error');
 
       const { result } = renderHook(() => useExportTable(mockTableId));
 
@@ -119,20 +119,20 @@ describe("useExportTable", () => {
       });
 
       expect(result.current.isExporting).toBe(false);
-      expect(result.current.error).toBe("An unknown error occurred");
+      expect(result.current.error).toBe('An unknown error occurred');
       expect(mockDownloadFile).not.toHaveBeenCalled();
     });
 
-    it("should clear previous errors when starting new export", async () => {
+    it('should clear previous errors when starting new export', async () => {
       // First, trigger an error
-      mockGetExportTable.mockRejectedValueOnce(new Error("First error"));
+      mockGetExportTable.mockRejectedValueOnce(new Error('First error'));
       const { result } = renderHook(() => useExportTable(mockTableId));
 
       await act(async () => {
         await result.current.exportToFormat(mockFormat);
       });
 
-      expect(result.current.error).toBe("First error");
+      expect(result.current.error).toBe('First error');
 
       // Then, trigger a successful export
       mockGetExportTable.mockResolvedValueOnce(mockResponse);
@@ -144,11 +144,11 @@ describe("useExportTable", () => {
       expect(result.current.error).toBe(null);
     });
 
-    it("should use fallback content type when not provided in response", async () => {
+    it('should use fallback content type when not provided in response', async () => {
       const responseWithoutContentType = {
         data: mockBlob,
         status: 200,
-        statusText: "OK",
+        statusText: 'OK',
         headers: {},
         ok: true,
       };
@@ -167,12 +167,12 @@ describe("useExportTable", () => {
       });
     });
 
-    it("should generate filename with current date", async () => {
-      const mockDate = new Date("2024-01-15");
+    it('should generate filename with current date', async () => {
+      const mockDate = new Date('2024-01-15');
       jest
-        .spyOn(global, "Date")
+        .spyOn(global, 'Date')
         .mockImplementation(() => mockDate as unknown as Date);
-      jest.spyOn(mockDate, "toLocaleDateString").mockReturnValue("1/15/2024");
+      jest.spyOn(mockDate, 'toLocaleDateString').mockReturnValue('1/15/2024');
 
       const { result } = renderHook(() => useExportTable(mockTableId));
 
@@ -182,8 +182,8 @@ describe("useExportTable", () => {
 
       expect(mockDownloadFile).toHaveBeenCalledWith({
         blob: mockBlob,
-        filename: "table_test-table-123_1/15/2024.csv",
-        contentType: "text/csv",
+        filename: 'table_test-table-123_1/15/2024.csv',
+        contentType: 'text/csv',
       });
 
       // Restore original Date implementation
@@ -191,10 +191,10 @@ describe("useExportTable", () => {
     });
   });
 
-  describe("Error Handling", () => {
-    it("should handle download file errors", async () => {
+  describe('Error Handling', () => {
+    it('should handle download file errors', async () => {
       mockDownloadFile.mockImplementation(() => {
-        throw new Error("Download failed");
+        throw new Error('Download failed');
       });
 
       const { result } = renderHook(() => useExportTable(mockTableId));
@@ -204,7 +204,7 @@ describe("useExportTable", () => {
       });
 
       expect(result.current.isExporting).toBe(false);
-      expect(result.current.error).toBe("Download failed");
+      expect(result.current.error).toBe('Download failed');
     });
   });
 });

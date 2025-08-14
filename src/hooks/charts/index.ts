@@ -1,7 +1,7 @@
-import { dataFetcher } from "@/lib/api";
-import { getChart } from "@/lib/services/charts.service";
-import { BaseResponse } from "@/lib/types/http/responses";
-import { AIChartData } from "@/lib/types/charts";
+import { dataFetcher } from '@/lib/api';
+import { getChart } from '@/lib/services/charts.service';
+import { BaseResponse } from '@/lib/types/http/responses';
+import { AIChartData } from '@/lib/types/charts';
 
 export const CHART_KEY = (chartId: string) => `chart-${chartId}`;
 
@@ -22,7 +22,7 @@ export const useChart = (chartId: string, filters?: ChartFilters) => {
       })
     );
   }
-  const key = keyParts.join("|");
+  const key = keyParts.join('|');
 
   return dataFetcher.fetchData<BaseResponse<AIChartData>>(
     key,

@@ -1,10 +1,10 @@
-import { HttpClientResponse } from "@/lib/types/api/http-client";
+import { HttpClientResponse } from '@/lib/types/api/http-client';
 import {
   MutationAdapter,
   MutationOptions,
   MutationResponse,
-} from "@/lib/types/api/data-fetcher";
-import useSWRMutation from "swr/mutation";
+} from '@/lib/types/api/data-fetcher';
+import useSWRMutation from 'swr/mutation';
 
 export function getIsSuccess(
   isMutating: boolean,
@@ -72,7 +72,7 @@ export class SWRMutationAdapter implements MutationAdapter {
         // Invalidate queries if specified
         if (options.invalidateQueries) {
           try {
-            const { mutate: swrMutate } = await import("swr");
+            const { mutate: swrMutate } = await import('swr');
             await Promise.all(
               options.invalidateQueries.map((queryKey) => swrMutate(queryKey))
             );
@@ -83,7 +83,7 @@ export class SWRMutationAdapter implements MutationAdapter {
 
         return result;
       } catch (err) {
-        const error = err instanceof Error ? err : new Error("Mutation failed");
+        const error = err instanceof Error ? err : new Error('Mutation failed');
 
         if (options.onError) {
           options.onError(error, variables);

@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import React, {
   createContext,
@@ -7,30 +7,30 @@ import React, {
   useCallback,
   useMemo,
   ReactNode,
-} from "react";
+} from 'react';
 
 const numberToOrdinalWord = (num: number): string => {
   const ordinals = [
-    "One",
-    "Two",
-    "Three",
-    "Four",
-    "Five",
-    "Six",
-    "Seven",
-    "Eight",
-    "Nine",
-    "Ten",
-    "Eleven",
-    "Twelve",
-    "Thirteen",
-    "Fourteen",
-    "Fifteen",
-    "Sixteen",
-    "Seventeen",
-    "Eighteen",
-    "Nineteen",
-    "Twenty",
+    'One',
+    'Two',
+    'Three',
+    'Four',
+    'Five',
+    'Six',
+    'Seven',
+    'Eight',
+    'Nine',
+    'Ten',
+    'Eleven',
+    'Twelve',
+    'Thirteen',
+    'Fourteen',
+    'Fifteen',
+    'Sixteen',
+    'Seventeen',
+    'Eighteen',
+    'Nineteen',
+    'Twenty',
   ];
 
   if (num <= 20) {
@@ -62,8 +62,8 @@ export const SequentialNamingProvider: React.FC<
   SequentialNamingProviderProps
 > = ({ children }) => {
   const getInitialCounter = (): number => {
-    if (typeof window !== "undefined") {
-      const savedCounter = localStorage.getItem("sequentialNamingCounter");
+    if (typeof window !== 'undefined') {
+      const savedCounter = localStorage.getItem('sequentialNamingCounter');
       if (savedCounter) {
         const parsedCounter = parseInt(savedCounter, 10);
         if (!isNaN(parsedCounter)) {
@@ -77,10 +77,10 @@ export const SequentialNamingProvider: React.FC<
   const [counter, setCounter] = useState(getInitialCounter);
 
   const generateAnalysisName = useCallback((): string => {
-    const nameWithOrdinal = generateNameString(counter, "Analysis");
+    const nameWithOrdinal = generateNameString(counter, 'Analysis');
     const newCounter = counter + 1;
     setCounter(newCounter);
-    localStorage.setItem("sequentialNamingCounter", newCounter.toString());
+    localStorage.setItem('sequentialNamingCounter', newCounter.toString());
     return nameWithOrdinal;
   }, [counter]);
 
@@ -103,7 +103,7 @@ export const useSequentialNaming = (): SequentialNamingContextType => {
   const context = useContext(SequentialNamingContext);
   if (context === undefined) {
     throw new Error(
-      "useSequentialNaming must be used within a SequentialNamingProvider"
+      'useSequentialNaming must be used within a SequentialNamingProvider'
     );
   }
   return context;

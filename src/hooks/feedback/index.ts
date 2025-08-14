@@ -1,7 +1,7 @@
-import { dataFetcher } from "@/lib/api";
-import { getFeedbacks, getFeedback } from "@/lib/services/feedback.service";
+import { dataFetcher } from '@/lib/api';
+import { getFeedbacks, getFeedback } from '@/lib/services/feedback.service';
 
-export const FEEDBACKS_KEY = "feedbacks";
+export const FEEDBACKS_KEY = 'feedbacks';
 export const FEEDBACK_KEY = (id: string) => `feedback-${id}`;
 
 export const useFeedbacks = () => {

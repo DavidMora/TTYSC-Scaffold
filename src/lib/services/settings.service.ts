@@ -1,11 +1,11 @@
-import { apiClient } from "@/lib/api";
-import { HttpClientResponse } from "@/lib/types/api/http-client";
-import { SETTINGS } from "@/lib/constants/api/routes";
+import { apiClient } from '@/lib/api';
+import { HttpClientResponse } from '@/lib/types/api/http-client';
+import { SETTINGS } from '@/lib/constants/api/routes';
 import {
   SettingsResponse,
   UpdateSettingsRequest,
   UpdateSettingsResponse,
-} from "@/lib/types/settings";
+} from '@/lib/types/settings';
 
 export const getSettings = async (): Promise<
   HttpClientResponse<SettingsResponse>

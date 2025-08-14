@@ -1,20 +1,20 @@
-import { render, screen } from "@testing-library/react";
-import { useParams } from "next/navigation";
-import { useFeatureFlag } from "@/hooks/useFeatureFlags";
-import AnalysisPage from "@/app/(main)/[id]/page";
+import { render, screen } from '@testing-library/react';
+import { useParams } from 'next/navigation';
+import { useFeatureFlag } from '@/hooks/useFeatureFlags';
+import AnalysisPage from '@/app/(main)/[id]/page';
 
 // Mock next/navigation
-jest.mock("next/navigation", () => ({
+jest.mock('next/navigation', () => ({
   useParams: jest.fn(),
 }));
 
 // Mock the useFeatureFlag hook
-jest.mock("@/hooks/useFeatureFlags", () => ({
+jest.mock('@/hooks/useFeatureFlags', () => ({
   useFeatureFlag: jest.fn(),
 }));
 
 // Mock the AnalysisContainer component
-jest.mock("@/components/AnalysisContainer/AnalysisContainer", () => {
+jest.mock('@/components/AnalysisContainer/AnalysisContainer', () => {
   return function MockAnalysisContainer() {
     return (
       <div data-testid="mock-analysis-container">
@@ -25,7 +25,7 @@ jest.mock("@/components/AnalysisContainer/AnalysisContainer", () => {
 });
 
 // Mock the FeatureNotAvailable component
-jest.mock("@/components/FeatureNotAvailable", () => ({
+jest.mock('@/components/FeatureNotAvailable', () => ({
   FeatureNotAvailable: function MockFeatureNotAvailable({
     title,
     message,
@@ -43,7 +43,7 @@ jest.mock("@/components/FeatureNotAvailable", () => ({
 }));
 
 // Mock UI5 components
-jest.mock("@ui5/webcomponents-react", () => ({
+jest.mock('@ui5/webcomponents-react', () => ({
   BusyIndicator: ({
     active,
     size,
@@ -59,7 +59,7 @@ jest.mock("@ui5/webcomponents-react", () => ({
   ),
 }));
 
-describe("AnalysisPage", () => {
+describe('AnalysisPage', () => {
   const mockUseParams = useParams as jest.MockedFunction<typeof useParams>;
   const mockUseFeatureFlag = useFeatureFlag as jest.MockedFunction<
     typeof useFeatureFlag
@@ -69,8 +69,8 @@ describe("AnalysisPage", () => {
     jest.clearAllMocks();
   });
 
-  it("renders AnalysisContainer with correct analysis ID from params", () => {
-    mockUseParams.mockReturnValue({ id: "test-analysis-123" });
+  it('renders AnalysisContainer with correct analysis ID from params', () => {
+    mockUseParams.mockReturnValue({ id: 'test-analysis-123' });
     mockUseFeatureFlag.mockReturnValue({
       flag: true,
       loading: false,
@@ -79,11 +79,11 @@ describe("AnalysisPage", () => {
 
     render(<AnalysisPage />);
 
-    expect(screen.getByTestId("mock-analysis-container")).toBeInTheDocument();
+    expect(screen.getByTestId('mock-analysis-container')).toBeInTheDocument();
   });
 
-  it("renders loading indicator when feature flag is loading", () => {
-    mockUseParams.mockReturnValue({ id: "test-analysis-123" });
+  it('renders loading indicator when feature flag is loading', () => {
+    mockUseParams.mockReturnValue({ id: 'test-analysis-123' });
     mockUseFeatureFlag.mockReturnValue({
       flag: false,
       loading: true,
@@ -92,20 +92,20 @@ describe("AnalysisPage", () => {
 
     render(<AnalysisPage />);
 
-    expect(screen.getByTestId("busy-indicator")).toBeInTheDocument();
-    expect(screen.getByText("Loading analysis...")).toBeInTheDocument();
-    expect(screen.getByTestId("busy-indicator")).toHaveAttribute(
-      "data-active",
-      "true"
+    expect(screen.getByTestId('busy-indicator')).toBeInTheDocument();
+    expect(screen.getByText('Loading analysis...')).toBeInTheDocument();
+    expect(screen.getByTestId('busy-indicator')).toHaveAttribute(
+      'data-active',
+      'true'
     );
-    expect(screen.getByTestId("busy-indicator")).toHaveAttribute(
-      "data-size",
-      "L"
+    expect(screen.getByTestId('busy-indicator')).toHaveAttribute(
+      'data-size',
+      'L'
     );
   });
 
-  it("renders feature not available when feature flag is disabled", () => {
-    mockUseParams.mockReturnValue({ id: "test-analysis-123" });
+  it('renders feature not available when feature flag is disabled', () => {
+    mockUseParams.mockReturnValue({ id: 'test-analysis-123' });
     mockUseFeatureFlag.mockReturnValue({
       flag: false,
       loading: false,
@@ -114,10 +114,10 @@ describe("AnalysisPage", () => {
 
     render(<AnalysisPage />);
 
-    expect(screen.getByTestId("feature-not-available")).toBeInTheDocument();
-    expect(screen.getByText("Feature Not Available")).toBeInTheDocument();
+    expect(screen.getByTestId('feature-not-available')).toBeInTheDocument();
+    expect(screen.getByText('Feature Not Available')).toBeInTheDocument();
     expect(
-      screen.getByText("Chat analysis functionality is currently disabled.")
+      screen.getByText('Chat analysis functionality is currently disabled.')
     ).toBeInTheDocument();
   });
 });

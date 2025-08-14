@@ -1,24 +1,24 @@
-import { NavBarItem } from "@/lib/types/NavBarItems";
+import { NavBarItem } from '@/lib/types/NavBarItems';
 import {
   SideNavigation,
   SideNavigationItem,
   SideNavigationSubItem,
-} from "@ui5/webcomponents-react";
-import { usePathname, useRouter } from "next/navigation";
-import NvidiaLogo from "@/components/Icons/NvidiaLogo";
-import SettingsNavigationItem from "./SidebarItems/SettingsNavigationItem";
-import DefinitionsNavigationItem from "./SidebarItems/DefinitionsNavigationItem";
-import FeedbackNavigationItem from "./SidebarItems/FeedbackNavigationItem";
+} from '@ui5/webcomponents-react';
+import { usePathname, useRouter } from 'next/navigation';
+import NvidiaLogo from '@/components/Icons/NvidiaLogo';
+import SettingsNavigationItem from './SidebarItems/SettingsNavigationItem';
+import DefinitionsNavigationItem from './SidebarItems/DefinitionsNavigationItem';
+import FeedbackNavigationItem from './SidebarItems/FeedbackNavigationItem';
 import RawDataNavigationItem, {
   type RawDataItem,
-} from "./SidebarItems/RawDataNavigationItem";
-import ChatHistoryNavigationItem from "./SidebarItems/ChatHistoryNavigationItem";
-import { useChats } from "@/hooks/chats";
-import "@ui5/webcomponents-icons/dist/inspect.js";
-import { CHAT } from "@/lib/constants/routes/Dashboard";
-import { useAuth } from "@/hooks/useAuth";
-import { useFeatureFlag } from "@/hooks/useFeatureFlags";
-import { FeatureNotAvailable } from "@/components/FeatureNotAvailable";
+} from './SidebarItems/RawDataNavigationItem';
+import ChatHistoryNavigationItem from './SidebarItems/ChatHistoryNavigationItem';
+import { useChats } from '@/hooks/chats';
+import '@ui5/webcomponents-icons/dist/inspect.js';
+import { CHAT } from '@/lib/constants/routes/Dashboard';
+import { useAuth } from '@/hooks/useAuth';
+import { useFeatureFlag } from '@/hooks/useFeatureFlags';
+import { FeatureNotAvailable } from '@/components/FeatureNotAvailable';
 
 interface SideBarProps {
   sideNavCollapsed?: boolean;
@@ -33,7 +33,7 @@ const SideBarMenu: React.FC<SideBarProps> = ({
   const pathname = usePathname();
   const router = useRouter();
   const { logout } = useAuth();
-  const { flag: isSideNavEnabled, loading } = useFeatureFlag("FF_Side_NavBar");
+  const { flag: isSideNavEnabled, loading } = useFeatureFlag('FF_Side_NavBar');
 
   const {
     data: chatHistory,
@@ -42,7 +42,7 @@ const SideBarMenu: React.FC<SideBarProps> = ({
   } = useChats();
 
   const handleFeedbackSubmit = (feedback: string) => {
-    console.log("Feedback submitted:", feedback);
+    console.log('Feedback submitted:', feedback);
     // Implement feedback submission logic here
   };
 
@@ -50,17 +50,17 @@ const SideBarMenu: React.FC<SideBarProps> = ({
     selectedData: RawDataItem,
     filters: Record<number, string>
   ) => {
-    console.log("Raw data selected:", selectedData, filters);
+    console.log('Raw data selected:', selectedData, filters);
     // Implement data selection logic here
   };
 
   const handleChatSelect = (chatId: string) => {
-    console.log("Chat selected:", chatId);
+    console.log('Chat selected:', chatId);
     // Implement chat selection logic here
   };
 
   const handleChatItemSelect = (chatId: string) => {
-    console.log("Chat item selected:", chatId);
+    console.log('Chat item selected:', chatId);
     router.push(CHAT(chatId));
   };
 
@@ -68,35 +68,35 @@ const SideBarMenu: React.FC<SideBarProps> = ({
     try {
       await logout();
     } catch (error) {
-      console.error("Error during logout:", error);
+      console.error('Error during logout:', error);
     }
   };
 
   const handleRestartSession = async () => {
     try {
       // Clear local storage and session storage
-      if (typeof window !== "undefined") {
+      if (typeof window !== 'undefined') {
         localStorage.clear();
         sessionStorage.clear();
       }
 
       // Send request to the server to restart the session
-      const response = await fetch("/api/auth/restart-session", {
-        method: "POST",
+      const response = await fetch('/api/auth/restart-session', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
       });
 
       if (response.ok) {
-        console.log("Session restarted successfully");
+        console.log('Session restarted successfully');
         // You might want to trigger a refresh of certain components here
         // or show a success message to the user
       } else {
-        console.error("Failed to restart session:", await response.text());
+        console.error('Failed to restart session:', await response.text());
       }
     } catch (error) {
-      console.error("Error during session restart:", error);
+      console.error('Error during session restart:', error);
     }
   };
 
@@ -106,9 +106,9 @@ const SideBarMenu: React.FC<SideBarProps> = ({
     const path = event.detail?.item?.dataset?.path;
     const action = event.detail?.item?.dataset?.action;
 
-    if (action === "logout") {
+    if (action === 'logout') {
       handleLogout();
-    } else if (action === "restart") {
+    } else if (action === 'restart') {
       handleRestartSession();
     } else if (path) {
       router.push(path);

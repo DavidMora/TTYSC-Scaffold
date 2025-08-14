@@ -8,10 +8,10 @@ export const dynamic = 'force-dynamic';
 export async function POST(): Promise<NextResponse> {
   try {
     console.log('[Auth] Restarting session');
-    
+
     // Get current session to verify user is authenticated
     const session = await getServerSession(authOptions);
-    
+
     if (!session) {
       return NextResponse.json(
         { error: 'No active session to restart' },
@@ -19,15 +19,17 @@ export async function POST(): Promise<NextResponse> {
       );
     }
 
-    console.log('[Auth] Session restarted successfully for user:', session.user?.email);
-    
+    console.log(
+      '[Auth] Session restarted successfully for user:',
+      session.user?.email
+    );
+
     // Return success response - the client will handle clearing local storage
     return NextResponse.json({
       success: true,
       message: 'Session restarted successfully',
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
-    
   } catch (error) {
     console.error('[Auth] Error during session restart:', error);
     return NextResponse.json(

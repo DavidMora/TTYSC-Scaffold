@@ -6,14 +6,14 @@ import {
   BulletMeasure,
   ChartMeasureWithType,
   ChartDataInfo,
-} from "@/lib/types/charts";
+} from '@/lib/types/charts';
 
 export const getSingleMeasures = (): ChartMeasure[] => [
   {
-    accessor: "value",
-    label: "Value",
+    accessor: 'value',
+    label: 'Value',
     formatter: (v: number) => v.toString(),
-    axis: "y",
+    axis: 'y',
   },
 ];
 
@@ -23,16 +23,16 @@ export const getMultiMeasures = (seriesData: ChartSeries[]): ChartMeasure[] =>
     label: series.name,
     formatter: (v: number) => v.toString(),
     color: series.color,
-    axis: "y",
+    axis: 'y',
   }));
 
 export const getBulletMeasures = (
   seriesData: ChartSeries[]
 ): BulletMeasure[] => {
-  const types: ("primary" | "comparison" | "additional")[] = [
-    "primary",
-    "comparison",
-    "additional",
+  const types: ('primary' | 'comparison' | 'additional')[] = [
+    'primary',
+    'comparison',
+    'additional',
   ];
 
   return seriesData.map((series, i) => ({
@@ -40,8 +40,8 @@ export const getBulletMeasures = (
     label: series.name,
     formatter: (v: number) => v.toString(),
     color: series.color,
-    axis: "y",
-    type: types[i] || "additional",
+    axis: 'y',
+    type: types[i] || 'additional',
   }));
 };
 
@@ -53,8 +53,8 @@ export const getColumnWithTrendMeasures = (
     label: series.name,
     formatter: (v: number) => v.toString(),
     color: series.color,
-    axis: "y",
-    type: i === 0 ? "column" : "line",
+    axis: 'y',
+    type: i === 0 ? 'column' : 'line',
   }));
 
 export const addChartType = (
@@ -91,8 +91,8 @@ export const getChartDataInfo = (chart: {
   const isMulti =
     Array.isArray(chart.data) &&
     chart.data.length > 0 &&
-    typeof chart.data[0] === "object" &&
-    "name" in chart.data[0];
+    typeof chart.data[0] === 'object' &&
+    'name' in chart.data[0];
 
   if (isMulti) {
     const seriesData = chart.data as ChartSeries[];

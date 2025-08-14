@@ -9,10 +9,13 @@ global.fetch = jest.fn();
 const mockEnv = {
   AZURE_CLIENT_ID: 'test-client-id',
   AZURE_CLIENT_SECRET: 'test-client-secret',
-  AZURE_AUTHORIZATION_ENDPOINT: 'https://login.microsoftonline.com/test-tenant/oauth2/v2.0/authorize',
-  AZURE_TOKEN_ENDPOINT: 'https://login.microsoftonline.com/test-tenant/oauth2/v2.0/token',
+  AZURE_AUTHORIZATION_ENDPOINT:
+    'https://login.microsoftonline.com/test-tenant/oauth2/v2.0/authorize',
+  AZURE_TOKEN_ENDPOINT:
+    'https://login.microsoftonline.com/test-tenant/oauth2/v2.0/token',
   AZURE_ISSUER_ENDPOINT: 'https://login.microsoftonline.com/test-tenant/v2.0',
-  AZURE_JWKS_ENDPOINT: 'https://login.microsoftonline.com/test-tenant/discovery/v2.0/keys',
+  AZURE_JWKS_ENDPOINT:
+    'https://login.microsoftonline.com/test-tenant/discovery/v2.0/keys',
   AZURE_REDIRECT_URI: 'http://localhost:3000/api/auth/callback/nvlogin',
   NEXTAUTH_SECRET: 'test-secret',
   AZURE_TENANT_ID: 'test-tenant-id',
@@ -54,7 +57,7 @@ describe('Auth Options', () => {
 
     it('should configure provider with correct OAuth settings', () => {
       const provider = authOptions.providers[0] as any;
-      
+
       expect(provider.id).toBe('nvlogin');
       expect(provider.name).toBe('nvlogin-azure');
       expect(provider.type).toBe('oauth');
@@ -65,7 +68,7 @@ describe('Auth Options', () => {
 
     it('should have correct authorization configuration', () => {
       const provider = authOptions.providers[0] as any;
-      
+
       expect(provider.authorization).toHaveProperty('url');
       expect(provider.authorization.params).toEqual({
         scope: 'openid profile email offline_access User.Read',
@@ -75,7 +78,7 @@ describe('Auth Options', () => {
 
     it('should have correct token configuration', () => {
       const provider = authOptions.providers[0] as any;
-      
+
       expect(provider.token).toHaveProperty('url');
       expect(provider.token.params).toEqual({
         grant_type: 'authorization_code',
@@ -121,13 +124,16 @@ describe('Auth Options', () => {
     it('should handle profile mapping errors', () => {
       const provider = authOptions.providers[0] as any;
       const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
-      
+
       // Mock profile that will cause an error in mapping
       const mockProfile = null;
 
       expect(() => provider.profile(mockProfile)).toThrow();
-      expect(consoleSpy).toHaveBeenCalledWith('Error in profile mapping:', expect.any(TypeError));
-      
+      expect(consoleSpy).toHaveBeenCalledWith(
+        'Error in profile mapping:',
+        expect.any(TypeError)
+      );
+
       consoleSpy.mockRestore();
     });
 
@@ -287,7 +293,9 @@ describe('Auth Options', () => {
         user: { id: 'user-123' },
       };
 
-      (global.fetch as jest.Mock).mockRejectedValueOnce(new Error('Network error'));
+      (global.fetch as jest.Mock).mockRejectedValueOnce(
+        new Error('Network error')
+      );
 
       const result = await authOptions.callbacks!.jwt!({
         token: mockToken,
@@ -427,7 +435,7 @@ describe('Auth Options', () => {
         error: 'RefreshAccessTokenError',
         user: { id: 'user-123' },
       };
-      
+
       const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
 
       const result = await authOptions.callbacks!.session!({
@@ -439,7 +447,7 @@ describe('Auth Options', () => {
       expect(consoleErrorSpy).toHaveBeenCalledWith(
         '[Auth] Refresh token error detected, session is invalid'
       );
-      
+
       consoleErrorSpy.mockRestore();
     });
 

@@ -1,28 +1,28 @@
-import { renderHook, act } from "@testing-library/react";
-import { useZoomable } from "@/hooks/charts/useZoomable";
+import { renderHook, act } from '@testing-library/react';
+import { useZoomable } from '@/hooks/charts/useZoomable';
 
 function setupContainer(width = 400, height = 200) {
-  const div = document.createElement("div");
-  Object.defineProperty(div, "clientWidth", {
+  const div = document.createElement('div');
+  Object.defineProperty(div, 'clientWidth', {
     value: width,
     configurable: true,
   });
-  Object.defineProperty(div, "clientHeight", {
+  Object.defineProperty(div, 'clientHeight', {
     value: height,
     configurable: true,
   });
   return div as unknown as HTMLDivElement;
 }
 
-describe("useZoomable", () => {
+describe('useZoomable', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  describe("visual mode", () => {
-    it("zooms in/out and clamps offset on pan", () => {
+  describe('visual mode', () => {
+    it('zooms in/out and clamps offset on pan', () => {
       const { result } = renderHook(() =>
-        useZoomable({ mode: "visual", maxZoom: 3, step: 0.5 })
+        useZoomable({ mode: 'visual', maxZoom: 3, step: 0.5 })
       );
 
       // attach a viewport element
@@ -71,12 +71,12 @@ describe("useZoomable", () => {
     });
   });
 
-  describe("dataX mode", () => {
-    it("computes canZoomIn/Out and updates viewWindow on zoom handlers", () => {
+  describe('dataX mode', () => {
+    it('computes canZoomIn/Out and updates viewWindow on zoom handlers', () => {
       const onChange = jest.fn();
       const { result } = renderHook(() =>
         useZoomable({
-          mode: "dataX",
+          mode: 'dataX',
           minZoom: 1,
           maxZoom: 5,
           step: 0.4,
@@ -106,9 +106,9 @@ describe("useZoomable", () => {
       expect(onChange).toHaveBeenCalled();
     });
 
-    it("pans horizontally via mouse when not full span", () => {
+    it('pans horizontally via mouse when not full span', () => {
       const { result } = renderHook(() =>
-        useZoomable({ mode: "dataX", dataLength: 50 })
+        useZoomable({ mode: 'dataX', dataLength: 50 })
       );
       const viewport = setupContainer(300, 150);
       act(() => {
@@ -145,9 +145,9 @@ describe("useZoomable", () => {
       });
     });
 
-    it("wheel with ctrl zooms and without ctrl pans horizontally only when intended", () => {
+    it('wheel with ctrl zooms and without ctrl pans horizontally only when intended', () => {
       const { result } = renderHook(() =>
-        useZoomable({ mode: "dataX", dataLength: 20 })
+        useZoomable({ mode: 'dataX', dataLength: 20 })
       );
       const viewport = setupContainer(400, 200);
       act(() => {
@@ -182,7 +182,7 @@ describe("useZoomable", () => {
     });
   });
 
-  describe("additional coverage", () => {
+  describe('additional coverage', () => {
     let rafSpyWin: jest.SpyInstance<number, [callback: FrameRequestCallback]>;
     let previousRAF: typeof globalThis.requestAnimationFrame | undefined;
 
@@ -196,7 +196,7 @@ describe("useZoomable", () => {
       // @ts-expect-error override for tests
       globalThis.requestAnimationFrame = immediateRAF;
       rafSpyWin = jest
-        .spyOn(window, "requestAnimationFrame")
+        .spyOn(window, 'requestAnimationFrame')
         .mockImplementation(
           immediateRAF as unknown as (callback: FrameRequestCallback) => number
         );
@@ -208,11 +208,11 @@ describe("useZoomable", () => {
       globalThis.requestAnimationFrame = previousRAF;
     });
 
-    it("dataX: scheduleWindowUpdate via mouse move (RAF path)", () => {
+    it('dataX: scheduleWindowUpdate via mouse move (RAF path)', () => {
       const onChange = jest.fn();
       const { result } = renderHook(() =>
         useZoomable({
-          mode: "dataX",
+          mode: 'dataX',
           dataLength: 100,
           onWindowChange: onChange,
         })
@@ -248,10 +248,10 @@ describe("useZoomable", () => {
       });
     });
 
-    it("dataX: handleZoomIn forces tiny nudge when step=0 (no-op)", () => {
+    it('dataX: handleZoomIn forces tiny nudge when step=0 (no-op)', () => {
       const onChange = jest.fn();
       const { result } = renderHook(() =>
-        useZoomable({ mode: "dataX", step: 0, onWindowChange: onChange })
+        useZoomable({ mode: 'dataX', step: 0, onWindowChange: onChange })
       );
 
       // With step 0, zoomInWindow yields no change; branch should force tiny nudge
@@ -264,9 +264,9 @@ describe("useZoomable", () => {
       expect(span).toBeLessThan(1);
     });
 
-    it("visual: handleZoomOut clamps offset when remaining > 1x", () => {
+    it('visual: handleZoomOut clamps offset when remaining > 1x', () => {
       const { result } = renderHook(() =>
-        useZoomable({ mode: "visual", maxZoom: 4, step: 0.5 })
+        useZoomable({ mode: 'visual', maxZoom: 4, step: 0.5 })
       );
 
       const viewport = setupContainer(400, 200);
@@ -304,10 +304,10 @@ describe("useZoomable", () => {
       expect(after.y).toBeLessThanOrEqual(0);
     });
 
-    it("dataX: ctrl+wheel zoom-in is ignored when already at <=2 visible items", () => {
+    it('dataX: ctrl+wheel zoom-in is ignored when already at <=2 visible items', () => {
       const onChange = jest.fn();
       const { result } = renderHook(() =>
-        useZoomable({ mode: "dataX", dataLength: 2, onWindowChange: onChange })
+        useZoomable({ mode: 'dataX', dataLength: 2, onWindowChange: onChange })
       );
 
       const before = result.current.viewWindow;
@@ -323,9 +323,9 @@ describe("useZoomable", () => {
       expect(onChange).not.toHaveBeenCalled();
     });
 
-    it("visual: wheel pans and applies RAF update immediately", () => {
+    it('visual: wheel pans and applies RAF update immediately', () => {
       const { result } = renderHook(() =>
-        useZoomable({ mode: "visual", maxZoom: 3, step: 0.5 })
+        useZoomable({ mode: 'visual', maxZoom: 3, step: 0.5 })
       );
       const viewport = setupContainer(300, 150);
       act(() => {
