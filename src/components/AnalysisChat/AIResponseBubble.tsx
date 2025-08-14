@@ -1,15 +1,31 @@
-import React from 'react';
-import { Text } from '@ui5/webcomponents-react';
+import React, { useMemo } from 'react';
+import { BusyIndicator, Text } from '@ui5/webcomponents-react';
 import { ChatMessage } from '@/lib/types/chats';
 import { parseDate } from '@/lib/utils/dateUtils';
 import { FeedbackVote } from '@/components/FeedbackVote/FeedbackVote';
 import { AIResponseRenderer } from '@/components/AnalysisChat/AIResponseRenderer';
+import type { ChatStreamStepInfo } from '@/hooks/chats/stream';
 
 interface AIResponseBubbleProps {
   message: ChatMessage;
+  steps?: ChatStreamStepInfo[];
+  isStreaming?: boolean;
 }
 
-export function AIResponseBubble({ message }: Readonly<AIResponseBubbleProps>) {
+export function AIResponseBubble({
+  message,
+  steps = [],
+  isStreaming = false,
+}: Readonly<AIResponseBubbleProps>) {
+  const activeStepText = useMemo(() => {
+    if (!steps.length) return null;
+    const lastWithStatus = [...steps].reverse().find((s) => s.workflow_status);
+    if (!lastWithStatus) return null;
+    if (lastWithStatus.workflow_status === 'in_progress')
+      return lastWithStatus.step || 'Processing';
+    return null;
+  }, [steps]);
+
   return (
     <div
       style={{
@@ -61,7 +77,19 @@ export function AIResponseBubble({ message }: Readonly<AIResponseBubbleProps>) {
       >
         {parseDate(message.created)}
       </Text>
-      <AIResponseRenderer content={message.content} />
+      {isStreaming && (
+        <div style={{ width: '100%', marginBottom: '8px' }}>
+          <BusyIndicator
+            active
+            size="S"
+            text={activeStepText || 'Analizando...'}
+          />
+        </div>
+      )}
+      {/* Keep the UI minimal during streaming: only show the loader with the active step text */}
+      {!isStreaming && message.content && (
+        <AIResponseRenderer content={message.content} />
+      )}
     </div>
   );
 }

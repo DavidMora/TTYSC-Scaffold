@@ -1,24 +1,20 @@
 'use client';
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import {
-  ChatMessage,
-  ChatPromptRequest,
-  CreateChatMessageRequest,
-} from '@/lib/types/chats';
+import { ChatMessage, ChatPromptRequest } from '@/lib/types/chats';
 import { useSendChatMessage } from '@/hooks/chats';
+import { BusyIndicator } from '@ui5/webcomponents-react';
 import { MessageBubble } from '@/components/AnalysisChat/MessageBubble';
 import { ChatInput } from '@/components/AnalysisChat/ChatInput';
 import { useChatStream } from '@/hooks/chats/stream';
+import { recordsToMarkdownTable } from '@/lib/utils/tableMarkdown';
 
 interface AnalysisChatProps {
-  chatId: string;
   previousMessages: ChatMessage[];
   draft?: string;
 }
 
 export default function AnalysisChat({
-  chatId,
   previousMessages,
   draft,
 }: Readonly<AnalysisChatProps>) {
@@ -42,14 +38,19 @@ export default function AnalysisChat({
     }
   };
 
-  const [model, setModel] = useState('supply_chain_workflow');
+  const [model] = useState('supply_chain_workflow');
 
   const [messages, setMessages] = useState<ChatMessage[]>(previousMessages);
   const [isReady, setIsReady] = useState(false);
+  const [showLoader, setShowLoader] = useState(false);
+  const [runId, setRunId] = useState<number | null>(null);
+  const [appendedRunId, setAppendedRunId] = useState<number | null>(null);
 
+  // Initialize messages only once from props; do not overwrite user/appended messages
   useEffect(() => {
-    setMessages(previousMessages);
-  }, [previousMessages]);
+    setMessages((prev) => (prev.length ? prev : previousMessages));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -78,7 +79,7 @@ export default function AnalysisChat({
     ]);
   };
 
-  const { mutate, isLoading } = useSendChatMessage({
+  const { isLoading } = useSendChatMessage({
     onSuccess: (botMsg) => {
       const message = botMsg?.choices?.[0]?.message || {};
       const id = botMsg?.id ?? Date.now().toString();
@@ -100,22 +101,38 @@ export default function AnalysisChat({
 
   const {
     start: sendMessage,
-    stop,
     reset,
     isStreaming,
-    aggregatedContent,
     steps,
+    aggregatedContent,
     finishReason,
     metadata,
-    error,
-    chunks,
   } = useChatStream({ stopOnFinish: true });
 
   const handleSend = useCallback(
     (prompt: string) => {
       if (!prompt.trim()) return;
-      // Opcional: reiniciar para un nuevo ciclo
+      setShowLoader(true);
+      const thisRunId = Date.now();
+      setRunId(thisRunId);
+      setAppendedRunId(null);
       reset();
+      // Append the user message immediately so it persists in the chat
+      const userMessageId = `${Date.now()}-user`;
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: userMessageId,
+          role: 'user',
+          created: new Date().toLocaleString(),
+          title: 'You',
+          content: prompt.trim(),
+        },
+      ]);
+      setTimeout(() => {
+        scrollToBottom({ behavior: 'auto', immediate: true });
+      }, 0);
+
       const payload: ChatPromptRequest = {
         messages: [
           {
@@ -130,8 +147,61 @@ export default function AnalysisChat({
       };
       sendMessage(payload);
     },
-    [model, prompt, reset, sendMessage]
+    [model, reset, sendMessage]
   );
+
+  function buildMarkdownFromResults(): string {
+    const stepLines = Array.from(
+      new Set(
+        (steps || [])
+          .map((s) => s.step)
+          .filter((s): s is string => Boolean(s))
+      )
+    );
+
+    const rows: Array<Record<string, unknown>> =
+      (metadata &&
+        metadata.query_results &&
+        Array.isArray(metadata.query_results.dataframe_records) &&
+        (metadata.query_results.dataframe_records as Array<Record<string, unknown>>)) || [];
+
+    let md = '### Workflow progress\n';
+    for (const st of stepLines) md += `- ${st}\n`;
+    md += '\n### Query Results\n';
+    md += recordsToMarkdownTable(rows, [
+      'nvpn',
+      'description',
+      'lt_weeks',
+      'mfr',
+      'cm_site_name',
+    ]);
+    return md;
+  }
+
+  // When stream finishes, append the final assistant message to persist in chat
+  useEffect(() => {
+    if (!isStreaming) {
+      const finalContent = metadata?.query_results?.dataframe_records
+        ? buildMarkdownFromResults()
+        : aggregatedContent || '';
+      if (runId && appendedRunId !== runId && finalContent) {
+        const assistantMessageId = `${Date.now()}-assistant`;
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: assistantMessageId,
+            role: 'assistant',
+            created: new Date().toLocaleString(),
+            title: 'AI Response',
+            content: finalContent,
+          },
+        ]);
+        setAppendedRunId(runId);
+      }
+      setShowLoader(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isStreaming, finishReason, aggregatedContent, metadata, runId, appendedRunId]);
 
   return (
     <div
@@ -151,41 +221,41 @@ export default function AnalysisChat({
         ref={messagesContainerRef}
         style={{ flex: 1, overflow: 'auto', padding: '1rem 1.5rem' }}
       >
-        {/* {messages.map((msg) => (
+        {messages.map((msg) => (
           <MessageBubble key={msg.id} message={msg} />
-        ))} */}
-        <ol className="list-decimal ml-5 space-y-1 text-sm">
-          {steps.map((s) => {
-            const key = `${s.ts}-${s.step || 'step'}`;
-            return (
-              <li key={key} className="break-words">
-                <span className="font-medium">{s.step || '(step)'}</span>
-                {s.workflow_status && (
-                  <span className="ml-2 text-xs text-gray-500">
-                    [{s.workflow_status}]
-                  </span>
-                )}
-                {s.data && (
-                  <details className="mt-1 ml-2">
-                    <summary className="cursor-pointer text-xs text-blue-700">
-                      data
-                    </summary>
-                    <pre className="text-xs bg-white border p-2 rounded max-h-48 overflow-auto">
-                      {JSON.stringify(s.data, null, 2)}
-                    </pre>
-                  </details>
-                )}
-              </li>
-            );
-          })}
-        </ol>
+        ))}
+
+        {(isStreaming || showLoader) && (
+          <div
+            style={{
+              width: '100%',
+              padding: '8px 0',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'flex-start',
+              gap: '6px',
+              color: 'black',
+            }}
+          >
+            <span style={{ fontSize: 'var(--sapFontSize)' }}>
+              {(() => {
+                const last = [...steps].reverse().find((s) => s.workflow_status);
+                if (!last) return 'Running...';
+                if (last.workflow_status === 'in_progress') return last.step || 'Running...';
+                if (last.workflow_status === 'started') return 'Running...';
+                return 'Running...';
+              })()}
+            </span>
+            <BusyIndicator active size="M" />
+          </div>
+        )}
       </div>
 
       {/* Input */}
       <ChatInput
         draft={draft}
         onSendMessage={handleSend}
-        isLoading={isLoading}
+        isLoading={isLoading || isStreaming || showLoader}
       />
     </div>
   );

@@ -3,6 +3,7 @@ import { FlexBox, Avatar, Text } from '@ui5/webcomponents-react';
 import { ChatMessage } from '@/lib/types/chats';
 import { parseDate } from '@/lib/utils/dateUtils';
 import { AIResponseBubble } from '@/components/AnalysisChat/AIResponseBubble';
+import type { ChatStreamStepInfo } from '@/hooks/chats/stream';
 
 interface MessageBubbleProps {
   message: ChatMessage;
@@ -10,11 +11,15 @@ interface MessageBubbleProps {
     name: string;
     initials: string;
   };
+  steps?: ChatStreamStepInfo[];
+  isStreaming?: boolean;
 }
 
 export function MessageBubble({
   message,
   user = { name: 'Unknown', initials: 'U' },
+  steps = [],
+  isStreaming = false,
 }: Readonly<MessageBubbleProps>) {
   const isUser = message.role === 'user';
 
@@ -84,7 +89,7 @@ export function MessageBubble({
           </Text>
         </div>
       ) : (
-        <AIResponseBubble message={message} />
+        <AIResponseBubble message={message} steps={steps} isStreaming={isStreaming} />
       )}
     </div>
   );
