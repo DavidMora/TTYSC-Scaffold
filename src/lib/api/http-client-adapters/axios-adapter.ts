@@ -148,8 +148,24 @@ export class AxiosAdapter implements HttpClientAdapter {
       headers.Accept = accept;
     }
 
-    const response = await this.axiosInstance.get(url, {
+    const method = (config?.method || 'GET').toUpperCase();
+    // Build request data (body) only for methods that allow it
+    let data: unknown = undefined;
+    if (config?.body !== undefined && method !== 'GET' && method !== 'HEAD') {
+      const ct = headers['Content-Type'] || headers['content-type'];
+      const raw = config.body;
+      if (raw instanceof Buffer || raw instanceof ArrayBuffer) data = raw;
+      else if (typeof raw === 'string') data = raw;
+      else if (ct?.includes('application/json')) data = JSON.stringify(raw);
+      else data = JSON.stringify(raw);
+    }
+
+    const response = await this.axiosInstance.request({
+      url,
+      method,
+      data,
       responseType: 'stream',
+      // Axios types accept AbortSignal (in recent versions). Cast avoided.
       signal: controller.signal,
       headers,
     });
@@ -187,51 +203,54 @@ export class AxiosAdapter implements HttpClientAdapter {
           return { value: undefined as unknown as TChunk, done: true };
         };
 
-        const parseChunk = (
+        const parseBytes = (
           chunk: Buffer
         ): IteratorResult<TChunk> | undefined => {
           if (parser === 'bytes')
             return { value: chunk as unknown as TChunk, done: false };
           const txt = chunk.toString('utf8');
-          if (parser === 'text')
-            return { value: txt as unknown as TChunk, done: false };
-          if (parser === 'json') {
-            ensureSize('JSON', jsonBuf.length + txt.length);
-            jsonBuf += txt;
-            try {
-              const obj = JSON.parse(jsonBuf) as TChunk;
-              jsonBuf = '';
-              controller.abort();
-              return { value: obj, done: false };
-            } catch {
-              return undefined; // need more
+          switch (parser) {
+            case 'text':
+              return { value: txt as unknown as TChunk, done: false };
+            case 'json': {
+              ensureSize('JSON', jsonBuf.length + txt.length);
+              jsonBuf += txt;
+              try {
+                const obj = JSON.parse(jsonBuf) as TChunk;
+                jsonBuf = '';
+                controller.abort();
+                return { value: obj, done: false };
+              } catch {
+                return undefined;
+              }
             }
-          }
-          if (parser === 'ndjson') {
-            ensureSize('NDJSON', ndjsonBuf.length + txt.length);
-            ndjsonBuf += txt;
-            const newline = ndjsonBuf.indexOf('\n');
-            if (newline !== -1) {
-              const line = ndjsonBuf.slice(0, newline).trim();
-              ndjsonBuf = ndjsonBuf.slice(newline + 1);
-              if (!line) return undefined;
-              return { value: JSON.parse(line) as TChunk, done: false };
+            case 'ndjson': {
+              ensureSize('NDJSON', ndjsonBuf.length + txt.length);
+              ndjsonBuf += txt;
+              const newline = ndjsonBuf.indexOf('\n');
+              if (newline !== -1) {
+                const line = ndjsonBuf.slice(0, newline).trim();
+                ndjsonBuf = ndjsonBuf.slice(newline + 1);
+                if (!line) return undefined;
+                return { value: JSON.parse(line) as TChunk, done: false };
+              }
+              return undefined;
             }
-            return undefined;
-          }
-          if (parser === 'sse') {
-            ensureSize('SSE', sseBuf.length + txt.length);
-            sseBuf += txt;
-            const eventEnd = sseBuf.indexOf('\n\n');
-            if (eventEnd !== -1) {
-              const raw = sseBuf.slice(0, eventEnd);
-              sseBuf = sseBuf.slice(eventEnd + 2);
-              const evt = parseSSEBlock(raw) as unknown as TChunk;
-              return { value: evt, done: false };
+            case 'sse': {
+              ensureSize('SSE', sseBuf.length + txt.length);
+              sseBuf += txt;
+              const eventEnd = sseBuf.indexOf('\n\n');
+              if (eventEnd !== -1) {
+                const raw = sseBuf.slice(0, eventEnd);
+                sseBuf = sseBuf.slice(eventEnd + 2);
+                const evt = parseSSEBlock(raw) as unknown as TChunk;
+                return { value: evt, done: false };
+              }
+              return undefined;
             }
-            return undefined;
+            default:
+              return { value: txt as unknown as TChunk, done: false };
           }
-          return { value: txt as unknown as TChunk, done: false };
         };
 
         return {
@@ -239,9 +258,8 @@ export class AxiosAdapter implements HttpClientAdapter {
             while (true) {
               const { value, done } = await reader.next();
               if (done) return emitDone();
-              const parsed = parseChunk(value);
+              const parsed = parseBytes(value);
               if (parsed) return parsed;
-              // continue loop to read more without recursion
             }
           },
         };

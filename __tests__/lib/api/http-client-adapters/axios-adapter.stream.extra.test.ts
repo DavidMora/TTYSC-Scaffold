@@ -1,6 +1,7 @@
 /** @jest-environment node */
 import { AxiosAdapter } from '@/lib/api/http-client-adapters/axios-adapter';
 import axios from 'axios';
+import * as sseModule from '@/lib/api/stream/parse-sse';
 
 jest.mock('axios');
 const mockedAxios = axios as jest.Mocked<typeof axios>;
@@ -22,7 +23,8 @@ function bufferStream(parts: (string | Buffer)[]): AsyncIterable<Buffer> {
 }
 
 interface MockAxiosInstance {
-  get: jest.Mock;
+  request: jest.Mock;
+  get?: jest.Mock; // legacy usage not needed but kept for compatibility
 }
 
 describe('AxiosAdapter.stream extra coverage', () => {
@@ -30,8 +32,10 @@ describe('AxiosAdapter.stream extra coverage', () => {
   let mockAxiosInstance: MockAxiosInstance;
 
   beforeEach(() => {
-    mockAxiosInstance = { get: jest.fn() };
-    (mockedAxios.create as jest.Mock).mockReturnValue(mockAxiosInstance);
+    mockAxiosInstance = { request: jest.fn(), get: jest.fn() };
+    (mockedAxios.create as jest.Mock).mockReturnValue(
+      mockAxiosInstance as unknown as typeof axios
+    );
     adapter = new AxiosAdapter();
     // ensure node env
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -41,7 +45,7 @@ describe('AxiosAdapter.stream extra coverage', () => {
   it('honors already-aborted external signal', async () => {
     const controller = new AbortController();
     controller.abort();
-    mockAxiosInstance.get.mockResolvedValue({
+    mockAxiosInstance.request.mockResolvedValue({
       data: bufferStream(['{"a":1}']),
       status: 200,
       statusText: 'OK',
@@ -58,7 +62,7 @@ describe('AxiosAdapter.stream extra coverage', () => {
   });
 
   it('handles empty NDJSON line skipped', async () => {
-    mockAxiosInstance.get.mockResolvedValue({
+    mockAxiosInstance.request.mockResolvedValue({
       data: bufferStream(['\n', '{"x":1}\n']),
       status: 200,
       statusText: 'OK',
@@ -72,7 +76,7 @@ describe('AxiosAdapter.stream extra coverage', () => {
 
   it('parses SSE retry field', async () => {
     const block = 'id:9\nevent:update\nretry:5000\ndata:done\n\n';
-    mockAxiosInstance.get.mockResolvedValue({
+    mockAxiosInstance.request.mockResolvedValue({
       data: bufferStream([block]),
       status: 200,
       statusText: 'OK',
@@ -92,7 +96,7 @@ describe('AxiosAdapter.stream extra coverage', () => {
   it('supports cancel method', async () => {
     // Long json that would require two chunks
     const json = JSON.stringify({ big: true, n: 1 });
-    mockAxiosInstance.get.mockResolvedValue({
+    mockAxiosInstance.request.mockResolvedValue({
       data: bufferStream([json.slice(0, 3), json.slice(3)]),
       status: 200,
       statusText: 'OK',
@@ -111,7 +115,7 @@ describe('AxiosAdapter.stream extra coverage', () => {
   });
 
   it('fallback parser returns text when unknown parser provided', async () => {
-    mockAxiosInstance.get.mockResolvedValue({
+    mockAxiosInstance.request.mockResolvedValue({
       data: bufferStream(['abc']),
       status: 200,
       statusText: 'OK',
@@ -126,7 +130,7 @@ describe('AxiosAdapter.stream extra coverage', () => {
 
   it('throws when NDJSON buffer exceeds maxBufferSize', async () => {
     const line = '{"a":1}\n';
-    mockAxiosInstance.get.mockResolvedValue({
+    mockAxiosInstance.request.mockResolvedValue({
       data: bufferStream([line]),
       status: 200,
       statusText: 'OK',
@@ -151,7 +155,7 @@ describe('AxiosAdapter.stream extra coverage', () => {
 
   it('throws when SSE buffer exceeds maxBufferSize', async () => {
     const evt = 'data:0123456789\n\n';
-    mockAxiosInstance.get.mockResolvedValue({
+    mockAxiosInstance.request.mockResolvedValue({
       data: bufferStream([evt]),
       status: 200,
       statusText: 'OK',
@@ -175,7 +179,7 @@ describe('AxiosAdapter.stream extra coverage', () => {
   });
 
   it('throws on invalid NDJSON line', async () => {
-    mockAxiosInstance.get.mockResolvedValue({
+    mockAxiosInstance.request.mockResolvedValue({
       data: bufferStream(['{"a":1}\n{"b":}\n']),
       status: 200,
       statusText: 'OK',
@@ -195,7 +199,7 @@ describe('AxiosAdapter.stream extra coverage', () => {
   });
 
   it('throws on leftover invalid NDJSON', async () => {
-    mockAxiosInstance.get.mockResolvedValue({
+    mockAxiosInstance.request.mockResolvedValue({
       data: bufferStream(['{"a":1}\n{"b":']),
       status: 200,
       statusText: 'OK',
@@ -215,35 +219,29 @@ describe('AxiosAdapter.stream extra coverage', () => {
   });
 
   it('throws on leftover SSE parse error (mocked)', async () => {
-    jest.resetModules();
-    jest.doMock('@/lib/api/stream/parse-sse', () => ({
-      parseSSEBlock: () => {
+    // Spy on mutable wrapper to avoid defineProperty error on ESM live binding
+    const spy = jest
+      .spyOn(sseModule.sseParser, 'parseSSEBlock')
+      .mockImplementation(() => {
         throw new Error('boom');
-      },
-    }));
-    const { AxiosAdapter: LocalAxios } = await import(
-      '@/lib/api/http-client-adapters/axios-adapter'
-    );
-    // new instance after mock
-    (mockedAxios.create as jest.Mock).mockReturnValue(mockAxiosInstance);
-    const local = new LocalAxios();
-    mockAxiosInstance.get.mockResolvedValue({
-      data: bufferStream(['data:only']), // leftover no blank line
+      });
+    mockAxiosInstance.request.mockResolvedValue({
+      data: bufferStream(['data:only']), // leftover no blank line to trigger leftover handling
       status: 200,
       statusText: 'OK',
       headers: {},
     });
-    const res = await local.stream('/sse-leftover-error', { parser: 'sse' });
+    const res = await adapter.stream('/sse-leftover-error', { parser: 'sse' });
     let caught: Error | undefined;
     try {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      for await (const __c of res) {
+      for await (const _ of res) {
         /* consume */
       }
     } catch (e) {
       caught = e as Error;
     }
     expect(caught).toBeDefined();
-    jest.dontMock('@/lib/api/stream/parse-sse');
+    spy.mockRestore();
   });
 });

@@ -1,10 +1,15 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
-import { ChatMessage, CreateChatMessageRequest } from '@/lib/types/chats';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  ChatMessage,
+  ChatPromptRequest,
+  CreateChatMessageRequest,
+} from '@/lib/types/chats';
 import { useSendChatMessage } from '@/hooks/chats';
 import { MessageBubble } from '@/components/AnalysisChat/MessageBubble';
 import { ChatInput } from '@/components/AnalysisChat/ChatInput';
+import { useChatStream } from '@/hooks/chats/stream';
 
 interface AnalysisChatProps {
   chatId: string;
@@ -36,6 +41,8 @@ export default function AnalysisChat({
       setTimeout(scroll, 50);
     }
   };
+
+  const [model, setModel] = useState('supply_chain_workflow');
 
   const [messages, setMessages] = useState<ChatMessage[]>(previousMessages);
   const [isReady, setIsReady] = useState(false);
@@ -91,27 +98,40 @@ export default function AnalysisChat({
     },
   });
 
-  const handleSendMessage = (input: string) => {
-    if (input.trim()) {
-      addMessage(Date.now().toString(), input, 'user');
+  const {
+    start: sendMessage,
+    stop,
+    reset,
+    isStreaming,
+    aggregatedContent,
+    steps,
+    finishReason,
+    metadata,
+    error,
+    chunks,
+  } = useChatStream({ stopOnFinish: true });
 
-      const conversationHistory: CreateChatMessageRequest['messages'] = [
-        ...messages.map((msg) => ({
-          role: msg.role,
-          content: msg.content,
-        })),
-        { role: 'user', content: input },
-      ];
-
-      mutate({
-        messages: conversationHistory,
-        use_knowledge_base: true,
-        chatId: chatId,
-      });
-
-      scrollToBottom();
-    }
-  };
+  const handleSend = useCallback(
+    (prompt: string) => {
+      if (!prompt.trim()) return;
+      // Opcional: reiniciar para un nuevo ciclo
+      reset();
+      const payload: ChatPromptRequest = {
+        messages: [
+          {
+            role: 'user',
+            content: prompt.trim(),
+          },
+        ],
+        model,
+        temperature: 0,
+        max_tokens: 0,
+        top_p: 0,
+      };
+      sendMessage(payload);
+    },
+    [model, prompt, reset, sendMessage]
+  );
 
   return (
     <div
@@ -131,15 +151,40 @@ export default function AnalysisChat({
         ref={messagesContainerRef}
         style={{ flex: 1, overflow: 'auto', padding: '1rem 1.5rem' }}
       >
-        {messages.map((msg) => (
+        {/* {messages.map((msg) => (
           <MessageBubble key={msg.id} message={msg} />
-        ))}
+        ))} */}
+        <ol className="list-decimal ml-5 space-y-1 text-sm">
+          {steps.map((s) => {
+            const key = `${s.ts}-${s.step || 'step'}`;
+            return (
+              <li key={key} className="break-words">
+                <span className="font-medium">{s.step || '(step)'}</span>
+                {s.workflow_status && (
+                  <span className="ml-2 text-xs text-gray-500">
+                    [{s.workflow_status}]
+                  </span>
+                )}
+                {s.data && (
+                  <details className="mt-1 ml-2">
+                    <summary className="cursor-pointer text-xs text-blue-700">
+                      data
+                    </summary>
+                    <pre className="text-xs bg-white border p-2 rounded max-h-48 overflow-auto">
+                      {JSON.stringify(s.data, null, 2)}
+                    </pre>
+                  </details>
+                )}
+              </li>
+            );
+          })}
+        </ol>
       </div>
 
       {/* Input */}
       <ChatInput
         draft={draft}
-        onSendMessage={handleSendMessage}
+        onSendMessage={handleSend}
         isLoading={isLoading}
       />
     </div>

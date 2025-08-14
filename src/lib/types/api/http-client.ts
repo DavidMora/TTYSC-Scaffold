@@ -17,6 +17,10 @@ export type HttpStreamParser =
   | 'bytes'; // yields Uint8Array chunks
 
 export interface HttpStreamConfig extends HttpClientConfig {
+  /** Optional HTTP method for the streaming request. Default: GET */
+  method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
+  /** Optional request body (for POST/PUT/PATCH). Will be JSON.stringified when an object and Content-Type is application/json (default). */
+  body?: unknown;
   parser?: HttpStreamParser;
   // Optional AbortSignal to externally cancel the stream
   signal?: AbortSignal;

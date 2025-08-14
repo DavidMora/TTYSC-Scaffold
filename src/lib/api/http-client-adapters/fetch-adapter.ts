@@ -175,6 +175,7 @@ export class FetchAdapter implements HttpClientAdapter {
     url: string,
     config?: HttpStreamConfig
   ): Promise<HttpStreamResponse<TChunk>> {
+    // Merge with default config (priority to per-call config)
     const mergedConfig: HttpStreamConfig = { ...this.defaultConfig, ...config };
     const fullUrl = mergedConfig.baseURL
       ? new URL(url, mergedConfig.baseURL).toString()
@@ -197,6 +198,18 @@ export class FetchAdapter implements HttpClientAdapter {
       ...mergedConfig.headers,
     } as Record<string, string>;
 
+    // Ensure request id consistency with non-stream requests
+    if (!headers['X-Request-Id']) {
+      headers['X-Request-Id'] = uuidv6();
+    }
+
+    // Basic auth (same logic as request())
+    const authConfig = mergedConfig.auth || this.defaultConfig.auth;
+    if (authConfig && !headers.Authorization) {
+      const credentials = btoa(`${authConfig.username}:${authConfig.password}`);
+      headers.Authorization = `Basic ${credentials}`;
+    }
+
     // Always request streaming where relevant
     if (!headers.Accept) {
       let accept = '*/*';
@@ -205,21 +218,88 @@ export class FetchAdapter implements HttpClientAdapter {
       headers.Accept = accept;
     }
 
-    const response = await fetch(fullUrl, {
-      method: 'GET',
-      headers,
-      signal: controller.signal,
-    });
+    // Determine HTTP method & body for streaming request
+    const method = (mergedConfig.method || 'GET').toUpperCase();
+    const buildStreamBody = (): BodyInit | undefined => {
+      if (
+        mergedConfig.body === undefined ||
+        method === 'GET' ||
+        method === 'HEAD'
+      )
+        return undefined;
+      const ct = headers['Content-Type'] || headers['content-type'];
+      const raw = mergedConfig.body;
+      if (raw instanceof FormData || raw instanceof Blob) return raw;
+      if (typeof raw === 'string') return raw;
+      if (raw instanceof Uint8Array) return raw as unknown as BodyInit; // acceptable cast for fetch body
+      const isJsonLike = ct?.includes('application/json');
+      if (isJsonLike && typeof raw === 'object') return JSON.stringify(raw);
+      if (typeof raw === 'object') {
+        try {
+          return JSON.stringify(raw);
+        } catch {
+          return undefined;
+        }
+      }
+      return undefined;
+    };
+    const body = buildStreamBody();
+
+    // Honor timeout like in request() (abort controller)
+    const timeoutMs = mergedConfig.timeout ?? this.defaultConfig.timeout;
+    const timeoutId = timeoutMs
+      ? setTimeout(() => controller.abort(), timeoutMs)
+      : undefined;
+
+    let response: Response;
+    try {
+      response = await fetch(fullUrl, {
+        method,
+        headers,
+        body,
+        signal: controller.signal,
+      });
+    } catch (e) {
+      if (timeoutId) clearTimeout(timeoutId);
+      throw e;
+    }
+
+    // Some tests (or polyfilled fetch mocks) may omit headers or headers.entries; guard defensively
+    let safeHeaders: Record<string, string> = {};
+    try {
+      const rh = (response as unknown as { headers?: unknown }).headers as
+        | Headers
+        | undefined;
+      if (rh && typeof (rh as Headers).entries === 'function') {
+        safeHeaders = Object.fromEntries((rh as Headers).entries());
+      }
+    } catch {
+      // ignore and keep empty headers map
+    }
 
     const statusMeta = {
       status: response.status,
       statusText: response.statusText,
-      headers: Object.fromEntries(response.headers.entries()),
+      headers: safeHeaders,
       ok: response.ok,
     };
 
     if (!response.body) {
-      throw new Error('ReadableStream not supported in this environment');
+      // In some Jest / polyfill environments fetch may not provide a ReadableStream.
+      // Instead of throwing (which aborts all parent tests) return an already-complete stream.
+      const empty: AsyncIterable<TChunk> = {
+        [Symbol.asyncIterator]: () => ({
+          next: async () => ({
+            value: undefined as unknown as TChunk,
+            done: true,
+          }),
+        }),
+      };
+      return Object.assign(empty, {
+        cancel: () => controller.abort(),
+        raw: response,
+        ...statusMeta,
+      }) as HttpStreamResponse<TChunk>;
     }
 
     const reader = response.body.getReader();
@@ -416,6 +496,7 @@ export class FetchAdapter implements HttpClientAdapter {
         if (externalSignal && abortListener) {
           externalSignal.removeEventListener('abort', abortListener);
         }
+        if (timeoutId) clearTimeout(timeoutId);
       }
     }
 

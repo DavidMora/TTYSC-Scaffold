@@ -1,5 +1,9 @@
-import { apiClient } from '@/lib/api';
-import { HttpClientResponse } from '@/lib/types/api/http-client';
+import { apiClient, httpClient } from '@/lib/api';
+import {
+  HttpClientResponse,
+  HttpSSEEvent,
+  HttpStreamResponse,
+} from '@/lib/types/api/http-client';
 import {
   CHATS,
   CHAT,
@@ -15,6 +19,8 @@ import {
   Chat,
   CreateChatRequest,
   VoteType,
+  ChatStreamChunk,
+  ChatPromptRequest,
 } from '@/lib/types/chats';
 
 export const getChats = async (): Promise<
@@ -60,4 +66,57 @@ export const updateMessageFeedback = async (
   return await apiClient.put<void>(MESSAGE_FEEDBACK(messageId), {
     feedbackVote,
   });
+};
+
+export const newChatMessageStream = async (
+  payload: ChatPromptRequest,
+  options?: { limit?: number; abortSignal?: AbortSignal }
+): Promise<HttpStreamResponse<ChatStreamChunk>> => {
+  const { limit, abortSignal } = options || {};
+
+  const rawStream = await httpClient.stream<HttpSSEEvent>(
+    'http://localhost:3000/api/chat/stream',
+    {
+      method: 'POST',
+      body: payload,
+      parser: 'sse',
+      signal: abortSignal,
+    }
+  );
+
+  let count = 0;
+
+  async function* mapper(): AsyncGenerator<ChatStreamChunk, void, unknown> {
+    for await (const evt of rawStream) {
+      if (evt.data) {
+        try {
+          const obj = JSON.parse(evt.data) as ChatStreamChunk;
+          yield obj;
+          count++;
+          if (limit && count >= limit) {
+            rawStream.cancel();
+            return;
+          }
+        } catch {
+          // ignore malformed chunk
+        }
+      }
+    }
+  }
+
+  const meta = {
+    status: rawStream.status,
+    statusText: rawStream.statusText,
+    headers: rawStream.headers,
+    ok: rawStream.ok,
+  };
+
+  const wrapped: HttpStreamResponse<ChatStreamChunk> = {
+    [Symbol.asyncIterator]: () => mapper(),
+    cancel: () => rawStream.cancel(),
+    raw: rawStream.raw,
+    ...meta,
+  };
+
+  return wrapped;
 };
