@@ -66,14 +66,17 @@ describe("MarkdownRenderer", () => {
     jest.useFakeTimers();
 
     const onError = jest.fn();
-    jest.spyOn(global, "fetch").mockResolvedValue({
-      ok: false,
-      status: 500,
-      json: async () => {
-        await new Promise((r) => setTimeout(r, 10));
-        throw new Error("boom");
-      },
-    } as unknown as Response);
+    jest.spyOn(global, "fetch").mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          setTimeout(() => {
+            resolve({
+              ok: false,
+              status: 500,
+            } as unknown as Response);
+          }, 10);
+        }) as unknown as Promise<Response>
+    );
 
     const { unmount } = render(
       <MarkdownRenderer markdown={"x"} onError={onError} />

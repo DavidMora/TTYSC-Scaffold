@@ -83,21 +83,29 @@ global.fetch = jest.fn((url, init?: RequestInit) => {
   }
 
   // Mock markdown rendering API to echo back provided markdown as HTML
-  if (url.toString().includes("/api/renderMarkdown")) {
+  if (url.toString().includes('/api/renderMarkdown')) {
+    let html = '';
     try {
-      const body = typeof init?.body === "string" ? init.body : "";
-      const parsed = body ? JSON.parse(body) : { markdown: "" };
-      const html = parsed.markdown ?? "";
-      return Promise.resolve({
-        ok: true,
-        json: () => Promise.resolve({ html }),
-      });
+      const body = init?.body;
+      if (typeof body === 'string') {
+        const parsed = JSON.parse(body);
+        html = parsed?.markdown ?? '';
+      } else if (body instanceof URLSearchParams || body instanceof FormData) {
+        const entries = Object.fromEntries(body.entries());
+        html = (entries.markdown as string) ?? '';
+      } else if (body && typeof body === 'object') {
+        // e.g., tests passing a plain object
+        // @ts-expect-error body may not be typed as object
+        html = body.markdown ?? '';
+      }
     } catch {
-      return Promise.resolve({
-        ok: true,
-        json: () => Promise.resolve({ html: "" }),
-      });
+      html = '';
     }
+    return Promise.resolve({
+      ok: true,
+      headers: { 'content-type': 'application/json' } as unknown as Headers,
+      json: () => Promise.resolve({ html }),
+    });
   }
 
   return Promise.resolve({

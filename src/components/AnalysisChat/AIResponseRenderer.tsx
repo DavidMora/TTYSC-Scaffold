@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useMemo } from "react";
 import { CodeBlock } from "@/components/CodeBlock/CodeBlock";
 import BaseDataTable from "@/components/Tables/BaseDataTable";

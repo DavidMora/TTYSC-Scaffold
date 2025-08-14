@@ -95,7 +95,7 @@ export const FORBID_TAGS = [
 
 export const FORBID_ATTR = ["style"];
 
-// Accept only: http(s), mailto, data:image/*
+// Accept only: http(s), mailto, data:image/* (excluding svg+xml)
 // Disallow others including javascript:, vbscript:, data:text, etc.
 // Remove svg+xml from data URI allowlist to reduce risk of embedded SVG script abuse in certain UAs
 export const ALLOWED_URI_REGEXP =

@@ -6,9 +6,9 @@ describe("lib/utils/markdown renderMarkdownToSafeHtml", () => {
       '<a href="https://example.com">link</a> <span onclick="alert(1)">x</span>';
     const html = await renderMarkdownToSafeHtml(input);
 
-    expect(html).toContain(
-      '<a href="https://example.com" target="_blank" rel="noopener noreferrer">link</a>'
-    );
+    expect(html).toContain('href="https://example.com"');
+    expect(html).toContain('target="_blank"');
+    expect(html).toContain('rel="noopener noreferrer nofollow"');
     expect(html).not.toContain("onclick");
   });
 

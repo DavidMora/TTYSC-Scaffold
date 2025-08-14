@@ -26,7 +26,12 @@ describe("/api/renderMarkdown POST", () => {
 
   it("returns sanitized html for valid markdown", async () => {
     const body = { markdown: "Hello" };
-    const req = { json: async () => body } as unknown as NextRequest;
+    const req = { 
+      json: async () => body,
+      headers: {
+        get: jest.fn().mockReturnValue("application/json")
+      }
+    } as unknown as NextRequest;
 
     const res = await POST(req);
     const json = await (res as Response).json();
@@ -40,6 +45,9 @@ describe("/api/renderMarkdown POST", () => {
       json: async () => {
         throw new Error("bad");
       },
+      headers: {
+        get: jest.fn().mockReturnValue("application/json")
+      }
     } as unknown as NextRequest;
     const res = await POST(badReq);
     expect(res.status).toBe(400);
@@ -47,7 +55,12 @@ describe("/api/renderMarkdown POST", () => {
 
   it("treats non-string markdown as empty string", async () => {
     const body = { markdown: 123 };
-    const req = { json: async () => body } as unknown as NextRequest;
+    const req = { 
+      json: async () => body,
+      headers: {
+        get: jest.fn().mockReturnValue("application/json")
+      }
+    } as unknown as NextRequest;
 
     const res = await POST(req);
     const json = await (res as Response).json();

@@ -26,7 +26,7 @@ describe("Markdown sanitization", () => {
     const md = "[example](https://example.com)";
     const html = await renderMarkdownToSafeHtml(md);
     expect(html).toMatch(/<a[^>]*target="_blank"/);
-    expect(html).toMatch(/<a[^>]*rel="noopener noreferrer"/);
+    expect(html).toMatch(/<a[^>]*rel="[^"]*noopener[^"]*noreferrer[^"]*nofollow[^"]*"/);
   });
 
   it("snapshot: tables and code blocks", async () => {
@@ -68,6 +68,8 @@ console.log(x);
       expect(html).not.toMatch(/\son\w+\s*=\s*/i);
       expect(html).not.toMatch(/javascript:/i);
       expect(html).not.toMatch(/vbscript:/i);
+      expect(html).not.toMatch(/data:text\/html/i);
+      expect(html).not.toMatch(/data:image\/svg\+xml/i);
     }
   });
 });

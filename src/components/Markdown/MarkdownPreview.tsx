@@ -13,6 +13,7 @@ export default function MarkdownPreview({
   className,
 }: MarkdownPreviewProps) {
   return (
+    // `html` is sanitized via DOMPurify in renderMarkdownToSafeHtml and branded as SafeHtml
     <div className={className} dangerouslySetInnerHTML={{ __html: html }} />
   );
 }

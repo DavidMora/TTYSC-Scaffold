@@ -52,11 +52,36 @@ function getDOMPurify(): ReturnType<typeof createDOMPurify> {
       }
     );
 
+    // Block SVG data URLs and other dangerous data URIs
+    purifier.addHook(
+      "uponSanitizeAttribute",
+      (_node: Element, data: SanitizerAttributeHookEvent) => {
+        if (data.attrName === "src" || data.attrName === "href") {
+          const attrValue = _node.getAttribute(data.attrName);
+          if (attrValue && /^data:image\/svg\+xml/i.test(attrValue)) {
+            data.keepAttr = false;
+            data.forceRemove = true;
+          }
+        }
+      }
+    );
+
     // Enforce anchor target/rel
     purifier.addHook("afterSanitizeAttributes", (node: Element) => {
-      if (node.tagName === "A" && node.getAttribute("href")) {
-        node.setAttribute("target", "_blank");
-        node.setAttribute("rel", "noopener noreferrer");
+      if (node.tagName === "A") {
+        const href = node.getAttribute("href") ?? "";
+        // Only treat absolute external links as external
+        const isExternal = /^https?:\/\//i.test(href) || href.startsWith("//");
+        if (isExternal) {
+          node.setAttribute("target", "_blank");
+          const existingRel = node.getAttribute("rel") ?? "";
+          const rel = new Set(
+            existingRel.split(/\s+/).filter(Boolean).concat(["noopener", "noreferrer", "nofollow"])
+          );
+          node.setAttribute("rel", Array.from(rel).join(" "));
+        } else if (node.getAttribute("target") === "_blank") {
+          node.removeAttribute("target");
+        }
       }
     });
 
