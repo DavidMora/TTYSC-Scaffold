@@ -54,7 +54,7 @@ global.ResizeObserver = jest.fn().mockImplementation(() => ({
 }));
 
 // Mock fetch for Node.js environment
-global.fetch = jest.fn((url) => {
+global.fetch = jest.fn((url, init?: RequestInit) => {
   // Mock auth config API
   if (url.toString().includes('/api/auth/config')) {
     return Promise.resolve({
@@ -79,6 +79,32 @@ global.fetch = jest.fn((url) => {
           FF_Full_Page_Navigation: true,
           FF_Modals: true,
         }),
+    });
+  }
+
+  // Mock markdown rendering API to echo back provided markdown as HTML
+  if (url.toString().includes('/api/renderMarkdown')) {
+    let html = '';
+    try {
+      const body = init?.body;
+      if (typeof body === 'string') {
+        const parsed = JSON.parse(body);
+        html = parsed?.markdown ?? '';
+      } else if (body instanceof URLSearchParams || body instanceof FormData) {
+        const entries = Object.fromEntries(body.entries());
+        html = (entries.markdown as string) ?? '';
+      } else if (body && typeof body === 'object') {
+        // e.g., tests passing a plain object
+        // @ts-expect-error body may not be typed as object
+        html = body.markdown ?? '';
+      }
+    } catch {
+      html = '';
+    }
+    return Promise.resolve({
+      ok: true,
+      headers: { 'content-type': 'application/json' } as unknown as Headers,
+      json: () => Promise.resolve({ html }),
     });
   }
 
@@ -124,3 +150,8 @@ global.CSSStyleSheet = class {
   }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 } as any;
+
+// Polyfill TextEncoder/TextDecoder for jsdom + jsdom dependencies
+import { TextEncoder, TextDecoder } from "util";
+global.TextEncoder = TextEncoder;
+global.TextDecoder = TextDecoder as unknown as typeof globalThis.TextDecoder;

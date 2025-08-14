@@ -133,9 +133,9 @@ export default function AnalysisContainer() {
             isDisabled={isDisabled}
             handleFilterChange={handleFilterChange}
           />
-          <hr
+          <div
             style={{
-              height: '2px',
+              height: '1px',
               backgroundColor: 'var(--sapToolbar_SeparatorColor)',
             }}
           />

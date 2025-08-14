@@ -71,3 +71,42 @@ ui5-card.chat-history-card ui5-panel::part(content) {
 .zoomable-cursor-move * {
   cursor: move !important;
 }
+
+/* Markdown table styling (global) */
+.markdown table {
+  border-collapse: collapse !important;
+}
+
+/* Force visible borders regardless of theme variables */
+.markdown table,
+.markdown th,
+.markdown td {
+  background-color: var(--sapList_Background) !important;
+  border: 1px solid  var(--sapList_BorderColor) !important;
+  margin: 1rem 0 0.25rem 0rem !important;
+  font-size: var(--sapFontSize) !important;
+  color: var(--sapTextColor) !important;
+  padding: 0.5rem !important;
+
+}
+
+.markdown thead th {
+  background: var(--sapBackgroundColor) !important;
+}
+
+.markdown p {
+  margin: 0.25rem 0 !important;
+  line-height: 1.2 !important;
+  font-size: var(--sapFontSize) !important;
+  color: var(--sapTextColor) !important;
+}
+.markdown ul,
+.markdown ol {
+  margin: 0.25rem 0 0.25rem 0.25rem !important;
+  font-size: var(--sapFontSize) !important;
+  color: var(--sapTextColor) !important;
+}
+.markdown li {
+  margin: 0.125rem 0 !important;
+  line-height: 1.2 !important;
+}

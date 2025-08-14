@@ -79,21 +79,29 @@ export function CodeBlock({
       }}
     >
       {/* Copy Button */}
-      <Button
-        onClick={handleCopy}
+      <div
         style={{
-          position: 'absolute',
-          top: '0.25rem',
-          right: '0.25rem',
+          position: 'sticky',
+          top: '5px',
+          right: '5px',
           zIndex: 1,
-          minWidth: 'auto',
-          fontSize: 'var(--sapFontSmallSize)',
+          width: '100%',
+          height: '0px',
+          display: 'flex',
+          justifyContent: 'flex-end',
         }}
-        design="Transparent"
-        icon={copied ? 'accept' : 'copy'}
       >
-        {copied ? 'Copied!' : 'Copy Code'}
-      </Button>
+        <Button
+          onClick={handleCopy}
+          style={{
+            fontSize: 'var(--sapFontSmallSize)',
+          }}
+          design='Transparent'
+          icon={copied ? 'accept' : 'copy'}
+        >
+          {copied ? 'Copied!' : 'Copy Code'}
+        </Button>
+      </div>
 
       {/* Code Container */}
       <div
