@@ -86,11 +86,8 @@ ui5-card.chat-history-card ui5-panel::part(content) {
   margin: 1rem 0 0.25rem 0rem !important;
   font-size: var(--sapFontSize) !important;
   color: var(--sapTextColor) !important;
-}
-
-.markdown th,
-.markdown td {
   padding: 0.5rem !important;
+
 }
 
 .markdown thead th {

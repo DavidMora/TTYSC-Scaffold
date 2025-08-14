@@ -54,7 +54,6 @@ export const ALLOWED_ATTR = [
   // Links
   "href",
   "name",
-  "target",
   "rel",
   // Images
   "src",

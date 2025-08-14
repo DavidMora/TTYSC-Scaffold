@@ -53,6 +53,35 @@ describe("/api/renderMarkdown POST", () => {
     expect(res.status).toBe(400);
   });
 
+  it("rejects non-JSON content-type with 415", async () => {
+    const req = {
+      json: async () => ({ markdown: "Hello" }),
+      headers: { get: jest.fn().mockReturnValue("text/plain") },
+    } as unknown as NextRequest;
+    const res = await POST(req);
+    expect(res.status).toBe(415);
+  });
+
+  it("limits payload size with 413", async () => {
+          const big = "x".repeat(100_001);
+    const req = {
+      json: async () => ({ markdown: big }),
+      headers: { get: jest.fn().mockReturnValue("application/json") },
+    } as unknown as NextRequest;
+    const res = await POST(req);
+    expect(res.status).toBe(413);
+  });
+
+  it("returns 500 when rendering fails", async () => {
+    (renderMarkdownToSafeHtml as jest.Mock).mockRejectedValueOnce(new Error("boom"));
+    const req = {
+      json: async () => ({ markdown: "Hello" }),
+      headers: { get: jest.fn().mockReturnValue("application/json") },
+    } as unknown as NextRequest;
+    const res = await POST(req);
+    expect(res.status).toBe(500);
+  });
+
   it("treats non-string markdown as empty string", async () => {
     const body = { markdown: 123 };
     const req = { 

@@ -1,5 +1,5 @@
-import React, { act } from "react";
-import { render, waitFor } from "@testing-library/react";
+import React from "react";
+import { render, waitFor, act } from "@testing-library/react";
 import MarkdownRenderer from "@/components/Markdown/MarkdownRenderer";
 
 describe("MarkdownRenderer", () => {
