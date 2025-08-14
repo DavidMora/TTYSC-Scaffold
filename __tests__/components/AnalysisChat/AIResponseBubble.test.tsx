@@ -93,7 +93,7 @@ const TestWrapper = ({ children }: { children: React.ReactNode }) => (
 );
 
 describe('AIResponseBubble', () => {
-  it('renders AI response with title and timestamp', () => {
+  it('renders AI response with title and timestamp', async () => {
     render(
       <TestWrapper>
         <AIResponseBubble message={baseMessage} />
