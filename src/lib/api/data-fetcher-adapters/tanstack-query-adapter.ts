@@ -1,11 +1,11 @@
-import { HttpClientResponse } from "@/lib/types/api/http-client";
+import { HttpClientResponse } from '@/lib/types/api/http-client';
 import {
   DataFetcherAdapter,
   DataFetcherKey,
   DataFetcherOptions,
   DataFetcherResponse,
-} from "@/lib/types/api/data-fetcher";
-import { useQuery } from "@tanstack/react-query";
+} from '@/lib/types/api/data-fetcher';
+import { useQuery } from '@tanstack/react-query';
 
 interface TanStackQueryResult<T> {
   data: T | undefined;
@@ -29,7 +29,7 @@ type UseQueryHook = <T>(options: {
  * TanStack Query expects an array as the queryKey
  */
 function normalizeKeyForTanStackQuery(key: DataFetcherKey): readonly unknown[] {
-  if (typeof key === "string") {
+  if (typeof key === 'string') {
     return [key];
   }
   return key;
@@ -58,7 +58,7 @@ export class TanStackQueryAdapter implements DataFetcherAdapter {
 
     // Calculate retry value
     let retry: boolean | number = false;
-    if (typeof options.retry === "number") {
+    if (typeof options.retry === 'number') {
       retry = options.retry;
     } else if (options.retry) {
       retry = 3;

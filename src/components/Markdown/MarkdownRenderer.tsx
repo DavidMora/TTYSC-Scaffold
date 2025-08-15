@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import React, { useEffect, useState } from "react";
-import MarkdownPreview from "@/components/Markdown/MarkdownPreview";
-import type { SafeHtml } from "@/lib/utils/markdown";
+import React, { useEffect, useState } from 'react';
+import MarkdownPreview from '@/components/Markdown/MarkdownPreview';
+import type { SafeHtml } from '@/lib/utils/markdown';
 
 type MarkdownRendererProps = Readonly<{
   markdown: string;
@@ -15,15 +15,15 @@ export default function MarkdownRenderer({
   className,
   onError,
 }: MarkdownRendererProps) {
-  const [html, setHtml] = useState<SafeHtml>("" as SafeHtml);
+  const [html, setHtml] = useState<SafeHtml>('' as SafeHtml);
 
   useEffect(() => {
     let isActive = true;
     (async () => {
       try {
-        const res = await fetch("/api/renderMarkdown", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
+        const res = await fetch('/api/renderMarkdown', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ markdown }),
         });
         if (!res.ok) {
@@ -33,7 +33,7 @@ export default function MarkdownRenderer({
         if (isActive) setHtml(data.html);
       } catch (e: unknown) {
         onError?.(e as Error);
-        if (isActive) setHtml("" as SafeHtml);
+        if (isActive) setHtml('' as SafeHtml);
       }
     })();
     return () => {

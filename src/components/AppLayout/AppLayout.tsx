@@ -51,8 +51,8 @@ export default function AppLayout({ children }: Readonly<AppLayoutProps>) {
             <HeaderBar {...HEADER_BAR_CONFIG.supplyChain} />
             <div
               style={{
-                height: "1px",
-                backgroundColor: "var(--sapToolbar_SeparatorColor)",
+                height: '1px',
+                backgroundColor: 'var(--sapToolbar_SeparatorColor)',
               }}
             />
             {children}

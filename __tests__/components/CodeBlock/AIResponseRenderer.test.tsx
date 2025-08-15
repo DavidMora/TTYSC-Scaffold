@@ -53,7 +53,7 @@ jest.mock('@/components/AICharts/AIChartContainer', () => {
 });
 
 // Mock MarkdownRenderer to render raw markdown text content
-jest.mock("@/components/Markdown/MarkdownRenderer", () => {
+jest.mock('@/components/Markdown/MarkdownRenderer', () => {
   const MockMarkdownRenderer = ({
     markdown,
     className,
@@ -64,12 +64,12 @@ jest.mock("@/components/Markdown/MarkdownRenderer", () => {
     <div
       className={className}
       data-testid="ui5-text"
-      style={{ whiteSpace: "pre-wrap" }}
+      style={{ whiteSpace: 'pre-wrap' }}
     >
       {markdown}
     </div>
   );
-  MockMarkdownRenderer.displayName = "MockMarkdownRenderer";
+  MockMarkdownRenderer.displayName = 'MockMarkdownRenderer';
   return { __esModule: true, default: MockMarkdownRenderer };
 });
 

@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 import {
   BarChart,
   LineChart,
@@ -9,7 +9,7 @@ import {
   ColumnChartWithTrend,
   ComposedChart,
   RadarChart,
-} from "@ui5/webcomponents-react-charts";
+} from '@ui5/webcomponents-react-charts';
 import {
   ChartDimension,
   SingleDataPoint,
@@ -17,12 +17,12 @@ import {
   ChartRendererProps,
   ChartMeasure,
   ChartSeries,
-} from "@/lib/types/charts";
+} from '@/lib/types/charts';
 import {
   getBulletMeasures,
   getColumnWithTrendMeasures,
   addChartType,
-} from "@/lib/utils/chartUtils";
+} from '@/lib/utils/chartUtils';
 
 // Chart component mapping for basic charts
 const CHART_COMPONENTS = {
@@ -41,7 +41,7 @@ const createBasicChartRenderer = (chartType: keyof typeof CHART_COMPONENTS) => {
       dataset={dataset}
       dimensions={dimensions}
       measures={measures}
-      style={{ width: "100%", height: "100%" }}
+      style={{ width: '100%', height: '100%' }}
     />
   );
   Renderer.displayName = `${
@@ -51,11 +51,11 @@ const createBasicChartRenderer = (chartType: keyof typeof CHART_COMPONENTS) => {
 };
 
 // Basic chart renderers using the factory
-export const BarChartRenderer = createBasicChartRenderer("bar");
-export const ColumnChartRenderer = createBasicChartRenderer("column");
-export const LineChartRenderer = createBasicChartRenderer("line");
-export const AreaChartRenderer = createBasicChartRenderer("area");
-export const RadarChartRenderer = createBasicChartRenderer("radar");
+export const BarChartRenderer = createBasicChartRenderer('bar');
+export const ColumnChartRenderer = createBasicChartRenderer('column');
+export const LineChartRenderer = createBasicChartRenderer('line');
+export const AreaChartRenderer = createBasicChartRenderer('area');
+export const RadarChartRenderer = createBasicChartRenderer('radar');
 
 // Single data point chart renderers (Pie/Donut)
 export const PieChartRenderer: React.FC<{
@@ -67,7 +67,7 @@ export const PieChartRenderer: React.FC<{
     dataset={dataset}
     dimension={dimension}
     measure={measure}
-    style={{ width: "100%", height: "100%" }}
+    style={{ width: '100%', height: '100%' }}
   />
 );
 
@@ -80,7 +80,7 @@ export const DonutChartRenderer: React.FC<{
     dataset={dataset}
     dimension={dimension}
     measure={measure}
-    style={{ width: "100%", height: "100%" }}
+    style={{ width: '100%', height: '100%' }}
   />
 );
 
@@ -96,7 +96,7 @@ export const BulletChartRenderer: React.FC<{
       dataset={dataset}
       dimensions={dimensions}
       measures={bulletMeasures}
-      style={{ width: "100%", height: "100%" }}
+      style={{ width: '100%', height: '100%' }}
     />
   );
 };
@@ -112,7 +112,7 @@ export const ColumnWithTrendRenderer: React.FC<{
       dataset={dataset}
       dimensions={dimensions}
       measures={columnWithTrendMeasures}
-      style={{ width: "100%", height: "100%" }}
+      style={{ width: '100%', height: '100%' }}
     />
   );
 };
@@ -122,13 +122,13 @@ export const ComposedChartRenderer: React.FC<ChartRendererProps> = ({
   dimensions,
   measures,
 }) => {
-  const measuresWithType = addChartType(measures as ChartMeasure[], "bar");
+  const measuresWithType = addChartType(measures as ChartMeasure[], 'bar');
   return (
     <ComposedChart
       dataset={dataset}
       dimensions={dimensions}
       measures={measuresWithType}
-      style={{ width: "100%", height: "100%" }}
+      style={{ width: '100%', height: '100%' }}
     />
   );
 };
@@ -137,15 +137,15 @@ export const UnsupportedChartRenderer: React.FC<{
   chartType: string;
   isMulti: boolean;
 }> = ({ chartType, isMulti }) => (
-  <div style={{ padding: "20px", textAlign: "center" }}>
-    Chart type not supported{isMulti ? " for multiple series" : ""}: {chartType}
+  <div style={{ padding: '20px', textAlign: 'center' }}>
+    Chart type not supported{isMulti ? ' for multiple series' : ''}: {chartType}
   </div>
 );
 
 export const MultiSeriesRequiredRenderer: React.FC<{
   chartType: string;
 }> = ({ chartType }) => (
-  <div style={{ padding: "20px", textAlign: "center" }}>
+  <div style={{ padding: '20px', textAlign: 'center' }}>
     {chartType} requires multiple data series
   </div>
 );
