@@ -1,0 +1,17 @@
+{
+  "default": "mock",
+  "backends": {
+    "mock": {
+      "baseURL": "http://localhost:5000",
+      "auth": { "type": "basic" }
+    },
+    "real": {
+      "baseURL": "http://localhost:8000",
+      "auth": { "type": "bearer-id-token" }
+    }
+  },
+  "routes": [
+    { "pattern": "^/chat/stream$", "backend": "real" },
+    { "pattern": "^/chats", "backend": "real" }
+  ]
+}

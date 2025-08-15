@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { apiClient } from '@/lib/api/http-client';
+import { backendRequest } from '@/lib/api/backend-request';
 
 // Evitar cache y asegurar ejecución en cada request
 export const dynamic = 'force-dynamic';
@@ -18,20 +18,19 @@ export async function POST(request: NextRequest) {
     // si no hay body válido seguimos sin él
   }
 
-  // Preparar petición upstream como stream de bytes para pasar chunks tal cual
+  // Preparar petición upstream como stream de bytes usando backendRequest
   let upstream;
   try {
-    upstream = await apiClient.stream<Uint8Array>('/chat/stream', {
+    upstream = await backendRequest<Uint8Array, unknown>({
       method: 'POST',
+      path: '/chat/stream',
       body,
-      headers: {
-        Accept: 'text/event-stream',
-        'Content-Type': 'application/json',
-      },
-      parser: 'bytes', // no decodificar para preservar formato SSE exacto
-      timeout: 0, // permitir streams largos (AbortController manual)
+      stream: true,
+      parser: 'bytes',
     });
   } catch (error) {
+    console.log(error);
+
     const msg = error instanceof Error ? error.message : 'Upstream error';
     const encoder = new TextEncoder();
     return new Response(

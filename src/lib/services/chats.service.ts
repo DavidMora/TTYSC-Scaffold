@@ -1,15 +1,9 @@
-import { apiClient, httpClient } from '@/lib/api';
+import { httpClient } from '@/lib/api';
 import {
   HttpClientResponse,
   HttpSSEEvent,
   HttpStreamResponse,
 } from '@/lib/types/api/http-client';
-import {
-  CHATS,
-  CHAT,
-  CHAT_MESSAGE,
-  MESSAGE_FEEDBACK,
-} from '@/lib/constants/api/routes';
 import {
   ChatResponse,
   ChatsResponse,
@@ -23,47 +17,54 @@ import {
   ChatPromptRequest,
 } from '@/lib/types/chats';
 
+// BFF relative endpoints (proxy handled server-side)
+const BFF_CHATS = '/api/chats';
+const BFF_CHAT = (id: string) => `/api/chats/${encodeURIComponent(id)}`;
+const BFF_CHAT_MESSAGE = '/api/chat';
+const BFF_MESSAGE_FEEDBACK = (messageId: string) =>
+  `/api/messages/${encodeURIComponent(messageId)}/feedback`;
+
 export const getChats = async (): Promise<
   HttpClientResponse<ChatsResponse>
 > => {
-  return await apiClient.get<ChatsResponse>(CHATS);
+  return await httpClient.get<ChatsResponse>(BFF_CHATS);
 };
 
 export const getChat = async (
   id: string
 ): Promise<HttpClientResponse<ChatResponse>> => {
-  return await apiClient.get<ChatResponse>(CHAT(id));
+  return await httpClient.get<ChatResponse>(BFF_CHAT(id));
 };
 
 export const createChat = async (
   payload: CreateChatRequest
 ): Promise<HttpClientResponse<Chat>> => {
-  return await apiClient.post<Chat>(CHATS, payload);
+  return await httpClient.post<Chat>(BFF_CHATS, payload);
 };
 
 export const updateChat = async (
   payload: UpdateChatRequest
 ): Promise<HttpClientResponse<Chat>> => {
-  return await apiClient.patch<Chat>(CHAT(payload.id), payload);
+  return await httpClient.patch<Chat>(BFF_CHAT(payload.id), payload);
 };
 
 export const deleteChat = async (
   id: string
 ): Promise<HttpClientResponse<void>> => {
-  return await apiClient.delete<void>(CHAT(id));
+  return await httpClient.delete<void>(BFF_CHAT(id));
 };
 
 export const createChatMessage = async (
   payload: CreateChatMessageRequest
 ): Promise<HttpClientResponse<BotResponse>> => {
-  return await apiClient.post<BotResponse>(CHAT_MESSAGE, payload);
+  return await httpClient.post<BotResponse>(BFF_CHAT_MESSAGE, payload);
 };
 
 export const updateMessageFeedback = async (
   messageId: string,
   feedbackVote: VoteType
 ): Promise<HttpClientResponse<void>> => {
-  return await apiClient.put<void>(MESSAGE_FEEDBACK(messageId), {
+  return await httpClient.put<void>(BFF_MESSAGE_FEEDBACK(messageId), {
     feedbackVote,
   });
 };
@@ -74,15 +75,12 @@ export const newChatMessageStream = async (
 ): Promise<HttpStreamResponse<ChatStreamChunk>> => {
   const { limit, abortSignal } = options || {};
 
-  const rawStream = await httpClient.stream<HttpSSEEvent>(
-    'http://localhost:3000/api/chat/stream',
-    {
-      method: 'POST',
-      body: payload,
-      parser: 'sse',
-      signal: abortSignal,
-    }
-  );
+  const rawStream = await httpClient.stream<HttpSSEEvent>('/api/chat/stream', {
+    method: 'POST',
+    body: payload,
+    parser: 'sse',
+    signal: abortSignal,
+  });
 
   let count = 0;
 

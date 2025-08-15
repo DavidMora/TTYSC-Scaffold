@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "predev": "node scripts/generate-feature-flags.js",
     "dev": "next dev --turbopack",
     "dev:no-turbo": "next dev",
     "prebuild": "node scripts/generate-feature-flags.js",
