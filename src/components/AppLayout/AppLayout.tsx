@@ -11,6 +11,8 @@ import { sideBarItems } from '@/lib/constants/UI/SideBarItems';
 import HeaderBar from '@/components/AppLayout/HeaderBar';
 import { HEADER_BAR_CONFIG } from '@/lib/constants/UI/HeaderBar';
 import { RawDataModal } from '../Modals/RawDataModal';
+import { SettingsModalProvider } from '@/contexts/SettingsModalContext';
+import SettingsModal from '@/components/Modals/SettingsModal';
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -21,6 +23,7 @@ export default function AppLayout({ children }: Readonly<AppLayoutProps>) {
 
   return (
     <RawDataModalProvider>
+     <SettingsModalProvider>
       <FlexBox
         direction={FlexBoxDirection.Column}
         className="h-screen w-screen"
@@ -57,9 +60,11 @@ export default function AppLayout({ children }: Readonly<AppLayoutProps>) {
             />
             {children}
             <RawDataModalWithContext />
+            <SettingsModalWithContext />
           </div>
         </FlexBox>
       </FlexBox>
+     </SettingsModalProvider>
     </RawDataModalProvider>
   );
 }
@@ -67,4 +72,8 @@ export default function AppLayout({ children }: Readonly<AppLayoutProps>) {
 function RawDataModalWithContext() {
   const { isOpen, close } = useRawDataModal();
   return <RawDataModal data={[]} open={isOpen} onClose={close} />;
+}
+
+function SettingsModalWithContext() {
+  return <SettingsModal />;
 }

@@ -16,6 +16,7 @@ import {
 import { useRouter } from 'next/navigation';
 import { SUPPLY_CHAIN_MENU } from '@/lib/constants/UI/HeaderBar';
 import { MenuItemKey } from '@/lib/types/HeaderBar';
+import { useSettingsModal } from '@/contexts/SettingsModalContext';
 
 type HeaderBarProps = {
   title: string;
@@ -33,10 +34,11 @@ export default function HeaderBar({
   const router = useRouter();
   const iconRef = useRef<ButtonDomRef>(null);
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+  const { open: openSettingsModal } = useSettingsModal();
 
   const actionsMap: Record<MenuItemKey, () => void> = {
     RETRY: () => console.log('Default retry...'),
-    SETTINGS: () => console.log('Settings...'),
+    SETTINGS: () => openSettingsModal(),
     PRINT: () => window.print(),
     RECORD_SCREENCAST: () => console.log('Recording...'),
     ABOUT: () => router.push('/about'),

@@ -7,6 +7,7 @@ export const DEFAULT_FLAGS: FeatureFlags = {
   FF_Full_Page_Navigation: true,
   FF_Side_NavBar: true,
   FF_Modals: true,
+  FF_Settings_Menu: true,
 };
 
 /**
@@ -84,12 +85,18 @@ const loadFromEnvironment = (): FeatureFlags => {
 
   const FF_Modals = parseBool(process.env.FF_MODALS, DEFAULT_FLAGS.FF_Modals);
 
+  const FF_Settings_Menu = parseBool(
+    process.env.FF_SETTINGS_MENU,
+    DEFAULT_FLAGS.FF_Settings_Menu
+  );
+
   const flags: FeatureFlags = {
     enableAuthentication: enableAuth,
     FF_Chat_Analysis_Screen: FF_Chat_Analysis_Screen,
     FF_Full_Page_Navigation: FF_Full_Page_Navigation,
     FF_Side_NavBar: FF_Side_NavBar,
     FF_Modals: FF_Modals,
+    FF_Settings_Menu: FF_Settings_Menu,
   };
 
   return flags;

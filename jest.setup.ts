@@ -78,6 +78,8 @@ global.fetch = jest.fn((url, init?: RequestInit) => {
           FF_Chat_Analysis_Screen: true,
           FF_Full_Page_Navigation: true,
           FF_Modals: true,
+          FF_Side_NavBar: true,
+          FF_Settings_Menu: true,
         }),
     });
   }

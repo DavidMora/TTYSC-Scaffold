@@ -62,6 +62,7 @@ describe('feature-flags-edge', () => {
         FF_Full_Page_Navigation: true, // default is true when env var is not 'false'
         FF_Side_NavBar: true, // default is true when env var is not 'false'
         FF_Modals: true, // default is true when env var is not 'false'
+        FF_Settings_Menu: true, // default is true when env var is not 'false'
       });
     });
 
@@ -80,6 +81,7 @@ describe('feature-flags-edge', () => {
         FF_Full_Page_Navigation: true,
         FF_Side_NavBar: true,
         FF_Modals: true,
+        FF_Settings_Menu: true,
       });
     });
 
@@ -98,6 +100,7 @@ describe('feature-flags-edge', () => {
         FF_Full_Page_Navigation: true,
         FF_Side_NavBar: true,
         FF_Modals: true,
+        FF_Settings_Menu: true,
       });
     });
 
@@ -116,6 +119,7 @@ describe('feature-flags-edge', () => {
         FF_Full_Page_Navigation: true,
         FF_Side_NavBar: true,
         FF_Modals: true,
+        FF_Settings_Menu: true,
       });
     });
 
@@ -137,6 +141,7 @@ describe('feature-flags-edge', () => {
         FF_Full_Page_Navigation: true, // DEFAULT_FLAGS value
         FF_Side_NavBar: true, // DEFAULT_FLAGS value
         FF_Modals: true, // DEFAULT_FLAGS value
+        FF_Settings_Menu: true, // DEFAULT_FLAGS value
       });
       expect(mockConsoleWarn).toHaveBeenCalledWith(
         'Error loading feature flags in edge runtime, using defaults:',

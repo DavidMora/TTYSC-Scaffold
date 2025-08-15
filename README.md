@@ -38,6 +38,10 @@ This project implements a robust feature flag system with multiple configuration
 cp feature-flags.example.json feature-flags.json
 ```
 
+#### Available Flags
+
+- `FF_Settings_Menu`: Enables the header Settings menu and modal.
+
 2. Edit `feature-flags.json` to customize features:
 
 ```json

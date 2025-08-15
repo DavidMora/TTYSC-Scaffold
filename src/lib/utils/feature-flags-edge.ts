@@ -12,6 +12,7 @@ import { DEFAULT_FLAGS } from './feature-flags';
  * - FF_FULL_PAGE_NAVIGATION (true/false)
  * - FF_SIDE_NAVBAR (true/false)
  * - FF_Modals (true/false)
+ * - FF_Settings_Menu (true/false)
  */
 export function loadFeatureFlagsEdge(): FeatureFlags {
   try {
@@ -22,6 +23,7 @@ export function loadFeatureFlagsEdge(): FeatureFlags {
       FF_Full_Page_Navigation: process.env.FF_FULL_PAGE_NAVIGATION !== 'false',
       FF_Side_NavBar: process.env.FF_SIDE_NAVBAR !== 'false',
       FF_Modals: process.env.FF_Modals !== 'false',
+      FF_Settings_Menu: process.env.FF_Settings_Menu !== 'false',
     };
   } catch (error) {
     console.warn(

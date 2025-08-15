@@ -20,6 +20,7 @@ const DEFAULT_FLAGS = {
   FF_Full_Page_Navigation: true,
   FF_Side_NavBar: true,
   FF_Modals: true,
+  FF_Settings_Menu: true,
 };
 
 // Helper function for handling environment variables
@@ -42,6 +43,7 @@ const ENV_KEYS = {
   FF_Full_Page_Navigation: 'FF_FULL_PAGE_NAVIGATION',
   FF_Side_NavBar: 'FF_SIDE_NAVBAR',
   FF_Modals: 'FF_MODALS',
+  FF_Settings_Menu: 'FF_SETTINGS_MENU',
 };
 
 Object.keys(DEFAULT_FLAGS).forEach((key) => {
