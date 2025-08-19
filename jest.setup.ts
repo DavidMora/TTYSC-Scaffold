@@ -159,6 +159,82 @@ global.CSSStyleSheet = class {
 // Mock 'marked' ESM module (avoid transforming node_modules ESM in Jest)
 jest.mock('marked', () => ({
   marked: {
-    parse: (content: string) => content, // return raw content (sufficient for tests)
+    parse: (content: string) => {
+      // Simple markdown to HTML conversion for tests
+      if (!content) return content;
+
+      // Convert links [text](url) to <a href="url">text</a>
+      let html = content.replace(
+        /\[([^\]]+)\]\(([^)]+)\)/g,
+        '<a href="$2">$1</a>'
+      );
+
+      // Convert tables
+      const lines = html.split('\n');
+      let inTable = false;
+      let tableHtml = '';
+      const resultLines: string[] = [];
+
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+
+        if (line.includes('|') && !inTable) {
+          // Start of table
+          inTable = true;
+          tableHtml = '<table>\n<thead>\n<tr>\n';
+          const headers = line
+            .split('|')
+            .map((h) => h.trim())
+            .filter((h) => h);
+          headers.forEach((header) => {
+            tableHtml += `<th>${header}</th>\n`;
+          });
+          tableHtml += '</tr>\n</thead>\n<tbody>';
+        } else if (line.includes('|') && inTable && !line.includes('---')) {
+          // Table row
+          const cells = line
+            .split('|')
+            .map((c) => c.trim())
+            .filter((c) => c);
+          tableHtml += '<tr>\n';
+          cells.forEach((cell) => {
+            tableHtml += `<td>${cell}</td>\n`;
+          });
+          tableHtml += '</tr>\n';
+        } else if (line.includes('---') && inTable) {
+          // Table separator, ignore
+          continue;
+        } else if (inTable && !line.includes('|')) {
+          // End of table
+          tableHtml += '</tbody></table>';
+          resultLines.push(tableHtml);
+          inTable = false;
+          tableHtml = '';
+          if (line) resultLines.push(line);
+        } else if (!inTable) {
+          resultLines.push(line);
+        }
+      }
+
+      if (inTable) {
+        tableHtml += '</tbody></table>';
+        resultLines.push(tableHtml);
+      }
+
+      html = resultLines.join('\n');
+
+      // Convert code blocks ```lang to <pre><code class="language-lang">
+      html = html.replace(/```(\w+)?\n([\s\S]*?)```/g, (match, lang, code) => {
+        const className = lang ? ` class="language-${lang}"` : '';
+        return `<pre><code${className}>${code.trim()}</code></pre>`;
+      });
+
+      // Wrap in paragraph if it's simple text and doesn't contain block elements
+      if (!html.includes('<') && html.trim()) {
+        html = `<p>${html}</p>`;
+      }
+
+      return html;
+    },
   },
 }));

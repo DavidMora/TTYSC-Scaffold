@@ -6,7 +6,7 @@ import {
   HttpStreamResponse,
 } from '@/lib/types/api/http-client';
 import axios, { AxiosInstance } from 'axios';
-import { parseSSEBlock } from '@/lib/api/stream/parse-sse';
+import { sseParser } from '@/lib/api/stream/parse-sse';
 
 export class AxiosAdapter implements HttpClientAdapter {
   private readonly axiosInstance: AxiosInstance;
@@ -196,7 +196,7 @@ export class AxiosAdapter implements HttpClientAdapter {
             return { value: JSON.parse(line) as TChunk, done: false };
           }
           if (parser === 'sse' && sseBuf) {
-            const evt = parseSSEBlock(sseBuf) as unknown as TChunk;
+            const evt = sseParser.parseSSEBlock(sseBuf) as unknown as TChunk;
             sseBuf = '';
             return { value: evt, done: false };
           }
@@ -243,7 +243,7 @@ export class AxiosAdapter implements HttpClientAdapter {
               if (eventEnd !== -1) {
                 const raw = sseBuf.slice(0, eventEnd);
                 sseBuf = sseBuf.slice(eventEnd + 2);
-                const evt = parseSSEBlock(raw) as unknown as TChunk;
+                const evt = sseParser.parseSSEBlock(raw) as unknown as TChunk;
                 return { value: evt, done: false };
               }
               return undefined;
