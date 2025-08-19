@@ -158,7 +158,7 @@ describe('AnalysisContainer', () => {
 
     expect(mockAnalysisChat).toHaveBeenCalledWith(
       {
-        chatId: '',
+        // chatId: '',
         previousMessages: [],
         draft: '',
       },

@@ -133,7 +133,7 @@ export default function AnalysisContainer() {
             isDisabled={isDisabled}
             handleFilterChange={handleFilterChange}
           />
-     <div className="h-[2px] bg-[var(--sapToolbar_SeparatorColor)]" />
+          <div className="h-[2px] bg-[var(--sapToolbar_SeparatorColor)]" />
           {error ? (
             <ErrorDisplay error={error} onRetry={refetchAnalysis} />
           ) : (
@@ -144,7 +144,6 @@ export default function AnalysisContainer() {
                 showAutoSaved={showAutoSaved}
               />
               <AnalysisChat
-                chatId={analysis?.data?.id || ''}
                 previousMessages={analysis?.data?.messages || []}
                 draft={analysis?.data?.draft || ''}
               />
