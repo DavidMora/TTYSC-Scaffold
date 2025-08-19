@@ -82,12 +82,11 @@ ui5-card.chat-history-card ui5-panel::part(content) {
 .markdown th,
 .markdown td {
   background-color: var(--sapList_Background) !important;
-  border: 1px solid  var(--sapList_BorderColor) !important;
+  border: 1px solid var(--sapList_BorderColor) !important;
   margin: 1rem 0 0.25rem 0rem !important;
   font-size: var(--sapFontSize) !important;
   color: var(--sapTextColor) !important;
   padding: 0.5rem !important;
-
 }
 
 .markdown thead th {

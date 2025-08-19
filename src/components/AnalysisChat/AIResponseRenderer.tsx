@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import React, { useMemo } from 'react';
 import { CodeBlock } from '@/components/CodeBlock/CodeBlock';
@@ -34,7 +34,11 @@ export function AIResponseRenderer({
       return (
         <div
           className="markdown"
-          style={{ ...textStyle, whiteSpace: 'normal', overflowWrap: 'anywhere' }}
+          style={{
+            ...textStyle,
+            whiteSpace: 'normal',
+            overflowWrap: 'anywhere',
+          }}
           dangerouslySetInnerHTML={{ __html: safe }}
         />
       );
@@ -118,7 +122,11 @@ export function AIResponseRenderer({
         <div
           key={key}
           className="markdown"
-          style={{ ...textStyle, whiteSpace: 'normal', overflowWrap: 'anywhere' }}
+          style={{
+            ...textStyle,
+            whiteSpace: 'normal',
+            overflowWrap: 'anywhere',
+          }}
           dangerouslySetInnerHTML={{ __html: safe }}
         />
       );

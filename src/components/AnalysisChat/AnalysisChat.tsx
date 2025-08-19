@@ -153,9 +153,7 @@ export default function AnalysisChat({
   function buildMarkdownFromResults(): string {
     const stepLines = Array.from(
       new Set(
-        (steps || [])
-          .map((s) => s.step)
-          .filter((s): s is string => Boolean(s))
+        (steps || []).map((s) => s.step).filter((s): s is string => Boolean(s))
       )
     );
 
@@ -163,7 +161,10 @@ export default function AnalysisChat({
       (metadata &&
         metadata.query_results &&
         Array.isArray(metadata.query_results.dataframe_records) &&
-        (metadata.query_results.dataframe_records as Array<Record<string, unknown>>)) || [];
+        (metadata.query_results.dataframe_records as Array<
+          Record<string, unknown>
+        >)) ||
+      [];
 
     let md = '### Workflow progress\n';
     for (const st of stepLines) md += `- ${st}\n`;
@@ -201,7 +202,14 @@ export default function AnalysisChat({
       setShowLoader(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isStreaming, finishReason, aggregatedContent, metadata, runId, appendedRunId]);
+  }, [
+    isStreaming,
+    finishReason,
+    aggregatedContent,
+    metadata,
+    runId,
+    appendedRunId,
+  ]);
 
   return (
     <div
@@ -239,9 +247,12 @@ export default function AnalysisChat({
           >
             <span style={{ fontSize: 'var(--sapFontSize)' }}>
               {(() => {
-                const last = [...steps].reverse().find((s) => s.workflow_status);
+                const last = [...steps]
+                  .reverse()
+                  .find((s) => s.workflow_status);
                 if (!last) return 'Running...';
-                if (last.workflow_status === 'in_progress') return last.step || 'Running...';
+                if (last.workflow_status === 'in_progress')
+                  return last.step || 'Running...';
                 if (last.workflow_status === 'started') return 'Running...';
                 return 'Running...';
               })()}

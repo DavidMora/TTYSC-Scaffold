@@ -36,7 +36,7 @@ const customJestConfig = {
 const jestConfig = async () => {
   const config = await createJestConfig(customJestConfig)();
   config.transformIgnorePatterns = [
-    'node_modules/(?!(@ui5|lit|lit-html|@zxing/library|jose|openid-client|@panva/hkdf|preact-render-to-string|preact)/)',
+    'node_modules/(?!(@ui5|lit|lit-html|@zxing/library|marked|dompurify|jose|openid-client|@panva/hkdf|preact-render-to-string|preact)/)',
     '^.+\\.module\\.(css|sass|scss)$',
   ];
   return config;

@@ -6,7 +6,7 @@ describe("parseDate", () => {
     const result = parseDate(input);
 
     expect(result).toMatch(
-      /^\d{1,2}\/\d{1,2}\/\d{4} at \d{1,2}:\d{2} (AM|PM)$/
+      /^\d{1,2}\/\d{1,2}\/\d{4} at \d{1,2}:\d{2} (AM|PM)$/,
     );
     expect(result).toContain("AM");
   });
@@ -16,7 +16,7 @@ describe("parseDate", () => {
     const result = parseDate(input);
 
     expect(result).toMatch(
-      /^\d{1,2}\/\d{1,2}\/\d{4} at \d{1,2}:\d{2} (AM|PM)$/
+      /^\d{1,2}\/\d{1,2}\/\d{4} at \d{1,2}:\d{2} (AM|PM)$/,
     );
     expect(["AM", "PM"]).toContain(result.split(" ").pop());
   });
@@ -26,7 +26,7 @@ describe("parseDate", () => {
     const result = parseDate(input);
 
     expect(result).toMatch(
-      /^\d{1,2}\/\d{1,2}\/\d{4} at \d{1,2}:\d{2} (AM|PM)$/
+      /^\d{1,2}\/\d{1,2}\/\d{4} at \d{1,2}:\d{2} (AM|PM)$/,
     );
   });
 
@@ -40,7 +40,7 @@ describe("parseDate", () => {
     inputs.forEach((input) => {
       const result = parseDate(input);
       expect(result).toMatch(
-        /^\d{1,2}\/\d{1,2}\/\d{4} at \d{1,2}:\d{2} (AM|PM)$/
+        /^\d{1,2}\/\d{1,2}\/\d{4} at \d{1,2}:\d{2} (AM|PM)$/,
       );
     });
   });
@@ -50,7 +50,7 @@ describe("parseDate", () => {
     const result = parseDate(input, true); // useUTC = true
 
     expect(result).toMatch(
-      /^\d{1,2}\/\d{1,2}\/\d{4} at \d{1,2}:\d{2} (AM|PM)$/
+      /^\d{1,2}\/\d{1,2}\/\d{4} at \d{1,2}:\d{2} (AM|PM)$/,
     );
     expect(result).toContain("PM"); // 14:30 UTC = 2:30 PM
   });
@@ -60,7 +60,7 @@ describe("parseDate", () => {
     const result = parseDate(input);
 
     expect(result).toMatch(
-      /^\d{1,2}\/\d{1,2}\/\d{4} at \d{1,2}:\d{2} (AM|PM)$/
+      /^\d{1,2}\/\d{1,2}\/\d{4} at \d{1,2}:\d{2} (AM|PM)$/,
     );
     expect(["AM", "PM"]).toContain(result.split(" ").pop());
   });
@@ -70,7 +70,7 @@ describe("parseDate", () => {
     const result = parseDate(input);
 
     expect(result).toMatch(
-      /^\d{1,2}\/\d{1,2}\/\d{4} at \d{1,2}:\d{2} (AM|PM)$/
+      /^\d{1,2}\/\d{1,2}\/\d{4} at \d{1,2}:\d{2} (AM|PM)$/,
     );
     expect(["AM", "PM"]).toContain(result.split(" ").pop());
   });
@@ -82,7 +82,7 @@ describe("parseDate", () => {
     const result = parseDate(input, true); // Use UTC to ensure consistent behavior
 
     expect(result).toMatch(
-      /^\d{1,2}\/\d{1,2}\/\d{4} at \d{1,2}:\d{2} (AM|PM)$/
+      /^\d{1,2}\/\d{1,2}\/\d{4} at \d{1,2}:\d{2} (AM|PM)$/,
     );
     expect(result).toContain("12:00 AM");
   });
@@ -94,7 +94,7 @@ describe("parseDate", () => {
     const result = parseDate(input, true); // Use UTC to ensure consistent behavior
 
     expect(result).toMatch(
-      /^\d{1,2}\/\d{1,2}\/\d{4} at \d{1,2}:\d{2} (AM|PM)$/
+      /^\d{1,2}\/\d{1,2}\/\d{4} at \d{1,2}:\d{2} (AM|PM)$/,
     );
     expect(result).toContain("12:00 PM");
   });
@@ -104,7 +104,7 @@ describe("parseDate", () => {
     const result = parseDate(input);
 
     expect(result).toMatch(
-      /^\d{1,2}\/\d{1,2}\/\d{4} at \d{1,2}:\d{2} (AM|PM)$/
+      /^\d{1,2}\/\d{1,2}\/\d{4} at \d{1,2}:\d{2} (AM|PM)$/,
     );
     expect(result).toContain("AM");
   });

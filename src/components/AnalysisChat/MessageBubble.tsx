@@ -89,7 +89,11 @@ export function MessageBubble({
           </Text>
         </div>
       ) : (
-        <AIResponseBubble message={message} steps={steps} isStreaming={isStreaming} />
+        <AIResponseBubble
+          message={message}
+          steps={steps}
+          isStreaming={isStreaming}
+        />
       )}
     </div>
   );
