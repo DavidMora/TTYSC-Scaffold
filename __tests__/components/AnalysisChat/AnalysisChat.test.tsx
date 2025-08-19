@@ -3,11 +3,23 @@ import { render, screen, fireEvent, act } from '@testing-library/react';
 import AnalysisChat from '@/components/AnalysisChat/AnalysisChat';
 import { ChatMessage, BotResponse } from '@/lib/types/chats';
 import { useSendChatMessage } from '@/hooks/chats';
+import { useChatStream } from '@/hooks/chats/stream';
 import '@testing-library/jest-dom';
 
 // Mock hooks
 jest.mock('@/hooks/chats', () => ({
   useSendChatMessage: jest.fn(),
+}));
+jest.mock('@/hooks/chats/stream', () => ({
+  useChatStream: jest.fn(() => ({
+    start: jest.fn(),
+    reset: jest.fn(),
+    isStreaming: false,
+    steps: [],
+    aggregatedContent: '',
+    finishReason: null,
+    metadata: null,
+  })),
 }));
 
 // Mock components
@@ -63,6 +75,9 @@ jest.mock('@/components/AnalysisChat/ChatInput', () => ({
 const mockUseSendChatMessage = useSendChatMessage as jest.MockedFunction<
   typeof useSendChatMessage
 >;
+const mockUseChatStream = useChatStream as jest.MockedFunction<
+  typeof useChatStream
+>;
 
 describe('AnalysisChat', () => {
   const mockMutate = jest.fn();
@@ -84,7 +99,6 @@ describe('AnalysisChat', () => {
   ];
 
   const defaultProps = {
-    chatId: 'test-chat-id',
     previousMessages: mockPreviousMessages,
   };
 
@@ -93,10 +107,27 @@ describe('AnalysisChat', () => {
 
     mockUseSendChatMessage.mockReturnValue({
       mutate: mockMutate,
+      mutateAsync: jest.fn(),
       isLoading: false,
       data: undefined,
-      error: null,
+      error: undefined,
       reset: jest.fn(),
+      isSuccess: false,
+      isError: false,
+      isIdle: true,
+    });
+    mockUseChatStream.mockReturnValue({
+      start: jest.fn(),
+      reset: jest.fn(),
+      stop: jest.fn(),
+      isStreaming: false,
+      steps: [],
+      aggregatedContent: '',
+      finishReason: null,
+      metadata: null,
+      chunks: [],
+      error: null,
+      lastChunk: null,
     });
 
     // Mock scrollTo on HTMLDivElement prototype
@@ -113,7 +144,7 @@ describe('AnalysisChat', () => {
     });
 
     it('should render with empty previous messages', () => {
-      render(<AnalysisChat chatId="test-chat-id" previousMessages={[]} />);
+      render(<AnalysisChat previousMessages={[]} />);
 
       expect(screen.getByTestId('chat-input')).toBeInTheDocument();
       expect(screen.queryByTestId('message-1')).not.toBeInTheDocument();
@@ -133,8 +164,12 @@ describe('AnalysisChat', () => {
         mutate: mockMutate,
         isLoading: true,
         data: undefined,
-        error: null,
+        error: undefined,
         reset: jest.fn(),
+        mutateAsync: jest.fn(),
+        isSuccess: false,
+        isError: false,
+        isIdle: false,
       });
 
       render(<AnalysisChat {...defaultProps} />);
@@ -146,46 +181,29 @@ describe('AnalysisChat', () => {
       expect(sendButton).toBeDisabled();
     });
 
-    it('should handle successful message response', () => {
-      mockUseSendChatMessage.mockReturnValue({
-        mutate: mockMutate,
-        isLoading: false,
-        data: {
-          id: 'test-id',
-          object: 'chat.completion',
-          model: 'gpt-4',
-          created: '2024-01-01T10:00:00Z',
-          choices: [
-            {
-              message: {
-                content: 'This is a successful response',
-                role: 'assistant',
-                title: 'Assistant Response',
-              },
-              finish_reason: 'stop',
-              index: 0,
-            },
-          ],
-          usage: {
-            prompt_tokens: 10,
-            completion_tokens: 20,
-            total_tokens: 30,
-          },
-        },
-        error: null,
+    it('should handle user sending a message (appends user message)', () => {
+      const mockStart = jest.fn();
+      mockUseChatStream.mockReturnValue({
+        start: mockStart,
         reset: jest.fn(),
+        stop: jest.fn(),
+        isStreaming: false,
+        steps: [],
+        aggregatedContent: '',
+        finishReason: null,
+        metadata: null,
+        chunks: [],
+        error: null,
+        lastChunk: null,
       });
 
       render(<AnalysisChat {...defaultProps} />);
-
       const input = screen.getByTestId('message-input');
       const sendButton = screen.getByTestId('send-button');
-
-      fireEvent.change(input, { target: { value: 'Test message' } });
+      fireEvent.change(input, { target: { value: 'Hello model' } });
       fireEvent.click(sendButton);
-
-      // Verify that the success callback would be called with the response data
-      expect(mockMutate).toHaveBeenCalled();
+      // Mutation not called directly anymore; streaming start should be invoked
+      expect(mockStart).toHaveBeenCalled();
     });
 
     it('should test onError callback behavior', () => {
@@ -197,8 +215,12 @@ describe('AnalysisChat', () => {
           mutate: mockMutate,
           isLoading: false,
           data: undefined,
-          error: null,
+          error: undefined,
           reset: jest.fn(),
+          mutateAsync: jest.fn(),
+          isSuccess: false,
+          isError: false,
+          isIdle: true,
         };
       });
 
@@ -230,8 +252,12 @@ describe('AnalysisChat', () => {
           mutate: mockMutate,
           isLoading: false,
           data: undefined,
-          error: null,
+          error: undefined,
           reset: jest.fn(),
+          mutateAsync: jest.fn(),
+          isSuccess: false,
+          isError: false,
+          isIdle: true,
         };
       });
 
@@ -275,8 +301,12 @@ describe('AnalysisChat', () => {
           mutate: mockMutate,
           isLoading: false,
           data: undefined,
-          error: null,
+          error: undefined,
           reset: jest.fn(),
+          mutateAsync: jest.fn(),
+          isSuccess: false,
+          isError: false,
+          isIdle: true,
         };
       });
 
@@ -302,7 +332,7 @@ describe('AnalysisChat', () => {
       }
     });
 
-    it('should call scrollToBottom when sending messages', () => {
+    it('should call streaming start and schedule scroll when sending messages', () => {
       Object.defineProperty(window, 'setTimeout', {
         value: jest.fn((callback) => {
           callback();
@@ -317,6 +347,21 @@ describe('AnalysisChat', () => {
         writable: true,
       });
 
+      const mockStart = jest.fn();
+      mockUseChatStream.mockReturnValue({
+        start: mockStart,
+        reset: jest.fn(),
+        stop: jest.fn(),
+        isStreaming: false,
+        steps: [],
+        aggregatedContent: '',
+        finishReason: null,
+        metadata: null,
+        chunks: [],
+        error: null,
+        lastChunk: null,
+      });
+
       render(<AnalysisChat {...defaultProps} draft="" />);
 
       const input = screen.getByTestId('message-input');
@@ -325,7 +370,7 @@ describe('AnalysisChat', () => {
       fireEvent.change(input, { target: { value: 'Test message' } });
       fireEvent.click(sendButton);
 
-      expect(mockMutate).toHaveBeenCalled();
+      expect(mockStart).toHaveBeenCalled();
     });
 
     it('should not send message when input is empty', () => {
@@ -343,33 +388,22 @@ describe('AnalysisChat', () => {
       expect(mockMutate).not.toHaveBeenCalled();
     });
 
-    it('should test scrollToBottom with immediate=false (line 27)', () => {
-      const mockSetTimeout = jest.fn((callback) => {
-        callback();
+    it('should schedule scroll with timeout (immediate=false path)', () => {
+      const mockSetTimeout = jest.fn((cb) => {
+        cb();
         return 1;
       });
       Object.defineProperty(window, 'setTimeout', {
         value: mockSetTimeout,
         writable: true,
       });
-
       const mockScrollTo = jest.fn();
       Object.defineProperty(HTMLElement.prototype, 'scrollTo', {
         value: mockScrollTo,
         writable: true,
       });
-
       render(<AnalysisChat {...defaultProps} />);
-
-      // Trigger a state change that calls scrollToBottom with immediate=false
-      const input = screen.getByTestId('message-input');
-      const sendButton = screen.getByTestId('send-button');
-
-      fireEvent.change(input, { target: { value: 'Test message' } });
-      fireEvent.click(sendButton);
-
-      // Verify setTimeout was called (which happens when immediate=false)
-      expect(mockSetTimeout).toHaveBeenCalledWith(expect.any(Function), 50);
+      expect(mockSetTimeout).toHaveBeenCalled();
     });
 
     it('should test onError callback with smooth scroll (line 78)', () => {

@@ -1,5 +1,5 @@
 'use client';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { newChatMessageStream } from '@/lib/services/chats.service';
 import type {
   ChatStreamChunk,
@@ -75,7 +75,9 @@ export function useChatStream(
   const aggregatedContent = contentMapRef.current[choiceIndex] || '';
 
   const stop = useCallback(() => {
-    abortRef.current?.abort();
+    if (abortRef.current && !abortRef.current.signal.aborted) {
+      abortRef.current.abort();
+    }
     abortRef.current = null;
     runningRef.current = false;
     setIsStreaming(false);
@@ -99,8 +101,13 @@ export function useChatStream(
     } else if (!prevContent.includes(msgContent)) {
       contentMapRef.current[idx] = prevContent + msgContent; // delta append
     } else {
-      contentMapRef.current[idx] =
-        prevContent + msgContent.slice(prevContent.length); // overlap fallback
+      // This case is a bit ambiguous, but we assume it's for overlapping content.
+      // For instance, if prevContent is "hello wor" and msgContent is "world",
+      // it might be that the stream is correcting itself.
+      // A simple append if not fully contained seems reasonable.
+      if (!prevContent.endsWith(msgContent)) {
+        contentMapRef.current[idx] = prevContent + msgContent;
+      }
     }
   }, []);
 
@@ -124,12 +131,12 @@ export function useChatStream(
   const captureFinals = useCallback(
     (choice: ChatStreamChunk['choices'][number], targetIdx: number) => {
       if (choice.index !== targetIdx) return;
-      if (choice.finish_reason && !finishReason)
-        setFinishReason(choice.finish_reason);
-      if (choice.execution_metadata && !metadata)
-        setMetadata(choice.execution_metadata);
+      if (choice.finish_reason)
+        setFinishReason((prev) => prev || choice.finish_reason);
+      if (choice.execution_metadata)
+        setMetadata((prev) => prev || choice.execution_metadata || null);
     },
-    [finishReason, metadata]
+    []
   );
 
   const processChunk = useCallback(
@@ -198,18 +205,17 @@ export function useChatStream(
 
   // (Re)start automatically when dependencies change if autoStart enabled
   useEffect(() => {
-    if (autoStart) {
-      start();
+    if (autoStart && defaultPayload) {
+      start(defaultPayload);
     }
-    return () => stop();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [autoStart]);
+  }, [autoStart, defaultPayload, start]);
 
-  // Provide a stable snapshot of aggregatedContent for consumers (to trigger re-render when ref changes)
-  const aggregatedContentStable = useMemo(
-    () => aggregatedContent,
-    [aggregatedContent]
-  );
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      stop();
+    };
+  }, [stop]);
 
   return {
     chunks,
@@ -218,7 +224,7 @@ export function useChatStream(
     start,
     stop,
     reset,
-    aggregatedContent: aggregatedContentStable,
+    aggregatedContent,
     finishReason,
     metadata,
     steps,

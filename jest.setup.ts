@@ -1,3 +1,8 @@
+import { TextEncoder, TextDecoder } from 'util';
+
+global.TextEncoder = TextEncoder as any;
+global.TextDecoder = TextDecoder as typeof global.TextDecoder;
+
 // Learn more: https://github.com/testing-library/jest-dom
 import '@testing-library/jest-dom';
 
@@ -124,3 +129,10 @@ global.CSSStyleSheet = class {
   }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 } as any;
+
+// Mock 'marked' ESM module (avoid transforming node_modules ESM in Jest)
+jest.mock('marked', () => ({
+  marked: {
+    parse: (content: string) => content, // return raw content (sufficient for tests)
+  },
+}));

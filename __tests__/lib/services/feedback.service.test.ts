@@ -6,7 +6,10 @@ import {
   deleteFeedback,
 } from '../../../src/lib/services/feedback.service';
 import { httpClient } from '../../../src/lib/api';
-import { FEEDBACKS, FEEDBACK } from '../../../src/lib/constants/api/routes';
+import {
+  BFF_FEEDBACKS,
+  BFF_FEEDBACK,
+} from '../../../src/lib/constants/api/bff-routes';
 
 // Mock the httpClient
 jest.mock('../../../src/lib/api');
@@ -35,7 +38,7 @@ describe('FeedbackService', () => {
 
       const result = await getFeedbacks();
 
-      expect(mockHttpClient.get).toHaveBeenCalledWith(FEEDBACKS);
+      expect(mockHttpClient.get).toHaveBeenCalledWith(BFF_FEEDBACKS);
       expect(result).toEqual(response);
     });
 
@@ -44,7 +47,7 @@ describe('FeedbackService', () => {
       mockHttpClient.get.mockRejectedValue(mockError);
 
       await expect(getFeedbacks()).rejects.toThrow('Network error');
-      expect(mockHttpClient.get).toHaveBeenCalledWith(FEEDBACKS);
+      expect(mockHttpClient.get).toHaveBeenCalledWith(BFF_FEEDBACKS);
     });
   });
 
@@ -61,7 +64,7 @@ describe('FeedbackService', () => {
 
       const result = await getFeedback(feedbackId);
 
-      expect(mockHttpClient.get).toHaveBeenCalledWith(FEEDBACK(feedbackId));
+      expect(mockHttpClient.get).toHaveBeenCalledWith(BFF_FEEDBACK(feedbackId));
       expect(result).toEqual(response);
     });
 
@@ -77,7 +80,7 @@ describe('FeedbackService', () => {
 
       await getFeedback(feedbackId);
 
-      expect(mockHttpClient.get).toHaveBeenCalledWith(FEEDBACK(feedbackId));
+      expect(mockHttpClient.get).toHaveBeenCalledWith(BFF_FEEDBACK(feedbackId));
     });
   });
 
@@ -90,7 +93,7 @@ describe('FeedbackService', () => {
 
       const result = await createFeedback(payload);
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(FEEDBACKS, payload);
+      expect(mockHttpClient.post).toHaveBeenCalledWith(BFF_FEEDBACKS, payload);
       expect(result).toEqual(response);
     });
 
@@ -100,7 +103,7 @@ describe('FeedbackService', () => {
       mockHttpClient.post.mockRejectedValue(mockError);
 
       await expect(createFeedback(payload)).rejects.toThrow('Validation error');
-      expect(mockHttpClient.post).toHaveBeenCalledWith(FEEDBACKS, payload);
+      expect(mockHttpClient.post).toHaveBeenCalledWith(BFF_FEEDBACKS, payload);
     });
   });
 
@@ -118,7 +121,7 @@ describe('FeedbackService', () => {
       const result = await updateFeedback(payload);
 
       expect(mockHttpClient.patch).toHaveBeenCalledWith(
-        FEEDBACK(payload.id),
+        BFF_FEEDBACK(payload.id),
         payload
       );
       expect(result).toEqual(response);
@@ -133,7 +136,7 @@ describe('FeedbackService', () => {
         'Feedback not found'
       );
       expect(mockHttpClient.patch).toHaveBeenCalledWith(
-        FEEDBACK(payload.id),
+        BFF_FEEDBACK(payload.id),
         payload
       );
     });
@@ -147,7 +150,9 @@ describe('FeedbackService', () => {
 
       const result = await deleteFeedback(feedbackId);
 
-      expect(mockHttpClient.delete).toHaveBeenCalledWith(FEEDBACK(feedbackId));
+      expect(mockHttpClient.delete).toHaveBeenCalledWith(
+        BFF_FEEDBACK(feedbackId)
+      );
       expect(result).toEqual(response);
     });
 
@@ -157,7 +162,9 @@ describe('FeedbackService', () => {
       mockHttpClient.delete.mockRejectedValue(mockError);
 
       await expect(deleteFeedback(feedbackId)).rejects.toThrow('Delete failed');
-      expect(mockHttpClient.delete).toHaveBeenCalledWith(FEEDBACK(feedbackId));
+      expect(mockHttpClient.delete).toHaveBeenCalledWith(
+        BFF_FEEDBACK(feedbackId)
+      );
     });
 
     it('should encode special characters in delete id', async () => {
@@ -167,7 +174,9 @@ describe('FeedbackService', () => {
 
       await deleteFeedback(feedbackId);
 
-      expect(mockHttpClient.delete).toHaveBeenCalledWith(FEEDBACK(feedbackId));
+      expect(mockHttpClient.delete).toHaveBeenCalledWith(
+        BFF_FEEDBACK(feedbackId)
+      );
     });
   });
 });

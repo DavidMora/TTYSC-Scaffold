@@ -17,12 +17,13 @@ import {
   ChatPromptRequest,
 } from '@/lib/types/chats';
 
-// BFF relative endpoints (proxy handled server-side)
-const BFF_CHATS = '/api/chats';
-const BFF_CHAT = (id: string) => `/api/chats/${encodeURIComponent(id)}`;
-const BFF_CHAT_MESSAGE = '/api/chat';
-const BFF_MESSAGE_FEEDBACK = (messageId: string) =>
-  `/api/messages/${encodeURIComponent(messageId)}/feedback`;
+import {
+  BFF_CHATS,
+  BFF_CHAT,
+  BFF_CHAT_MESSAGE,
+  BFF_MESSAGE_FEEDBACK,
+  BFF_CHAT_STREAM,
+} from '@/lib/constants/api/bff-routes';
 
 export const getChats = async (): Promise<
   HttpClientResponse<ChatsResponse>
@@ -75,7 +76,7 @@ export const newChatMessageStream = async (
 ): Promise<HttpStreamResponse<ChatStreamChunk>> => {
   const { limit, abortSignal } = options || {};
 
-  const rawStream = await httpClient.stream<HttpSSEEvent>('/api/chat/stream', {
+  const rawStream = await httpClient.stream<HttpSSEEvent>(BFF_CHAT_STREAM, {
     method: 'POST',
     body: payload,
     parser: 'sse',
@@ -112,7 +113,7 @@ export const newChatMessageStream = async (
   const wrapped: HttpStreamResponse<ChatStreamChunk> = {
     [Symbol.asyncIterator]: () => mapper(),
     cancel: () => rawStream.cancel(),
-    raw: rawStream.raw,
+    raw: rawStream,
     ...meta,
   };
 

@@ -10,7 +10,7 @@ describe('API Client with Basic Authentication', () => {
     // Set environment variables for the test
     process.env.NEXT_PUBLIC_API_USERNAME = 'testuser';
     process.env.NEXT_PUBLIC_API_PASSWORD = 'testpass';
-    process.env.NEXT_PUBLIC_API_BASE_URL = 'https://api.example.com';
+    process.env.FRONTEND_BASE_URL = 'http://localhost:3000';
 
     // Create apiClient with auth config like in http-client.ts
     const authConfig = {
@@ -19,7 +19,7 @@ describe('API Client with Basic Authentication', () => {
     };
 
     apiClient = new HttpClient(undefined, {
-      baseURL: process.env.NEXT_PUBLIC_API_BASE_URL,
+      baseURL: process.env.FRONTEND_BASE_URL,
       auth: authConfig,
     });
   });

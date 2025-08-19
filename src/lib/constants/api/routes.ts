@@ -1,5 +1,13 @@
+// Backend (upstream) absolute base URL resolution.
+// Priority:
+// 1. Explicit BACKEND_BASE_URL (real backend)
+// 2. Explicit MOCK_BACKEND_BASE_URL (mock backend)
+// 3. Fallback to localhost mock default
+// NOTE: Frontend code should prefer BFF routes (see bff-routes.ts) for new features.
 export const BASE =
-  process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000';
+  process.env.BACKEND_BASE_URL ||
+  process.env.MOCK_BACKEND_BASE_URL ||
+  'http://localhost:5000';
 
 export const SETTINGS = `${BASE}/settings`;
 

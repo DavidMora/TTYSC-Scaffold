@@ -1,6 +1,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
+const BACKEND_MAP_FILE = 'src/config/backend-map.json';
+
 /** Types describing the backend mapping JSON structure */
 export interface BackendAuthBasic {
   type: 'basic';
@@ -31,7 +33,7 @@ interface ResolvedBackend extends BackendDefinition {
 }
 
 let cache: { ts: number; data: BackendMapFile } | null = null;
-const MAP_RELATIVE_PATH = 'src/config/backend-map.json';
+const MAP_RELATIVE_PATH = BACKEND_MAP_FILE;
 const DEV_TTL_MS = 5000;
 
 function loadFile(): BackendMapFile {
@@ -60,6 +62,13 @@ function getMap(): BackendMapFile {
 
 export function resolveBackend(pathname: string): ResolvedBackend {
   const map = getMap();
+  // Inject environment overrides for base URLs (runtime-configurable without editing JSON file)
+  if (map.backends.mock && process.env.MOCK_BACKEND_BASE_URL) {
+    map.backends.mock.baseURL = process.env.MOCK_BACKEND_BASE_URL;
+  }
+  if (map.backends.real && process.env.BACKEND_BASE_URL) {
+    map.backends.real.baseURL = process.env.BACKEND_BASE_URL;
+  }
   for (const rule of map.routes) {
     try {
       const regex = new RegExp(rule.pattern);

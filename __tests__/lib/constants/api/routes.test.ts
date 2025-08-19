@@ -61,25 +61,33 @@ describe('API Routes', () => {
   });
 
   beforeEach(() => {
-    // Reset environment variable
-    delete process.env.NEXT_PUBLIC_API_BASE_URL;
+    delete process.env.BACKEND_BASE_URL;
+    delete process.env.MOCK_BACKEND_BASE_URL;
   });
 
   describe('BASE route', () => {
-    it('uses default localhost when NEXT_PUBLIC_API_BASE_URL is not set', async () => {
-      delete process.env.NEXT_PUBLIC_API_BASE_URL;
+    it('falls back to mock localhost when neither BACKEND_BASE_URL nor MOCK_BACKEND_BASE_URL are set', async () => {
+      jest.resetModules();
       const routes = await import('@/lib/constants/api/routes');
       expect(routes.BASE).toBe('http://localhost:5000');
     });
 
-    it('uses NEXT_PUBLIC_API_BASE_URL when set', async () => {
-      const customUrl = 'https://api.example.com';
-      process.env.NEXT_PUBLIC_API_BASE_URL = customUrl;
-
-      // Re-import the module to get updated BASE value
+    it('uses MOCK_BACKEND_BASE_URL when set (and BACKEND_BASE_URL unset)', async () => {
+      const mockUrl = 'http://mock.example.com';
+      process.env.MOCK_BACKEND_BASE_URL = mockUrl;
       jest.resetModules();
       const routes = await import('@/lib/constants/api/routes');
-      expect(routes.BASE).toBe(customUrl);
+      expect(routes.BASE).toBe(mockUrl);
+    });
+
+    it('prefers BACKEND_BASE_URL over MOCK_BACKEND_BASE_URL when both set', async () => {
+      const mockUrl = 'http://mock.example.com';
+      const realUrl = 'https://real.example.com';
+      process.env.MOCK_BACKEND_BASE_URL = mockUrl;
+      process.env.BACKEND_BASE_URL = realUrl;
+      jest.resetModules();
+      const routes = await import('@/lib/constants/api/routes');
+      expect(routes.BASE).toBe(realUrl);
     });
   });
 

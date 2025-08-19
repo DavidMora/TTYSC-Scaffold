@@ -1,10 +1,11 @@
-import { apiClient } from '@/lib/api';
+import { httpClient } from '@/lib/api';
 import {
-  CHATS,
-  CHAT,
-  CHAT_MESSAGE,
-  MESSAGE_FEEDBACK,
-} from '@/lib/constants/api/routes';
+  BFF_CHATS,
+  BFF_CHAT,
+  BFF_CHAT_MESSAGE,
+  BFF_MESSAGE_FEEDBACK,
+  BFF_CHAT_STREAM,
+} from '@/lib/constants/api/bff-routes';
 import {
   getChats,
   getChat,
@@ -13,24 +14,28 @@ import {
   deleteChat,
   createChatMessage,
   updateMessageFeedback,
+  newChatMessageStream,
 } from '@/lib/services/chats.service';
 import {
   Chat,
   BotResponse,
   CreateChatMessageRequest,
   UpdateChatRequest,
+  ChatPromptRequest,
+  ChatStreamChunk,
 } from '@/lib/types/chats';
-import { HttpClientResponse } from '@/lib/types/api/http-client';
+import { HttpClientResponse, HttpSSEEvent } from '@/lib/types/api/http-client';
 import { BaseResponse } from '@/lib/types/http/responses';
 
-// Mock the apiClient
+// Mock the httpClient used by chats.service
 jest.mock('@/lib/api', () => ({
-  apiClient: {
+  httpClient: {
     get: jest.fn(),
     post: jest.fn(),
     patch: jest.fn(),
     delete: jest.fn(),
     put: jest.fn(),
+    stream: jest.fn(),
   },
 }));
 
@@ -64,7 +69,7 @@ const generalMockChat: Chat = {
   },
 };
 
-const mockHttpClient = apiClient as jest.Mocked<typeof apiClient>;
+const mockHttpClient = httpClient as jest.Mocked<typeof httpClient>;
 
 describe('Chats Service', () => {
   beforeEach(() => {
@@ -78,13 +83,14 @@ describe('Chats Service', () => {
         status: 200,
         statusText: 'OK',
         headers: {},
+        ok: true,
       };
 
       mockHttpClient.get.mockResolvedValue(mockResponse);
 
       const result = await getChats();
 
-      expect(mockHttpClient.get).toHaveBeenCalledWith(CHATS);
+      expect(mockHttpClient.get).toHaveBeenCalledWith(BFF_CHATS);
       expect(result).toBe(mockResponse);
     });
 
@@ -109,6 +115,7 @@ describe('Chats Service', () => {
         status: 200,
         statusText: 'OK',
         headers: {},
+        ok: true,
       };
 
       mockHttpClient.get.mockResolvedValue(mockResponse);
@@ -136,13 +143,14 @@ describe('Chats Service', () => {
         status: 200,
         statusText: 'OK',
         headers: {},
+        ok: true,
       };
 
       mockHttpClient.get.mockResolvedValue(mockResponse);
 
       const result = await getChat(testChatId);
 
-      expect(mockHttpClient.get).toHaveBeenCalledWith(CHAT(testChatId));
+      expect(mockHttpClient.get).toHaveBeenCalledWith(BFF_CHAT(testChatId));
       expect(result).toBe(mockResponse);
     });
 
@@ -174,6 +182,7 @@ describe('Chats Service', () => {
         status: 200,
         statusText: 'OK',
         headers: {},
+        ok: true,
       };
 
       mockHttpClient.get.mockResolvedValue(mockResponse);
@@ -190,6 +199,7 @@ describe('Chats Service', () => {
         status: 404,
         statusText: 'Not Found',
         headers: {},
+        ok: false,
       };
 
       mockHttpClient.get.mockResolvedValue(mockResponse);
@@ -224,13 +234,14 @@ describe('Chats Service', () => {
         status: 201,
         statusText: 'Created',
         headers: {},
+        ok: true,
       };
 
       mockHttpClient.post.mockResolvedValue(mockResponse);
 
       const result = await createChat({ title: 'New Chat' });
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith(CHATS, {
+      expect(mockHttpClient.post).toHaveBeenCalledWith(BFF_CHATS, {
         title: 'New Chat',
       });
       expect(result).toBe(mockResponse);
@@ -244,6 +255,7 @@ describe('Chats Service', () => {
         status: 400,
         statusText: 'Bad Request',
         headers: {},
+        ok: false,
       };
 
       mockHttpClient.post.mockResolvedValue(mockResponse);
@@ -285,6 +297,7 @@ describe('Chats Service', () => {
         status: 200,
         statusText: 'OK',
         headers: {},
+        ok: true,
       };
 
       mockHttpClient.patch.mockResolvedValue(mockResponse);
@@ -292,7 +305,7 @@ describe('Chats Service', () => {
       const result = await updateChat(mockPayload);
 
       expect(mockHttpClient.patch).toHaveBeenCalledWith(
-        CHAT(mockPayload.id),
+        BFF_CHAT(mockPayload.id),
         mockPayload
       );
       expect(result).toBe(mockResponse);
@@ -310,6 +323,7 @@ describe('Chats Service', () => {
         status: 200,
         statusText: 'OK',
         headers: {},
+        ok: true,
       };
 
       mockHttpClient.patch.mockResolvedValue(mockResponse);
@@ -317,7 +331,7 @@ describe('Chats Service', () => {
       const result = await updateChat(mockPayload);
 
       expect(mockHttpClient.patch).toHaveBeenCalledWith(
-        CHAT(mockPayload.id),
+        BFF_CHAT(mockPayload.id),
         mockPayload
       );
       expect(result.status).toBe(200);
@@ -334,6 +348,7 @@ describe('Chats Service', () => {
         status: 404,
         statusText: 'Not Found',
         headers: {},
+        ok: false,
       };
 
       mockHttpClient.patch.mockResolvedValue(mockResponse);
@@ -366,13 +381,14 @@ describe('Chats Service', () => {
         status: 204,
         statusText: 'No Content',
         headers: {},
+        ok: true,
       };
 
       mockHttpClient.delete.mockResolvedValue(mockResponse);
 
       const result = await deleteChat(testChatId);
 
-      expect(mockHttpClient.delete).toHaveBeenCalledWith(CHAT(testChatId));
+      expect(mockHttpClient.delete).toHaveBeenCalledWith(BFF_CHAT(testChatId));
       expect(result).toBe(mockResponse);
       expect(result.status).toBe(204);
     });
@@ -383,6 +399,7 @@ describe('Chats Service', () => {
         status: 204,
         statusText: 'No Content',
         headers: {},
+        ok: true,
       };
 
       mockHttpClient.delete.mockResolvedValue(mockResponse);
@@ -399,6 +416,7 @@ describe('Chats Service', () => {
         status: 404,
         statusText: 'Not Found',
         headers: {},
+        ok: false,
       };
 
       mockHttpClient.delete.mockResolvedValue(mockResponse);
@@ -422,6 +440,7 @@ describe('Chats Service', () => {
         status: 403,
         statusText: 'Forbidden',
         headers: {},
+        ok: false,
       };
 
       mockHttpClient.delete.mockResolvedValue(mockResponse);
@@ -446,6 +465,7 @@ describe('Chats Service', () => {
         status: 200,
         statusText: 'OK',
         headers: {},
+        ok: true,
       };
 
       mockHttpClient.post.mockResolvedValue(mockResponse);
@@ -453,7 +473,7 @@ describe('Chats Service', () => {
       const result = await createChatMessage(mockPayload);
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
-        CHAT_MESSAGE,
+        BFF_CHAT_MESSAGE,
         mockPayload
       );
       expect(result).toBe(mockResponse);
@@ -499,6 +519,7 @@ describe('Chats Service', () => {
         status: 200,
         statusText: 'OK',
         headers: {},
+        ok: true,
       };
 
       mockHttpClient.post.mockResolvedValue(mockResponse);
@@ -516,14 +537,14 @@ describe('Chats Service', () => {
     });
   });
 
-  describe('Integration with API routes', () => {
-    it('should use correct CHATS endpoint', () => {
-      expect(CHATS).toBe('http://localhost:5000/chats');
+  describe('Integration with BFF routes', () => {
+    it('should use correct BFF_CHATS endpoint', () => {
+      expect(BFF_CHATS).toBe('/api/chats');
     });
 
-    it('should generate correct CHAT endpoint for specific ID', () => {
+    it('should generate correct BFF_CHAT endpoint for specific ID', () => {
       const chatId = 'test-id';
-      expect(CHAT(chatId)).toBe(`http://localhost:5000/chats/${chatId}`);
+      expect(BFF_CHAT(chatId)).toBe(`/api/chats/${chatId}`);
     });
   });
 
@@ -537,6 +558,7 @@ describe('Chats Service', () => {
         status: 200,
         statusText: 'OK',
         headers: {},
+        ok: true,
       };
 
       mockHttpClient.put.mockResolvedValue(mockResponse);
@@ -544,7 +566,7 @@ describe('Chats Service', () => {
       const result = await updateMessageFeedback(messageId, feedbackVote);
 
       expect(mockHttpClient.put).toHaveBeenCalledWith(
-        MESSAGE_FEEDBACK(messageId),
+        BFF_MESSAGE_FEEDBACK(messageId),
         { feedbackVote }
       );
       expect(result).toBe(mockResponse);
@@ -572,6 +594,7 @@ describe('Chats Service', () => {
         status: 200,
         statusText: 'OK',
         headers: {},
+        ok: true,
       };
 
       mockHttpClient.put.mockResolvedValue(mockResponse);
@@ -579,10 +602,379 @@ describe('Chats Service', () => {
       const result = await updateMessageFeedback(messageId, feedbackVote);
 
       expect(mockHttpClient.put).toHaveBeenCalledWith(
-        MESSAGE_FEEDBACK(messageId),
+        BFF_MESSAGE_FEEDBACK(messageId),
         { feedbackVote }
       );
       expect(result.status).toBe(200);
+    });
+  });
+
+  describe('newChatMessageStream', () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it('should stream chat messages successfully', async () => {
+      const mockPayload: ChatPromptRequest = {
+        messages: [{ role: 'user', content: 'Hello' }],
+        model: 'gpt-3.5-turbo',
+        temperature: 0.7,
+        max_tokens: 1000,
+        top_p: 1,
+      };
+
+      const mockStreamChunk: ChatStreamChunk = {
+        id: 'chunk-1',
+        object: 'chat.completion.chunk',
+        created: '2023-07-17T10:00:00Z',
+        model: 'gpt-3.5-turbo',
+        choices: [
+          {
+            index: 0,
+            finish_reason: null,
+            message: { content: 'Hello!', role: 'assistant' },
+          },
+        ],
+      };
+
+      const mockSSEEvents: HttpSSEEvent[] = [
+        {
+          data: JSON.stringify(mockStreamChunk),
+          event: 'data',
+          id: '1',
+          retry: 0,
+        },
+        {
+          data: JSON.stringify({ ...mockStreamChunk, id: 'chunk-2' }),
+          event: 'data',
+          id: '2',
+          retry: 0,
+        },
+      ];
+
+      const mockRawStream = {
+        [Symbol.asyncIterator]: async function* () {
+          for (const event of mockSSEEvents) {
+            yield event;
+          }
+        },
+        cancel: jest.fn(),
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        ok: true,
+      };
+
+      mockHttpClient.stream.mockResolvedValue(mockRawStream);
+
+      const result = await newChatMessageStream(mockPayload);
+
+      expect(mockHttpClient.stream).toHaveBeenCalledWith(BFF_CHAT_STREAM, {
+        method: 'POST',
+        body: mockPayload,
+        parser: 'sse',
+        signal: undefined,
+      });
+
+      expect(result.status).toBe(200);
+      expect(result.statusText).toBe('OK');
+      expect(result.ok).toBe(true);
+      expect(typeof result.cancel).toBe('function');
+
+      // Test async iteration
+      const chunks: ChatStreamChunk[] = [];
+      for await (const chunk of result) {
+        chunks.push(chunk);
+      }
+
+      expect(chunks).toHaveLength(2);
+      expect(chunks[0].id).toBe('chunk-1');
+      expect(chunks[1].id).toBe('chunk-2');
+    });
+
+    it('should handle malformed JSON chunks gracefully', async () => {
+      const mockPayload: ChatPromptRequest = {
+        messages: [{ role: 'user', content: 'Hello' }],
+        model: 'gpt-3.5-turbo',
+        temperature: 0.7,
+        max_tokens: 1000,
+        top_p: 1,
+      };
+
+      const mockStreamChunk: ChatStreamChunk = {
+        id: 'chunk-1',
+        object: 'chat.completion.chunk',
+        created: '2023-07-17T10:00:00Z',
+        model: 'gpt-3.5-turbo',
+        choices: [
+          {
+            index: 0,
+            finish_reason: null,
+            message: { content: 'Valid chunk', role: 'assistant' },
+          },
+        ],
+      };
+
+      const mockSSEEvents: HttpSSEEvent[] = [
+        {
+          data: JSON.stringify(mockStreamChunk),
+          event: 'data',
+          id: '1',
+          retry: 0,
+        },
+        { data: 'invalid-json', event: 'data', id: '2', retry: 0 }, // This should be ignored
+        {
+          data: JSON.stringify({ ...mockStreamChunk, id: 'chunk-3' }),
+          event: 'data',
+          id: '3',
+          retry: 0,
+        },
+      ];
+
+      const mockRawStream = {
+        [Symbol.asyncIterator]: async function* () {
+          for (const event of mockSSEEvents) {
+            yield event;
+          }
+        },
+        cancel: jest.fn(),
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        ok: true,
+      };
+
+      mockHttpClient.stream.mockResolvedValue(mockRawStream);
+
+      const result = await newChatMessageStream(mockPayload);
+
+      // Test async iteration - should skip malformed JSON
+      const chunks: ChatStreamChunk[] = [];
+      for await (const chunk of result) {
+        chunks.push(chunk);
+      }
+
+      expect(chunks).toHaveLength(2); // Only valid chunks
+      expect(chunks[0].id).toBe('chunk-1');
+      expect(chunks[1].id).toBe('chunk-3');
+    });
+
+    it('should handle empty data events', async () => {
+      const mockPayload: ChatPromptRequest = {
+        messages: [{ role: 'user', content: 'Hello' }],
+        model: 'gpt-3.5-turbo',
+        temperature: 0.7,
+        max_tokens: 1000,
+        top_p: 1,
+      };
+
+      const mockStreamChunk: ChatStreamChunk = {
+        id: 'chunk-1',
+        object: 'chat.completion.chunk',
+        created: '2023-07-17T10:00:00Z',
+        model: 'gpt-3.5-turbo',
+        choices: [
+          {
+            index: 0,
+            finish_reason: null,
+            message: { content: 'Valid chunk', role: 'assistant' },
+          },
+        ],
+      };
+
+      const mockSSEEvents: HttpSSEEvent[] = [
+        { data: '', event: 'data', id: '1', retry: 0 }, // Empty data should be ignored
+        {
+          data: JSON.stringify(mockStreamChunk),
+          event: 'data',
+          id: '2',
+          retry: 0,
+        },
+        { data: undefined!, event: 'data', id: '3', retry: 0 }, // Undefined data should be ignored
+      ];
+
+      const mockRawStream = {
+        [Symbol.asyncIterator]: async function* () {
+          for (const event of mockSSEEvents) {
+            yield event;
+          }
+        },
+        cancel: jest.fn(),
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        ok: true,
+      };
+
+      mockHttpClient.stream.mockResolvedValue(mockRawStream);
+
+      const result = await newChatMessageStream(mockPayload);
+
+      // Test async iteration - should skip empty data
+      const chunks: ChatStreamChunk[] = [];
+      for await (const chunk of result) {
+        chunks.push(chunk);
+      }
+
+      expect(chunks).toHaveLength(1); // Only valid chunk
+      expect(chunks[0].id).toBe('chunk-1');
+    });
+
+    it('should respect limit option and cancel stream', async () => {
+      const mockPayload: ChatPromptRequest = {
+        messages: [{ role: 'user', content: 'Hello' }],
+        model: 'gpt-3.5-turbo',
+        temperature: 0.7,
+        max_tokens: 1000,
+        top_p: 1,
+      };
+
+      const mockStreamChunk: ChatStreamChunk = {
+        id: 'chunk-1',
+        object: 'chat.completion.chunk',
+        created: '2023-07-17T10:00:00Z',
+        model: 'gpt-3.5-turbo',
+        choices: [
+          {
+            index: 0,
+            finish_reason: null,
+            message: { content: 'Chunk ', role: 'assistant' },
+          },
+        ],
+      };
+
+      // Create multiple chunks
+      const mockSSEEvents: HttpSSEEvent[] = Array.from(
+        { length: 5 },
+        (_, i) => ({
+          data: JSON.stringify({ ...mockStreamChunk, id: `chunk-${i + 1}` }),
+          event: 'data',
+          id: `${i + 1}`,
+          retry: 0,
+        })
+      );
+
+      const mockRawStream = {
+        [Symbol.asyncIterator]: async function* () {
+          for (const event of mockSSEEvents) {
+            yield event;
+          }
+        },
+        cancel: jest.fn(),
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        ok: true,
+      };
+
+      mockHttpClient.stream.mockResolvedValue(mockRawStream);
+
+      const result = await newChatMessageStream(mockPayload, { limit: 2 });
+
+      // Test async iteration with limit
+      const chunks: ChatStreamChunk[] = [];
+      for await (const chunk of result) {
+        chunks.push(chunk);
+      }
+
+      expect(chunks).toHaveLength(2); // Should respect limit
+      expect(mockRawStream.cancel).toHaveBeenCalled(); // Should cancel stream after limit
+    });
+
+    it('should pass abort signal to httpClient.stream', async () => {
+      const mockPayload: ChatPromptRequest = {
+        messages: [{ role: 'user', content: 'Hello' }],
+        model: 'gpt-3.5-turbo',
+        temperature: 0.7,
+        max_tokens: 1000,
+        top_p: 1,
+      };
+
+      const abortController = new AbortController();
+      const abortSignal = abortController.signal;
+
+      const mockRawStream = {
+        [Symbol.asyncIterator]: async function* () {
+          // Empty stream for this test
+        },
+        cancel: jest.fn(),
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        ok: true,
+      };
+
+      mockHttpClient.stream.mockResolvedValue(mockRawStream);
+
+      await newChatMessageStream(mockPayload, { abortSignal });
+
+      expect(mockHttpClient.stream).toHaveBeenCalledWith(BFF_CHAT_STREAM, {
+        method: 'POST',
+        body: mockPayload,
+        parser: 'sse',
+        signal: abortSignal,
+      });
+    });
+
+    it('should expose cancel method that calls rawStream.cancel', async () => {
+      const mockPayload: ChatPromptRequest = {
+        messages: [{ role: 'user', content: 'Hello' }],
+        model: 'gpt-3.5-turbo',
+        temperature: 0.7,
+        max_tokens: 1000,
+        top_p: 1,
+      };
+
+      const mockRawStream = {
+        [Symbol.asyncIterator]: async function* () {
+          // Empty stream for this test
+        },
+        cancel: jest.fn(),
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        ok: true,
+      };
+
+      mockHttpClient.stream.mockResolvedValue(mockRawStream);
+
+      const result = await newChatMessageStream(mockPayload);
+
+      result.cancel();
+
+      expect(mockRawStream.cancel).toHaveBeenCalled();
+    });
+
+    it('should preserve raw stream and metadata properties', async () => {
+      const mockPayload: ChatPromptRequest = {
+        messages: [{ role: 'user', content: 'Hello' }],
+        model: 'gpt-3.5-turbo',
+        temperature: 0.7,
+        max_tokens: 1000,
+        top_p: 1,
+      };
+
+      const mockHeaders = { 'content-type': 'text/event-stream' };
+      const mockRawStream = {
+        [Symbol.asyncIterator]: async function* () {
+          // Empty stream for this test
+        },
+        cancel: jest.fn(),
+        status: 200,
+        statusText: 'OK',
+        headers: mockHeaders,
+        ok: true,
+      };
+
+      mockHttpClient.stream.mockResolvedValue(mockRawStream);
+
+      const result = await newChatMessageStream(mockPayload);
+
+      expect(result.status).toBe(200);
+      expect(result.statusText).toBe('OK');
+      expect(result.headers).toBe(mockHeaders);
+      expect(result.ok).toBe(true);
+      expect(result.raw).toBe(mockRawStream);
     });
   });
 });
