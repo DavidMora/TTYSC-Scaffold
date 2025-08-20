@@ -1,24 +1,23 @@
 import { NextRequest } from 'next/server';
 import { backendRequest } from '@/lib/api/backend-request';
 
-// Evitar cache y asegurar ejecución en cada request
+// Avoid cache and ensure execution on each request
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
 /**
- * Proxy streaming (SSE) -> reenvía POST /api/chat/stream al backend
- * http://localhost:5000/chat/stream y devuelve exactamente el mismo
- * stream hacia el navegador.
+ * Proxy streaming (SSE) -> re-send POST /api/chat/stream to the backend
+ * http://localhost:5000/chat/stream and return the same stream to the browser.
  */
 export async function POST(request: NextRequest) {
   let body: unknown = undefined;
   try {
     body = await request.json();
   } catch {
-    // si no hay body válido seguimos sin él
+    // if there is no valid body, we continue without it
   }
 
-  // Preparar petición upstream como stream de bytes usando backendRequest
+  // Prepare upstream request as byte stream using backendRequest
   let upstream;
   try {
     upstream = await backendRequest<Uint8Array, unknown>({
@@ -55,7 +54,7 @@ export async function POST(request: NextRequest) {
     async start(controller) {
       try {
         for await (const chunk of upstream) {
-          // chunk es Uint8Array (raw) -> reenviar directamente
+          // chunk is Uint8Array (raw) -> re-send directly
           controller.enqueue(chunk);
         }
       } catch (err) {
@@ -72,7 +71,7 @@ export async function POST(request: NextRequest) {
       }
     },
     cancel() {
-      // Cancelar también upstream
+      // Cancel also upstream
       try {
         upstream.cancel();
       } catch {
@@ -97,7 +96,7 @@ function sseHeaders(): Record<string, string> {
   };
 }
 
-// Preflight
+// Preflight request
 export function OPTIONS() {
   return new Response(null, {
     status: 204,

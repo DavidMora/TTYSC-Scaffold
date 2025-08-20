@@ -1,10 +1,10 @@
-import { apiClient } from '@/lib/api';
+import { httpClient } from '@/lib/api';
 
 import { CasesAnalysisResponse, CasesResponse } from '../types/analysisFilters';
-import { CASE_ANALYSIS, CASES_BY_ANALYSIS } from '../constants/api/routes';
+import { BFF_CASE_ANALYSIS, BFF_CASES_BY_ANALYSIS } from '../constants/api/bff-routes';
 
 export const getCasesAnalysis = async () => {
-  return apiClient.get<CasesAnalysisResponse>(CASE_ANALYSIS);
+  return httpClient.get<CasesAnalysisResponse>(BFF_CASE_ANALYSIS);
 };
 
 export const getCasesByAnalysis = async (analysisNameType: string) => {
@@ -12,5 +12,5 @@ export const getCasesByAnalysis = async (analysisNameType: string) => {
     throw new Error('Analysis name type is required');
   }
 
-  return apiClient.get<CasesResponse>(CASES_BY_ANALYSIS(analysisNameType));
+  return httpClient.get<CasesResponse>(BFF_CASES_BY_ANALYSIS(analysisNameType));
 };

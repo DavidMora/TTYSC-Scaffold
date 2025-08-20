@@ -12,6 +12,8 @@
   },
   "routes": [
     { "pattern": "^/chat/stream$", "backend": "real" },
-    { "pattern": "^/chats", "backend": "real" }
+    { "pattern": "^/chats", "backend": "mock" },
+    { "pattern": "^/settings", "backend": "mock" },
+    { "pattern": "^/analysis", "backend": "mock" }
   ]
 }

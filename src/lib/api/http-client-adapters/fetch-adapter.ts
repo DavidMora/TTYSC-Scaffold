@@ -23,43 +23,113 @@ export class FetchAdapter implements HttpClientAdapter {
     };
   }
 
+  private computeEffectiveTimeout(config?: HttpClientConfig): number {
+    return (
+      (config && typeof config.timeout === 'number'
+        ? config.timeout
+        : this.defaultConfig.timeout) ?? 30000
+    );
+  }
+
+  private buildRequestHeaders(
+    options: RequestInit,
+    config?: HttpClientConfig
+  ): Record<string, string> {
+    const mergedHeaders: Record<string, string> = {
+      ...this.defaultConfig.headers,
+      ...config?.headers,
+      ...(options.headers as Record<string, string>),
+    };
+
+    if (!mergedHeaders['X-Request-Id']) {
+      mergedHeaders['X-Request-Id'] = uuidv6();
+    }
+
+    const authConfig = config?.auth || this.defaultConfig.auth;
+    if (authConfig) {
+      const credentials = btoa(`${authConfig.username}:${authConfig.password}`);
+      mergedHeaders.Authorization = `Basic ${credentials}`;
+    }
+
+    return mergedHeaders;
+  }
+
+  private extractContentType(response: Response): string | undefined {
+    try {
+      const rh = (response as unknown as { headers?: unknown }).headers as
+        | Headers
+        | Map<string, string>
+        | Record<string, string>
+        | undefined;
+      if (rh && typeof (rh as Headers).get === 'function') {
+        return (rh as Headers).get('content-type') || undefined;
+      } else if (rh && rh instanceof Map) {
+        return rh.get('content-type');
+      } else if (rh && typeof rh === 'object') {
+        const record = rh as Record<string, string>;
+        return record['content-type'] || record['Content-Type'];
+      }
+    } catch {
+      // ignore
+    }
+    return undefined;
+  }
+
+  private async parseResponseData<T>(
+    response: Response,
+    contentType?: string
+  ): Promise<T> {
+    if (contentType?.includes('application/json')) {
+      return (await response.json()) as T;
+    }
+    if (
+      contentType?.includes(
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      ) ||
+      contentType?.includes('application/vnd.ms-excel') ||
+      contentType?.includes('text/csv')
+    ) {
+      return (await response.blob()) as unknown as T;
+    }
+    return (await response.text()) as unknown as T;
+  }
+
+  private collectResponseHeaders(response: Response): Record<string, string> {
+    const responseHeaders: Record<string, string> = {};
+    try {
+      const rh = (response as unknown as { headers?: unknown }).headers as
+        | Headers
+        | Map<string, string>
+        | { forEach?: (cb: (value: string, key: string) => void) => void }
+        | undefined;
+      if (rh && typeof (rh as Headers).forEach === 'function') {
+        (rh as Headers).forEach((value: string, key: string) => {
+          responseHeaders[key] = value;
+        });
+      }
+    } catch {
+      // ignore
+    }
+    return responseHeaders;
+  }
+
   private async request<T>(
     url: string,
     options: RequestInit = {},
     config?: HttpClientConfig
   ): Promise<HttpClientResponse<T>> {
-    const mergedConfig = { ...this.defaultConfig, ...config };
+    const mergedConfig = { ...this.defaultConfig, ...(config || {}) };
     const fullUrl = mergedConfig.baseURL
       ? new URL(url, mergedConfig.baseURL).toString()
       : url;
 
     const controller = new AbortController();
-    const timeoutId = setTimeout(
-      () => controller.abort(),
-      mergedConfig.timeout
-    );
+    // Use default timeout when config.timeout is undefined (avoid aborting immediately)
+    const effectiveTimeout = this.computeEffectiveTimeout(config);
+    const timeoutId = setTimeout(() => controller.abort(), effectiveTimeout);
 
     try {
-      // Merge headers properly
-      const mergedHeaders: Record<string, string> = {
-        ...this.defaultConfig.headers,
-        ...config?.headers,
-        ...(options.headers as Record<string, string>),
-      };
-
-      // Add request ID if not already provided
-      if (!mergedHeaders['X-Request-Id']) {
-        mergedHeaders['X-Request-Id'] = uuidv6();
-      }
-
-      // Add Basic Authentication if configured
-      const authConfig = config?.auth || this.defaultConfig.auth;
-      if (authConfig) {
-        const credentials = btoa(
-          `${authConfig.username}:${authConfig.password}`
-        );
-        mergedHeaders.Authorization = `Basic ${credentials}`;
-      }
+      const mergedHeaders = this.buildRequestHeaders(options, config);
 
       const response = await fetch(fullUrl, {
         ...options,
@@ -69,32 +139,14 @@ export class FetchAdapter implements HttpClientAdapter {
 
       clearTimeout(timeoutId);
 
+      // Early throw on HTTP error statuses before touching headers/body
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 
-      const contentType = response.headers.get('content-type');
-
-      let data: T;
-      if (contentType?.includes('application/json')) {
-        data = await response.json();
-      } else if (
-        contentType?.includes(
-          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        ) ||
-        contentType?.includes('application/vnd.ms-excel') ||
-        contentType?.includes('text/csv')
-      ) {
-        data = (await response.blob()) as T;
-      } else {
-        data = (await response.text()) as T;
-      }
-
-      const responseHeaders: Record<string, string> = {};
-
-      response.headers.forEach((value, key) => {
-        responseHeaders[key] = value;
-      });
+      const contentType = this.extractContentType(response);
+      const data = await this.parseResponseData<T>(response, contentType);
+      const responseHeaders = this.collectResponseHeaders(response);
 
       return {
         data,
