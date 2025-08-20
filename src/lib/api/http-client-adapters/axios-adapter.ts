@@ -225,6 +225,8 @@ export class AxiosAdapter implements HttpClientAdapter {
   ): AsyncIterator<TChunk> {
     const reader = nodeStream[Symbol.asyncIterator]() as AsyncIterator<Buffer>;
     const buffers = { json: '', ndjson: '', sse: '' };
+    let jsonParsed = false;
+    const resultQueue: IteratorResult<TChunk>[] = [];
 
     const emitDone = (): IteratorResult<TChunk> => {
       if (parser === 'ndjson' && buffers.ndjson.trim()) {
@@ -240,7 +242,9 @@ export class AxiosAdapter implements HttpClientAdapter {
       return { value: undefined as unknown as TChunk, done: true };
     };
 
-    const parseBytes = (chunk: Buffer): IteratorResult<TChunk> | undefined => {
+    const parseBytes = (
+      chunk: Buffer
+    ): IteratorResult<TChunk> | IteratorResult<TChunk>[] | undefined => {
       if (parser === 'bytes')
         return { value: chunk as unknown as TChunk, done: false };
 
@@ -248,7 +252,9 @@ export class AxiosAdapter implements HttpClientAdapter {
       if (parser === 'text')
         return { value: txt as unknown as TChunk, done: false };
       if (parser === 'json')
-        return this.parseJsonChunk(txt, buffers, ensureSize, controller);
+        return this.parseJsonChunk(txt, buffers, ensureSize, controller, () => {
+          jsonParsed = true;
+        });
       if (parser === 'ndjson')
         return this.parseNdjsonChunk(txt, buffers, ensureSize);
       if (parser === 'sse') return this.parseSseChunk(txt, buffers, ensureSize);
@@ -258,11 +264,29 @@ export class AxiosAdapter implements HttpClientAdapter {
 
     return {
       async next(): Promise<IteratorResult<TChunk>> {
+        // Return queued results first
+        if (resultQueue.length > 0) {
+          return resultQueue.shift()!;
+        }
+
+        if (jsonParsed) {
+          return { value: undefined as unknown as TChunk, done: true };
+        }
+
         while (true) {
           const { value, done } = await reader.next();
           if (done) return emitDone();
           const parsed = parseBytes(value);
-          if (parsed) return parsed;
+          if (parsed) {
+            // If it's an array (from NDJSON), add all but first to queue
+            if (Array.isArray(parsed)) {
+              if (parsed.length === 0) continue;
+              const [first, ...rest] = parsed;
+              resultQueue.push(...rest);
+              return first;
+            }
+            return parsed;
+          }
         }
       },
     };
@@ -272,12 +296,14 @@ export class AxiosAdapter implements HttpClientAdapter {
     txt: string,
     buffers: { json: string; ndjson: string; sse: string },
     ensureSize: (name: string, size: number) => void,
-    controller: AbortController
+    controller: AbortController,
+    onParsed: () => void
   ): IteratorResult<TChunk> | undefined {
     ensureSize('JSON', buffers.json.length + txt.length);
     buffers.json += txt;
     try {
       const obj = JSON.parse(buffers.json) as TChunk;
+      onParsed();
       controller.abort();
       return { value: obj, done: false };
     } catch {
@@ -289,17 +315,20 @@ export class AxiosAdapter implements HttpClientAdapter {
     txt: string,
     buffers: { json: string; ndjson: string; sse: string },
     ensureSize: (name: string, size: number) => void
-  ): IteratorResult<TChunk> | undefined {
+  ): IteratorResult<TChunk>[] {
     ensureSize('NDJSON', buffers.ndjson.length + txt.length);
     buffers.ndjson += txt;
-    const newline = buffers.ndjson.indexOf('\n');
-    if (newline !== -1) {
-      const line = buffers.ndjson.slice(0, newline).trim();
-      buffers.ndjson = buffers.ndjson.slice(newline + 1);
-      if (!line) return undefined;
-      return { value: JSON.parse(line) as TChunk, done: false };
+    const results: IteratorResult<TChunk>[] = [];
+    const lines = buffers.ndjson.split('\n');
+    buffers.ndjson = lines.pop() || '';
+
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (trimmed) {
+        results.push({ value: JSON.parse(trimmed) as TChunk, done: false });
+      }
     }
-    return undefined;
+    return results;
   }
 
   private parseSseChunk<TChunk>(
@@ -309,10 +338,32 @@ export class AxiosAdapter implements HttpClientAdapter {
   ): IteratorResult<TChunk> | undefined {
     ensureSize('SSE', buffers.sse.length + txt.length);
     buffers.sse += txt;
-    const eventEnd = buffers.sse.indexOf('\n\n');
-    if (eventEnd !== -1) {
-      const raw = buffers.sse.slice(0, eventEnd);
-      buffers.sse = buffers.sse.slice(eventEnd + 2);
+
+    // Check for all possible SSE delimiters
+    const nnIdx = buffers.sse.indexOf('\n\n');
+    const rnrnIdx = buffers.sse.indexOf('\r\n\r\n');
+    const rrIdx = buffers.sse.indexOf('\r\r');
+
+    let eventEndIdx = -1;
+    let delimiterLength = 0;
+
+    // Find the earliest delimiter
+    if (nnIdx !== -1) {
+      eventEndIdx = nnIdx;
+      delimiterLength = 2;
+    }
+    if (rnrnIdx !== -1 && (eventEndIdx === -1 || rnrnIdx < eventEndIdx)) {
+      eventEndIdx = rnrnIdx;
+      delimiterLength = 4;
+    }
+    if (rrIdx !== -1 && (eventEndIdx === -1 || rrIdx < eventEndIdx)) {
+      eventEndIdx = rrIdx;
+      delimiterLength = 2;
+    }
+
+    if (eventEndIdx !== -1) {
+      const raw = buffers.sse.slice(0, eventEndIdx);
+      buffers.sse = buffers.sse.slice(eventEndIdx + delimiterLength);
       const evt = sseParser.parseSSEBlock(raw) as unknown as TChunk;
       return { value: evt, done: false };
     }

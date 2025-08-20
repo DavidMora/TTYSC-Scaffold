@@ -194,6 +194,10 @@ export class FetchAdapter implements HttpClientAdapter {
       return body as unknown as BodyInit;
     }
 
+    if (body instanceof ArrayBuffer) {
+      return body;
+    }
+
     if (typeof body === 'object') {
       const isJsonLike = contentType?.includes('application/json');
       if (isJsonLike || !contentType) {
@@ -312,7 +316,7 @@ export class FetchAdapter implements HttpClientAdapter {
           jsonTimeoutTriggered = true;
           controller.abort();
           throw new Error(
-            `JSON stream parse timeout after ${jsonParserTimeoutMs}ms (buffer length=${jsonBuffer.length})`
+            `JSON parser timeout after ${jsonParserTimeoutMs}ms (buffer length=${jsonBuffer.length})`
           );
         }
 
@@ -356,14 +360,36 @@ export class FetchAdapter implements HttpClientAdapter {
       handleSSE: function* (chunkStr: string) {
         ensureSize('SSE', sseBuffer.length + chunkStr.length);
         sseBuffer += chunkStr;
-        let eventEndIdx = sseBuffer.indexOf('\n\n');
 
-        while (eventEndIdx !== -1) {
+        while (true) {
+          // Check for all possible SSE delimiters
+          const nnIdx = sseBuffer.indexOf('\n\n');
+          const rnrnIdx = sseBuffer.indexOf('\r\n\r\n');
+          const rrIdx = sseBuffer.indexOf('\r\r');
+
+          let eventEndIdx = -1;
+          let delimiterLength = 0;
+
+          // Find the earliest delimiter
+          if (nnIdx !== -1) {
+            eventEndIdx = nnIdx;
+            delimiterLength = 2;
+          }
+          if (rnrnIdx !== -1 && (eventEndIdx === -1 || rnrnIdx < eventEndIdx)) {
+            eventEndIdx = rnrnIdx;
+            delimiterLength = 4;
+          }
+          if (rrIdx !== -1 && (eventEndIdx === -1 || rrIdx < eventEndIdx)) {
+            eventEndIdx = rrIdx;
+            delimiterLength = 2;
+          }
+
+          if (eventEndIdx === -1) break;
+
           const rawEvent = sseBuffer.slice(0, eventEndIdx);
-          sseBuffer = sseBuffer.slice(eventEndIdx + 2);
+          sseBuffer = sseBuffer.slice(eventEndIdx + delimiterLength);
           const evt = parseSSEBlock(rawEvent) as unknown as TChunk;
           yield evt;
-          eventEndIdx = sseBuffer.indexOf('\n\n');
         }
       },
 

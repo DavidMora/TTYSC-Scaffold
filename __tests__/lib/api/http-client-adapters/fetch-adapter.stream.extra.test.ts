@@ -182,7 +182,7 @@ describe('FetchAdapter.stream extra coverage', () => {
     }
     const elapsed = Date.now() - start;
     expect(caught).toBeDefined();
-    expect(String(caught)).toMatch(/JSON stream parse timeout/);
+    expect(String(caught)).toMatch(/JSON parser timeout/);
     expect(elapsed).toBeGreaterThanOrEqual(1);
   });
 
