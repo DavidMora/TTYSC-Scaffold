@@ -7,11 +7,18 @@ import { tableData } from '@/lib/constants/mocks/dataTable';
 import { parseContent } from '@/lib/utils/aiContentParser';
 import { AIChartContainer } from '@/components/AICharts/AIChartContainer';
 import { ParsedContentItemType } from '@/lib/types/chatContent';
-import MarkdownRenderer from '@/components/Markdown/MarkdownRenderer';
+import DOMPurify from 'dompurify';
+import { marked } from 'marked';
 
 interface AIResponseRendererProps {
   content: string;
 }
+
+const textStyle = {
+  fontSize: 'var(--sapFontSize)',
+  fontWeight: 400,
+  whiteSpace: 'pre-wrap' as const,
+};
 
 export function AIResponseRenderer({
   content,
@@ -22,7 +29,19 @@ export function AIResponseRenderer({
     const matches = parseContent(content);
 
     if (matches.length === 0) {
-      return <MarkdownRenderer className="markdown" markdown={content} />;
+      const html = marked.parse(content) as string;
+      const safe = DOMPurify.sanitize(html);
+      return (
+        <div
+          className="markdown"
+          style={{
+            ...textStyle,
+            whiteSpace: 'normal',
+            overflowWrap: 'anywhere',
+          }}
+          dangerouslySetInnerHTML={{ __html: safe }}
+        />
+      );
     }
 
     const parts: Array<{
@@ -97,11 +116,18 @@ export function AIResponseRenderer({
           </div>
         );
       }
+      const html = marked.parse(part.content || '') as string;
+      const safe = DOMPurify.sanitize(html);
       return (
-        <MarkdownRenderer
+        <div
           key={key}
           className="markdown"
-          markdown={part.content ?? ''}
+          style={{
+            ...textStyle,
+            whiteSpace: 'normal',
+            overflowWrap: 'anywhere',
+          }}
+          dangerouslySetInnerHTML={{ __html: safe }}
         />
       );
     });

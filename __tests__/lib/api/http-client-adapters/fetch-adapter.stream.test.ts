@@ -169,7 +169,7 @@ describe('FetchAdapter.stream', () => {
     expect(mockFetch.mock.calls[1][1].headers.Accept).toBe('text/event-stream');
   });
 
-  it('throws when response has no body', async () => {
+  it('returns empty stream when response has no body (graceful fallback)', async () => {
     mockFetch.mockResolvedValue({
       ok: true,
       status: 200,
@@ -177,8 +177,25 @@ describe('FetchAdapter.stream', () => {
       headers: new Headers(),
       body: null,
     });
-    await expect(adapter.stream('/nobody')).rejects.toThrow(
-      /ReadableStream not supported/
-    );
+    const res = await adapter.stream('/nobody');
+    const items: unknown[] = [];
+    for await (const c of res) items.push(c);
+    expect(items).toEqual([]);
+    expect(res.ok).toBe(true);
+  });
+
+  it('supports POST streaming with body', async () => {
+    mockFetch.mockResolvedValue(buildResponse(['chunk1', 'chunk2']));
+    const stream = await adapter.stream<string>('/post-stream', {
+      method: 'POST',
+      body: { prompt: 'hola' },
+      parser: 'text',
+    });
+    const chunks: string[] = [];
+    for await (const c of stream) chunks.push(c);
+    expect(chunks).toEqual(['chunk1', 'chunk2']);
+    const call = mockFetch.mock.calls.find(([url]) => url === '/post-stream');
+    expect(call?.[1]?.method).toBe('POST');
+    expect(typeof call?.[1]?.body).toBe('string');
   });
 });

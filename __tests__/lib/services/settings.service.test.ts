@@ -1,6 +1,6 @@
 import { getSettings, updateSettings } from '@/lib/services/settings.service';
 import { apiClient } from '@/lib/api';
-import { SETTINGS } from '@/lib/constants/api/routes';
+import { BFF_SETTINGS } from '@/lib/constants/api/bff-routes';
 
 jest.mock('@/lib/api', () => ({
   apiClient: {
@@ -18,7 +18,7 @@ describe('settings.service', () => {
     const mockResponse = { data: { shareChats: false, hideIndexTable: false } };
     (apiClient.get as jest.Mock).mockResolvedValue(mockResponse);
     const result = await getSettings();
-    expect(apiClient.get).toHaveBeenCalledWith(SETTINGS);
+    expect(apiClient.get).toHaveBeenCalledWith(BFF_SETTINGS);
     expect(result).toBe(mockResponse);
   });
 
@@ -27,7 +27,7 @@ describe('settings.service', () => {
     const mockResponse = { data: { success: true } };
     (apiClient.patch as jest.Mock).mockResolvedValue(mockResponse);
     const result = await updateSettings(settingsPayload);
-    expect(apiClient.patch).toHaveBeenCalledWith(SETTINGS, settingsPayload);
+    expect(apiClient.patch).toHaveBeenCalledWith(BFF_SETTINGS, settingsPayload);
     expect(result).toBe(mockResponse);
   });
 

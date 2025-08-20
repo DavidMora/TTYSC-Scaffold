@@ -240,16 +240,23 @@ Line 2
 Line 4`;
 
     render(<AIResponseRenderer content={content} />);
-
-    const textElement = screen.getByTestId('ui5-text');
-    expect(textElement).toHaveStyle({ whiteSpace: 'pre-wrap' });
-    expect(textElement.textContent).toBe(content);
+    // Since plain text without code/table/chart is rendered via marked + sanitized HTML
+    // and our marked mock returns the content directly, we can assert on the text nodes.
+    expect(screen.getByText(/Line 1/)).toBeInTheDocument();
+    expect(screen.getByText(/Line 2/)).toBeInTheDocument();
+    expect(screen.getByText(/Indented line/)).toBeInTheDocument();
+    expect(screen.getByText(/Line 4/)).toBeInTheDocument();
   });
 
   it('renders container with full width', () => {
     const content = 'Test content';
     const { container } = render(<AIResponseRenderer content={content} />);
-    expect(container.firstChild).toHaveStyle({ width: '100%' });
+    // The component returns a wrapping div; firstChild holds content
+    const outer = container.firstChild as HTMLElement | null;
+    expect(outer).toBeInTheDocument();
+    if (outer) {
+      expect(outer).toHaveStyle({ width: '100%' });
+    }
   });
 
   it('handles content with only code blocks', () => {

@@ -24,6 +24,7 @@ function bufferStream(parts: string[]): AsyncIterable<Buffer> {
 
 interface MockAxiosInstance {
   get: jest.Mock;
+  request: jest.Mock;
 }
 
 describe('AxiosAdapter.stream', () => {
@@ -31,16 +32,15 @@ describe('AxiosAdapter.stream', () => {
   let mockAxiosInstance: MockAxiosInstance;
 
   beforeEach(() => {
-    mockAxiosInstance = { get: jest.fn() };
+    mockAxiosInstance = { get: jest.fn(), request: jest.fn() };
     (mockedAxios.create as jest.Mock).mockReturnValue(mockAxiosInstance);
     adapter = new AxiosAdapter();
     // Ensure window is undefined (simulate Node environment) - jsdom sets it by default
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    delete (global as any).window;
+    delete (globalThis as { window?: unknown }).window;
   });
 
   it('streams text chunks', async () => {
-    mockAxiosInstance.get.mockResolvedValue({
+    mockAxiosInstance.request.mockResolvedValue({
       data: bufferStream(['hello ', 'world']),
       status: 200,
       statusText: 'OK',
@@ -48,13 +48,15 @@ describe('AxiosAdapter.stream', () => {
     });
     const res = await adapter.stream<string>('/text', { parser: 'text' });
     const out: string[] = [];
-    for await (const c of res) out.push(c as string);
+    for await (const c of res) {
+      out.push(c);
+    }
     expect(out).toEqual(['hello ', 'world']);
   });
 
   it('parses JSON after buffering and aborts', async () => {
     const json = JSON.stringify({ a: 1 });
-    mockAxiosInstance.get.mockResolvedValue({
+    mockAxiosInstance.request.mockResolvedValue({
       data: bufferStream([json.slice(0, 4), json.slice(4)]),
       status: 200,
       statusText: 'OK',
@@ -64,12 +66,14 @@ describe('AxiosAdapter.stream', () => {
       parser: 'json',
     });
     const received: Record<string, number>[] = [];
-    for await (const v of res) received.push(v as Record<string, number>);
+    for await (const v of res) {
+      received.push(v as Record<string, number>);
+    }
     expect(received).toEqual([{ a: 1 }]);
   });
 
   it('parses NDJSON lines including final buffered line', async () => {
-    mockAxiosInstance.get.mockResolvedValue({
+    mockAxiosInstance.request.mockResolvedValue({
       data: bufferStream(['{"x":1}\n{"x":2}']),
       status: 200,
       statusText: 'OK',
@@ -79,14 +83,16 @@ describe('AxiosAdapter.stream', () => {
       parser: 'ndjson',
     });
     const xs: number[] = [];
-    for await (const v of res) xs.push((v as { x: number }).x);
+    for await (const v of res) {
+      xs.push((v as { x: number }).x);
+    }
     expect(xs).toEqual([1, 2]);
   });
 
   it('parses SSE events including final buffered block', async () => {
     const evt1 = 'id:1\ndata:hello\n\n';
     const evt2 = 'id:2\nevent:note\ndata:world'; // normalized field names (no leading space) & no trailing blank -> final flush
-    mockAxiosInstance.get.mockResolvedValue({
+    mockAxiosInstance.request.mockResolvedValue({
       data: bufferStream([evt1.slice(0, 5), evt1.slice(5), evt2]),
       status: 200,
       statusText: 'OK',
@@ -96,14 +102,16 @@ describe('AxiosAdapter.stream', () => {
       parser: 'sse',
     });
     const events: Record<string, unknown>[] = [];
-    for await (const e of res) events.push(e as Record<string, unknown>);
+    for await (const e of res) {
+      events.push(e as Record<string, unknown>);
+    }
     expect(events).toHaveLength(2);
     expect(events[0]).toMatchObject({ id: '1', data: 'hello' });
     expect(events[1]).toMatchObject({ id: '2' });
   });
 
   it('streams raw bytes', async () => {
-    mockAxiosInstance.get.mockResolvedValue({
+    mockAxiosInstance.request.mockResolvedValue({
       data: bufferStream(['abc']),
       status: 200,
       statusText: 'OK',
@@ -111,7 +119,9 @@ describe('AxiosAdapter.stream', () => {
     });
     const res = await adapter.stream<Buffer>('/bytes', { parser: 'bytes' });
     const chunks: Buffer[] = [];
-    for await (const c of res) chunks.push(c as Buffer);
+    for await (const c of res) {
+      chunks.push(c as Buffer);
+    }
     expect(chunks[0]).toBeInstanceOf(Buffer);
   });
 
@@ -120,7 +130,7 @@ describe('AxiosAdapter.stream', () => {
     const bigJson = '{"large":"value_exceeding"}';
     const first = bigJson.slice(0, 10); // below limit
     const second = bigJson.slice(10); // pushes over limit
-    mockAxiosInstance.get.mockResolvedValue({
+    mockAxiosInstance.request.mockResolvedValue({
       data: bufferStream([first, second]),
       status: 200,
       statusText: 'OK',
@@ -145,14 +155,43 @@ describe('AxiosAdapter.stream', () => {
 
   it('throws in browser environment', async () => {
     // Simulate browser: define window
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (global as any).window = {};
-    mockAxiosInstance.get.mockResolvedValue({});
+    (globalThis as unknown as { window: object }).window = {};
+    mockAxiosInstance.request.mockResolvedValue({});
     await expect(adapter.stream('/fail')).rejects.toThrow(
       /not supported in browser/
     );
     // cleanup
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    delete (global as any).window;
+    delete (globalThis as unknown as { window?: object }).window;
+  });
+
+  it('supports POST streaming with body', async () => {
+    const mockRequest = jest.fn().mockResolvedValue({
+      data: bufferStream(['a', 'b']),
+      status: 200,
+      statusText: 'OK',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+    });
+    // Replace axiosInstance.request used internally after refactor
+    (
+      adapter as unknown as { axiosInstance: { request: jest.Mock } }
+    ).axiosInstance.request = mockRequest;
+    const res = await adapter.stream<string>('/chat', {
+      method: 'POST',
+      body: { msg: 'hola' },
+      parser: 'text',
+      headers: { 'Content-Type': 'application/json' },
+    });
+    const out: string[] = [];
+    for await (const c of res) {
+      out.push(c);
+    }
+    expect(out).toEqual(['a', 'b']);
+    expect(mockRequest).toHaveBeenCalled();
+    const callConfig = mockRequest.mock.calls[0][0];
+    expect(callConfig.method).toBe('POST');
+    expect(typeof callConfig.data).toBe('string');
   });
 });

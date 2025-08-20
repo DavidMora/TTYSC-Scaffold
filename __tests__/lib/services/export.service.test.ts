@@ -1,5 +1,5 @@
 import { apiClient } from '@/lib/api';
-import { EXPORT_TABLE } from '@/lib/constants/api/routes';
+import { BFF_EXPORT_TABLE } from '@/lib/constants/api/bff-routes';
 import { getExportTable } from '@/lib/services/export.service';
 import { ExportTableParams } from '@/lib/types/export';
 
@@ -38,7 +38,7 @@ describe('exportService', () => {
       const result = await getExportTable(mockParams);
 
       expect(mockHttpClient.get).toHaveBeenCalledWith(
-        EXPORT_TABLE(mockParams.tableId, mockParams.format),
+        BFF_EXPORT_TABLE(mockParams.tableId, mockParams.format),
         {
           headers: { Accept: mockParams.mimeType },
         }
@@ -59,7 +59,7 @@ describe('exportService', () => {
       const result = await getExportTable(csvParams);
 
       expect(mockHttpClient.get).toHaveBeenCalledWith(
-        EXPORT_TABLE(csvParams.tableId, csvParams.format),
+        BFF_EXPORT_TABLE(csvParams.tableId, csvParams.format),
         {
           headers: { Accept: csvParams.mimeType },
         }
@@ -94,7 +94,7 @@ describe('exportService', () => {
       const result = await getExportTable(excelParams);
 
       expect(mockHttpClient.get).toHaveBeenCalledWith(
-        EXPORT_TABLE(excelParams.tableId, excelParams.format),
+        BFF_EXPORT_TABLE(excelParams.tableId, excelParams.format),
         {
           headers: { Accept: excelParams.mimeType },
         }

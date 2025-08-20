@@ -206,6 +206,8 @@ export const authOptions: NextAuthOptions = {
           `[Auth] Initial sign in for user at ${new Date().toISOString()}`
         );
         console.log('[Auth] User data:', user);
+        console.log(account);
+
         return {
           accessToken: account.access_token,
           idToken: account.id_token,
@@ -246,6 +248,8 @@ export const authOptions: NextAuthOptions = {
     async session({ session, token }) {
       const extendedToken = token as ExtendedJWT;
       const extendedSession = session as ExtendedSession;
+
+      console.log(token);
 
       console.log('[Auth] Building session, token contains:', {
         hasUser: !!extendedToken.user,

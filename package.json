@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "predev": "node scripts/generate-feature-flags.js",
     "dev": "next dev --turbopack",
     "dev:no-turbo": "next dev",
     "prebuild": "node scripts/generate-feature-flags.js",
@@ -53,6 +54,7 @@
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
     "@testing-library/dom": "^10.4.0",
+    "@types/dompurify": "^3.0.5",
     "@types/node": "^20",
     "@types/prismjs": "^1.26.5",
     "@types/react": "^19",

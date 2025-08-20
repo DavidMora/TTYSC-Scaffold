@@ -3,8 +3,7 @@ import createDOMPurify from 'dompurify';
 import { marked } from 'marked';
 import { SANITIZER_CONFIG } from '@/lib/utils/sanitizer.config';
 
-// Configure Marked for GFM (no server-side syntax highlighting)
-marked.setOptions({ gfm: true });
+// GFM is enabled by default in marked v16
 
 // Singleton JSDOM/DOMPurify for performance
 type SharedWindow = Window & typeof globalThis;
@@ -96,7 +95,26 @@ function getDOMPurify(): ReturnType<typeof createDOMPurify> {
 export async function renderMarkdownToSafeHtml(
   markdown: string
 ): Promise<SafeHtml> {
-  const rawHtml = await marked.parse(markdown ?? '');
+  // Try different ways to call marked for debugging
+  let rawHtml: string;
+  try {
+    if (typeof marked === 'function') {
+      rawHtml = marked(markdown ?? '') as string;
+    } else {
+      // Use any type to bypass TypeScript checking for debugging
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const markedAny = marked as any;
+      if (typeof markedAny.parse === 'function') {
+        rawHtml = markedAny.parse(markdown ?? '') as string;
+      } else {
+        throw new Error('Unable to access marked function');
+      }
+    }
+  } catch (error) {
+    console.error('Error with marked:', error);
+    throw error;
+  }
+
   const purifier = getDOMPurify();
 
   const sanitized = purifier.sanitize(rawHtml, { RETURN_TRUSTED_TYPE: false });

@@ -1,10 +1,10 @@
 import { HttpSSEEvent } from '@/lib/types/api/http-client';
 
 /**
- * Parse a single SSE block (text up to but excluding the blank line separator) into an event object.
- * Supports multiple data: lines (joined with \n) and ignores comment lines starting with ':'.
+ * Internal parser implementation. Wrapped in an object so tests can spy on a mutable property
+ * (ESM named export live bindings are read-only and cannot be redefined by jest.spyOn).
  */
-export function parseSSEBlock(block: string): HttpSSEEvent {
+function parseSSEBlockImpl(block: string): HttpSSEEvent {
   const evt: HttpSSEEvent = { data: '' };
   for (const line of block.split(/\r?\n/)) {
     if (!line || line.startsWith(':')) continue; // empty or comment line
@@ -26,10 +26,22 @@ export function parseSSEBlock(block: string): HttpSSEEvent {
         if (/^\d+$/.test(value)) {
           evt.retry = Number(value);
         }
-        break;
       }
     }
   }
   if (evt.data.endsWith('\n')) evt.data = evt.data.slice(0, -1);
   return evt;
 }
+
+/**
+ * Wrapper object for the parseSSEBlock function to allow spying in tests.
+ * This provides a mutable target for jest.spyOn since ESM named exports are immutable.
+ */
+export const sseParser = {
+  parseSSEBlock: parseSSEBlockImpl,
+};
+
+/**
+ * Main export for the parseSSEBlock function
+ */
+export const parseSSEBlock = parseSSEBlockImpl;

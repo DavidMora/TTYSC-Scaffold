@@ -85,9 +85,12 @@ const authConfig =
       }
     : undefined;
 
-// Main API client with Basic Authentication
+// Main API client with Basic Authentication (direct backend access - prefer BFF endpoints in UI code)
 const apiClient = new HttpClient(undefined, {
-  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL,
+  // Base URL points to frontend origin (BFF layer). In the browser a relative
+  // request would work without this, but on the server (SSR / route handlers)
+  // having an absolute URL avoids ambiguity.
+  baseURL: process.env.FRONTEND_BASE_URL || 'http://localhost:3000',
   auth: authConfig,
 });
 
