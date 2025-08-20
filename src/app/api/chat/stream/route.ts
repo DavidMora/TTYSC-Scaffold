@@ -6,8 +6,8 @@ export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
 /**
- * Proxy streaming (SSE) -> reenvía POST /api/chat/stream al backend
- * http://localhost:5000/chat/stream y devuelve exactamente el mismo
+ * Proxy streaming (SSE) -> re-enviar POST /api/chat/stream al backend
+ * http://localhost:5000/chat/stream and return the same stream to the browser.
  * stream hacia el navegador.
  */
 export async function POST(request: NextRequest) {
@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
     async start(controller) {
       try {
         for await (const chunk of upstream) {
-          // chunk es Uint8Array (raw) -> reenviar directamente
+          // chunk es Uint8Array (raw) -> re-enviar directamente
           controller.enqueue(chunk);
         }
       } catch (err) {
