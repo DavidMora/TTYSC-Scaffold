@@ -369,34 +369,44 @@ export class FetchAdapter implements HttpClientAdapter {
 
       flushBuffers: function* () {
         if (parser === 'ndjson') {
-          const trimmed = ndjsonBuffer.trim();
-          if (trimmed) {
-            try {
-              yield JSON.parse(trimmed) as TChunk;
-            } catch (e) {
-              const snippet =
-                trimmed.slice(0, 200) + (trimmed.length > 200 ? '…' : '');
-              throw new Error(
-                `Failed to parse leftover NDJSON on stream end: ${
-                  e instanceof Error ? e.message : String(e)
-                } | content: ${snippet}`
-              );
-            }
-          }
+          yield* this.flushNDJSONBuffer();
         } else if (parser === 'sse' && sseBuffer.length) {
-          try {
-            const evt = parseSSEBlock(sseBuffer) as unknown as TChunk;
-            yield evt;
-          } catch (e) {
-            const snippet =
-              sseBuffer.slice(0, 200) + (sseBuffer.length > 200 ? '…' : '');
-            throw new Error(
-              `Failed to parse leftover SSE block on stream end: ${
-                e instanceof Error ? e.message : String(e)
-              } | content: ${snippet}`
-            );
-          }
+          yield* this.flushSSEBuffer();
         }
+      },
+
+      flushNDJSONBuffer: function* () {
+        const trimmed = ndjsonBuffer.trim();
+        if (!trimmed) return;
+
+        try {
+          yield JSON.parse(trimmed) as TChunk;
+        } catch (e) {
+          this.throwFlushError('NDJSON', trimmed, e);
+        }
+      },
+
+      flushSSEBuffer: function* () {
+        try {
+          const evt = parseSSEBlock(sseBuffer) as unknown as TChunk;
+          yield evt;
+        } catch (e) {
+          this.throwFlushError('SSE', sseBuffer, e);
+        }
+      },
+
+      throwFlushError: function (
+        type: string,
+        content: string,
+        error: unknown
+      ) {
+        const snippet =
+          content.slice(0, 200) + (content.length > 200 ? '…' : '');
+        const errorMessage =
+          error instanceof Error ? error.message : String(error);
+        throw new Error(
+          `Failed to parse leftover ${type} ${type === 'NDJSON' ? 'on stream end' : 'block on stream end'}: ${errorMessage} | content: ${snippet}`
+        );
       },
 
       cleanup: () => {

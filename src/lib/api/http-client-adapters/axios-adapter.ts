@@ -208,9 +208,13 @@ export class AxiosAdapter implements HttpClientAdapter {
     const raw = config.body;
     if (raw instanceof Buffer || raw instanceof ArrayBuffer) return raw;
     if (typeof raw === 'string') return raw;
-    return ct?.includes('application/json')
-      ? JSON.stringify(raw)
-      : JSON.stringify(raw);
+    if (ct?.includes('application/json')) {
+      return JSON.stringify(raw);
+    }
+
+    // For other content types or when it's not specified,
+    // return the raw object and let Axios handle serialization.
+    return raw;
   }
 
   private createStreamIterator<TChunk>(

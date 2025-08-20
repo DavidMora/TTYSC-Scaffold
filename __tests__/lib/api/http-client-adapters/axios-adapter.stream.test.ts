@@ -169,7 +169,10 @@ describe('AxiosAdapter.stream', () => {
       data: bufferStream(['a', 'b']),
       status: 200,
       statusText: 'OK',
-      headers: {},
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
     });
     // Replace axiosInstance.request used internally after refactor
     (
@@ -179,6 +182,7 @@ describe('AxiosAdapter.stream', () => {
       method: 'POST',
       body: { msg: 'hola' },
       parser: 'text',
+      headers: { 'Content-Type': 'application/json' },
     });
     const out: string[] = [];
     for await (const c of res) {

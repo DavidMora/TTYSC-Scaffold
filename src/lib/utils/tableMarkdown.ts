@@ -8,7 +8,7 @@ function toStringValue(value: unknown): string {
   try {
     return JSON.stringify(value);
   } catch {
-    return typeof value === 'object' ? '[object Object]' : String(value);
+    return Object.prototype.toString.call(value);
   }
 }
 
