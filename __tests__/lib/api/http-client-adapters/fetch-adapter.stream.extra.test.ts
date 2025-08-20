@@ -222,4 +222,89 @@ describe('FetchAdapter.stream extra coverage', () => {
     expect(caught).toBeDefined();
     expect(String(caught)).toMatch(/SSE buffer exceeded/);
   });
+
+  it('emits leftover invalid NDJSON on flush (error path executed but swallowed)', async () => {
+    // Single invalid JSON without trailing newline triggers flushNDJSONBuffer error path
+    mockFetch.mockResolvedValue(buildResponse(['{invalid']));
+    const stream = await adapter.stream('/ndjson-leftover-invalid', {
+      parser: 'ndjson',
+    });
+    const out: unknown[] = [];
+    for await (const o of stream) out.push(o);
+    expect(out).toEqual([]); // nothing emitted, error during flush is ignored internally
+  });
+
+  it('parses SSE events split by \r\r delimiter', async () => {
+    const sse = 'id:1\ndata:a\r\r' + 'id:2\ndata:b\n\n';
+    mockFetch.mockResolvedValue(
+      buildResponse([sse], { 'content-type': 'text/event-stream' })
+    );
+    const stream = await adapter.stream('/sse-rr', { parser: 'sse' });
+    const events: Array<Record<string, unknown>> = [];
+    for await (const e of stream) events.push(e as Record<string, unknown>);
+    expect(events.map((e) => e.data)).toEqual(['a', 'b']);
+  });
+
+  it('builds stream request body for various types', async () => {
+    const resp = buildResponse(['ok']);
+    mockFetch.mockResolvedValue(resp);
+
+    // FormData stays as-is
+    const fd = new FormData();
+    fd.append('a', '1');
+    await adapter.stream('/form', { method: 'POST', body: fd });
+    expect(mockFetch.mock.calls.find(([u]) => u === '/form')?.[1]?.body).toBe(
+      fd
+    );
+
+    // String body stays as string
+    await adapter.stream('/str', { method: 'POST', body: 'raw' });
+    expect(mockFetch.mock.calls.find(([u]) => u === '/str')?.[1]?.body).toBe(
+      'raw'
+    );
+
+    // Uint8Array passes through
+    const u8 = new Uint8Array([9, 8, 7]);
+    await adapter.stream('/u8', { method: 'POST', body: u8 });
+    expect(mockFetch.mock.calls.find(([u]) => u === '/u8')?.[1]?.body).toBe(u8);
+
+    // ArrayBuffer passes through
+    const ab = new ArrayBuffer(4);
+    await adapter.stream('/ab', { method: 'POST', body: ab });
+    expect(mockFetch.mock.calls.find(([u]) => u === '/ab')?.[1]?.body).toBe(ab);
+
+    // Object with non-JSON content type results in undefined body
+    await adapter.stream('/obj-nonjson', {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body: { x: 1 },
+    });
+    expect(
+      mockFetch.mock.calls.find(([u]) => u === '/obj-nonjson')?.[1]?.body
+    ).toBeUndefined();
+
+    // Circular object with JSON content type triggers stringify catch -> undefined
+    const circ: any = {};
+    circ.self = circ;
+    await adapter.stream('/obj-circ', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: circ,
+    });
+    expect(
+      mockFetch.mock.calls.find(([u]) => u === '/obj-circ')?.[1]?.body
+    ).toBeUndefined();
+  });
+
+  it('clears timeout in stream when fetch rejects (catch path)', async () => {
+    const originalClearTimeout = global.clearTimeout;
+    const mockClearTimeout = jest.fn();
+    // @ts-expect-error override for test
+    global.clearTimeout = mockClearTimeout;
+    const err = new Error('boom');
+    mockFetch.mockRejectedValue(err);
+    await expect(adapter.stream('/err')).rejects.toThrow('boom');
+    expect(mockClearTimeout).toHaveBeenCalled();
+    global.clearTimeout = originalClearTimeout;
+  });
 });

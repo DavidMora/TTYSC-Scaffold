@@ -1,4 +1,5 @@
 import { backendRequest } from '@/lib/api/backend-request';
+import { errorResponse } from '@/lib/utils/error-response';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -18,13 +19,4 @@ export async function GET() {
     return errorResponse(e);
   }
 }
-
-function errorResponse(e: unknown, status = 500) {
-  const message = e instanceof Error ? e.message : 'Internal error';
-  return new Response(JSON.stringify({ error: message }), {
-    status,
-    headers: { 'Content-Type': 'application/json' },
-  });
-}
-
 
