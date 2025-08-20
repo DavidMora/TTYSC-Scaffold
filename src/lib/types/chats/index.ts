@@ -1,4 +1,5 @@
 import type { BaseResponse } from '@/lib/types/http/responses';
+import type { AIChartData } from '@/lib/types/charts';
 import { FilterState } from '../analysisFilters';
 
 export type VoteType = 'up' | 'down' | null;
@@ -8,6 +9,7 @@ export interface ChatMessage {
   role: 'user' | 'assistant';
   title?: string;
   content: string;
+  chart?: AIChartData;
   created: string;
   feedbackVote?: VoteType;
 }
@@ -128,6 +130,25 @@ export interface ExecutionMetadata {
   query_results: Omit<StreamDataQueryExecution, 'dataframe_records'> & {
     dataframe_records: Array<Record<string, unknown>>;
   };
+  // Optional visualization payload (may be provided by a later chunk)
+  chart_type?: string | null;
+  chart_label?: string | null;
+  generated_chart?: {
+    Series: Array<{
+      name: string;
+      data: Array<{ x: string | number; y: number }>;
+    }>;
+    XAxisKey: string;
+    YAxisKey: string;
+  } | null;
+  chartgen_error?: string | null;
+  // Optional follow-up suggestions
+  followup_questions?: string[];
+  followup_metadata?: {
+    original_question: string;
+    num_questions: number;
+  };
+  followup_error?: string | null;
   completed_steps: string[];
   error: string | null;
 }

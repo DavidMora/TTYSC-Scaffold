@@ -4,6 +4,7 @@ import { ChatMessage } from '@/lib/types/chats';
 import { parseDate } from '@/lib/utils/dateUtils';
 import { FeedbackVote } from '@/components/FeedbackVote/FeedbackVote';
 import { AIResponseRenderer } from '@/components/AnalysisChat/AIResponseRenderer';
+import { AIChart } from '@/components/AICharts/AIChart';
 import type { ChatStreamStepInfo } from '@/hooks/chats/stream';
 
 interface AIResponseBubbleProps {
@@ -89,6 +90,12 @@ export function AIResponseBubble({
       {/* Keep the UI minimal during streaming: only show the loader with the active step text */}
       {!isStreaming && message.content && (
         <AIResponseRenderer content={message.content} />
+      )}
+      {/* Chart inline if it comes from the message */}
+      {!isStreaming && message.chart && (
+        <div style={{ width: '100%', marginTop: '1rem' }}>
+          <AIChart data={message.chart} />
+        </div>
       )}
     </div>
   );

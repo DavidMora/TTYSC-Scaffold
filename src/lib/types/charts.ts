@@ -25,6 +25,7 @@ export interface AIChartData {
   timestamp: string;
   preamble?: string;
   content?: string;
+  label?: string;
   chart: ChartData;
 }
 

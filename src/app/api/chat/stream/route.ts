@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server';
 import { backendRequest } from '@/lib/api/backend-request';
+import { buildFinalChartMock } from '@/lib/mocks/streamFinalChartMock';
 
 // Evitar cache y asegurar ejecución en cada request
 export const dynamic = 'force-dynamic';
@@ -53,13 +54,13 @@ export async function POST(request: NextRequest) {
 
   const stream = new ReadableStream<Uint8Array>({
     async start(controller) {
+      const encoder = new TextEncoder();
       try {
         for await (const chunk of upstream) {
           // chunk es Uint8Array (raw) -> re-enviar directamente
           controller.enqueue(chunk);
         }
       } catch (err) {
-        const encoder = new TextEncoder();
         controller.enqueue(
           encoder.encode(
             `event: error\ndata: ${JSON.stringify({
@@ -68,6 +69,14 @@ export async function POST(request: NextRequest) {
           )
         );
       } finally {
+        try {
+          // Emitir un último evento con el bloque de charts mockeado
+          const mockChunk = buildFinalChartMock();
+          const sse = `data: ${JSON.stringify(mockChunk)}\n\n`;
+          controller.enqueue(encoder.encode(sse));
+        } catch {
+          // noop si falla el mock
+        }
         controller.close();
       }
     },

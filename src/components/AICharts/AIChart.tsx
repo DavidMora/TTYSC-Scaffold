@@ -24,7 +24,7 @@ export function AIChart({
   dateRange,
   region,
 }: Readonly<AIChartProps>) {
-  const { headline, preamble, content, chart } = data;
+  const { headline, preamble, content, chart, label } = data;
 
   const chartDataInfo = getChartDataInfo(chart);
 
@@ -65,7 +65,7 @@ export function AIChart({
         height={isFullscreen ? 800 : 400}
         chartType={chart.type}
         chartDataInfo={chartDataInfo}
-        title={headline}
+        title={label}
         chartIdForFullscreen={isFullscreen ? undefined : chartId}
         onDateRangeChange={onDateRangeChange}
         onRegionChange={onRegionChange}

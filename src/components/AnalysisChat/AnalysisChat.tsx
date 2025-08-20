@@ -8,6 +8,7 @@ import { MessageBubble } from '@/components/AnalysisChat/MessageBubble';
 import { ChatInput } from '@/components/AnalysisChat/ChatInput';
 import { useChatStream } from '@/hooks/chats/stream';
 import { recordsToMarkdownTable } from '@/lib/utils/tableMarkdown';
+import { metadataToAIChartData } from '@/lib/metadata/chart';
 
 interface AnalysisChatProps {
   previousMessages: ChatMessage[];
@@ -185,6 +186,7 @@ export default function AnalysisChat({
         : aggregatedContent || '';
       if (runId && appendedRunId !== runId && finalContent) {
         const assistantMessageId = `${Date.now()}-assistant`;
+        const inlineChart = metadataToAIChartData(metadata);
         setMessages((prev) => [
           ...prev,
           {
@@ -193,6 +195,7 @@ export default function AnalysisChat({
             created: new Date().toLocaleString(),
             title: 'AI Response',
             content: finalContent,
+            chart: inlineChart || undefined,
           },
         ]);
         setAppendedRunId(runId);
