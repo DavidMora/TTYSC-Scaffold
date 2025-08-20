@@ -139,33 +139,14 @@ export class AxiosAdapter implements HttpClientAdapter {
       }
     };
 
-    // Derive headers incl. Accept similar to FetchAdapter for consistency
-    const headers: Record<string, string> = { ...(config?.headers || {}) };
-    if (!headers.Accept) {
-      let accept = '*/*';
-      if (parser === 'sse') accept = 'text/event-stream';
-      else if (parser === 'json') accept = 'application/json';
-      headers.Accept = accept;
-    }
-
-    const method = (config?.method || 'GET').toUpperCase();
-    // Build request data (body) only for methods that allow it
-    let data: unknown = undefined;
-    if (config?.body !== undefined && method !== 'GET' && method !== 'HEAD') {
-      const ct = headers['Content-Type'] || headers['content-type'];
-      const raw = config.body;
-      if (raw instanceof Buffer || raw instanceof ArrayBuffer) data = raw;
-      else if (typeof raw === 'string') data = raw;
-      else if (ct?.includes('application/json')) data = JSON.stringify(raw);
-      else data = JSON.stringify(raw);
-    }
+    const headers = this.buildStreamHeaders(config, parser);
+    const data = this.buildRequestData(config, headers);
 
     const response = await this.axiosInstance.request({
       url,
-      method,
+      method: (config?.method || 'GET').toUpperCase(),
       data,
       responseType: 'stream',
-      // Axios types accept AbortSignal (in recent versions). Cast avoided.
       signal: controller.signal,
       headers,
     });
@@ -179,91 +160,14 @@ export class AxiosAdapter implements HttpClientAdapter {
       ok: response.status >= 200 && response.status < 300,
     };
 
-    // We'll convert Node.js stream into async iterator
     const asyncIterable: AsyncIterable<TChunk> = {
-      [Symbol.asyncIterator]: () => {
-        const reader = nodeStream[
-          Symbol.asyncIterator
-        ]() as AsyncIterator<Buffer>;
-        let jsonBuf = '';
-        let ndjsonBuf = '';
-        let sseBuf = '';
-
-        const emitDone = (): IteratorResult<TChunk> => {
-          if (parser === 'ndjson' && ndjsonBuf.trim()) {
-            const line = ndjsonBuf.trim();
-            ndjsonBuf = '';
-            return { value: JSON.parse(line) as TChunk, done: false };
-          }
-          if (parser === 'sse' && sseBuf) {
-            const evt = sseParser.parseSSEBlock(sseBuf) as unknown as TChunk;
-            sseBuf = '';
-            return { value: evt, done: false };
-          }
-          return { value: undefined as unknown as TChunk, done: true };
-        };
-
-        const parseBytes = (
-          chunk: Buffer
-        ): IteratorResult<TChunk> | undefined => {
-          if (parser === 'bytes')
-            return { value: chunk as unknown as TChunk, done: false };
-          const txt = chunk.toString('utf8');
-          switch (parser) {
-            case 'text':
-              return { value: txt as unknown as TChunk, done: false };
-            case 'json': {
-              ensureSize('JSON', jsonBuf.length + txt.length);
-              jsonBuf += txt;
-              try {
-                const obj = JSON.parse(jsonBuf) as TChunk;
-                jsonBuf = '';
-                controller.abort();
-                return { value: obj, done: false };
-              } catch {
-                return undefined;
-              }
-            }
-            case 'ndjson': {
-              ensureSize('NDJSON', ndjsonBuf.length + txt.length);
-              ndjsonBuf += txt;
-              const newline = ndjsonBuf.indexOf('\n');
-              if (newline !== -1) {
-                const line = ndjsonBuf.slice(0, newline).trim();
-                ndjsonBuf = ndjsonBuf.slice(newline + 1);
-                if (!line) return undefined;
-                return { value: JSON.parse(line) as TChunk, done: false };
-              }
-              return undefined;
-            }
-            case 'sse': {
-              ensureSize('SSE', sseBuf.length + txt.length);
-              sseBuf += txt;
-              const eventEnd = sseBuf.indexOf('\n\n');
-              if (eventEnd !== -1) {
-                const raw = sseBuf.slice(0, eventEnd);
-                sseBuf = sseBuf.slice(eventEnd + 2);
-                const evt = sseParser.parseSSEBlock(raw) as unknown as TChunk;
-                return { value: evt, done: false };
-              }
-              return undefined;
-            }
-            default:
-              return { value: txt as unknown as TChunk, done: false };
-          }
-        };
-
-        return {
-          async next(): Promise<IteratorResult<TChunk>> {
-            while (true) {
-              const { value, done } = await reader.next();
-              if (done) return emitDone();
-              const parsed = parseBytes(value);
-              if (parsed) return parsed;
-            }
-          },
-        };
-      },
+      [Symbol.asyncIterator]: () =>
+        this.createStreamIterator<TChunk>(
+          nodeStream,
+          parser,
+          ensureSize,
+          controller
+        ),
     };
 
     const streamResponse: HttpStreamResponse<TChunk> = Object.assign(
@@ -275,6 +179,140 @@ export class AxiosAdapter implements HttpClientAdapter {
       }
     );
     return streamResponse;
+  }
+
+  private buildStreamHeaders(
+    config?: HttpStreamConfig,
+    parser?: string
+  ): Record<string, string> {
+    const headers: Record<string, string> = { ...(config?.headers || {}) };
+    if (!headers.Accept) {
+      let accept = '*/*';
+      if (parser === 'sse') accept = 'text/event-stream';
+      else if (parser === 'json') accept = 'application/json';
+      headers.Accept = accept;
+    }
+    return headers;
+  }
+
+  private buildRequestData(
+    config?: HttpStreamConfig,
+    headers?: Record<string, string>
+  ): unknown {
+    const method = (config?.method || 'GET').toUpperCase();
+    if (config?.body === undefined || method === 'GET' || method === 'HEAD') {
+      return undefined;
+    }
+
+    const ct = headers?.['Content-Type'] || headers?.['content-type'];
+    const raw = config.body;
+    if (raw instanceof Buffer || raw instanceof ArrayBuffer) return raw;
+    if (typeof raw === 'string') return raw;
+    return ct?.includes('application/json')
+      ? JSON.stringify(raw)
+      : JSON.stringify(raw);
+  }
+
+  private createStreamIterator<TChunk>(
+    nodeStream: NodeJS.ReadableStream,
+    parser: string,
+    ensureSize: (name: string, size: number) => void,
+    controller: AbortController
+  ): AsyncIterator<TChunk> {
+    const reader = nodeStream[Symbol.asyncIterator]() as AsyncIterator<Buffer>;
+    const buffers = { json: '', ndjson: '', sse: '' };
+
+    const emitDone = (): IteratorResult<TChunk> => {
+      if (parser === 'ndjson' && buffers.ndjson.trim()) {
+        const line = buffers.ndjson.trim();
+        buffers.ndjson = '';
+        return { value: JSON.parse(line) as TChunk, done: false };
+      }
+      if (parser === 'sse' && buffers.sse) {
+        const evt = sseParser.parseSSEBlock(buffers.sse) as unknown as TChunk;
+        buffers.sse = '';
+        return { value: evt, done: false };
+      }
+      return { value: undefined as unknown as TChunk, done: true };
+    };
+
+    const parseBytes = (chunk: Buffer): IteratorResult<TChunk> | undefined => {
+      if (parser === 'bytes')
+        return { value: chunk as unknown as TChunk, done: false };
+
+      const txt = chunk.toString('utf8');
+      if (parser === 'text')
+        return { value: txt as unknown as TChunk, done: false };
+      if (parser === 'json')
+        return this.parseJsonChunk(txt, buffers, ensureSize, controller);
+      if (parser === 'ndjson')
+        return this.parseNdjsonChunk(txt, buffers, ensureSize);
+      if (parser === 'sse') return this.parseSseChunk(txt, buffers, ensureSize);
+
+      return { value: txt as unknown as TChunk, done: false };
+    };
+
+    return {
+      async next(): Promise<IteratorResult<TChunk>> {
+        while (true) {
+          const { value, done } = await reader.next();
+          if (done) return emitDone();
+          const parsed = parseBytes(value);
+          if (parsed) return parsed;
+        }
+      },
+    };
+  }
+
+  private parseJsonChunk<TChunk>(
+    txt: string,
+    buffers: { json: string; ndjson: string; sse: string },
+    ensureSize: (name: string, size: number) => void,
+    controller: AbortController
+  ): IteratorResult<TChunk> | undefined {
+    ensureSize('JSON', buffers.json.length + txt.length);
+    buffers.json += txt;
+    try {
+      const obj = JSON.parse(buffers.json) as TChunk;
+      controller.abort();
+      return { value: obj, done: false };
+    } catch {
+      return undefined;
+    }
+  }
+
+  private parseNdjsonChunk<TChunk>(
+    txt: string,
+    buffers: { json: string; ndjson: string; sse: string },
+    ensureSize: (name: string, size: number) => void
+  ): IteratorResult<TChunk> | undefined {
+    ensureSize('NDJSON', buffers.ndjson.length + txt.length);
+    buffers.ndjson += txt;
+    const newline = buffers.ndjson.indexOf('\n');
+    if (newline !== -1) {
+      const line = buffers.ndjson.slice(0, newline).trim();
+      buffers.ndjson = buffers.ndjson.slice(newline + 1);
+      if (!line) return undefined;
+      return { value: JSON.parse(line) as TChunk, done: false };
+    }
+    return undefined;
+  }
+
+  private parseSseChunk<TChunk>(
+    txt: string,
+    buffers: { json: string; ndjson: string; sse: string },
+    ensureSize: (name: string, size: number) => void
+  ): IteratorResult<TChunk> | undefined {
+    ensureSize('SSE', buffers.sse.length + txt.length);
+    buffers.sse += txt;
+    const eventEnd = buffers.sse.indexOf('\n\n');
+    if (eventEnd !== -1) {
+      const raw = buffers.sse.slice(0, eventEnd);
+      buffers.sse = buffers.sse.slice(eventEnd + 2);
+      const evt = sseParser.parseSSEBlock(raw) as unknown as TChunk;
+      return { value: evt, done: false };
+    }
+    return undefined;
   }
 }
 

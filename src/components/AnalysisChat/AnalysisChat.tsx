@@ -161,9 +161,7 @@ export default function AnalysisChat({
       (metadata &&
         metadata.query_results &&
         Array.isArray(metadata.query_results.dataframe_records) &&
-        (metadata.query_results.dataframe_records as Array<
-          Record<string, unknown>
-        >)) ||
+        metadata.query_results.dataframe_records) ||
       [];
 
     let md = '### Workflow progress\n';

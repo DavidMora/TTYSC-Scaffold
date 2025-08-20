@@ -8,7 +8,7 @@ function toStringValue(value: unknown): string {
   try {
     return JSON.stringify(value);
   } catch {
-    return String(value);
+    return typeof value === 'object' ? '[object Object]' : String(value);
   }
 }
 
@@ -41,7 +41,7 @@ export function recordsToMarkdownTable(
   const headerLine = `| ${headers.join(' | ')} |`;
   const separatorLine = `|${headers.map(() => '---').join('|')}|`;
   const bodyLines = rows.map((row) => {
-    return `| ${headers.map((h) => escapeMarkdownCell((row || {})[h])).join(' | ')} |`;
+    return `| ${headers.map((h) => escapeMarkdownCell(row?.[h])).join(' | ')} |`;
   });
 
   return [headerLine, separatorLine, ...bodyLines].join('\n');

@@ -100,14 +100,8 @@ export function useChatStream(
       contentMapRef.current[idx] = msgContent; // snapshot mode
     } else if (!prevContent.includes(msgContent)) {
       contentMapRef.current[idx] = prevContent + msgContent; // delta append
-    } else {
-      // This case is a bit ambiguous, but we assume it's for overlapping content.
-      // For instance, if prevContent is "hello wor" and msgContent is "world",
-      // it might be that the stream is correcting itself.
-      // A simple append if not fully contained seems reasonable.
-      if (!prevContent.endsWith(msgContent)) {
-        contentMapRef.current[idx] = prevContent + msgContent;
-      }
+    } else if (!prevContent.endsWith(msgContent)) {
+      contentMapRef.current[idx] = prevContent + msgContent;
     }
   }, []);
 

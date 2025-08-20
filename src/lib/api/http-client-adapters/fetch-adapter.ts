@@ -171,11 +171,246 @@ export class FetchAdapter implements HttpClientAdapter {
     );
   }
 
+  private buildStreamRequestBody(
+    body: unknown,
+    method: string,
+    headers: Record<string, string>
+  ): BodyInit | undefined {
+    if (body === undefined || method === 'GET' || method === 'HEAD') {
+      return undefined;
+    }
+
+    const contentType = headers['Content-Type'] || headers['content-type'];
+
+    if (body instanceof FormData || body instanceof Blob) {
+      return body;
+    }
+
+    if (typeof body === 'string') {
+      return body;
+    }
+
+    if (body instanceof Uint8Array) {
+      return body as unknown as BodyInit;
+    }
+
+    if (typeof body === 'object') {
+      const isJsonLike = contentType?.includes('application/json');
+      if (isJsonLike || !contentType) {
+        try {
+          return JSON.stringify(body);
+        } catch {
+          return undefined;
+        }
+      }
+    }
+
+    return undefined;
+  }
+
+  private setupStreamHeaders(
+    config: HttpStreamConfig,
+    headers: Record<string, string>
+  ): void {
+    // Ensure request id consistency with non-stream requests
+    if (!headers['X-Request-Id']) {
+      headers['X-Request-Id'] = uuidv6();
+    }
+
+    // Basic auth
+    const authConfig = config.auth || this.defaultConfig.auth;
+    if (authConfig && !headers.Authorization) {
+      const credentials = btoa(`${authConfig.username}:${authConfig.password}`);
+      headers.Authorization = `Basic ${credentials}`;
+    }
+
+    // Set appropriate Accept header
+    if (!headers.Accept) {
+      let accept = '*/*';
+      if (config.parser === 'sse') accept = 'text/event-stream';
+      else if (config.parser === 'json') accept = 'application/json';
+      headers.Accept = accept;
+    }
+  }
+
+  private createEmptyStream<TChunk>(
+    controller: AbortController,
+    response: Response,
+    statusMeta: {
+      status: number;
+      statusText: string;
+      headers: Record<string, string>;
+      ok: boolean;
+    }
+  ): HttpStreamResponse<TChunk> {
+    const empty: AsyncIterable<TChunk> = {
+      [Symbol.asyncIterator]: () => ({
+        next: async () => ({
+          value: undefined as unknown as TChunk,
+          done: true,
+        }),
+      }),
+    };
+
+    return Object.assign(empty, {
+      cancel: () => controller.abort(),
+      raw: response,
+      ...statusMeta,
+    }) as HttpStreamResponse<TChunk>;
+  }
+
+  private createStreamParser<TChunk>(
+    parser: string,
+    maxBufferSize: number,
+    jsonParserTimeoutMs: number,
+    controller: AbortController
+  ) {
+    let sseBuffer = '';
+    let ndjsonBuffer = '';
+    let ndjsonLineNumber = 0;
+    let jsonBuffer = '';
+    let jsonStartTime: number | null = null;
+    let jsonTimeoutTriggered = false;
+
+    const ensureSize = (name: string, size: number) => {
+      if (size > maxBufferSize) {
+        controller.abort();
+        throw new Error(
+          `${name} buffer exceeded maximum size of ${maxBufferSize} bytes`
+        );
+      }
+    };
+
+    return {
+      processChunk: function* (
+        chunkStr: string
+      ): Generator<TChunk, void, unknown> {
+        switch (parser) {
+          case 'text':
+            yield chunkStr as unknown as TChunk;
+            break;
+          case 'json':
+            yield* this.handleJSON(chunkStr);
+            break;
+          case 'ndjson':
+            yield* this.handleNDJSON(chunkStr);
+            break;
+          case 'sse':
+            yield* this.handleSSE(chunkStr);
+            break;
+          default:
+            yield chunkStr as unknown as TChunk;
+        }
+      },
+
+      handleJSON: function* (chunkStr: string) {
+        ensureSize('JSON', jsonBuffer.length + chunkStr.length);
+        jsonBuffer += chunkStr;
+        jsonStartTime ??= Date.now();
+
+        if (jsonStartTime && Date.now() - jsonStartTime > jsonParserTimeoutMs) {
+          jsonTimeoutTriggered = true;
+          controller.abort();
+          throw new Error(
+            `JSON stream parse timeout after ${jsonParserTimeoutMs}ms (buffer length=${jsonBuffer.length})`
+          );
+        }
+
+        try {
+          const obj = JSON.parse(jsonBuffer) as TChunk;
+          jsonBuffer = '';
+          controller.abort();
+          yield obj;
+        } catch {
+          // waiting for full JSON
+        }
+      },
+
+      handleNDJSON: function* (chunkStr: string) {
+        ensureSize('NDJSON', ndjsonBuffer.length + chunkStr.length);
+        ndjsonBuffer += chunkStr;
+        let newlineIndex = ndjsonBuffer.indexOf('\n');
+
+        while (newlineIndex !== -1) {
+          const line = ndjsonBuffer.slice(0, newlineIndex).trim();
+          ndjsonBuffer = ndjsonBuffer.slice(newlineIndex + 1);
+
+          if (line) {
+            ndjsonLineNumber += 1;
+            try {
+              yield JSON.parse(line) as TChunk;
+            } catch (e) {
+              const snippet =
+                line.length > 200 ? line.slice(0, 200) + '…' : line;
+              throw new Error(
+                `Failed to parse NDJSON line ${ndjsonLineNumber}: ${
+                  e instanceof Error ? e.message : String(e)
+                } | content: ${snippet}`
+              );
+            }
+          }
+          newlineIndex = ndjsonBuffer.indexOf('\n');
+        }
+      },
+
+      handleSSE: function* (chunkStr: string) {
+        ensureSize('SSE', sseBuffer.length + chunkStr.length);
+        sseBuffer += chunkStr;
+        let eventEndIdx = sseBuffer.indexOf('\n\n');
+
+        while (eventEndIdx !== -1) {
+          const rawEvent = sseBuffer.slice(0, eventEndIdx);
+          sseBuffer = sseBuffer.slice(eventEndIdx + 2);
+          const evt = parseSSEBlock(rawEvent) as unknown as TChunk;
+          yield evt;
+          eventEndIdx = sseBuffer.indexOf('\n\n');
+        }
+      },
+
+      flushBuffers: function* () {
+        if (parser === 'ndjson') {
+          const trimmed = ndjsonBuffer.trim();
+          if (trimmed) {
+            try {
+              yield JSON.parse(trimmed) as TChunk;
+            } catch (e) {
+              const snippet =
+                trimmed.slice(0, 200) + (trimmed.length > 200 ? '…' : '');
+              throw new Error(
+                `Failed to parse leftover NDJSON on stream end: ${
+                  e instanceof Error ? e.message : String(e)
+                } | content: ${snippet}`
+              );
+            }
+          }
+        } else if (parser === 'sse' && sseBuffer.length) {
+          try {
+            const evt = parseSSEBlock(sseBuffer) as unknown as TChunk;
+            yield evt;
+          } catch (e) {
+            const snippet =
+              sseBuffer.slice(0, 200) + (sseBuffer.length > 200 ? '…' : '');
+            throw new Error(
+              `Failed to parse leftover SSE block on stream end: ${
+                e instanceof Error ? e.message : String(e)
+              } | content: ${snippet}`
+            );
+          }
+        }
+      },
+
+      cleanup: () => {
+        if (jsonTimeoutTriggered) {
+          jsonBuffer = '';
+        }
+      },
+    };
+  }
+
   async stream<TChunk = unknown>(
     url: string,
     config?: HttpStreamConfig
   ): Promise<HttpStreamResponse<TChunk>> {
-    // Merge with default config (priority to per-call config)
     const mergedConfig: HttpStreamConfig = { ...this.defaultConfig, ...config };
     const fullUrl = mergedConfig.baseURL
       ? new URL(url, mergedConfig.baseURL).toString()
@@ -183,8 +418,8 @@ export class FetchAdapter implements HttpClientAdapter {
 
     const controller = new AbortController();
     const externalSignal = mergedConfig.signal;
-    // Keep a reference so we can remove it later
     let abortListener: (() => void) | undefined;
+
     if (externalSignal) {
       if (externalSignal.aborted) controller.abort();
       else {
@@ -198,54 +433,15 @@ export class FetchAdapter implements HttpClientAdapter {
       ...mergedConfig.headers,
     } as Record<string, string>;
 
-    // Ensure request id consistency with non-stream requests
-    if (!headers['X-Request-Id']) {
-      headers['X-Request-Id'] = uuidv6();
-    }
+    this.setupStreamHeaders(mergedConfig, headers);
 
-    // Basic auth (same logic as request())
-    const authConfig = mergedConfig.auth || this.defaultConfig.auth;
-    if (authConfig && !headers.Authorization) {
-      const credentials = btoa(`${authConfig.username}:${authConfig.password}`);
-      headers.Authorization = `Basic ${credentials}`;
-    }
-
-    // Always request streaming where relevant
-    if (!headers.Accept) {
-      let accept = '*/*';
-      if (mergedConfig.parser === 'sse') accept = 'text/event-stream';
-      else if (mergedConfig.parser === 'json') accept = 'application/json';
-      headers.Accept = accept;
-    }
-
-    // Determine HTTP method & body for streaming request
     const method = (mergedConfig.method || 'GET').toUpperCase();
-    const buildStreamBody = (): BodyInit | undefined => {
-      if (
-        mergedConfig.body === undefined ||
-        method === 'GET' ||
-        method === 'HEAD'
-      )
-        return undefined;
-      const ct = headers['Content-Type'] || headers['content-type'];
-      const raw = mergedConfig.body;
-      if (raw instanceof FormData || raw instanceof Blob) return raw;
-      if (typeof raw === 'string') return raw;
-      if (raw instanceof Uint8Array) return raw as unknown as BodyInit; // acceptable cast for fetch body
-      const isJsonLike = ct?.includes('application/json');
-      if (isJsonLike && typeof raw === 'object') return JSON.stringify(raw);
-      if (typeof raw === 'object') {
-        try {
-          return JSON.stringify(raw);
-        } catch {
-          return undefined;
-        }
-      }
-      return undefined;
-    };
-    const body = buildStreamBody();
+    const body = this.buildStreamRequestBody(
+      mergedConfig.body,
+      method,
+      headers
+    );
 
-    // Honor timeout like in request() (abort controller)
     const timeoutMs = mergedConfig.timeout ?? this.defaultConfig.timeout;
     const timeoutId = timeoutMs
       ? setTimeout(() => controller.abort(), timeoutMs)
@@ -264,14 +460,13 @@ export class FetchAdapter implements HttpClientAdapter {
       throw e;
     }
 
-    // Some tests (or polyfilled fetch mocks) may omit headers or headers.entries; guard defensively
     let safeHeaders: Record<string, string> = {};
     try {
       const rh = (response as unknown as { headers?: unknown }).headers as
         | Headers
         | undefined;
-      if (rh && typeof (rh as Headers).entries === 'function') {
-        safeHeaders = Object.fromEntries((rh as Headers).entries());
+      if (rh && typeof rh.entries === 'function') {
+        safeHeaders = Object.fromEntries(rh.entries());
       }
     } catch {
       // ignore and keep empty headers map
@@ -285,180 +480,21 @@ export class FetchAdapter implements HttpClientAdapter {
     };
 
     if (!response.body) {
-      // In some Jest / polyfill environments fetch may not provide a ReadableStream.
-      // Instead of throwing (which aborts all parent tests) return an already-complete stream.
-      const empty: AsyncIterable<TChunk> = {
-        [Symbol.asyncIterator]: () => ({
-          next: async () => ({
-            value: undefined as unknown as TChunk,
-            done: true,
-          }),
-        }),
-      };
-      return Object.assign(empty, {
-        cancel: () => controller.abort(),
-        raw: response,
-        ...statusMeta,
-      }) as HttpStreamResponse<TChunk>;
+      return this.createEmptyStream<TChunk>(controller, response, statusMeta);
     }
 
     const reader = response.body.getReader();
     const textDecoder = new TextDecoder();
     const parser = mergedConfig.parser || 'text';
     const jsonParserTimeoutMs = mergedConfig.jsonParserTimeoutMs ?? 15000;
-    const maxBufferSize = mergedConfig.maxBufferSize ?? 10 * 1024 * 1024; // 10MB default
-    const ensureSize = (name: string, size: number) => {
-      if (size > maxBufferSize) {
-        controller.abort();
-        throw new Error(
-          `${name} buffer exceeded maximum size of ${maxBufferSize} bytes`
-        );
-      }
-    };
+    const maxBufferSize = mergedConfig.maxBufferSize ?? 10 * 1024 * 1024;
 
-    // SSE specific buffering
-    let sseBuffer = '';
-    let ndjsonBuffer = '';
-    let ndjsonLineNumber = 0; // for diagnostic errors
-    let jsonBuffer = '';
-
-    const flushLeftoverNDJSON = function* () {
-      const trimmed = ndjsonBuffer.trim();
-      if (!trimmed) return;
-      ndjsonBuffer = '';
-      try {
-        yield JSON.parse(trimmed) as TChunk;
-      } catch (e) {
-        const snippet =
-          trimmed.slice(0, 200) + (trimmed.length > 200 ? '…' : '');
-        throw new Error(
-          `Failed to parse leftover NDJSON on stream end: ${
-            e instanceof Error ? e.message : String(e)
-          } | content: ${snippet}`
-        );
-      }
-    };
-
-    const flushLeftoverSSE = function* () {
-      if (!sseBuffer.length) return;
-      const raw = sseBuffer;
-      sseBuffer = '';
-      try {
-        const evt = parseSSEBlock(raw) as unknown as TChunk;
-        yield evt;
-      } catch (e) {
-        const snippet = raw.slice(0, 200) + (raw.length > 200 ? '…' : '');
-        throw new Error(
-          `Failed to parse leftover SSE block on stream end: ${
-            e instanceof Error ? e.message : String(e)
-          } | content: ${snippet}`
-        );
-      }
-    };
-
-    const handleDone = async function* (): AsyncGenerator<
-      TChunk,
-      void,
-      unknown
-    > {
-      if (parser === 'ndjson') {
-        for (const v of flushLeftoverNDJSON()) yield v;
-        return;
-      }
-      if (parser === 'sse') {
-        for (const v of flushLeftoverSSE()) yield v;
-      }
-    };
-
-    const processBytes = function* (
-      value: Uint8Array
-    ): Generator<TChunk, void, unknown> {
-      if (parser === 'bytes') {
-        yield value as unknown as TChunk;
-      }
-    };
-
-    const handleText = function* (chunkStr: string) {
-      yield chunkStr as unknown as TChunk;
-    };
-
-    let jsonStartTime: number | null = null;
-    let jsonTimeoutTriggered = false;
-    const handleJSON = function* (chunkStr: string) {
-      ensureSize('JSON', jsonBuffer.length + chunkStr.length);
-      jsonBuffer += chunkStr;
-      jsonStartTime ??= Date.now();
-      // Timeout check
-      if (jsonStartTime && Date.now() - jsonStartTime > jsonParserTimeoutMs) {
-        jsonTimeoutTriggered = true;
-        controller.abort();
-        throw new Error(
-          `JSON stream parse timeout after ${jsonParserTimeoutMs}ms (buffer length=${jsonBuffer.length})`
-        );
-      }
-      try {
-        const obj = JSON.parse(jsonBuffer) as TChunk;
-        jsonBuffer = '';
-        controller.abort();
-        yield obj;
-      } catch {
-        // waiting for full JSON
-      }
-    };
-
-    const handleNDJSON = function* (chunkStr: string) {
-      ensureSize('NDJSON', ndjsonBuffer.length + chunkStr.length);
-      ndjsonBuffer += chunkStr;
-      let newlineIndex = ndjsonBuffer.indexOf('\n');
-      while (newlineIndex !== -1) {
-        const line = ndjsonBuffer.slice(0, newlineIndex).trim();
-        ndjsonBuffer = ndjsonBuffer.slice(newlineIndex + 1);
-        if (line) {
-          ndjsonLineNumber += 1;
-          try {
-            yield JSON.parse(line) as TChunk;
-          } catch (e) {
-            const snippet = line.length > 200 ? line.slice(0, 200) + '…' : line;
-            throw new Error(
-              `Failed to parse NDJSON line ${ndjsonLineNumber}: ${
-                e instanceof Error ? e.message : String(e)
-              } | content: ${snippet}`
-            );
-          }
-        }
-        newlineIndex = ndjsonBuffer.indexOf('\n');
-      }
-    };
-
-    const handleSSE = function* (chunkStr: string) {
-      ensureSize('SSE', sseBuffer.length + chunkStr.length);
-      sseBuffer += chunkStr;
-      let eventEndIdx = sseBuffer.indexOf('\n\n');
-      while (eventEndIdx !== -1) {
-        const rawEvent = sseBuffer.slice(0, eventEndIdx);
-        sseBuffer = sseBuffer.slice(eventEndIdx + 2);
-        const evt = parseSSEBlock(rawEvent) as unknown as TChunk;
-        yield evt;
-        eventEndIdx = sseBuffer.indexOf('\n\n');
-      }
-    };
-
-    const processTextParsers = function* (
-      chunkStr: string
-    ): Generator<TChunk, void, unknown> {
-      switch (parser) {
-        case 'text':
-          return yield* handleText(chunkStr);
-        case 'json':
-          return yield* handleJSON(chunkStr);
-        case 'ndjson':
-          return yield* handleNDJSON(chunkStr);
-        case 'sse':
-          return yield* handleSSE(chunkStr);
-        default:
-          return yield* handleText(chunkStr); // fallback
-      }
-    };
+    const streamParser = this.createStreamParser<TChunk>(
+      parser,
+      maxBufferSize,
+      jsonParserTimeoutMs,
+      controller
+    );
 
     async function* chunkGenerator(): AsyncGenerator<TChunk, void, unknown> {
       try {
@@ -466,36 +502,36 @@ export class FetchAdapter implements HttpClientAdapter {
           const { value, done } = await reader.read();
           if (done) break;
           if (!value) continue;
-          // Decide which parser to use and yield any resulting chunks
-          const iterable: Iterable<TChunk> = ((): Iterable<TChunk> => {
-            if (parser === 'bytes')
-              return processBytes(value) as unknown as Iterable<TChunk>;
+
+          if (parser === 'bytes') {
+            yield value as unknown as TChunk;
+          } else {
             const str = textDecoder.decode(value, { stream: true });
-            return processTextParsers(str) as unknown as Iterable<TChunk>;
-          })();
-          for (const v of iterable) yield v;
+            yield* streamParser.processChunk(str);
+          }
         }
       } catch (err) {
         controller.abort();
         throw err;
       } finally {
         try {
-          for await (const v of handleDone()) yield v;
+          yield* streamParser.flushBuffers();
         } catch {
           // ignore flush errors
         }
-        // Clear JSON state to help GC if timeout triggered
-        if (jsonTimeoutTriggered) {
-          jsonBuffer = '';
-        }
+
+        streamParser.cleanup();
+
         try {
           reader.releaseLock();
         } catch {
           // ignore
         }
+
         if (externalSignal && abortListener) {
           externalSignal.removeEventListener('abort', abortListener);
         }
+
         if (timeoutId) clearTimeout(timeoutId);
       }
     }
@@ -504,16 +540,11 @@ export class FetchAdapter implements HttpClientAdapter {
       [Symbol.asyncIterator]: () => chunkGenerator(),
     };
 
-    const streamResponse: HttpStreamResponse<TChunk> = Object.assign(
-      asyncIterable,
-      {
-        cancel: () => controller.abort(),
-        raw: response,
-        ...statusMeta,
-      }
-    );
-
-    return streamResponse;
+    return Object.assign(asyncIterable, {
+      cancel: () => controller.abort(),
+      raw: response,
+      ...statusMeta,
+    }) as HttpStreamResponse<TChunk>;
   }
 }
 
