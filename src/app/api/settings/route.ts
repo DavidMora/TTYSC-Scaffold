@@ -5,33 +5,18 @@ import { errorResponse } from '@/lib/utils/error-response';
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-// GET /api/settings -> upstream GET /settings
-export async function GET() {
-  try {
-    const upstream = await backendRequest<{ data: unknown }>({
-      method: 'GET',
-      path: '/settings',
-    });
-    return new Response(JSON.stringify(upstream.data), {
-      status: upstream.status,
-      headers: { 'Content-Type': 'application/json' },
-    });
-  } catch (e) {
-    return errorResponse(e);
-  }
-}
-
-// PATCH /api/settings -> upstream PATCH /settings
-export async function PATCH(req: NextRequest) {
+async function forwardSettings(method: 'GET' | 'PATCH', req?: NextRequest) {
   let body: unknown;
-  try {
-    body = await req.json();
-  } catch {
-    body = undefined;
+  if (req) {
+    try {
+      body = await req.json();
+    } catch {
+      body = undefined;
+    }
   }
   try {
     const upstream = await backendRequest<{ data: unknown }, unknown>({
-      method: 'PATCH',
+      method,
       path: '/settings',
       body,
     });
@@ -42,5 +27,15 @@ export async function PATCH(req: NextRequest) {
   } catch (e) {
     return errorResponse(e);
   }
+}
+
+// GET /api/settings -> upstream GET /settings
+export async function GET() {
+  return forwardSettings('GET');
+}
+
+// PATCH /api/settings -> upstream PATCH /settings
+export async function PATCH(req: NextRequest) {
+  return forwardSettings('PATCH', req);
 }
 
