@@ -19,6 +19,7 @@ export interface UseZoomableOptions {
   step?: number;
   onWindowChange?: (window: ViewWindow) => void;
   dataLength?: number;
+  dataAxis?: 'x' | 'y';
 }
 
 export function useZoomable({
@@ -28,6 +29,7 @@ export function useZoomable({
   step = 0.4,
   onWindowChange,
   dataLength,
+  dataAxis = 'x',
 }: UseZoomableOptions = {}) {
   const viewportRef = useRef<HTMLDivElement | null>(null);
   const [zoom, setZoom] = useState<number>(1);
@@ -264,13 +266,15 @@ export function useZoomable({
         const startWin = panStart.windowAtStart;
         if (!startWin) return;
         const dx = e.clientX - panStart.x;
+        const dy = e.clientY - panStart.y;
         const rangeAtStart = startWin.end - startWin.start;
         if (rangeAtStart >= 1 - 1e-6) return;
-        const delta = -deltaFromPixels(
-          dx,
-          viewport.clientWidth || 1,
-          rangeAtStart
-        );
+        const pixelDelta = dataAxis === 'x' ? dx : dy;
+        const viewportSize =
+          dataAxis === 'x'
+            ? viewport.clientWidth || 1
+            : viewport.clientHeight || 1;
+        const delta = -deltaFromPixels(pixelDelta, viewportSize, rangeAtStart);
         let next = shiftWindow(startWin, delta);
         if (dataLength) {
           next = snapWindowSpanToCount(next, dataLength);
@@ -285,6 +289,7 @@ export function useZoomable({
       zoom,
       dataLength,
       hasMultipleItems,
+      dataAxis,
     ]
   );
 
@@ -335,19 +340,37 @@ export function useZoomable({
           return;
         }
         if (span >= 1 - 1e-6) return;
-        // Only hijack wheel when there is horizontal scroll intent or Shift is pressed.
-        // If the user is scrolling vertically (deltaY only), let the page scroll naturally.
-        const hasHorizontalDelta = Math.abs(e.deltaX) > 0;
-        const shouldPanHorizontally = hasHorizontalDelta || e.shiftKey;
-        if (!shouldPanHorizontally) {
+        if (dataAxis === 'x') {
+          // Only hijack wheel when there is horizontal scroll intent or Shift is pressed.
+          // If the user is scrolling vertically (deltaY only), let the page scroll naturally.
+          const hasHorizontalDelta = Math.abs(e.deltaX) > 0;
+          const shouldPanHorizontally = hasHorizontalDelta || e.shiftKey;
+          if (!shouldPanHorizontally) return;
+          const pixelDx = hasHorizontalDelta ? e.deltaX : e.deltaY;
+          if (pixelDx === 0) return;
+          e.preventDefault();
+          const delta = -deltaFromPixels(
+            pixelDx,
+            viewport.clientWidth || 1,
+            span
+          );
+          let next = shiftWindow(viewWindow, delta);
+          if (dataLength) next = snapWindowSpanToCount(next, dataLength);
+          setViewWindow(next);
+          onWindowChange?.(next);
           return;
         }
-        const pixelDx = hasHorizontalDelta ? e.deltaX : e.deltaY;
-        if (pixelDx === 0) return;
+        // dataAxis === 'y'
+        // Only hijack wheel when there is vertical scroll intent or Shift is pressed.
+        const hasVerticalDelta = Math.abs(e.deltaY) > 0;
+        const shouldPanVertically = hasVerticalDelta || e.shiftKey;
+        if (!shouldPanVertically) return;
+        const pixelDy = hasVerticalDelta ? e.deltaY : e.deltaX;
+        if (pixelDy === 0) return;
         e.preventDefault();
         const delta = -deltaFromPixels(
-          pixelDx,
-          viewport.clientWidth || 1,
+          pixelDy,
+          viewport.clientHeight || 1,
           span
         );
         let next = shiftWindow(viewWindow, delta);
@@ -373,6 +396,7 @@ export function useZoomable({
       hasMultipleItems,
       visibleCount,
       onWindowChange,
+      dataAxis,
     ]
   );
 

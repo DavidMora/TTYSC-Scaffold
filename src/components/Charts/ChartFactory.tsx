@@ -71,7 +71,8 @@ export const ChartFactory: React.FC<ChartFactoryProps> = ({
 
   const wrapDataX = (
     datasetArray: SingleDataPoint[] | MultiDataPoint[],
-    render: (sliced: SingleDataPoint[] | MultiDataPoint[]) => React.ReactNode
+    render: (sliced: SingleDataPoint[] | MultiDataPoint[]) => React.ReactNode,
+    dataAxis?: 'x' | 'y'
   ) => {
     return (
       <ZoomableContainer
@@ -80,6 +81,7 @@ export const ChartFactory: React.FC<ChartFactoryProps> = ({
         title={title}
         chartIdForFullscreen={chartIdForFullscreen}
         dataLength={datasetArray.length}
+        dataAxis={dataAxis}
         exportContext={{
           dataset: datasetArray,
           dimensions,
@@ -111,13 +113,17 @@ export const ChartFactory: React.FC<ChartFactoryProps> = ({
 
   switch (chartType) {
     case CHART_TYPE.bar:
-      return wrapDataX(dataset, (sliced) => (
-        <BarChartRenderer
-          dataset={sliced}
-          dimensions={dimensions}
-          measures={measures}
-        />
-      ));
+      return wrapDataX(
+        dataset,
+        (sliced) => (
+          <BarChartRenderer
+            dataset={sliced}
+            dimensions={dimensions}
+            measures={measures}
+          />
+        ),
+        'y'
+      );
 
     case CHART_TYPE.column:
       return wrapDataX(dataset, (sliced) => (
