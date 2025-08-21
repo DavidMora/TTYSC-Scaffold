@@ -129,7 +129,10 @@ describe('AIChart', () => {
       render(<AIChart data={mockAIChartData} />);
 
       expect(getChartDataInfo).toHaveBeenCalledTimes(1);
-      expect(getChartDataInfo).toHaveBeenCalledWith(mockAIChartData.chart);
+      expect(getChartDataInfo).toHaveBeenCalledWith({
+        data: mockAIChartData.chart.data,
+        labels: mockAIChartData.chart.labels,
+      });
     });
 
     it('creates dimensions with correct accessor', () => {

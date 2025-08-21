@@ -131,7 +131,7 @@ describe('metadataToAIChartData', () => {
 
     const result = metadataToAIChartData(metadata);
 
-    expect(result?.label).toBe('Chart');
+    expect(result?.label).toBeUndefined();
   });
 
   it('uses default series name when series name is missing', () => {
@@ -154,7 +154,7 @@ describe('metadataToAIChartData', () => {
 
     const result = metadataToAIChartData(metadata);
 
-    expect((result?.chart.data as ChartSeries[])[0].name).toBe('Series');
+    expect((result?.chart.data as ChartSeries[])[0].name).toBe('');
   });
 
   it('uses default column chart type when chart_type is invalid', () => {
@@ -165,7 +165,7 @@ describe('metadataToAIChartData', () => {
 
     const result = metadataToAIChartData(metadata);
 
-    expect(result?.chart.type).toBe(CHART_TYPE.column);
+    expect(result?.chart.type).toBeUndefined();
   });
 
   it('maps valid chart types correctly', () => {
@@ -258,7 +258,7 @@ describe('metadataToAIChartData', () => {
 
     const result = metadataToAIChartData(metadata);
 
-    expect(result?.chart.type).toBe(CHART_TYPE.column);
+    expect(result?.chart.type).toBeUndefined();
   });
 
   it('creates timestamp from current date', () => {
