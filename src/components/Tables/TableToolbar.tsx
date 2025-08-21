@@ -29,6 +29,7 @@ const TableToolbar: React.FC<Readonly<TableToolbarProps>> = ({
   filters = [],
   onFilterChange,
   onSearch,
+  onSettingsClick,
   disableFullScreen = false,
 }) => {
   const router = useRouter();
@@ -125,6 +126,9 @@ const TableToolbar: React.FC<Readonly<TableToolbarProps>> = ({
 
   const handleSettings = () => {
     console.log('settings');
+    if (onSettingsClick) {
+      onSettingsClick();
+    }
   };
 
   const handleFullScreen = () => {
@@ -146,7 +150,11 @@ const TableToolbar: React.FC<Readonly<TableToolbarProps>> = ({
         }
         value={search}
         onChange={handleSearch}
+        onClose={function Xs() {}}
         onInput={handleSearch}
+        onOpen={function Xs() {}}
+        onSelect={function Xs() {}}
+        onSelectionChange={function Xs() {}}
         type="Text"
         placeholder="Search..."
         valueState="None"

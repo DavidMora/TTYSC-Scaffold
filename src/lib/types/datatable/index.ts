@@ -46,6 +46,7 @@ export interface TableToolbarProps {
   filters?: Filter[];
   onFilterChange?: (event: FilterChangeEvent) => void;
   onSearch?: (searchTerm: string) => void;
+  onSettingsClick?: () => void;
   disableFullScreen?: boolean;
 }
 
