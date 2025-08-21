@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from 'react';
 import {
   Dialog,
   Bar,
@@ -17,8 +17,8 @@ import {
   TableCell,
   TableSelectionMulti,
   TableRowAction,
-} from "@ui5/webcomponents-react";
-import "@ui5/webcomponents-icons/dist/search.js";
+} from '@ui5/webcomponents-react';
+import '@ui5/webcomponents-icons/dist/search.js';
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -36,15 +36,15 @@ export interface ColumnSetting {
 
 export interface TableSettings {
   columns: ColumnSetting[];
-  sortOrder: "ascending" | "descending" | "none";
+  sortOrder: 'ascending' | 'descending' | 'none';
   searchTerm?: string;
 }
 
 const defaultColumns: ColumnSetting[] = [
-  { id: "product", name: "Product", visible: true, sortable: true },
-  { id: "supplier", name: "Supplier", visible: true, sortable: true },
-  { id: "weight", name: "Weight", visible: true, sortable: true },
-  { id: "price", name: "Price", visible: true, sortable: true },
+  { id: 'product', name: 'Product', visible: true, sortable: true },
+  { id: 'supplier', name: 'Supplier', visible: true, sortable: true },
+  { id: 'weight', name: 'Weight', visible: true, sortable: true },
+  { id: 'price', name: 'Price', visible: true, sortable: true },
 ];
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({
@@ -53,17 +53,17 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   onSave,
   currentSettings,
 }) => {
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState('');
   const [columns, setColumns] = useState<ColumnSetting[]>(defaultColumns);
   const [sortOrder, setSortOrder] = useState<
-    "ascending" | "descending" | "none"
-  >("none");
+    'ascending' | 'descending' | 'none'
+  >('none');
 
   useEffect(() => {
     if (currentSettings) {
       setColumns(currentSettings.columns || defaultColumns);
-      setSortOrder(currentSettings.sortOrder || "none");
-      setSearchTerm(currentSettings.searchTerm || "");
+      setSortOrder(currentSettings.sortOrder || 'none');
+      setSearchTerm(currentSettings.searchTerm || '');
     }
   }, [currentSettings, isOpen]);
 
@@ -81,16 +81,16 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     // Reset to current settings
     if (currentSettings) {
       setColumns(currentSettings.columns || defaultColumns);
-      setSortOrder(currentSettings.sortOrder || "none");
-      setSearchTerm(currentSettings.searchTerm || "");
+      setSortOrder(currentSettings.sortOrder || 'none');
+      setSearchTerm(currentSettings.searchTerm || '');
     }
     onClose();
   };
 
   const handleReset = () => {
     setColumns(defaultColumns);
-    setSortOrder("none");
-    setSearchTerm("");
+    setSortOrder('none');
+    setSearchTerm('');
   };
 
   const filteredColumns = columns.filter((column) =>
@@ -177,14 +177,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   features={<TableSelectionMulti />}
                   rowActionCount={4}
                   onRowActionClick={function _ie(e) {
-                    console.log("Row action triggered");
+                    console.log('Row action triggered');
                     console.log(e);
                   }}
                   onMove={function _ie() {
-                    console.log("Move action triggered");
+                    console.log('Move action triggered');
                   }}
                   onMoveOver={function _ie() {
-                    console.log("Move over action triggered");
+                    console.log('Move over action triggered');
                   }}
                 >
                   {filteredColumns.map((column) => (

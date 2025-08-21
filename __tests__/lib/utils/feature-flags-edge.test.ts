@@ -1,7 +1,12 @@
-import { isFeatureEnabledEdge, loadFeatureFlagsEdge } from '../../../src/lib/utils/feature-flags-edge';
+import {
+  isFeatureEnabledEdge,
+  loadFeatureFlagsEdge,
+} from '../../../src/lib/utils/feature-flags-edge';
 
 // Mock console.warn to capture warnings
-const mockConsoleWarn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+const mockConsoleWarn = jest
+  .spyOn(console, 'warn')
+  .mockImplementation(() => {});
 
 describe('feature-flags-edge', () => {
   // Save original process.env to restore after tests
@@ -88,7 +93,7 @@ describe('feature-flags-edge', () => {
         FF_Chat_Analysis_Screen: true, // DEFAULT_FLAGS value
       });
       expect(mockConsoleWarn).toHaveBeenCalledWith(
-        "Error loading feature flags in edge runtime, using defaults:",
+        'Error loading feature flags in edge runtime, using defaults:',
         expect.any(Error)
       );
 
@@ -134,7 +139,7 @@ describe('feature-flags-edge', () => {
 
       expect(result).toBe(true); // Should use DEFAULT_FLAGS value through the error path
       expect(mockConsoleWarn).toHaveBeenCalledWith(
-        "Error loading feature flags in edge runtime, using defaults:",
+        'Error loading feature flags in edge runtime, using defaults:',
         expect.any(Error)
       );
 
@@ -151,18 +156,18 @@ describe('feature-flags-edge', () => {
     it('should execute both sides of ?? operator with mock module', () => {
       // Test both normal path and fallback path to ensure 100% branch coverage
       // This tests line 31: return flags[key] ?? DEFAULT_FLAGS[key];
-      
+
       // First test: Normal path (flags[key] exists)
       delete process.env.ENABLE_AUTHENTICATION;
       delete process.env.FF_Chat_Analysis_Screen;
       let result = isFeatureEnabledEdge('enableAuthentication');
       expect(result).toBe(true);
-      
+
       // Second test: Set env to false to get false value
       process.env.ENABLE_AUTHENTICATION = 'false';
       result = isFeatureEnabledEdge('enableAuthentication');
       expect(result).toBe(false);
-      
+
       // Third test: Error condition forces fallback to DEFAULT_FLAGS
       const originalProcessEnv = process.env;
       Object.defineProperty(process, 'env', {
@@ -174,7 +179,7 @@ describe('feature-flags-edge', () => {
 
       result = isFeatureEnabledEdge('enableAuthentication');
       expect(result).toBe(true); // This should use DEFAULT_FLAGS[key]
-      
+
       // Restore process.env
       Object.defineProperty(process, 'env', {
         value: originalProcessEnv,
@@ -187,14 +192,14 @@ describe('feature-flags-edge', () => {
       // Test the FF_Chat_Analysis_Screen flag to ensure it works correctly
       delete process.env.ENABLE_AUTHENTICATION;
       delete process.env.FF_Chat_Analysis_Screen;
-      
+
       let result = isFeatureEnabledEdge('FF_Chat_Analysis_Screen');
       expect(result).toBe(true);
-      
+
       process.env.FF_Chat_Analysis_Screen = 'false';
       result = isFeatureEnabledEdge('FF_Chat_Analysis_Screen');
       expect(result).toBe(false);
-      
+
       process.env.FF_Chat_Analysis_Screen = 'true';
       result = isFeatureEnabledEdge('FF_Chat_Analysis_Screen');
       expect(result).toBe(true);
@@ -204,10 +209,12 @@ describe('feature-flags-edge', () => {
       // Test with an unknown flag key to ensure the nullish coalescing works
       delete process.env.ENABLE_AUTHENTICATION;
       delete process.env.FF_Chat_Analysis_Screen;
-      
+
       // This should return undefined for the flag, then fallback to DEFAULT_FLAGS
       // Since DEFAULT_FLAGS doesn't have 'unknownFlag', it should return undefined
-      const result = isFeatureEnabledEdge('unknownFlag' as 'enableAuthentication' | 'FF_Chat_Analysis_Screen');
+      const result = isFeatureEnabledEdge(
+        'unknownFlag' as 'enableAuthentication' | 'FF_Chat_Analysis_Screen'
+      );
       expect(result).toBeUndefined();
     });
   });

@@ -2,7 +2,7 @@ import {
   HttpClientAdapter,
   HttpClientConfig,
   HttpClientResponse,
-} from "@/lib/types/api/http-client";
+} from '@/lib/types/api/http-client';
 
 export class FetchAdapter implements HttpClientAdapter {
   private readonly defaultConfig: HttpClientConfig;
@@ -12,7 +12,7 @@ export class FetchAdapter implements HttpClientAdapter {
       timeout: 30000,
       baseURL: config.baseURL,
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
         ...config.headers,
       },
       auth: config.auth,
@@ -64,17 +64,17 @@ export class FetchAdapter implements HttpClientAdapter {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 
-      const contentType = response.headers.get("content-type");
+      const contentType = response.headers.get('content-type');
 
       let data: T;
-      if (contentType?.includes("application/json")) {
+      if (contentType?.includes('application/json')) {
         data = await response.json();
       } else if (
         contentType?.includes(
-          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
         ) ||
-        contentType?.includes("application/vnd.ms-excel") ||
-        contentType?.includes("text/csv")
+        contentType?.includes('application/vnd.ms-excel') ||
+        contentType?.includes('text/csv')
       ) {
         data = (await response.blob()) as T;
       } else {
@@ -99,7 +99,7 @@ export class FetchAdapter implements HttpClientAdapter {
       if (error instanceof Error) {
         throw error;
       }
-      throw new Error("Unknown error occurred");
+      throw new Error('Unknown error occurred');
     }
   }
 
@@ -107,7 +107,7 @@ export class FetchAdapter implements HttpClientAdapter {
     url: string,
     config?: HttpClientConfig
   ): Promise<HttpClientResponse<T>> {
-    return this.request<T>(url, { method: "GET" }, config);
+    return this.request<T>(url, { method: 'GET' }, config);
   }
 
   async post<T = unknown>(
@@ -118,7 +118,7 @@ export class FetchAdapter implements HttpClientAdapter {
     return this.request<T>(
       url,
       {
-        method: "POST",
+        method: 'POST',
         body: data ? JSON.stringify(data) : undefined,
       },
       config
@@ -133,7 +133,7 @@ export class FetchAdapter implements HttpClientAdapter {
     return this.request<T>(
       url,
       {
-        method: "PUT",
+        method: 'PUT',
         body: data ? JSON.stringify(data) : undefined,
       },
       config
@@ -144,7 +144,7 @@ export class FetchAdapter implements HttpClientAdapter {
     url: string,
     config?: HttpClientConfig
   ): Promise<HttpClientResponse<T>> {
-    return this.request<T>(url, { method: "DELETE" }, config);
+    return this.request<T>(url, { method: 'DELETE' }, config);
   }
 
   async patch<T = unknown>(
@@ -155,7 +155,7 @@ export class FetchAdapter implements HttpClientAdapter {
     return this.request<T>(
       url,
       {
-        method: "PATCH",
+        method: 'PATCH',
         body: data ? JSON.stringify(data) : undefined,
       },
       config

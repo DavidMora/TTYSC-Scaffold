@@ -2,8 +2,8 @@ import {
   HttpClientAdapter,
   HttpClientConfig,
   HttpClientResponse,
-} from "@/lib/types/api/http-client";
-import axios, { AxiosInstance } from "axios";
+} from '@/lib/types/api/http-client';
+import axios, { AxiosInstance } from 'axios';
 
 export class AxiosAdapter implements HttpClientAdapter {
   private readonly axiosInstance: AxiosInstance;
@@ -12,7 +12,7 @@ export class AxiosAdapter implements HttpClientAdapter {
     this.axiosInstance = axios.create({
       baseURL: config.baseURL,
       timeout: config.timeout || 30000,
-      headers: config.headers || { "Content-Type": "application/json" },
+      headers: config.headers || { 'Content-Type': 'application/json' },
     });
   }
 
@@ -100,7 +100,7 @@ export class AxiosAdapter implements HttpClientAdapter {
     for (const [key, value] of Object.entries(headers)) {
       if (value !== undefined && value !== null) {
         normalized[key] =
-          typeof value === "string" ? value : JSON.stringify(value);
+          typeof value === 'string' ? value : JSON.stringify(value);
       }
     }
     return normalized;

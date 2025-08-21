@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 import {
   Text,
   Select,
@@ -6,13 +6,13 @@ import {
   FlexBox,
   FlexBoxDirection,
   FlexBoxWrap,
-} from "@ui5/webcomponents-react";
-import { FILTER_FIELDS } from "@/lib/constants/UI/analysisFilters";
+} from '@ui5/webcomponents-react';
+import { FILTER_FIELDS } from '@/lib/constants/UI/analysisFilters';
 import type {
   FilterKey,
   FilterState,
   FilterOptions,
-} from "@/lib/types/analysisFilters";
+} from '@/lib/types/analysisFilters';
 
 const FilterSelect: React.FC<{
   filterKey: FilterKey;
@@ -24,12 +24,12 @@ const FilterSelect: React.FC<{
 }> = ({ filterKey, label, value, options, disabled, onChange }) => (
   <FlexBox
     direction={FlexBoxDirection.Column}
-    style={{ minWidth: "180px", flex: "1", gap: "0.25rem" }}
+    style={{ minWidth: '180px', flex: '1', gap: '0.25rem' }}
   >
     <Text
       style={{
-        fontSize: "var(--sapFontSize)",
-        color: "var(--sapContent_LabelColor)",
+        fontSize: 'var(--sapFontSize)',
+        color: 'var(--sapContent_LabelColor)',
       }}
     >
       {label}
@@ -40,7 +40,7 @@ const FilterSelect: React.FC<{
         const selectedValue = e.detail.selectedOption?.value;
         if (selectedValue) onChange(filterKey, selectedValue);
       }}
-      style={{ width: "100%" }}
+      style={{ width: '100%' }}
       disabled={disabled}
     >
       {options.map((option) => (
@@ -62,17 +62,17 @@ const AnalysisFilter: React.FC<{
     <div>
       <Text
         style={{
-          fontSize: "var(--sapFontSize)",
-          marginBottom: "0.5rem",
-          display: "block",
-          fontWeight: "bold",
+          fontSize: 'var(--sapFontSize)',
+          marginBottom: '0.5rem',
+          display: 'block',
+          fontWeight: 'bold',
         }}
       >
         Click to view the data, choose your filters, and select the use cases to
         continue.
       </Text>
 
-      <FlexBox wrap={FlexBoxWrap.Wrap} style={{ gap: "1rem" }}>
+      <FlexBox wrap={FlexBoxWrap.Wrap} style={{ gap: '1rem' }}>
         {FILTER_FIELDS.map(({ key, label }) => (
           <FilterSelect
             key={key}

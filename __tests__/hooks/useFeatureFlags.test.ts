@@ -1,5 +1,9 @@
 import { renderHook, waitFor } from '@testing-library/react';
-import { useFeatureFlags, useFeatureFlag, useAuthenticationEnabled } from '@/hooks/useFeatureFlags';
+import {
+  useFeatureFlags,
+  useFeatureFlag,
+  useAuthenticationEnabled,
+} from '@/hooks/useFeatureFlags';
 
 // Mock fetch
 global.fetch = jest.fn();
@@ -91,11 +95,13 @@ describe('useFeatureFlags hooks', () => {
 
     it('should handle cancellation during json parsing', async () => {
       // Simple mock without complex nesting
-      const slowJsonMock = jest.fn().mockResolvedValue({ enableAuthentication: false });
+      const slowJsonMock = jest
+        .fn()
+        .mockResolvedValue({ enableAuthentication: false });
 
       mockFetch.mockResolvedValue({
         ok: true,
-        json: slowJsonMock
+        json: slowJsonMock,
       } as any);
 
       const { unmount } = renderHook(() => useFeatureFlags());
@@ -104,7 +110,7 @@ describe('useFeatureFlags hooks', () => {
       unmount();
 
       // Wait for any pending operations
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
       expect(mockFetch).toHaveBeenCalled();
     });
@@ -119,14 +125,14 @@ describe('useFeatureFlags hooks', () => {
       unmount();
 
       // Wait briefly
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
     });
 
     it('should handle cancellation in finally block', async () => {
       // Simple success mock
       mockFetch.mockResolvedValue({
         ok: true,
-        json: () => Promise.resolve({ enableAuthentication: true })
+        json: () => Promise.resolve({ enableAuthentication: true }),
       } as any);
 
       const { unmount } = renderHook(() => useFeatureFlags());
@@ -135,7 +141,7 @@ describe('useFeatureFlags hooks', () => {
       unmount();
 
       // Wait for async operations
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
     });
   });
 
@@ -150,10 +156,16 @@ describe('useFeatureFlags hooks', () => {
         json: () => Promise.resolve(mockFlags),
       } as Response);
 
-      const { result } = renderHook(() => useFeatureFlag('enableAuthentication'));
+      const { result } = renderHook(() =>
+        useFeatureFlag('enableAuthentication')
+      );
 
       await waitFor(() => {
-        expect(result.current).toEqual({ flag: true, loading: false, error: null });
+        expect(result.current).toEqual({
+          flag: true,
+          loading: false,
+          error: null,
+        });
       });
     });
 
@@ -163,10 +175,16 @@ describe('useFeatureFlags hooks', () => {
         json: () => Promise.resolve({}),
       } as Response);
 
-      const { result } = renderHook(() => useFeatureFlag('enableAuthentication'));
+      const { result } = renderHook(() =>
+        useFeatureFlag('enableAuthentication')
+      );
 
       await waitFor(() => {
-        expect(result.current).toEqual({ flag: false, loading: false, error: null });
+        expect(result.current).toEqual({
+          flag: false,
+          loading: false,
+          error: null,
+        });
       });
     });
   });

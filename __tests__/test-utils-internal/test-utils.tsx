@@ -5,9 +5,7 @@ import { SuspenseAuthProvider } from '../../src/hooks/useAuth';
 // Custom render function that includes auth provider
 export function renderWithAuth(ui: React.ReactElement, options = {}) {
   const Wrapper = ({ children }: { children: React.ReactNode }) => (
-    <SuspenseAuthProvider>
-      {children}
-    </SuspenseAuthProvider>
+    <SuspenseAuthProvider>{children}</SuspenseAuthProvider>
   );
 
   return render(ui, { wrapper: Wrapper, ...options });

@@ -1,11 +1,11 @@
-import { apiClient } from "@/lib/api";
-import { HttpClientResponse } from "@/lib/types/api/http-client";
+import { apiClient } from '@/lib/api';
+import { HttpClientResponse } from '@/lib/types/api/http-client';
 import {
   CHATS,
   CHAT,
   CHAT_MESSAGE,
   MESSAGE_FEEDBACK,
-} from "@/lib/constants/api/routes";
+} from '@/lib/constants/api/routes';
 import {
   ChatResponse,
   ChatsResponse,
@@ -15,7 +15,7 @@ import {
   Chat,
   CreateChatRequest,
   VoteType,
-} from "@/lib/types/chats";
+} from '@/lib/types/chats';
 
 export const getChats = async (): Promise<
   HttpClientResponse<ChatsResponse>

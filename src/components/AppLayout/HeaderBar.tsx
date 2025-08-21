@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState } from 'react';
 import {
   FlexBox,
   FlexBoxJustifyContent,
@@ -12,10 +12,10 @@ import {
   ListItemCustom,
   Button,
   ButtonDomRef,
-} from "@ui5/webcomponents-react";
-import { useRouter } from "next/navigation";
-import { SUPPLY_CHAIN_MENU } from "@/lib/constants/UI/HeaderBar";
-import { MenuItemKey } from "@/lib/types/HeaderBar";
+} from '@ui5/webcomponents-react';
+import { useRouter } from 'next/navigation';
+import { SUPPLY_CHAIN_MENU } from '@/lib/constants/UI/HeaderBar';
+import { MenuItemKey } from '@/lib/types/HeaderBar';
 
 type HeaderBarProps = {
   title: string;
@@ -35,11 +35,11 @@ export default function HeaderBar({
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
 
   const actionsMap: Record<MenuItemKey, () => void> = {
-    RETRY: () => console.log("Default retry..."),
-    SETTINGS: () => console.log("Settings..."),
+    RETRY: () => console.log('Default retry...'),
+    SETTINGS: () => console.log('Settings...'),
     PRINT: () => window.print(),
-    RECORD_SCREENCAST: () => console.log("Recording..."),
-    ABOUT: () => router.push("/about"),
+    RECORD_SCREENCAST: () => console.log('Recording...'),
+    ABOUT: () => router.push('/about'),
     ...overrides,
   };
 
@@ -61,17 +61,17 @@ export default function HeaderBar({
           <Title
             level="H1"
             style={{
-              color: "var(--sapHighlightColor)",
-              fontSize: "var(--sapFontHeader3Size)",
-              fontWeight: "bolder",
+              color: 'var(--sapHighlightColor)',
+              fontSize: 'var(--sapFontHeader3Size)',
+              fontWeight: 'bolder',
             }}
           >
             {title}
           </Title>
           <Text
             style={{
-              color: "var(--sapTextColor)",
-              fontSize: "var(--sapFontSmallSize)",
+              color: 'var(--sapTextColor)',
+              fontSize: 'var(--sapFontSmallSize)',
             }}
           >
             {subtitle}
@@ -83,14 +83,14 @@ export default function HeaderBar({
             ref={iconRef}
             onClick={() => setIsPopoverOpen((prev) => !prev)}
             style={{
-              minHeight: "var(--sapElement_Compact_Height)",
-              border: "var(--sapButton_BorderWidth) solid transparent",
-              height: "26px",
-              width: "32px",
+              minHeight: 'var(--sapElement_Compact_Height)',
+              border: 'var(--sapButton_BorderWidth) solid transparent',
+              height: '26px',
+              width: '32px',
               ...(isPopoverOpen && {
                 border:
-                  "var(--sapButton_BorderWidth) solid var(--sapButton_Selected_BorderColor)",
-                backgroundColor: "var(--sapButton_Selected_Background)",
+                  'var(--sapButton_BorderWidth) solid var(--sapButton_Selected_BorderColor)',
+                backgroundColor: 'var(--sapButton_Selected_Background)',
               }),
             }}
           >
@@ -98,12 +98,12 @@ export default function HeaderBar({
               name="overflow"
               style={{
                 color: isPopoverOpen
-                  ? "var(--sapButton_Lite_TextColor)"
-                  : "var(--sapHighlightColor)",
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
+                  ? 'var(--sapButton_Lite_TextColor)'
+                  : 'var(--sapHighlightColor)',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
               }}
             />
           </Button>
@@ -116,7 +116,7 @@ export default function HeaderBar({
         onClose={() => setIsPopoverOpen(false)}
         placement="Top"
         horizontalAlign="End"
-        style={{ padding: 0, width: "320px", marginTop: "5px" }}
+        style={{ padding: 0, width: '320px', marginTop: '5px' }}
       >
         <List>
           {availableKeys.map((key) => {
@@ -125,38 +125,38 @@ export default function HeaderBar({
               <ListItemCustom
                 key={key}
                 style={{
-                  padding: "0rem",
-                  cursor: "pointer",
-                  transition: "all 0.2s ease",
-                  borderBottom: "1px solid transparent",
+                  padding: '0rem',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                  borderBottom: '1px solid transparent',
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor =
-                    "var(--sapContent_Selected_Hover_Background)";
+                    'var(--sapContent_Selected_Hover_Background)';
                   e.currentTarget.style.borderBottomColor =
-                    "var(--sapHighlightColor)";
+                    'var(--sapHighlightColor)';
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = "";
-                  e.currentTarget.style.borderBottomColor = "transparent";
+                  e.currentTarget.style.backgroundColor = '';
+                  e.currentTarget.style.borderBottomColor = 'transparent';
                 }}
                 onClick={() => handleClick(key)}
               >
                 <FlexBox
                   alignItems={FlexBoxAlignItems.Center}
-                  style={{ gap: "0.7rem" }}
+                  style={{ gap: '0.7rem' }}
                 >
                   <Icon
                     name={item.icon}
                     style={{
-                      color: "var(--sapContent_NonInteractiveIconColor)",
+                      color: 'var(--sapContent_NonInteractiveIconColor)',
                     }}
                   />
                   <Label
                     style={{
-                      fontSize: "var(--sapFontSize)",
-                      color: "var(--sapList_TextColor)",
-                      cursor: "pointer",
+                      fontSize: 'var(--sapFontSize)',
+                      color: 'var(--sapList_TextColor)',
+                      cursor: 'pointer',
                     }}
                   >
                     {item.label}

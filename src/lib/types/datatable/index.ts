@@ -1,4 +1,4 @@
-import type { CSSProperties } from "react";
+import type { CSSProperties } from 'react';
 
 // Interfaces para definir la estructura de filtros
 export interface FilterOption {
@@ -7,7 +7,7 @@ export interface FilterOption {
 }
 
 export interface SelectFilter {
-  type: "select";
+  type: 'select';
   key: string;
   label?: string;
   placeholder?: string;
@@ -16,7 +16,7 @@ export interface SelectFilter {
 }
 
 export interface DateFilter {
-  type: "date";
+  type: 'date';
   key: string;
   label?: string;
   placeholder?: string;
@@ -70,7 +70,7 @@ export interface TableDataRow {
 }
 
 export interface TableToolbarFilter {
-  type: "select" | "date";
+  type: 'select' | 'date';
   key: string;
   label?: string;
   placeholder?: string;

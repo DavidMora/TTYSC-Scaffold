@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from 'react';
 import {
   FlexBox,
   FlexBoxAlignItems,
@@ -6,10 +6,10 @@ import {
   Icon,
   Input,
   InputDomRef,
-} from "@ui5/webcomponents-react";
-import { ConfirmationModal } from "@/components/Modals/ConfirmationModal";
-import { useUpdateChat } from "@/hooks/chats";
-import { useAutosaveUI } from "@/contexts/AutosaveUIProvider";
+} from '@ui5/webcomponents-react';
+import { ConfirmationModal } from '@/components/Modals/ConfirmationModal';
+import { useUpdateChat } from '@/hooks/chats';
+import { useAutosaveUI } from '@/contexts/AutosaveUIProvider';
 
 interface AnalysisRenamingProps {
   analysisName: string;
@@ -27,7 +27,7 @@ export const AnalysisRenaming: React.FC<AnalysisRenamingProps> = ({
   inputRef,
 }) => {
   const [isEditing, setIsEditing] = useState(false);
-  const [editingValue, setEditingValue] = useState("");
+  const [editingValue, setEditingValue] = useState('');
   const [showValidationModal, setShowValidationModal] = useState(false);
 
   const { activateAutosaveUI } = useAutosaveUI();
@@ -35,7 +35,7 @@ export const AnalysisRenaming: React.FC<AnalysisRenamingProps> = ({
   const { mutate: renameAnalysis, isLoading } = useUpdateChat({
     onSuccess: (data) => {
       onNameChange(data.title);
-      setEditingValue("");
+      setEditingValue('');
       setIsEditing(false);
       activateAutosaveUI();
     },
@@ -57,7 +57,7 @@ export const AnalysisRenaming: React.FC<AnalysisRenamingProps> = ({
 
   const handleCancelEditing = () => {
     setIsEditing(false);
-    setEditingValue("");
+    setEditingValue('');
   };
 
   const handleSaveEdit = async () => {
@@ -73,10 +73,10 @@ export const AnalysisRenaming: React.FC<AnalysisRenamingProps> = ({
   };
 
   const handleKeyDown = (event: React.KeyboardEvent) => {
-    if (event.key === "Enter") {
+    if (event.key === 'Enter') {
       event.preventDefault();
       handleSaveEdit();
-    } else if (event.key === "Escape") {
+    } else if (event.key === 'Escape') {
       event.preventDefault();
       handleCancelEditing();
     }
@@ -94,7 +94,7 @@ export const AnalysisRenaming: React.FC<AnalysisRenamingProps> = ({
     <>
       <FlexBox
         alignItems={FlexBoxAlignItems.Center}
-        style={{ gap: "0.5rem", height: "2rem" }}
+        style={{ gap: '0.5rem', height: '2rem' }}
       >
         {isEditing ? (
           <Input
@@ -111,16 +111,16 @@ export const AnalysisRenaming: React.FC<AnalysisRenamingProps> = ({
                 8
               )}ch`,
               minWidth: `120px`,
-              transition: "width 0.2s ease",
+              transition: 'width 0.2s ease',
             }}
           />
         ) : (
           <>
             <Text
               style={{
-                fontSize: "var(--sapFontHeader4Size)",
-                fontWeight: "700",
-                color: "var(--sapHighlightColor)",
+                fontSize: 'var(--sapFontHeader4Size)',
+                fontWeight: '700',
+                color: 'var(--sapHighlightColor)',
               }}
             >
               {analysisName}
@@ -129,18 +129,18 @@ export const AnalysisRenaming: React.FC<AnalysisRenamingProps> = ({
               onClick={handleStartEditing}
               aria-label="Edit analysis name"
               style={{
-                background: "none",
-                border: "none",
-                padding: "0",
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
+                background: 'none',
+                border: 'none',
+                padding: '0',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
               }}
             >
               <Icon
                 name="write-new"
                 style={{
-                  color: "var(--sapHighlightColor)",
+                  color: 'var(--sapHighlightColor)',
                 }}
               />
             </button>
@@ -156,8 +156,8 @@ export const AnalysisRenaming: React.FC<AnalysisRenamingProps> = ({
         description="Please fill in this field with the necessary information before proceeding."
         actions={[
           {
-            label: "OK",
-            design: "Emphasized",
+            label: 'OK',
+            design: 'Emphasized',
             onClick: handleCloseValidationModal,
           },
         ]}

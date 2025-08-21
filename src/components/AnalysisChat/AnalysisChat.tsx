@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import React, { useEffect, useRef, useState } from "react";
-import { ChatMessage, CreateChatMessageRequest } from "@/lib/types/chats";
-import { useSendChatMessage } from "@/hooks/chats";
-import { MessageBubble } from "@/components/AnalysisChat/MessageBubble";
-import { ChatInput } from "@/components/AnalysisChat/ChatInput";
+import React, { useEffect, useRef, useState } from 'react';
+import { ChatMessage, CreateChatMessageRequest } from '@/lib/types/chats';
+import { useSendChatMessage } from '@/hooks/chats';
+import { MessageBubble } from '@/components/AnalysisChat/MessageBubble';
+import { ChatInput } from '@/components/AnalysisChat/ChatInput';
 
 interface AnalysisChatProps {
   chatId: string;
@@ -20,9 +20,9 @@ export default function AnalysisChat({
   const messagesContainerRef = useRef<HTMLDivElement | null>(null);
 
   const scrollToBottom = ({
-    behavior = "smooth",
+    behavior = 'smooth',
     immediate = false,
-  }: { behavior?: "smooth" | "auto"; immediate?: boolean } = {}) => {
+  }: { behavior?: 'smooth' | 'auto'; immediate?: boolean } = {}) => {
     const scroll = () => {
       if (messagesContainerRef.current) {
         messagesContainerRef.current.scrollTo({
@@ -48,7 +48,7 @@ export default function AnalysisChat({
 
   useEffect(() => {
     const timeout = setTimeout(() => {
-      scrollToBottom({ behavior: "auto", immediate: true });
+      scrollToBottom({ behavior: 'auto', immediate: true });
       setIsReady(true);
     }, 10);
 
@@ -58,7 +58,7 @@ export default function AnalysisChat({
   const addMessage = (
     id: string,
     content: string,
-    role: "user" | "assistant",
+    role: 'user' | 'assistant',
     title?: string
   ) => {
     setMessages((prev) => [
@@ -76,32 +76,32 @@ export default function AnalysisChat({
   const { mutate, isLoading } = useSendChatMessage({
     onSuccess: (botMsg) => {
       const id = botMsg?.id || Date.now().toString();
-      const content = botMsg?.choices?.[0]?.message?.content || "";
-      const role = botMsg?.choices?.[0]?.message?.role || "assistant";
-      const title = botMsg?.choices?.[0]?.message?.title || "";
+      const content = botMsg?.choices?.[0]?.message?.content || '';
+      const role = botMsg?.choices?.[0]?.message?.role || 'assistant';
+      const title = botMsg?.choices?.[0]?.message?.title || '';
       addMessage(id, content, role, title);
       scrollToBottom();
     },
     onError: () => {
       addMessage(
         Date.now().toString(),
-        "Error: There was an error sending the message.",
-        "assistant"
+        'Error: There was an error sending the message.',
+        'assistant'
       );
-      scrollToBottom({ behavior: "smooth" });
+      scrollToBottom({ behavior: 'smooth' });
     },
   });
 
   const handleSendMessage = (input: string) => {
     if (input.trim()) {
-      addMessage(Date.now().toString(), input, "user");
+      addMessage(Date.now().toString(), input, 'user');
 
-      const conversationHistory: CreateChatMessageRequest["messages"] = [
+      const conversationHistory: CreateChatMessageRequest['messages'] = [
         ...messages.map((msg) => ({
           role: msg.role,
           content: msg.content,
         })),
-        { role: "user", content: input },
+        { role: 'user', content: input },
       ];
 
       mutate({
@@ -117,20 +117,20 @@ export default function AnalysisChat({
   return (
     <div
       style={{
-        display: "flex",
-        flexDirection: "column",
-        height: "100vh",
-        maxHeight: "100vh",
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100vh',
+        maxHeight: '100vh',
         minHeight: 0,
-        width: "100%",
+        width: '100%',
         opacity: isReady ? 1 : 0,
-        transition: "opacity 0.1s ease-in",
+        transition: 'opacity 0.1s ease-in',
       }}
     >
       {/* Message area with overflow */}
       <div
         ref={messagesContainerRef}
-        style={{ flex: 1, overflow: "auto", padding: "1rem 1.5rem" }}
+        style={{ flex: 1, overflow: 'auto', padding: '1rem 1.5rem' }}
       >
         {messages.map((msg) => (
           <MessageBubble key={msg.id} message={msg} />

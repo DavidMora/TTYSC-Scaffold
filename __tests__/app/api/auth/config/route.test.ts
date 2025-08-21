@@ -1,7 +1,7 @@
-import { GET } from "@/app/api/auth/config/route";
+import { GET } from '@/app/api/auth/config/route';
 
 // Mock NextResponse first
-jest.mock("next/server", () => ({
+jest.mock('next/server', () => ({
   NextResponse: {
     json: jest.fn((data: any) => ({
       json: () => Promise.resolve(data),
@@ -12,10 +12,10 @@ jest.mock("next/server", () => ({
 }));
 
 // Import the mocked NextResponse to get the mock function
-import { NextResponse } from "next/server";
+import { NextResponse } from 'next/server';
 const mockNextResponse = NextResponse as jest.Mocked<typeof NextResponse>;
 
-describe("/api/auth/config", () => {
+describe('/api/auth/config', () => {
   const originalEnv = process.env;
 
   beforeEach(() => {
@@ -29,7 +29,7 @@ describe("/api/auth/config", () => {
     process.env = originalEnv;
   });
 
-  it("should return default config when no environment variables are set", async () => {
+  it('should return default config when no environment variables are set', async () => {
     // Remove auth-related env vars
     delete process.env.AUTH_PROCESS;
     delete process.env.AUTO_LOGIN;
@@ -43,7 +43,7 @@ describe("/api/auth/config", () => {
     });
   });
 
-  it("should return azure auth process when AUTH_PROCESS is set to azure", async () => {
+  it('should return azure auth process when AUTH_PROCESS is set to azure', async () => {
     process.env.AUTH_PROCESS = 'azure';
     process.env.AUTO_LOGIN = 'false';
 
@@ -56,7 +56,7 @@ describe("/api/auth/config", () => {
     });
   });
 
-  it("should return disabled auth when AUTH_PROCESS is none", async () => {
+  it('should return disabled auth when AUTH_PROCESS is none', async () => {
     process.env.AUTH_PROCESS = 'none';
     process.env.AUTO_LOGIN = 'false';
 
@@ -69,7 +69,7 @@ describe("/api/auth/config", () => {
     });
   });
 
-  it("should return auto login when AUTO_LOGIN is true", async () => {
+  it('should return auto login when AUTO_LOGIN is true', async () => {
     process.env.AUTH_PROCESS = 'azure';
     process.env.AUTO_LOGIN = 'true';
 
@@ -82,7 +82,7 @@ describe("/api/auth/config", () => {
     });
   });
 
-  it("should handle different AUTH_PROCESS values", async () => {
+  it('should handle different AUTH_PROCESS values', async () => {
     process.env.AUTH_PROCESS = 'custom';
     process.env.AUTO_LOGIN = 'false';
 
@@ -95,7 +95,7 @@ describe("/api/auth/config", () => {
     });
   });
 
-  it("should handle AUTO_LOGIN with non-true values", async () => {
+  it('should handle AUTO_LOGIN with non-true values', async () => {
     process.env.AUTH_PROCESS = 'azure';
     process.env.AUTO_LOGIN = 'false';
 

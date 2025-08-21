@@ -1,13 +1,13 @@
-import { HttpClientResponse } from "@/lib/types/api/http-client";
+import { HttpClientResponse } from '@/lib/types/api/http-client';
 import {
   MutationAdapter,
   MutationOptions,
   MutationResponse,
-} from "@/lib/types/api/data-fetcher";
+} from '@/lib/types/api/data-fetcher';
 import {
   useMutation as useTanStackMutation,
   useQueryClient,
-} from "@tanstack/react-query";
+} from '@tanstack/react-query';
 
 type UseMutationHook = typeof useTanStackMutation;
 type UseQueryClientHook = typeof useQueryClient;

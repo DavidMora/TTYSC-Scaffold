@@ -1,16 +1,16 @@
-"use client";
+'use client';
 
-import { FlexBox, FlexBoxDirection } from "@ui5/webcomponents-react";
-import { useState } from "react";
+import { FlexBox, FlexBoxDirection } from '@ui5/webcomponents-react';
+import { useState } from 'react';
 import {
   RawDataModalProvider,
   useRawDataModal,
-} from "@/contexts/RawDataModalContext";
-import SideBarMenu from "@/components/AppLayout/SideBar";
-import { sideBarItems } from "@/lib/constants/UI/SideBarItems";
-import HeaderBar from "@/components/AppLayout/HeaderBar";
-import { HEADER_BAR_CONFIG } from "@/lib/constants/UI/HeaderBar";
-import { RawDataModal } from "../Modals/RawDataModal";
+} from '@/contexts/RawDataModalContext';
+import SideBarMenu from '@/components/AppLayout/SideBar';
+import { sideBarItems } from '@/lib/constants/UI/SideBarItems';
+import HeaderBar from '@/components/AppLayout/HeaderBar';
+import { HEADER_BAR_CONFIG } from '@/lib/constants/UI/HeaderBar';
+import { RawDataModal } from '../Modals/RawDataModal';
 
 interface AppLayoutProps {
   children: React.ReactNode;

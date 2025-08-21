@@ -1,4 +1,4 @@
-import { AutosaveUIProvider } from "@/contexts/AutosaveUIProvider";
+import { AutosaveUIProvider } from '@/contexts/AutosaveUIProvider';
 
 interface ChatLayoutProps {
   children: React.ReactNode;

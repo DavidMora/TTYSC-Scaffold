@@ -1,14 +1,14 @@
-import { render, screen, fireEvent } from "@testing-library/react";
-import { useRouter } from "next/navigation";
-import NotFound from "@/app/(main)/not-found";
+import { render, screen, fireEvent } from '@testing-library/react';
+import { useRouter } from 'next/navigation';
+import NotFound from '@/app/(main)/not-found';
 
 // Mock Next.js router
-jest.mock("next/navigation", () => ({
+jest.mock('next/navigation', () => ({
   useRouter: jest.fn(),
 }));
 
 // Mock UI5 components
-jest.mock("@ui5/webcomponents-react", () => ({
+jest.mock('@ui5/webcomponents-react', () => ({
   Page: ({
     children,
     ...props
@@ -93,13 +93,13 @@ jest.mock("@ui5/webcomponents-react", () => ({
     </div>
   ),
   FlexBoxDirection: {
-    Column: "Column",
+    Column: 'Column',
   },
   FlexBoxJustifyContent: {
-    Center: "Center",
+    Center: 'Center',
   },
   FlexBoxAlignItems: {
-    Center: "Center",
+    Center: 'Center',
   },
   MessageStrip: ({
     children,
@@ -117,7 +117,7 @@ jest.mock("@ui5/webcomponents-react", () => ({
   ),
 }));
 
-describe("NotFound Component", () => {
+describe('NotFound Component', () => {
   const mockPush = jest.fn();
   const mockBack = jest.fn();
 
@@ -129,42 +129,42 @@ describe("NotFound Component", () => {
     });
   });
 
-  it("renders the 404 page with correct content", () => {
+  it('renders the 404 page with correct content', () => {
     render(<NotFound />);
 
     // Check main elements are present
-    expect(screen.getByTestId("page")).toBeInTheDocument();
-    expect(screen.getByText("404")).toBeInTheDocument();
-    expect(screen.getByText("Page Not Found")).toBeInTheDocument();
+    expect(screen.getByTestId('page')).toBeInTheDocument();
+    expect(screen.getByText('404')).toBeInTheDocument();
+    expect(screen.getByText('Page Not Found')).toBeInTheDocument();
     expect(
       screen.getByText(/The page you are looking for doesn't exist/)
     ).toBeInTheDocument();
   });
 
-  it("renders error icon", () => {
+  it('renders error icon', () => {
     render(<NotFound />);
 
-    const errorIcon = screen.getByTestId("icon");
+    const errorIcon = screen.getByTestId('icon');
     expect(errorIcon).toBeInTheDocument();
-    expect(errorIcon).toHaveAttribute("data-name", "error");
+    expect(errorIcon).toHaveAttribute('data-name', 'error');
   });
 
-  it("renders help information card", () => {
+  it('renders help information card', () => {
     render(<NotFound />);
 
-    expect(screen.getByText("What can you do?")).toBeInTheDocument();
+    expect(screen.getByText('What can you do?')).toBeInTheDocument();
     expect(
       screen.getByText(
-        "You can try the following options to get back on track:"
+        'You can try the following options to get back on track:'
       )
     ).toBeInTheDocument();
     expect(
-      screen.getByText("• Check if the URL is spelled correctly")
+      screen.getByText('• Check if the URL is spelled correctly')
     ).toBeInTheDocument();
     expect(
-      screen.getByText("• Go back to the previous page")
+      screen.getByText('• Go back to the previous page')
     ).toBeInTheDocument();
-    expect(screen.getByText("• Return to the home page")).toBeInTheDocument();
+    expect(screen.getByText('• Return to the home page')).toBeInTheDocument();
     expect(
       screen.getByText(
         /• Use the navigation menu to find what you're looking for/
@@ -172,42 +172,42 @@ describe("NotFound Component", () => {
     ).toBeInTheDocument();
   });
 
-  it("renders action buttons", () => {
+  it('renders action buttons', () => {
     render(<NotFound />);
 
-    const goHomeButton = screen.getByText("Go to Home");
-    const goBackButton = screen.getByText("Go Back");
+    const goHomeButton = screen.getByText('Go to Home');
+    const goBackButton = screen.getByText('Go Back');
 
     expect(goHomeButton).toBeInTheDocument();
     expect(goBackButton).toBeInTheDocument();
 
     // Check button icons
-    expect(goHomeButton).toHaveAttribute("data-icon", "home");
-    expect(goBackButton).toHaveAttribute("data-icon", "nav-back");
+    expect(goHomeButton).toHaveAttribute('data-icon', 'home');
+    expect(goBackButton).toHaveAttribute('data-icon', 'nav-back');
   });
 
-  it("navigates to home when Go to Home button is clicked", () => {
+  it('navigates to home when Go to Home button is clicked', () => {
     render(<NotFound />);
 
-    const goHomeButton = screen.getByText("Go to Home");
+    const goHomeButton = screen.getByText('Go to Home');
     fireEvent.click(goHomeButton);
 
-    expect(mockPush).toHaveBeenCalledWith("/");
+    expect(mockPush).toHaveBeenCalledWith('/');
   });
 
-  it("navigates back when Go Back button is clicked", () => {
+  it('navigates back when Go Back button is clicked', () => {
     render(<NotFound />);
 
-    const goBackButton = screen.getByText("Go Back");
+    const goBackButton = screen.getByText('Go Back');
     fireEvent.click(goBackButton);
 
     expect(mockBack).toHaveBeenCalled();
   });
 
-  it("applies correct styling", () => {
+  it('applies correct styling', () => {
     render(<NotFound />);
 
-    const page = screen.getByTestId("page");
-    expect(page).toHaveStyle({ padding: "0rem" });
+    const page = screen.getByTestId('page');
+    expect(page).toHaveStyle({ padding: '0rem' });
   });
 });

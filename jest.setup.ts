@@ -1,8 +1,8 @@
 // Learn more: https://github.com/testing-library/jest-dom
-import "@testing-library/jest-dom";
+import '@testing-library/jest-dom';
 
 // Mock Next.js router
-jest.mock("next/navigation", () => ({
+jest.mock('next/navigation', () => ({
   useRouter() {
     return {
       push: jest.fn(),
@@ -17,23 +17,23 @@ jest.mock("next/navigation", () => ({
     return new URLSearchParams();
   },
   usePathname() {
-    return "/";
+    return '/';
   },
   useParams: jest.fn(),
 }));
 
 // Mock NextAuth
-jest.mock("next-auth/react", () => ({
+jest.mock('next-auth/react', () => ({
   useSession: () => ({
     data: {
       user: {
-        id: "1",
-        name: "Test User",
-        email: "test@example.com",
+        id: '1',
+        name: 'Test User',
+        email: 'test@example.com',
       },
       expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
     },
-    status: "authenticated",
+    status: 'authenticated',
   }),
   SessionProvider: ({ children }: { children: React.ReactNode }) => children,
   signIn: jest.fn(),
@@ -41,10 +41,10 @@ jest.mock("next-auth/react", () => ({
 }));
 
 // Ensure UI5 WebComponents React mock is used
-jest.mock("@ui5/webcomponents-react");
+jest.mock('@ui5/webcomponents-react');
 
 // Mock UI5 WebComponents base
-jest.mock("@ui5/webcomponents-react-base", () => ({}));
+jest.mock('@ui5/webcomponents-react-base', () => ({}));
 
 // Mock ResizeObserver
 global.ResizeObserver = jest.fn().mockImplementation(() => ({
@@ -56,12 +56,12 @@ global.ResizeObserver = jest.fn().mockImplementation(() => ({
 // Mock fetch for Node.js environment
 global.fetch = jest.fn((url) => {
   // Mock auth config API
-  if (url.toString().includes("/api/auth/config")) {
+  if (url.toString().includes('/api/auth/config')) {
     return Promise.resolve({
       ok: true,
       json: () =>
         Promise.resolve({
-          authProcess: "test",
+          authProcess: 'test',
           isAuthDisabled: false,
           autoLogin: false,
         }),
@@ -75,7 +75,7 @@ global.fetch = jest.fn((url) => {
 }) as jest.Mock;
 
 // Mock adoptedStyleSheets for UI5 WebComponents
-Object.defineProperty(document, "adoptedStyleSheets", {
+Object.defineProperty(document, 'adoptedStyleSheets', {
   value: [],
   writable: true,
 });
@@ -99,12 +99,12 @@ global.CSSStyleSheet = class {
   }
 
   replaceSync(text: string) {
-    this.cssRules = text.split("\n").filter(Boolean);
+    this.cssRules = text.split('\n').filter(Boolean);
     this.rules = this.cssRules;
   }
 
   get cssText() {
-    return this.cssRules.join("\n");
+    return this.cssRules.join('\n');
   }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 } as any;

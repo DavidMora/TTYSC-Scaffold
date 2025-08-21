@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
   Page,
@@ -13,14 +13,14 @@ import {
   FlexBoxAlignItems,
   MessageStrip,
   Icon,
-} from "@ui5/webcomponents-react";
-import { useRouter } from "next/navigation";
+} from '@ui5/webcomponents-react';
+import { useRouter } from 'next/navigation';
 
 export default function NotFound() {
   const router = useRouter();
 
   const handleGoHome = () => {
-    router.push("/");
+    router.push('/');
   };
 
   const handleGoBack = () => {
@@ -28,23 +28,23 @@ export default function NotFound() {
   };
 
   return (
-    <Page style={{ padding: "0rem" }}>
+    <Page style={{ padding: '0rem' }}>
       <FlexBox
         direction={FlexBoxDirection.Column}
         justifyContent={FlexBoxJustifyContent.Center}
         alignItems={FlexBoxAlignItems.Center}
         style={{
-          minHeight: "calc(100vh - 200px)",
-          gap: "2rem",
-          padding: "2rem",
+          minHeight: 'calc(100vh - 200px)',
+          gap: '2rem',
+          padding: '2rem',
         }}
       >
         {/* Error Icon */}
         <Icon
           name="error"
           style={{
-            fontSize: "4rem",
-            color: "var(--sapNegativeColor)",
+            fontSize: '4rem',
+            color: 'var(--sapNegativeColor)',
           }}
         />
 
@@ -52,15 +52,15 @@ export default function NotFound() {
         <FlexBox
           direction={FlexBoxDirection.Column}
           alignItems={FlexBoxAlignItems.Center}
-          style={{ gap: "1rem", textAlign: "center" }}
+          style={{ gap: '1rem', textAlign: 'center' }}
         >
-          <Title level="H1" style={{ fontSize: "3rem", margin: "0" }}>
+          <Title level="H1" style={{ fontSize: '3rem', margin: '0' }}>
             404
           </Title>
-          <Title level="H2" style={{ margin: "0" }}>
+          <Title level="H2" style={{ margin: '0' }}>
             Page Not Found
           </Title>
-          <Text style={{ maxWidth: "500px", textAlign: "center" }}>
+          <Text style={{ maxWidth: '500px', textAlign: 'center' }}>
             The page you are looking for doesn&apos;t exist or has been moved.
             Please check the URL or navigate back to continue using the
             application.
@@ -68,18 +68,18 @@ export default function NotFound() {
         </FlexBox>
 
         {/* Error Details Card */}
-        <Card style={{ maxWidth: "37.5rem", width: "100%" }}>
+        <Card style={{ maxWidth: '37.5rem', width: '100%' }}>
           <CardHeader
             titleText="What can you do?"
-            style={{ paddingBottom: "0.5rem" }}
+            style={{ paddingBottom: '0.5rem' }}
           />
-          <div style={{ padding: "1rem" }}>
+          <div style={{ padding: '1rem' }}>
             <MessageStrip design="Information" hideCloseButton>
               You can try the following options to get back on track:
             </MessageStrip>
             <FlexBox
               direction={FlexBoxDirection.Column}
-              style={{ gap: "0.5rem", marginTop: "1rem" }}
+              style={{ gap: '0.5rem', marginTop: '1rem' }}
             >
               <Text>• Check if the URL is spelled correctly</Text>
               <Text>• Go back to the previous page</Text>
@@ -92,7 +92,7 @@ export default function NotFound() {
         </Card>
 
         {/* Action Buttons */}
-        <FlexBox style={{ gap: "1rem" }}>
+        <FlexBox style={{ gap: '1rem' }}>
           <Button design="Emphasized" onClick={handleGoHome} icon="home">
             Go to Home
           </Button>

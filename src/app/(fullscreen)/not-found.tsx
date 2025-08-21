@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import { FlexBox, Title, Button, Icon } from "@ui5/webcomponents-react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { FlexBox, Title, Button, Icon } from '@ui5/webcomponents-react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 export default function NotFound() {
   const router = useRouter();
 
   const goHome = () => {
-    router.push("/");
+    router.push('/');
   };
 
   return (

@@ -58,15 +58,15 @@ interface ExtendedSession {
 // Helper function to refresh the access token
 async function refreshAccessToken(token: JWT): Promise<JWT> {
   try {
-    const refreshToken = token.refreshToken as string
-    
+    const refreshToken = token.refreshToken as string;
+
     if (!refreshToken) {
-      return { ...token, error: 'RefreshAccessTokenError' }
+      return { ...token, error: 'RefreshAccessTokenError' };
     }
 
-    const tokenEndpoint = process.env.AZURE_TOKEN_ENDPOINT
+    const tokenEndpoint = process.env.AZURE_TOKEN_ENDPOINT;
     if (!tokenEndpoint) {
-      return { ...token, error: 'RefreshAccessTokenError' }
+      return { ...token, error: 'RefreshAccessTokenError' };
     }
 
     const refreshParams = new URLSearchParams({
@@ -119,11 +119,11 @@ console.log('[Auth Config] AUTH_PROCESS:', process.env.AUTH_PROCESS);
 console.log('[Auth Config] Client ID:', oauthConfig.clientId);
 console.log(
   '[Auth Config] Client Secret:',
-  oauthConfig.clientSecret ? 'Configured' : 'Not configured',
+  oauthConfig.clientSecret ? 'Configured' : 'Not configured'
 );
 console.log(
   '[Auth Config] Authorization endpoint:',
-  oauthConfig.authorizationEndpoint,
+  oauthConfig.authorizationEndpoint
 );
 console.log('[Auth Config] Token endpoint:', oauthConfig.tokenEndpoint);
 console.log('[Auth Config] Redirect URI:', oauthConfig.redirectUri);
@@ -152,15 +152,12 @@ const providerConfig: any = {
     params: {},
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     request: async ({ tokens }: any) => {
-      const response = await fetch(
-        'https://graph.microsoft.com/v1.0/me',
-        {
-          headers: {
-            Authorization: `Bearer ${tokens.access_token}`,
-            'Content-Type': 'application/json',
-          },
+      const response = await fetch('https://graph.microsoft.com/v1.0/me', {
+        headers: {
+          Authorization: `Bearer ${tokens.access_token}`,
+          'Content-Type': 'application/json',
         },
-      );
+      });
       return await response.json();
     },
   },
@@ -174,7 +171,8 @@ const providerConfig: any = {
       // Azure profile format
       const userId = profile.id || profile.sub || profile.oid;
       const userName = profile.displayName || profile.name || profile.givenName;
-      const userEmail = profile.mail || profile.userPrincipalName || profile.email;
+      const userEmail =
+        profile.mail || profile.userPrincipalName || profile.email;
 
       return {
         id: userId,
@@ -205,7 +203,7 @@ const authOptions: NextAuthOptions = {
       // Initial sign in
       if (account && user) {
         console.log(
-          `[Auth] Initial sign in for user at ${new Date().toISOString()}`,
+          `[Auth] Initial sign in for user at ${new Date().toISOString()}`
         );
         console.log('[Auth] User data:', user);
         return {
@@ -239,7 +237,7 @@ const authOptions: NextAuthOptions = {
 
       console.log(`[Auth] Token refresh needed at ${new Date().toISOString()}`);
       console.log(
-        `[Auth] Current token expires at: ${new Date(extendedToken.accessTokenExpires || 0).toISOString()}`,
+        `[Auth] Current token expires at: ${new Date(extendedToken.accessTokenExpires || 0).toISOString()}`
       );
 
       // Access token has expired or will expire soon, try to refresh it
@@ -276,7 +274,7 @@ const authOptions: NextAuthOptions = {
       // If there was a refresh token error, the session is invalid and user needs to sign in again
       if (extendedToken.error === 'RefreshAccessTokenError') {
         console.error(
-          '[Auth] Refresh token error detected, session is invalid',
+          '[Auth] Refresh token error detected, session is invalid'
         );
         // The error will be handled by the client to redirect to sign in
       }

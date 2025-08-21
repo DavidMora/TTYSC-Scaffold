@@ -10,8 +10,8 @@ import {
   CardHeader,
   Icon,
   Button,
-} from "@ui5/webcomponents-react";
-import { useState } from "react";
+} from '@ui5/webcomponents-react';
+import { useState } from 'react';
 
 export interface FilterValue {
   id: number;
@@ -30,7 +30,7 @@ export interface RawDataItem {
   tableFilters: TableFilter[];
 }
 
-import { useRawDataModal } from "@/contexts/RawDataModalContext";
+import { useRawDataModal } from '@/contexts/RawDataModalContext';
 
 interface RawDataNavigationItemProps {
   rawDataItems?: RawDataItem[];
@@ -43,64 +43,64 @@ interface RawDataNavigationItemProps {
 const defaultRawDataItems: RawDataItem[] = [
   {
     id: 1,
-    tableName: "Demand During Lead Time",
+    tableName: 'Demand During Lead Time',
     tableFilters: [
       {
         id: 1,
-        text: "Select the organization:",
+        text: 'Select the organization:',
         values: [
-          { id: 1, text: "Organization 1" },
-          { id: 2, text: "Organization 2" },
-          { id: 3, text: "Organization 3" },
+          { id: 1, text: 'Organization 1' },
+          { id: 2, text: 'Organization 2' },
+          { id: 3, text: 'Organization 3' },
         ],
       },
       {
         id: 2,
-        text: "Select the CM Site Name:",
+        text: 'Select the CM Site Name:',
         values: [
-          { id: 1, text: "CM Site 1" },
-          { id: 2, text: "CM Site 2" },
-          { id: 3, text: "CM Site 3" },
+          { id: 1, text: 'CM Site 1' },
+          { id: 2, text: 'CM Site 2' },
+          { id: 3, text: 'CM Site 3' },
         ],
       },
       {
         id: 3,
-        text: "Select the SKU:",
+        text: 'Select the SKU:',
         values: [
-          { id: 1, text: "SKU 1" },
-          { id: 2, text: "SKU 2" },
-          { id: 3, text: "SKU 3" },
+          { id: 1, text: 'SKU 1' },
+          { id: 2, text: 'SKU 2' },
+          { id: 3, text: 'SKU 3' },
         ],
       },
       {
         id: 4,
-        text: "Select the NVPN:",
+        text: 'Select the NVPN:',
         values: [
-          { id: 1, text: "NVPN 1" },
-          { id: 2, text: "NVPN 2" },
-          { id: 3, text: "NVPN 3" },
+          { id: 1, text: 'NVPN 1' },
+          { id: 2, text: 'NVPN 2' },
+          { id: 3, text: 'NVPN 3' },
         ],
       },
     ],
   },
   {
     id: 2,
-    tableName: "Another Table",
+    tableName: 'Another Table',
     tableFilters: [
       {
         id: 1,
-        text: "Sub Item 1",
+        text: 'Sub Item 1',
         values: [
-          { id: 1, text: "Value 1" },
-          { id: 2, text: "Value 2" },
+          { id: 1, text: 'Value 1' },
+          { id: 2, text: 'Value 2' },
         ],
       },
       {
         id: 2,
-        text: "Sub Item 2",
+        text: 'Sub Item 2',
         values: [
-          { id: 1, text: "Value 1" },
-          { id: 2, text: "Value 2" },
+          { id: 1, text: 'Value 1' },
+          { id: 2, text: 'Value 2' },
         ],
       },
     ],
@@ -156,7 +156,7 @@ export default function RawDataNavigationItem(
           value={selectedRawData.id.toString()}
           onChange={(event) => {
             const value = event.detail.selectedOption.value;
-            const id = parseInt(value ?? "");
+            const id = parseInt(value ?? '');
             handleRawDataChange(id);
           }}
         >
@@ -178,11 +178,11 @@ export default function RawDataNavigationItem(
             <Label>{filter.text}</Label>
             <Select
               className="w-full"
-              value={filterSelections[filter.id] || "all"}
+              value={filterSelections[filter.id] || 'all'}
               onChange={(event) =>
                 handleFilterChange(
                   filter.id,
-                  event.detail.selectedOption.value ?? "all"
+                  event.detail.selectedOption.value ?? 'all'
                 )
               }
             >

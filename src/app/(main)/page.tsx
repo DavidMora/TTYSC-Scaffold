@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import {
   FlexBox,
   FlexBoxDirection,
@@ -9,43 +9,43 @@ import {
   Text,
   Icon,
   Button,
-} from "@ui5/webcomponents-react";
-import { useCreateChat } from "@/hooks/chats";
-import { useSequentialNaming } from "@/contexts/SequentialNamingContext";
-import { useFeatureFlag } from "@/hooks/useFeatureFlags";
-import { FeatureNotAvailable } from "@/components/FeatureNotAvailable";
+} from '@ui5/webcomponents-react';
+import { useCreateChat } from '@/hooks/chats';
+import { useSequentialNaming } from '@/contexts/SequentialNamingContext';
+import { useFeatureFlag } from '@/hooks/useFeatureFlags';
+import { FeatureNotAvailable } from '@/components/FeatureNotAvailable';
 
 const LoadingDisplay = () => (
   <FlexBox
     direction={FlexBoxDirection.Column}
     style={{
-      padding: "3rem",
-      alignItems: "center",
-      justifyContent: "center",
-      textAlign: "center",
-      gap: "1.5rem",
-      minHeight: "400px",
+      padding: '3rem',
+      alignItems: 'center',
+      justifyContent: 'center',
+      textAlign: 'center',
+      gap: '1.5rem',
+      minHeight: '400px',
     }}
   >
     <Icon
       name="business-objects-experience"
       style={{
-        fontSize: "4rem",
-        color: "var(--sapNeutralTextColor)",
+        fontSize: '4rem',
+        color: 'var(--sapNeutralTextColor)',
         opacity: 0.6,
       }}
     />
 
-    <Title level="H2" style={{ color: "var(--sapNeutralTextColor)" }}>
+    <Title level="H2" style={{ color: 'var(--sapNeutralTextColor)' }}>
       Creating Your Analysis...
     </Title>
 
     <Text
       style={{
-        maxWidth: "500px",
-        color: "var(--sapNeutralTextColor)",
-        fontSize: "1.1rem",
-        lineHeight: "1.5",
+        maxWidth: '500px',
+        color: 'var(--sapNeutralTextColor)',
+        fontSize: '1.1rem',
+        lineHeight: '1.5',
       }}
     >
       Setting up your analysis dashboard. You&apos;ll be redirected
@@ -64,27 +64,27 @@ const ErrorDisplay = ({
   <FlexBox
     direction={FlexBoxDirection.Column}
     style={{
-      padding: "1.5rem",
-      alignItems: "center",
-      justifyContent: "center",
-      textAlign: "center",
-      gap: "0.5rem",
-      minHeight: "200px",
+      padding: '1.5rem',
+      alignItems: 'center',
+      justifyContent: 'center',
+      textAlign: 'center',
+      gap: '0.5rem',
+      minHeight: '200px',
     }}
   >
     <Title
       level="H3"
-      style={{ color: "var(--sapNeutralTextColor)", margin: 0 }}
+      style={{ color: 'var(--sapNeutralTextColor)', margin: 0 }}
     >
       Something went wrong
     </Title>
 
     <Text
       style={{
-        maxWidth: "400px",
-        color: "var(--sapNeutralTextColor)",
-        fontSize: "0.9rem",
-        lineHeight: "1.3",
+        maxWidth: '400px',
+        color: 'var(--sapNeutralTextColor)',
+        fontSize: '0.9rem',
+        lineHeight: '1.3',
         margin: 0,
       }}
     >
@@ -94,7 +94,7 @@ const ErrorDisplay = ({
     <Button
       onClick={onRetry}
       style={{
-        marginTop: "0.25rem",
+        marginTop: '0.25rem',
       }}
       design="Emphasized"
     >
@@ -113,7 +113,7 @@ const AnalysisCreation = () => {
       router.push(`/${newChat.id}`);
     },
     onError: (error) => {
-      console.error("Failed to create analysis:", error);
+      console.error('Failed to create analysis:', error);
       setError(error);
     },
   });
@@ -141,7 +141,7 @@ const AnalysisCreation = () => {
 
 export default function Home() {
   const { flag: isEnabled, loading } = useFeatureFlag(
-    "FF_Chat_Analysis_Screen"
+    'FF_Chat_Analysis_Screen'
   );
 
   if (loading) {

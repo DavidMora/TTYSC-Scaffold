@@ -1,7 +1,7 @@
-import { Button, FlexBox, Text, Title } from "@ui5/webcomponents-react";
-import BaseDataTable from "@/components/Tables/BaseDataTable";
-import { TableData } from "@/lib/types/datatable";
-import { tableData } from "@/lib/constants/mocks/dataTable";
+import { Button, FlexBox, Text, Title } from '@ui5/webcomponents-react';
+import BaseDataTable from '@/components/Tables/BaseDataTable';
+import { TableData } from '@/lib/types/datatable';
+import { tableData } from '@/lib/constants/mocks/dataTable';
 
 interface TablePageProps {
   params: Promise<{
@@ -14,8 +14,8 @@ const getTableData = (
 ): { tableId: string; tableName: string; tableData: TableData } => {
   let tableName = `Table ${id}`;
 
-  if (id == "table-1") {
-    tableName = "Demand During Lead Time";
+  if (id == 'table-1') {
+    tableName = 'Demand During Lead Time';
   }
 
   return {

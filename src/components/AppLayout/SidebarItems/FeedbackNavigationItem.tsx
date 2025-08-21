@@ -5,9 +5,9 @@ import {
   Text,
   TextArea,
   Button,
-} from "@ui5/webcomponents-react";
-import { useState } from "react";
-import { createFeedback } from "@/lib/services/feedback.service";
+} from '@ui5/webcomponents-react';
+import { useState } from 'react';
+import { createFeedback } from '@/lib/services/feedback.service';
 
 interface FeedbackNavigationItemProps {
   onSubmitFeedback?: (feedback: string) => void;
@@ -16,7 +16,7 @@ interface FeedbackNavigationItemProps {
 export default function FeedbackNavigationItem({
   onSubmitFeedback,
 }: Readonly<FeedbackNavigationItemProps>) {
-  const [feedbackText, setFeedbackText] = useState("");
+  const [feedbackText, setFeedbackText] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = () => {
@@ -25,14 +25,14 @@ export default function FeedbackNavigationItem({
 
       createFeedback({
         message: feedbackText,
-        category: "general",
+        category: 'general',
       })
         .then(() => {
-          setFeedbackText("");
+          setFeedbackText('');
           onSubmitFeedback?.(feedbackText);
         })
         .catch((error) => {
-          console.error("Error submitting feedback:", error);
+          console.error('Error submitting feedback:', error);
         })
         .finally(() => {
           setIsSubmitting(false);
@@ -57,7 +57,7 @@ export default function FeedbackNavigationItem({
             onClick={handleSubmit}
             disabled={!feedbackText.trim() || isSubmitting}
           >
-            {isSubmitting ? "Submitting..." : "Submit"}
+            {isSubmitting ? 'Submitting...' : 'Submit'}
           </Button>
         </FlexBox>
       </FlexBox>

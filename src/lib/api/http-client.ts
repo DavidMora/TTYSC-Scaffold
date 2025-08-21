@@ -2,8 +2,8 @@ import {
   HttpClientAdapter,
   HttpClientConfig,
   HttpClientResponse,
-} from "@/lib/types/api/http-client";
-import FetchAdapter from "@/lib/api/http-client-adapters/fetch-adapter";
+} from '@/lib/types/api/http-client';
+import FetchAdapter from '@/lib/api/http-client-adapters/fetch-adapter';
 
 class HttpClient {
   private readonly adapter: HttpClientAdapter;

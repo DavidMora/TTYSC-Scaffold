@@ -1,4 +1,4 @@
-import { FeatureFlags, FeatureFlagKey } from "@/lib/types/feature-flags";
+import { FeatureFlags, FeatureFlagKey } from '@/lib/types/feature-flags';
 
 // Default values if no configuration exists
 const DEFAULT_FLAGS: FeatureFlags = {
@@ -16,13 +16,12 @@ const DEFAULT_FLAGS: FeatureFlags = {
 export function loadFeatureFlagsEdge(): FeatureFlags {
   try {
     return {
-      enableAuthentication: process.env.ENABLE_AUTHENTICATION !== "false",
-      FF_Chat_Analysis_Screen:
-        process.env.FF_Chat_Analysis_Screen !== "false",
+      enableAuthentication: process.env.ENABLE_AUTHENTICATION !== 'false',
+      FF_Chat_Analysis_Screen: process.env.FF_Chat_Analysis_Screen !== 'false',
     };
   } catch (error) {
     console.warn(
-      "Error loading feature flags in edge runtime, using defaults:",
+      'Error loading feature flags in edge runtime, using defaults:',
       error
     );
     return DEFAULT_FLAGS;

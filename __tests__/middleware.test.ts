@@ -23,7 +23,9 @@ jest.mock('next/server', () => ({
 }));
 
 const mockGetToken = getToken as jest.MockedFunction<typeof getToken>;
-const mockIsFeatureEnabledEdge = isFeatureEnabledEdge as jest.MockedFunction<typeof isFeatureEnabledEdge>;
+const mockIsFeatureEnabledEdge = isFeatureEnabledEdge as jest.MockedFunction<
+  typeof isFeatureEnabledEdge
+>;
 const mockNextResponse = NextResponse as jest.Mocked<typeof NextResponse>;
 
 describe('middleware', () => {
@@ -31,7 +33,7 @@ describe('middleware', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    
+
     mockRequest = {
       nextUrl: {
         pathname: '/',
@@ -122,7 +124,7 @@ describe('middleware', () => {
 
       expect(mockNextResponse.redirect).toHaveBeenCalledWith(
         expect.objectContaining({
-          href: 'http://localhost:3000/auth/signin?callbackUrl=http%3A%2F%2Flocalhost%3A3000%2Fdashboard'
+          href: 'http://localhost:3000/auth/signin?callbackUrl=http%3A%2F%2Flocalhost%3A3000%2Fdashboard',
         }),
         307
       );
@@ -188,7 +190,7 @@ describe('middleware', () => {
 
       expect(mockNextResponse.redirect).toHaveBeenCalledWith(
         expect.objectContaining({
-          href: 'http://localhost:3000/auth/signin?callbackUrl=http%3A%2F%2Flocalhost%3A3000%2Fdashboard'
+          href: 'http://localhost:3000/auth/signin?callbackUrl=http%3A%2F%2Flocalhost%3A3000%2Fdashboard',
         }),
         307
       );
@@ -198,14 +200,14 @@ describe('middleware', () => {
     it('handles various error types gracefully', async () => {
       mockRequest.nextUrl.pathname = '/protected';
       mockRequest.url = 'http://localhost:3000/protected';
-      
+
       // Test with different error types
       const errors = [
         new Error('Network error'),
         'String error',
         null,
         undefined,
-        { message: 'Object error' }
+        { message: 'Object error' },
       ];
 
       for (const error of errors) {
@@ -216,7 +218,7 @@ describe('middleware', () => {
 
         expect(mockNextResponse.redirect).toHaveBeenCalledWith(
           expect.objectContaining({
-            href: 'http://localhost:3000/auth/signin?callbackUrl=http%3A%2F%2Flocalhost%3A3000%2Fprotected'
+            href: 'http://localhost:3000/auth/signin?callbackUrl=http%3A%2F%2Flocalhost%3A3000%2Fprotected',
           }),
           307
         );
@@ -227,14 +229,17 @@ describe('middleware', () => {
   describe('URL handling', () => {
     it('preserves complex query parameters in callback URL', async () => {
       mockRequest.nextUrl.pathname = '/dashboard';
-      mockRequest.url = 'http://localhost:3000/dashboard?tab=analytics&filter=active&sort=date';
+      mockRequest.url =
+        'http://localhost:3000/dashboard?tab=analytics&filter=active&sort=date';
       mockGetToken.mockResolvedValue(null);
 
       await middleware(mockRequest);
 
       expect(mockNextResponse.redirect).toHaveBeenCalledWith(
         expect.objectContaining({
-          href: expect.stringContaining('callbackUrl=http%3A%2F%2Flocalhost%3A3000%2Fdashboard%3Ftab%3Danalytics%26filter%3Dactive%26sort%3Ddate')
+          href: expect.stringContaining(
+            'callbackUrl=http%3A%2F%2Flocalhost%3A3000%2Fdashboard%3Ftab%3Danalytics%26filter%3Dactive%26sort%3Ddate'
+          ),
         }),
         307
       );
@@ -249,7 +254,7 @@ describe('middleware', () => {
 
       expect(mockNextResponse.redirect).toHaveBeenCalledWith(
         expect.objectContaining({
-          href: 'http://localhost:3000/auth/signin?callbackUrl=http%3A%2F%2Flocalhost%3A3000%2F'
+          href: 'http://localhost:3000/auth/signin?callbackUrl=http%3A%2F%2Flocalhost%3A3000%2F',
         }),
         307
       );
@@ -264,7 +269,7 @@ describe('middleware', () => {
 
       expect(mockNextResponse.redirect).toHaveBeenCalledWith(
         expect.objectContaining({
-          href: 'http://localhost:3000/auth/signin?callbackUrl=http%3A%2F%2Flocalhost%3A3000%2Fadmin%2Fusers%2Fcreate'
+          href: 'http://localhost:3000/auth/signin?callbackUrl=http%3A%2F%2Flocalhost%3A3000%2Fadmin%2Fusers%2Fcreate',
         }),
         307
       );
@@ -278,7 +283,9 @@ describe('middleware', () => {
 
       await middleware(mockRequest);
 
-      expect(mockIsFeatureEnabledEdge).toHaveBeenCalledWith('enableAuthentication');
+      expect(mockIsFeatureEnabledEdge).toHaveBeenCalledWith(
+        'enableAuthentication'
+      );
       expect(mockNextResponse.next).toHaveBeenCalled();
       expect(mockGetToken).not.toHaveBeenCalled();
       expect(mockNextResponse.redirect).not.toHaveBeenCalled();
@@ -291,14 +298,18 @@ describe('middleware', () => {
 
       await middleware(mockRequest);
 
-      expect(mockIsFeatureEnabledEdge).toHaveBeenCalledWith('enableAuthentication');
+      expect(mockIsFeatureEnabledEdge).toHaveBeenCalledWith(
+        'enableAuthentication'
+      );
       expect(mockGetToken).toHaveBeenCalled();
       expect(mockNextResponse.next).toHaveBeenCalled();
     });
 
     it('defaults to requiring authentication when feature flag check fails', async () => {
-      const mockConsoleWarn = jest.spyOn(console, 'warn').mockImplementation(() => {});
-      
+      const mockConsoleWarn = jest
+        .spyOn(console, 'warn')
+        .mockImplementation(() => {});
+
       mockRequest.nextUrl.pathname = '/dashboard';
       mockRequest.url = 'http://localhost:3000/dashboard';
       mockIsFeatureEnabledEdge.mockImplementation(() => {
@@ -308,7 +319,9 @@ describe('middleware', () => {
 
       await middleware(mockRequest);
 
-      expect(mockIsFeatureEnabledEdge).toHaveBeenCalledWith('enableAuthentication');
+      expect(mockIsFeatureEnabledEdge).toHaveBeenCalledWith(
+        'enableAuthentication'
+      );
       expect(mockConsoleWarn).toHaveBeenCalledWith(
         'Failed to check feature flag in middleware, defaulting to auth enabled:',
         expect.any(Error)
@@ -317,7 +330,7 @@ describe('middleware', () => {
       expect(mockGetToken).toHaveBeenCalled();
       expect(mockNextResponse.redirect).toHaveBeenCalledWith(
         expect.objectContaining({
-          href: 'http://localhost:3000/auth/signin?callbackUrl=http%3A%2F%2Flocalhost%3A3000%2Fdashboard'
+          href: 'http://localhost:3000/auth/signin?callbackUrl=http%3A%2F%2Flocalhost%3A3000%2Fdashboard',
         }),
         307
       );
@@ -326,8 +339,10 @@ describe('middleware', () => {
     });
 
     it('handles feature flag error but still allows access with valid token', async () => {
-      const mockConsoleWarn = jest.spyOn(console, 'warn').mockImplementation(() => {});
-      
+      const mockConsoleWarn = jest
+        .spyOn(console, 'warn')
+        .mockImplementation(() => {});
+
       mockRequest.nextUrl.pathname = '/dashboard';
       mockIsFeatureEnabledEdge.mockImplementation(() => {
         throw new Error('Feature flag service error');
@@ -336,7 +351,9 @@ describe('middleware', () => {
 
       await middleware(mockRequest);
 
-      expect(mockIsFeatureEnabledEdge).toHaveBeenCalledWith('enableAuthentication');
+      expect(mockIsFeatureEnabledEdge).toHaveBeenCalledWith(
+        'enableAuthentication'
+      );
       expect(mockConsoleWarn).toHaveBeenCalledWith(
         'Failed to check feature flag in middleware, defaulting to auth enabled:',
         expect.any(Error)

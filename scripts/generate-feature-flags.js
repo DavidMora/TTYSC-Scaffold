@@ -26,10 +26,13 @@ Object.keys(DEFAULT_FLAGS).forEach((key) => {
   // Use proper naming convention: FEATURE_FLAG_ENABLE_AUTHENTICATION
   const envKey = `FEATURE_FLAG_${key.toUpperCase().replace('AUTHENTICATION', 'AUTHENTICATION')}`;
   // For enableAuthentication, use FEATURE_FLAG_ENABLE_AUTHENTICATION
-  const properEnvKey = key === 'enableAuthentication' ? 'FEATURE_FLAG_ENABLE_AUTHENTICATION' : envKey;
-  
+  const properEnvKey =
+    key === 'enableAuthentication'
+      ? 'FEATURE_FLAG_ENABLE_AUTHENTICATION'
+      : envKey;
+
   const envValue = process.env[properEnvKey];
-  
+
   if (envValue !== undefined) {
     flags[key] = envValue.toLowerCase() === 'true';
   } else {
@@ -51,7 +54,7 @@ try {
   if (!fs.existsSync(srcDir)) {
     fs.mkdirSync(srcDir, { recursive: true });
   }
-  
+
   fs.writeFileSync(srcFlagsPath, jsonContent);
 } catch (error) {
   console.error('❌ Error generating src/feature-flags.json:', error.message);
@@ -68,7 +71,11 @@ try {
 }
 
 // 3. Write to public/ for client-side access if needed
-const publicFlagsPath = path.join(process.cwd(), 'public', 'feature-flags.json');
+const publicFlagsPath = path.join(
+  process.cwd(),
+  'public',
+  'feature-flags.json'
+);
 
 try {
   // Ensure public directory exists
@@ -76,7 +83,7 @@ try {
   if (!fs.existsSync(publicDir)) {
     fs.mkdirSync(publicDir, { recursive: true });
   }
-  
+
   fs.writeFileSync(publicFlagsPath, jsonContent);
 } catch (error) {
   // Silent fail for public file
@@ -94,8 +101,11 @@ if (fs.existsSync(envLocalPath)) {
 let envUpdated = false;
 Object.keys(DEFAULT_FLAGS).forEach((key) => {
   // Use proper naming convention
-  const properEnvKey = key === 'enableAuthentication' ? 'FEATURE_FLAG_ENABLE_AUTHENTICATION' : `FEATURE_FLAG_${key.toUpperCase()}`;
-  
+  const properEnvKey =
+    key === 'enableAuthentication'
+      ? 'FEATURE_FLAG_ENABLE_AUTHENTICATION'
+      : `FEATURE_FLAG_${key.toUpperCase()}`;
+
   if (!envContent.includes(properEnvKey)) {
     envContent += `\n# Feature Flag: ${key}\n${properEnvKey}=${flags[key]}\n`;
     envUpdated = true;

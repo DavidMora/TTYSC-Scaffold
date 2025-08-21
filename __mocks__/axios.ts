@@ -1,33 +1,33 @@
 // Mock for axios
 const mockAxiosInstance = {
   get: jest.fn().mockResolvedValue({
-    data: { test: "data" },
+    data: { test: 'data' },
     status: 200,
-    statusText: "OK",
+    statusText: 'OK',
     headers: {},
   }),
   post: jest.fn().mockResolvedValue({
-    data: { test: "data" },
+    data: { test: 'data' },
     status: 200,
-    statusText: "OK",
+    statusText: 'OK',
     headers: {},
   }),
   put: jest.fn().mockResolvedValue({
-    data: { test: "data" },
+    data: { test: 'data' },
     status: 200,
-    statusText: "OK",
+    statusText: 'OK',
     headers: {},
   }),
   delete: jest.fn().mockResolvedValue({
-    data: { test: "data" },
+    data: { test: 'data' },
     status: 200,
-    statusText: "OK",
+    statusText: 'OK',
     headers: {},
   }),
   patch: jest.fn().mockResolvedValue({
-    data: { test: "data" },
+    data: { test: 'data' },
     status: 200,
-    statusText: "OK",
+    statusText: 'OK',
     headers: {},
   }),
 };
@@ -35,33 +35,33 @@ const mockAxiosInstance = {
 const axiosMock = {
   create: jest.fn(() => mockAxiosInstance),
   get: jest.fn().mockResolvedValue({
-    data: { test: "data" },
+    data: { test: 'data' },
     status: 200,
-    statusText: "OK",
+    statusText: 'OK',
     headers: {},
   }),
   post: jest.fn().mockResolvedValue({
-    data: { test: "data" },
+    data: { test: 'data' },
     status: 200,
-    statusText: "OK",
+    statusText: 'OK',
     headers: {},
   }),
   put: jest.fn().mockResolvedValue({
-    data: { test: "data" },
+    data: { test: 'data' },
     status: 200,
-    statusText: "OK",
+    statusText: 'OK',
     headers: {},
   }),
   delete: jest.fn().mockResolvedValue({
-    data: { test: "data" },
+    data: { test: 'data' },
     status: 200,
-    statusText: "OK",
+    statusText: 'OK',
     headers: {},
   }),
   patch: jest.fn().mockResolvedValue({
-    data: { test: "data" },
+    data: { test: 'data' },
     status: 200,
-    statusText: "OK",
+    statusText: 'OK',
     headers: {},
   }),
 };

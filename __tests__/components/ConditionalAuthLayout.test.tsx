@@ -13,11 +13,15 @@ jest.mock('../../src/hooks/useFeatureFlags', () => ({
 }));
 
 jest.mock('../../src/components/SessionProviderWrapper', () => ({
-  SessionProviderWrapper: ({ children }: { children: React.ReactNode }) => <div data-testid="session-provider">{children}</div>,
+  SessionProviderWrapper: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="session-provider">{children}</div>
+  ),
 }));
 
 jest.mock('../../src/hooks/useAuth', () => ({
-  SuspenseAuthProvider: ({ children }: { children: React.ReactNode }) => <div data-testid="auth-provider">{children}</div>,
+  SuspenseAuthProvider: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="auth-provider">{children}</div>
+  ),
 }));
 
 jest.mock('../../src/components/AuthWrapper', () => {
@@ -39,10 +43,14 @@ jest.mock('../../src/components/AppLayout/AppLayout', () => {
 });
 
 jest.mock('../../src/contexts/SequentialNamingContext', () => ({
-  SequentialNamingProvider: ({ children }: { children: React.ReactNode }) => <div data-testid="sequential-naming">{children}</div>,
+  SequentialNamingProvider: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="sequential-naming">{children}</div>
+  ),
 }));
 
-const mockUseFeatureFlags = useFeatureFlags as jest.MockedFunction<typeof useFeatureFlags>;
+const mockUseFeatureFlags = useFeatureFlags as jest.MockedFunction<
+  typeof useFeatureFlags
+>;
 const mockUsePathname = usePathname as jest.MockedFunction<typeof usePathname>;
 
 describe('ConditionalAuthLayout', () => {
@@ -73,7 +81,7 @@ describe('ConditionalAuthLayout', () => {
       expect(screen.getByTestId('session-provider')).toBeInTheDocument();
       expect(screen.getByTestId('theme-provider')).toBeInTheDocument();
       expect(screen.getByTestId('sequential-naming')).toBeInTheDocument();
-      
+
       // Should not include auth provider when loading
       expect(screen.queryByTestId('auth-provider')).not.toBeInTheDocument();
     });
@@ -87,7 +95,9 @@ describe('ConditionalAuthLayout', () => {
         error: 'Failed to load feature flags',
       });
 
-      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+      const consoleSpy = jest
+        .spyOn(console, 'warn')
+        .mockImplementation(() => {});
 
       render(
         <ConditionalAuthLayout>
@@ -105,7 +115,7 @@ describe('ConditionalAuthLayout', () => {
       expect(screen.getByTestId('theme-provider')).toBeInTheDocument();
       expect(screen.getByTestId('sequential-naming')).toBeInTheDocument();
       expect(screen.getByTestId('app-layout')).toBeInTheDocument();
-      
+
       // Should not include auth provider or auth wrapper when error
       expect(screen.queryByTestId('auth-provider')).not.toBeInTheDocument();
       expect(screen.queryByTestId('auth-wrapper')).not.toBeInTheDocument();
@@ -120,7 +130,9 @@ describe('ConditionalAuthLayout', () => {
         error: null,
       });
 
-      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+      const consoleSpy = jest
+        .spyOn(console, 'warn')
+        .mockImplementation(() => {});
 
       render(
         <ConditionalAuthLayout>
@@ -134,7 +146,7 @@ describe('ConditionalAuthLayout', () => {
       );
 
       expect(screen.getByText('Test Content')).toBeInTheDocument();
-      
+
       consoleSpy.mockRestore();
     });
   });
@@ -159,7 +171,7 @@ describe('ConditionalAuthLayout', () => {
       expect(screen.getByTestId('theme-provider')).toBeInTheDocument();
       expect(screen.getByTestId('sequential-naming')).toBeInTheDocument();
       expect(screen.getByTestId('app-layout')).toBeInTheDocument();
-      
+
       // Should include auth provider but not auth wrapper
       expect(screen.queryByTestId('auth-wrapper')).not.toBeInTheDocument();
     });
@@ -206,7 +218,7 @@ describe('ConditionalAuthLayout', () => {
 
       expect(screen.getByText('Auth Page Content')).toBeInTheDocument();
       expect(screen.getByTestId('sequential-naming')).toBeInTheDocument();
-      
+
       // Should not include AppLayout on auth routes
       expect(screen.queryByTestId('app-layout')).not.toBeInTheDocument();
     });
@@ -246,12 +258,24 @@ describe('ConditionalAuthLayout', () => {
       );
 
       // Verify proper nesting: SessionProvider > AuthProvider > ThemeProvider > AuthWrapper > SequentialNaming > AppLayout > children
-      const sessionProvider = container.querySelector('[data-testid="session-provider"]');
-      const authProvider = sessionProvider?.querySelector('[data-testid="auth-provider"]');
-      const themeProvider = authProvider?.querySelector('[data-testid="theme-provider"]');
-      const authWrapper = themeProvider?.querySelector('[data-testid="auth-wrapper"]');
-      const sequentialNaming = authWrapper?.querySelector('[data-testid="sequential-naming"]');
-      const appLayout = sequentialNaming?.querySelector('[data-testid="app-layout"]');
+      const sessionProvider = container.querySelector(
+        '[data-testid="session-provider"]'
+      );
+      const authProvider = sessionProvider?.querySelector(
+        '[data-testid="auth-provider"]'
+      );
+      const themeProvider = authProvider?.querySelector(
+        '[data-testid="theme-provider"]'
+      );
+      const authWrapper = themeProvider?.querySelector(
+        '[data-testid="auth-wrapper"]'
+      );
+      const sequentialNaming = authWrapper?.querySelector(
+        '[data-testid="sequential-naming"]'
+      );
+      const appLayout = sequentialNaming?.querySelector(
+        '[data-testid="app-layout"]'
+      );
 
       expect(sessionProvider).toBeInTheDocument();
       expect(authProvider).toBeInTheDocument();

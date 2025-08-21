@@ -9,8 +9,8 @@ import {
   ListItemStandard,
   Card,
   CardHeader,
-} from "@ui5/webcomponents-react";
-import { useState } from "react";
+} from '@ui5/webcomponents-react';
+import { useState } from 'react';
 
 interface Definition {
   title: string;
@@ -25,16 +25,16 @@ interface DefinitionsNavigationItemProps {
 
 const defaultDefinitions: Definition[] = [
   {
-    title: "Uncommitted Orders:",
-    description: "Orders that are yet to be confirmed",
-    icon: "inspect",
+    title: 'Uncommitted Orders:',
+    description: 'Orders that are yet to be confirmed',
+    icon: 'inspect',
   },
   {
-    title: "Estimated Delivery Date:",
-    icon: "inspect",
+    title: 'Estimated Delivery Date:',
+    icon: 'inspect',
     details: [
-      "If RECOMMIT_DELIVERY_DATE is not null take RECOMMIT_DELIVERY_DATE",
-      "If COMMITED_DELIVERY_DATE is not null...",
+      'If RECOMMIT_DELIVERY_DATE is not null take RECOMMIT_DELIVERY_DATE',
+      'If COMMITED_DELIVERY_DATE is not null...',
     ],
   },
 ];
@@ -42,7 +42,7 @@ const defaultDefinitions: Definition[] = [
 export default function DefinitionsNavigationItem({
   definitions = defaultDefinitions,
 }: Readonly<DefinitionsNavigationItemProps>) {
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState('');
 
   const filteredDefinitions = definitions.filter(
     (def) =>
@@ -65,7 +65,7 @@ export default function DefinitionsNavigationItem({
         <Input
           icon={<Icon name="search" />}
           placeholder="Search"
-          style={{ width: "100%" }}
+          style={{ width: '100%' }}
           value={searchTerm}
           onInput={(event) => setSearchTerm(event.target.value)}
         />

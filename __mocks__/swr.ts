@@ -1,6 +1,6 @@
 // Mock for SWR module
 const defaultSWRResponse = {
-  data: { test: "data" },
+  data: { test: 'data' },
   error: undefined,
   isLoading: false,
   isValidating: false,

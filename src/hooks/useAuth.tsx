@@ -1,8 +1,14 @@
-"use client";
+'use client';
 
-import { Suspense, createContext, useContext, useEffect, useState } from "react";
-import type { Session } from "next-auth";
-import { useSession, signIn } from "next-auth/react";
+import {
+  Suspense,
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+} from 'react';
+import type { Session } from 'next-auth';
+import { useSession, signIn } from 'next-auth/react';
 
 interface AuthConfig {
   authProcess: string;
@@ -36,23 +42,23 @@ function useAuthInternal(): AuthContextType {
   const [authError, setAuthError] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
   const maxRetries = 3;
-  
+
   // Cast session to ExtendedSession for error handling
   const extendedSession = session as ExtendedSession | null;
-  
-  const isSessionLoading = status === "loading";
+
+  const isSessionLoading = status === 'loading';
   const isConfigLoading = authConfig === null;
-  
-  // Enhanced loading logic: 
+
+  // Enhanced loading logic:
   // - Always loading if config is not loaded
   // - If auto-login is enabled, wait for session or auto-login attempt
   // - If auto-login is disabled, only wait for config (not session)
-  const isLoading = isConfigLoading || (
-    authConfig?.autoLogin === true && 
-    isSessionLoading && 
-    !hasTriedAutoLogin && 
-    !authError
-  );
+  const isLoading =
+    isConfigLoading ||
+    (authConfig?.autoLogin === true &&
+      isSessionLoading &&
+      !hasTriedAutoLogin &&
+      !authError);
 
   // Reset error when session changes successfully
   useEffect(() => {
@@ -61,11 +67,11 @@ function useAuthInternal(): AuthContextType {
       setRetryCount(0);
       setHasTriedAutoLogin(false);
     }
-    
+
     // Handle session errors
     if (extendedSession?.error) {
       setAuthError(extendedSession.error);
-      
+
       // If we have a refresh token error, prevent infinite loops
       if (extendedSession.error === 'RefreshAccessTokenError') {
         setHasTriedAutoLogin(true);
@@ -76,9 +82,9 @@ function useAuthInternal(): AuthContextType {
   // Fetch auth configuration from API
   useEffect(() => {
     const controller = new AbortController();
-    
+
     fetch('/api/auth/config', { signal: controller.signal })
-      .then(res => {
+      .then((res) => {
         if (!res.ok) {
           throw new Error(`HTTP ${res.status}: ${res.statusText}`);
         }
@@ -89,18 +95,18 @@ function useAuthInternal(): AuthContextType {
           setAuthConfig(config);
         }
       })
-      .catch(err => {
+      .catch((err) => {
         if (!controller.signal.aborted) {
           setAuthError(`Configuration error: ${err.message}`);
           // Fallback to default values
           setAuthConfig({
             authProcess: 'azure',
             isAuthDisabled: false,
-            autoLogin: false
+            autoLogin: false,
           });
         }
       });
-      
+
     return () => {
       controller.abort();
     };
@@ -110,24 +116,25 @@ function useAuthInternal(): AuthContextType {
   useEffect(() => {
     if (
       authConfig &&
-      !authConfig.isAuthDisabled && 
-      authConfig.autoLogin && 
-      !extendedSession && 
-      !isSessionLoading && 
+      !authConfig.isAuthDisabled &&
+      authConfig.autoLogin &&
+      !extendedSession &&
+      !isSessionLoading &&
       !hasTriedAutoLogin &&
       !authError &&
       retryCount < maxRetries
     ) {
       setHasTriedAutoLogin(true);
-      setRetryCount(prev => prev + 1);
-      
+      setRetryCount((prev) => prev + 1);
+
       // Map auth process to provider ID - 'azure' maps to 'nvlogin' provider
-      const providerId = authConfig.authProcess === 'azure' ? 'nvlogin' : authConfig.authProcess;
-      
-      signIn(providerId, { 
-        callbackUrl: "/",
-        redirect: true
-      }).catch(error => {
+      const providerId =
+        authConfig.authProcess === 'azure' ? 'nvlogin' : authConfig.authProcess;
+
+      signIn(providerId, {
+        callbackUrl: '/',
+        redirect: true,
+      }).catch((error) => {
         setAuthError(`Auto-login failed: ${error.message || 'Unknown error'}`);
       });
     }
@@ -137,7 +144,14 @@ function useAuthInternal(): AuthContextType {
       setAuthError('Maximum login attempts exceeded. Please try manually.');
       setHasTriedAutoLogin(true);
     }
-  }, [authConfig, extendedSession, isSessionLoading, hasTriedAutoLogin, authError, retryCount]);  // Debug logging for troubleshooting
+  }, [
+    authConfig,
+    extendedSession,
+    isSessionLoading,
+    hasTriedAutoLogin,
+    authError,
+    retryCount,
+  ]); // Debug logging for troubleshooting
   useEffect(() => {
     if (authConfig) {
       console.log('[Auth] Current state:', {
@@ -147,23 +161,34 @@ function useAuthInternal(): AuthContextType {
         sessionStatus: status,
         isLoading,
         hasTriedAutoLogin,
-        authError
+        authError,
       });
     }
-  }, [authConfig, extendedSession, status, isLoading, hasTriedAutoLogin, authError]);
+  }, [
+    authConfig,
+    extendedSession,
+    status,
+    isLoading,
+    hasTriedAutoLogin,
+    authError,
+  ]);
 
-  return { 
-    session: extendedSession, 
+  return {
+    session: extendedSession,
     authProcess: 'azure', // Simplified to always return azure
-    autoLogin: authConfig?.autoLogin || false, 
+    autoLogin: authConfig?.autoLogin || false,
     isAuthDisabled: authConfig?.isAuthDisabled || false,
     isLoading,
     authError,
-    retryCount
+    retryCount,
   };
 }
 
-export function AuthProvider({ children }: { readonly children: React.ReactNode }) {
+export function AuthProvider({
+  children,
+}: {
+  readonly children: React.ReactNode;
+}) {
   const auth = useAuthInternal();
 
   return <AuthContext.Provider value={auth}>{children}</AuthContext.Provider>;
@@ -185,7 +210,7 @@ export function useAuth(): AuthContextType {
   const context = useContext(AuthContext);
   if (!context) {
     throw new Error(
-      "useAuth must be used within an AuthProvider component. Please wrap your component with SuspenseAuthProvider."
+      'useAuth must be used within an AuthProvider component. Please wrap your component with SuspenseAuthProvider.'
     );
   }
   return context;

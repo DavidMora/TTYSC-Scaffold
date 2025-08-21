@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback } from 'react';
 
 interface AutosaveOptions {
   valueToWatch?: unknown;
@@ -44,7 +44,7 @@ export const useAutoSave = (options: AutosaveOptions) => {
         }));
         options.onSuccess?.();
       } catch (err) {
-        console.error("Autosave failed:", err);
+        console.error('Autosave failed:', err);
         setState((prev) => ({
           ...prev,
           isSaving: false,

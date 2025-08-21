@@ -1,25 +1,25 @@
-import React from "react";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import { CodeBlock } from "@/components/CodeBlock/CodeBlock";
-import Prism from "prismjs";
+import React from 'react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { CodeBlock } from '@/components/CodeBlock/CodeBlock';
+import Prism from 'prismjs';
 
 // Mock Prism.js
-jest.mock("prismjs", () => ({
+jest.mock('prismjs', () => ({
   highlightElement: jest.fn(),
 }));
 
 // Mock all prismjs imports
-jest.mock("prismjs/themes/prism.css", () => ({}));
-jest.mock("prismjs/components/prism-javascript", () => ({}));
-jest.mock("prismjs/components/prism-typescript", () => ({}));
-jest.mock("prismjs/components/prism-jsx", () => ({}));
-jest.mock("prismjs/components/prism-tsx", () => ({}));
-jest.mock("prismjs/components/prism-python", () => ({}));
-jest.mock("prismjs/components/prism-java", () => ({}));
-jest.mock("prismjs/components/prism-css", () => ({}));
-jest.mock("prismjs/components/prism-json", () => ({}));
-jest.mock("prismjs/components/prism-bash", () => ({}));
-jest.mock("prismjs/components/prism-sql", () => ({}));
+jest.mock('prismjs/themes/prism.css', () => ({}));
+jest.mock('prismjs/components/prism-javascript', () => ({}));
+jest.mock('prismjs/components/prism-typescript', () => ({}));
+jest.mock('prismjs/components/prism-jsx', () => ({}));
+jest.mock('prismjs/components/prism-tsx', () => ({}));
+jest.mock('prismjs/components/prism-python', () => ({}));
+jest.mock('prismjs/components/prism-java', () => ({}));
+jest.mock('prismjs/components/prism-css', () => ({}));
+jest.mock('prismjs/components/prism-json', () => ({}));
+jest.mock('prismjs/components/prism-bash', () => ({}));
+jest.mock('prismjs/components/prism-sql', () => ({}));
 
 // Mock clipboard API
 Object.assign(navigator, {
@@ -28,7 +28,7 @@ Object.assign(navigator, {
   },
 });
 
-describe("CodeBlock", () => {
+describe('CodeBlock', () => {
   const mockCode = `function hello() {
   console.log("Hello, World!");
 }`;
@@ -37,44 +37,44 @@ describe("CodeBlock", () => {
     jest.clearAllMocks();
   });
 
-  it("renders code with default language", () => {
+  it('renders code with default language', () => {
     render(<CodeBlock code={mockCode} />);
 
-    expect(screen.getByText("Copy Code")).toBeInTheDocument();
-    expect(screen.getByRole("code")).toBeInTheDocument();
+    expect(screen.getByText('Copy Code')).toBeInTheDocument();
+    expect(screen.getByRole('code')).toBeInTheDocument();
   });
 
-  it("renders code with custom language", () => {
+  it('renders code with custom language', () => {
     render(<CodeBlock code={mockCode} language="typescript" />);
 
-    expect(screen.getByText("Copy Code")).toBeInTheDocument();
-    expect(screen.getByRole("code")).toBeInTheDocument();
+    expect(screen.getByText('Copy Code')).toBeInTheDocument();
+    expect(screen.getByRole('code')).toBeInTheDocument();
   });
 
-  it("renders code with title", () => {
+  it('renders code with title', () => {
     render(<CodeBlock code={mockCode} title="Example Code" />);
 
-    expect(screen.getByText("Copy Code")).toBeInTheDocument();
-    expect(screen.getByRole("code")).toBeInTheDocument();
+    expect(screen.getByText('Copy Code')).toBeInTheDocument();
+    expect(screen.getByRole('code')).toBeInTheDocument();
   });
 
-  it("renders without line numbers when showLineNumbers is false", () => {
+  it('renders without line numbers when showLineNumbers is false', () => {
     render(<CodeBlock code={mockCode} showLineNumbers={false} />);
 
     // Should not have line numbers
-    expect(screen.queryByText("1")).not.toBeInTheDocument();
-    expect(screen.queryByText("2")).not.toBeInTheDocument();
+    expect(screen.queryByText('1')).not.toBeInTheDocument();
+    expect(screen.queryByText('2')).not.toBeInTheDocument();
   });
 
-  it("renders with line numbers when showLineNumbers is true", () => {
+  it('renders with line numbers when showLineNumbers is true', () => {
     render(<CodeBlock code={mockCode} showLineNumbers={true} />);
 
     // Should have line numbers
-    expect(screen.getByText("1")).toBeInTheDocument();
-    expect(screen.getByText("2")).toBeInTheDocument();
+    expect(screen.getByText('1')).toBeInTheDocument();
+    expect(screen.getByText('2')).toBeInTheDocument();
   });
 
-  it("copies code to clipboard when copy button is clicked", async () => {
+  it('copies code to clipboard when copy button is clicked', async () => {
     const mockWriteText = jest.fn().mockResolvedValue(undefined);
     Object.assign(navigator, {
       clipboard: {
@@ -84,7 +84,7 @@ describe("CodeBlock", () => {
 
     render(<CodeBlock code={mockCode} />);
 
-    const copyButton = screen.getByText("Copy Code");
+    const copyButton = screen.getByText('Copy Code');
     fireEvent.click(copyButton);
 
     await waitFor(() => {
@@ -92,11 +92,11 @@ describe("CodeBlock", () => {
     });
 
     await waitFor(() => {
-      expect(screen.getByText("Copied!")).toBeInTheDocument();
+      expect(screen.getByText('Copied!')).toBeInTheDocument();
     });
   });
 
-  it("shows copied state for 2 seconds", async () => {
+  it('shows copied state for 2 seconds', async () => {
     const mockWriteText = jest.fn().mockResolvedValue(undefined);
     Object.assign(navigator, {
       clipboard: {
@@ -106,26 +106,26 @@ describe("CodeBlock", () => {
 
     render(<CodeBlock code={mockCode} />);
 
-    const copyButton = screen.getByText("Copy Code");
+    const copyButton = screen.getByText('Copy Code');
     fireEvent.click(copyButton);
 
     await waitFor(() => {
-      expect(screen.getByText("Copied!")).toBeInTheDocument();
+      expect(screen.getByText('Copied!')).toBeInTheDocument();
     });
 
     // Wait for the timeout to complete
     await waitFor(
       () => {
-        expect(screen.getByText("Copy Code")).toBeInTheDocument();
+        expect(screen.getByText('Copy Code')).toBeInTheDocument();
       },
       { timeout: 2500 }
     );
   });
 
-  it("handles clipboard API failure gracefully", async () => {
+  it('handles clipboard API failure gracefully', async () => {
     const mockWriteText = jest
       .fn()
-      .mockRejectedValue(new Error("Clipboard API not available"));
+      .mockRejectedValue(new Error('Clipboard API not available'));
     Object.assign(navigator, {
       clipboard: {
         writeText: mockWriteText,
@@ -140,7 +140,7 @@ describe("CodeBlock", () => {
 
     render(<CodeBlock code={mockCode} />);
 
-    const copyButton = screen.getByText("Copy Code");
+    const copyButton = screen.getByText('Copy Code');
     fireEvent.click(copyButton);
 
     await waitFor(() => {
@@ -148,10 +148,10 @@ describe("CodeBlock", () => {
     });
 
     // Should still show "Copy Code" since the clipboard API failed
-    expect(screen.getByText("Copy Code")).toBeInTheDocument();
+    expect(screen.getByText('Copy Code')).toBeInTheDocument();
   });
 
-  it("calls Prism.highlightElement when component mounts and when code/language changes", () => {
+  it('calls Prism.highlightElement when component mounts and when code/language changes', () => {
     const mockHighlightElement = jest.fn();
     (Prism.highlightElement as jest.Mock).mockImplementation(
       mockHighlightElement
@@ -172,7 +172,7 @@ describe("CodeBlock", () => {
     expect(mockHighlightElement).toHaveBeenCalledTimes(3);
   });
 
-  it("handles code that ends with newline correctly in line numbers", () => {
+  it('handles code that ends with newline correctly in line numbers', () => {
     const codeWithNewline = `function test() {
   return true;
 }
@@ -181,10 +181,10 @@ describe("CodeBlock", () => {
     render(<CodeBlock code={codeWithNewline} showLineNumbers={true} />);
 
     // Should have 4 line numbers (including the empty line at the end)
-    expect(screen.getByText("1")).toBeInTheDocument();
-    expect(screen.getByText("2")).toBeInTheDocument();
-    expect(screen.getByText("3")).toBeInTheDocument();
-    expect(screen.getByText("4")).toBeInTheDocument();
+    expect(screen.getByText('1')).toBeInTheDocument();
+    expect(screen.getByText('2')).toBeInTheDocument();
+    expect(screen.getByText('3')).toBeInTheDocument();
+    expect(screen.getByText('4')).toBeInTheDocument();
   });
 
   it("handles code that doesn't end with newline correctly in line numbers", () => {
@@ -195,18 +195,18 @@ describe("CodeBlock", () => {
     render(<CodeBlock code={codeWithoutNewline} showLineNumbers={true} />);
 
     // Should have 3 line numbers
-    expect(screen.getByText("1")).toBeInTheDocument();
-    expect(screen.getByText("2")).toBeInTheDocument();
-    expect(screen.getByText("3")).toBeInTheDocument();
-    expect(screen.queryByText("4")).not.toBeInTheDocument();
+    expect(screen.getByText('1')).toBeInTheDocument();
+    expect(screen.getByText('2')).toBeInTheDocument();
+    expect(screen.getByText('3')).toBeInTheDocument();
+    expect(screen.queryByText('4')).not.toBeInTheDocument();
   });
 
-  it("logs error to console when clipboard API fails", async () => {
+  it('logs error to console when clipboard API fails', async () => {
     const mockWriteText = jest
       .fn()
-      .mockRejectedValue(new Error("Clipboard API not available"));
+      .mockRejectedValue(new Error('Clipboard API not available'));
     const consoleSpy = jest
-      .spyOn(console, "error")
+      .spyOn(console, 'error')
       .mockImplementation(() => {});
 
     Object.assign(navigator, {
@@ -217,12 +217,12 @@ describe("CodeBlock", () => {
 
     render(<CodeBlock code={mockCode} />);
 
-    const copyButton = screen.getByText("Copy Code");
+    const copyButton = screen.getByText('Copy Code');
     fireEvent.click(copyButton);
 
     await waitFor(() => {
       expect(consoleSpy).toHaveBeenCalledWith(
-        "Failed to copy code:",
+        'Failed to copy code:',
         expect.any(Error)
       );
     });
@@ -230,7 +230,7 @@ describe("CodeBlock", () => {
     consoleSpy.mockRestore();
   });
 
-  it("handles case where codeRef.current is null in useEffect", () => {
+  it('handles case where codeRef.current is null in useEffect', () => {
     const mockHighlightElement = jest.fn();
     (Prism.highlightElement as jest.Mock).mockImplementation(
       mockHighlightElement
@@ -244,10 +244,10 @@ describe("CodeBlock", () => {
     expect(mockHighlightElement).toHaveBeenCalled();
   });
 
-  it("renders without header when no title or language is provided", () => {
+  it('renders without header when no title or language is provided', () => {
     render(<CodeBlock code={mockCode} language="" title="" />);
 
-    expect(screen.getByText("Copy Code")).toBeInTheDocument();
-    expect(screen.getByRole("code")).toBeInTheDocument();
+    expect(screen.getByText('Copy Code')).toBeInTheDocument();
+    expect(screen.getByRole('code')).toBeInTheDocument();
   });
 });

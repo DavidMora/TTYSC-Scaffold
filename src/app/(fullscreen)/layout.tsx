@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import ThemeProvider from "@/providers/ThemeProvider";
-import { Button, FlexBox, Icon, Label, Page } from "@ui5/webcomponents-react";
-import { useRouter } from "next/navigation";
-import "@ui5/webcomponents-icons/dist/arrow-left.js";
+import ThemeProvider from '@/providers/ThemeProvider';
+import { Button, FlexBox, Icon, Label, Page } from '@ui5/webcomponents-react';
+import { useRouter } from 'next/navigation';
+import '@ui5/webcomponents-icons/dist/arrow-left.js';
 
 export default function FullscreenLayout({
   children,

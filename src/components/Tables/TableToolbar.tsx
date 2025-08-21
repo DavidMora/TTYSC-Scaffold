@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
+import React, { useState } from 'react';
 import {
   Toolbar,
   Title,
@@ -15,16 +15,16 @@ import {
   Select,
   DatePicker,
   Option,
-} from "@ui5/webcomponents-react";
-import { ExportMenu } from "@/components/ExportMenu";
-import { Filter, TableToolbarProps } from "@/lib/types/datatable";
-import { twMerge } from "tailwind-merge";
-import { useRouter } from "next/navigation";
-import { FULL_SCREEN_TABLE } from "@/lib/constants/routes/Dashboard";
+} from '@ui5/webcomponents-react';
+import { ExportMenu } from '@/components/ExportMenu';
+import { Filter, TableToolbarProps } from '@/lib/types/datatable';
+import { twMerge } from 'tailwind-merge';
+import { useRouter } from 'next/navigation';
+import { FULL_SCREEN_TABLE } from '@/lib/constants/routes/Dashboard';
 
 const TableToolbar: React.FC<Readonly<TableToolbarProps>> = ({
   className,
-  title = "Final Summary",
+  title = 'Final Summary',
   tableId,
   filters = [],
   onFilterChange,
@@ -33,7 +33,7 @@ const TableToolbar: React.FC<Readonly<TableToolbarProps>> = ({
   disableFullScreen = false,
 }) => {
   const router = useRouter();
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState('');
   const [filterValues, setFilterValues] = useState<Record<string, string>>(
     () => {
       // Inicializar valores de filtros con los valores por defecto
@@ -72,21 +72,21 @@ const TableToolbar: React.FC<Readonly<TableToolbarProps>> = ({
         { selectedOption?: { value?: string } }
       >
     ) => {
-      const value = event.detail.selectedOption?.value || "";
+      const value = event.detail.selectedOption?.value || '';
       handleFilterChange(filterKey, value);
     };
 
   const handleDateChange =
     (filterKey: string) =>
     (event: Ui5CustomEvent<HTMLElement, { value?: string }>) => {
-      const value = event.detail.value || "";
+      const value = event.detail.value || '';
       handleFilterChange(filterKey, value);
     };
 
   const renderFilter = (filter: Filter) => {
-    const currentValue = filterValues[filter.key] || "";
+    const currentValue = filterValues[filter.key] || '';
 
-    if (filter.type === "select") {
+    if (filter.type === 'select') {
       return (
         <Select
           key={filter.key}
@@ -104,7 +104,7 @@ const TableToolbar: React.FC<Readonly<TableToolbarProps>> = ({
       );
     }
 
-    if (filter.type === "date") {
+    if (filter.type === 'date') {
       return (
         <DatePicker
           key={filter.key}
@@ -121,11 +121,11 @@ const TableToolbar: React.FC<Readonly<TableToolbarProps>> = ({
   };
 
   const handleShare = () => {
-    console.log("share");
+    console.log('share');
   };
 
   const handleSettings = () => {
-    console.log("settings");
+    console.log('settings');
     if (onSettingsClick) {
       onSettingsClick();
     }
@@ -138,7 +138,7 @@ const TableToolbar: React.FC<Readonly<TableToolbarProps>> = ({
   };
 
   return (
-    <Toolbar alignContent="Start" className={twMerge("py-6 px-4", className)}>
+    <Toolbar alignContent="Start" className={twMerge('py-6 px-4', className)}>
       <Title level="H2">{title}</Title>
       {filters.map((filter) => renderFilter(filter))}
       <ToolbarSpacer />
@@ -169,7 +169,7 @@ const TableToolbar: React.FC<Readonly<TableToolbarProps>> = ({
       />
       <ToolbarSeparator />
       <ExportMenu
-        tableId={tableId?.toString() || "1"}
+        tableId={tableId?.toString() || '1'}
         buttonText="Export"
         buttonIcon="excel-attachment"
       />

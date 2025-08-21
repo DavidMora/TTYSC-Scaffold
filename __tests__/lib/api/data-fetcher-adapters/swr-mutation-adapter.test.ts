@@ -3,8 +3,8 @@ import {
   getIsSuccess,
   getIsError,
   getIsIdle,
-} from "@/lib/api/data-fetcher-adapters/swr-mutation-adapter";
-import { HttpClientResponse } from "@/lib/types/api/http-client";
+} from '@/lib/api/data-fetcher-adapters/swr-mutation-adapter';
+import { HttpClientResponse } from '@/lib/types/api/http-client';
 
 // Mock SWR mutation
 const mockTrigger = jest.fn();
@@ -18,7 +18,7 @@ const mockUseSWRMutation = jest.fn().mockReturnValue({
   reset: mockReset,
 });
 
-describe("SWRMutationAdapter", () => {
+describe('SWRMutationAdapter', () => {
   let adapter: SWRMutationAdapter;
 
   beforeEach(() => {
@@ -26,15 +26,15 @@ describe("SWRMutationAdapter", () => {
     adapter = new SWRMutationAdapter(mockUseSWRMutation);
   });
 
-  it("should use default useSWRMutation when no hook is provided", () => {
+  it('should use default useSWRMutation when no hook is provided', () => {
     // This test ensures the constructor coverage for the default parameter
     const adapterWithDefault = new SWRMutationAdapter();
     expect(adapterWithDefault).toBeInstanceOf(SWRMutationAdapter);
   });
 
-  it("should properly transform HttpClientResponse to data via swrMutationFn", async () => {
-    const mockData = { id: 1, name: "test" };
-    const mockResponse = { data: mockData, status: 200, statusText: "OK" };
+  it('should properly transform HttpClientResponse to data via swrMutationFn', async () => {
+    const mockData = { id: 1, name: 'test' };
+    const mockResponse = { data: mockData, status: 200, statusText: 'OK' };
 
     // Mock the mutation function to return a HttpClientResponse
     const mutationFn = jest.fn().mockResolvedValue(mockResponse);
@@ -57,51 +57,51 @@ describe("SWRMutationAdapter", () => {
       });
 
     const adapter = new SWRMutationAdapter(customMockUseSWRMutation);
-    adapter.mutateData(["test-key"], mutationFn);
+    adapter.mutateData(['test-key'], mutationFn);
 
     // Verify that the fetcher was captured and can transform the response
     expect(capturedFetcher).toBeDefined();
-    expect(typeof capturedFetcher).toBe("function");
+    expect(typeof capturedFetcher).toBe('function');
 
     // Test the actual behavior by calling the captured fetcher
-    const result = await capturedFetcher!("test-key", {
-      arg: { name: "test" },
+    const result = await capturedFetcher!('test-key', {
+      arg: { name: 'test' },
     });
-    expect(mutationFn).toHaveBeenCalledWith({ name: "test" });
+    expect(mutationFn).toHaveBeenCalledWith({ name: 'test' });
     expect(result).toEqual(mockData);
   });
 
-  describe("getIsSuccess, getIsError, getIsIdle", () => {
-    it("should cover all branches of getIsSuccess", () => {
-      expect(getIsSuccess(false, undefined, { foo: "bar" })).toBe(true);
-      expect(getIsSuccess(false, new Error("fail"), { foo: "bar" })).toBe(
+  describe('getIsSuccess, getIsError, getIsIdle', () => {
+    it('should cover all branches of getIsSuccess', () => {
+      expect(getIsSuccess(false, undefined, { foo: 'bar' })).toBe(true);
+      expect(getIsSuccess(false, new Error('fail'), { foo: 'bar' })).toBe(
         false
       );
-      expect(getIsSuccess(true, undefined, { foo: "bar" })).toBe(false);
+      expect(getIsSuccess(true, undefined, { foo: 'bar' })).toBe(false);
       expect(getIsSuccess(false, undefined, undefined)).toBe(false);
     });
-    it("should cover all branches of getIsError", () => {
-      expect(getIsError(false, new Error("fail"))).toBe(true);
-      expect(getIsError(true, new Error("fail"))).toBe(false);
+    it('should cover all branches of getIsError', () => {
+      expect(getIsError(false, new Error('fail'))).toBe(true);
+      expect(getIsError(true, new Error('fail'))).toBe(false);
       expect(getIsError(false, undefined)).toBe(false);
     });
-    it("should cover all branches of getIsIdle", () => {
+    it('should cover all branches of getIsIdle', () => {
       expect(getIsIdle(false, undefined, undefined)).toBe(true);
       expect(getIsIdle(true, undefined, undefined)).toBe(false);
-      expect(getIsIdle(false, { foo: "bar" }, undefined)).toBe(false);
-      expect(getIsIdle(false, undefined, new Error("fail"))).toBe(false);
+      expect(getIsIdle(false, { foo: 'bar' }, undefined)).toBe(false);
+      expect(getIsIdle(false, undefined, new Error('fail'))).toBe(false);
     });
-    it("should cover isSuccess and isError computed properties", () => {
+    it('should cover isSuccess and isError computed properties', () => {
       // isSuccess: !isMutating && !error && data !== undefined
       mockUseSWRMutation.mockReturnValueOnce({
-        data: { foo: "bar" },
+        data: { foo: 'bar' },
         error: undefined,
         isMutating: false,
         trigger: mockTrigger,
         reset: mockReset,
       });
       let response = new SWRMutationAdapter(mockUseSWRMutation).mutateData(
-        ["test-key"],
+        ['test-key'],
         jest.fn()
       );
       expect(response.isSuccess).toBe(true);
@@ -109,7 +109,7 @@ describe("SWRMutationAdapter", () => {
       expect(response.isIdle).toBe(false);
 
       // isError: !isMutating && error !== undefined
-      const error = new Error("fail");
+      const error = new Error('fail');
       mockUseSWRMutation.mockReturnValueOnce({
         data: undefined,
         error,
@@ -118,16 +118,16 @@ describe("SWRMutationAdapter", () => {
         reset: mockReset,
       });
       response = new SWRMutationAdapter(mockUseSWRMutation).mutateData(
-        ["test-key"],
+        ['test-key'],
         jest.fn()
       );
       expect(response.isSuccess).toBe(false);
       expect(response.isError).toBe(true);
       expect(response.isIdle).toBe(false);
     });
-    it("should return mutation response with initial state", () => {
+    it('should return mutation response with initial state', () => {
       const mutationFn = jest.fn();
-      const mutationKey = ["test-key"];
+      const mutationKey = ['test-key'];
       const response = adapter.mutateData(mutationKey, mutationFn);
 
       expect(response.data).toBeUndefined();
@@ -136,24 +136,24 @@ describe("SWRMutationAdapter", () => {
       expect(response.isSuccess).toBe(false);
       expect(response.isError).toBe(false);
       expect(response.isIdle).toBe(true);
-      expect(typeof response.mutate).toBe("function");
-      expect(typeof response.mutateAsync).toBe("function");
-      expect(typeof response.reset).toBe("function");
+      expect(typeof response.mutate).toBe('function');
+      expect(typeof response.mutateAsync).toBe('function');
+      expect(typeof response.reset).toBe('function');
     });
 
-    it("should successfully mutate data", async () => {
-      const mockData = { id: 1, name: "test" };
+    it('should successfully mutate data', async () => {
+      const mockData = { id: 1, name: 'test' };
       mockTrigger.mockResolvedValue(mockData);
 
       const mutationFn = jest.fn().mockResolvedValue({
         data: mockData,
         status: 200,
-        statusText: "OK",
+        statusText: 'OK',
       } as HttpClientResponse<typeof mockData>);
 
-      const mutationKey = ["test-key"];
+      const mutationKey = ['test-key'];
       const response = adapter.mutateData(mutationKey, mutationFn);
-      const variables = { name: "test" };
+      const variables = { name: 'test' };
 
       const result = await response.mutate(variables);
 
@@ -161,115 +161,115 @@ describe("SWRMutationAdapter", () => {
       expect(mockTrigger).toHaveBeenCalledWith(variables);
     });
 
-    it("should handle mutation error", async () => {
-      const error = new Error("Mutation failed");
+    it('should handle mutation error', async () => {
+      const error = new Error('Mutation failed');
       mockTrigger.mockRejectedValue(error);
 
       const mutationFn = jest.fn().mockResolvedValue({
         data: { id: 1 },
         status: 200,
-        statusText: "OK",
+        statusText: 'OK',
       } as HttpClientResponse<{ id: number }>);
 
-      const mutationKey = ["test-key"];
+      const mutationKey = ['test-key'];
       const response = adapter.mutateData(mutationKey, mutationFn);
-      const variables = { name: "test" };
+      const variables = { name: 'test' };
 
       await expect(response.mutate(variables)).rejects.toThrow(error);
     });
 
-    it("should call onSuccess callback when provided", async () => {
-      const mockData = { id: 1, name: "test" };
+    it('should call onSuccess callback when provided', async () => {
+      const mockData = { id: 1, name: 'test' };
       const onSuccess = jest.fn();
       mockTrigger.mockResolvedValue(mockData);
 
       const mutationFn = jest.fn().mockResolvedValue({
         data: mockData,
         status: 200,
-        statusText: "OK",
+        statusText: 'OK',
       } as HttpClientResponse<typeof mockData>);
 
-      const mutationKey = ["test-key"];
+      const mutationKey = ['test-key'];
       const response = adapter.mutateData(mutationKey, mutationFn, {
         onSuccess,
       });
-      const variables = { name: "test" };
+      const variables = { name: 'test' };
 
       await response.mutate(variables);
 
       expect(onSuccess).toHaveBeenCalledWith(mockData, variables);
     });
 
-    it("should call onError callback when provided", async () => {
-      const error = new Error("Mutation failed");
+    it('should call onError callback when provided', async () => {
+      const error = new Error('Mutation failed');
       const onError = jest.fn();
       mockTrigger.mockRejectedValue(error);
 
       const mutationFn = jest.fn().mockResolvedValue({
         data: { id: 1 },
         status: 200,
-        statusText: "OK",
+        statusText: 'OK',
       } as HttpClientResponse<{ id: number }>);
 
-      const mutationKey = ["test-key"];
+      const mutationKey = ['test-key'];
       const response = adapter.mutateData(mutationKey, mutationFn, { onError });
-      const variables = { name: "test" };
+      const variables = { name: 'test' };
 
       await expect(response.mutate(variables)).rejects.toThrow();
 
       expect(onError).toHaveBeenCalledWith(error, variables);
     });
 
-    it("should call onSettled callback on success", async () => {
-      const mockData = { id: 1, name: "test" };
+    it('should call onSettled callback on success', async () => {
+      const mockData = { id: 1, name: 'test' };
       const onSettled = jest.fn();
       mockTrigger.mockResolvedValue(mockData);
 
       const mutationFn = jest.fn().mockResolvedValue({
         data: mockData,
         status: 200,
-        statusText: "OK",
+        statusText: 'OK',
       } as HttpClientResponse<typeof mockData>);
 
-      const mutationKey = ["test-key"];
+      const mutationKey = ['test-key'];
       const response = adapter.mutateData(mutationKey, mutationFn, {
         onSettled,
       });
-      const variables = { name: "test" };
+      const variables = { name: 'test' };
 
       await response.mutate(variables);
 
       expect(onSettled).toHaveBeenCalledWith(mockData, null, variables);
     });
 
-    it("should call onSettled callback on error", async () => {
-      const error = new Error("Mutation failed");
+    it('should call onSettled callback on error', async () => {
+      const error = new Error('Mutation failed');
       const onSettled = jest.fn();
       mockTrigger.mockRejectedValue(error);
 
       const mutationFn = jest.fn().mockResolvedValue({
         data: { id: 1 },
         status: 200,
-        statusText: "OK",
+        statusText: 'OK',
       } as HttpClientResponse<{ id: number }>);
 
-      const mutationKey = ["test-key"];
+      const mutationKey = ['test-key'];
       const response = adapter.mutateData(mutationKey, mutationFn, {
         onSettled,
       });
-      const variables = { name: "test" };
+      const variables = { name: 'test' };
 
       await expect(response.mutate(variables)).rejects.toThrow();
 
       expect(onSettled).toHaveBeenCalledWith(undefined, error, variables);
     });
 
-    it("should invalidate queries when invalidateQueries is provided", async () => {
-      const mockData = { id: 1, name: "test" };
+    it('should invalidate queries when invalidateQueries is provided', async () => {
+      const mockData = { id: 1, name: 'test' };
       const mockMutate = jest.fn();
 
       // Mock the swr mutate function
-      jest.doMock("swr", () => ({
+      jest.doMock('swr', () => ({
         mutate: mockMutate,
       }));
 
@@ -278,14 +278,14 @@ describe("SWRMutationAdapter", () => {
       const mutationFn = jest.fn().mockResolvedValue({
         data: mockData,
         status: 200,
-        statusText: "OK",
+        statusText: 'OK',
       } as HttpClientResponse<typeof mockData>);
 
-      const mutationKey = ["test-key"];
+      const mutationKey = ['test-key'];
       const response = adapter.mutateData(mutationKey, mutationFn, {
-        invalidateQueries: ["query1", "query2"],
+        invalidateQueries: ['query1', 'query2'],
       });
-      const variables = { name: "test" };
+      const variables = { name: 'test' };
 
       await response.mutate(variables);
 
@@ -293,9 +293,9 @@ describe("SWRMutationAdapter", () => {
       expect(mockTrigger).toHaveBeenCalledWith(variables);
     });
 
-    it("should reset state when reset is called", () => {
+    it('should reset state when reset is called', () => {
       const mutationFn = jest.fn();
-      const mutationKey = ["test-key"];
+      const mutationKey = ['test-key'];
       const response = adapter.mutateData(mutationKey, mutationFn);
 
       response.reset();
@@ -303,19 +303,19 @@ describe("SWRMutationAdapter", () => {
       expect(mockReset).toHaveBeenCalled();
     });
 
-    it("should work with mutateAsync", async () => {
-      const mockData = { id: 1, name: "test" };
+    it('should work with mutateAsync', async () => {
+      const mockData = { id: 1, name: 'test' };
       mockTrigger.mockResolvedValue(mockData);
 
       const mutationFn = jest.fn().mockResolvedValue({
         data: mockData,
         status: 200,
-        statusText: "OK",
+        statusText: 'OK',
       } as HttpClientResponse<typeof mockData>);
 
-      const mutationKey = ["test-key"];
+      const mutationKey = ['test-key'];
       const response = adapter.mutateData(mutationKey, mutationFn);
-      const variables = { name: "test" };
+      const variables = { name: 'test' };
 
       const result = await response.mutateAsync(variables);
 
@@ -323,22 +323,22 @@ describe("SWRMutationAdapter", () => {
       expect(mockTrigger).toHaveBeenCalledWith(variables);
     });
 
-    it("should handle non-Error rejection values", async () => {
-      const errorString = "String error";
+    it('should handle non-Error rejection values', async () => {
+      const errorString = 'String error';
       mockTrigger.mockRejectedValue(errorString);
 
       const mutationFn = jest.fn().mockResolvedValue({
         data: { id: 1 },
         status: 200,
-        statusText: "OK",
+        statusText: 'OK',
       } as HttpClientResponse<{ id: number }>);
 
-      const mutationKey = ["test-key"];
+      const mutationKey = ['test-key'];
       const response = adapter.mutateData(mutationKey, mutationFn);
-      const variables = { name: "test" };
+      const variables = { name: 'test' };
 
       await expect(response.mutate(variables)).rejects.toThrow(
-        "Mutation failed"
+        'Mutation failed'
       );
     });
   });

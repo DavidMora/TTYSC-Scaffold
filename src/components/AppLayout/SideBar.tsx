@@ -1,20 +1,20 @@
-import { NavBarItem } from "@/lib/types/NavBarItems";
+import { NavBarItem } from '@/lib/types/NavBarItems';
 import {
   SideNavigation,
   SideNavigationItem,
   SideNavigationSubItem,
-} from "@ui5/webcomponents-react";
-import { usePathname, useRouter } from "next/navigation";
-import NvidiaLogo from "@/components/Icons/NvidiaLogo";
-import SettingsNavigationItem from "./SidebarItems/SettingsNavigationItem";
-import DefinitionsNavigationItem from "./SidebarItems/DefinitionsNavigationItem";
-import FeedbackNavigationItem from "./SidebarItems/FeedbackNavigationItem";
+} from '@ui5/webcomponents-react';
+import { usePathname, useRouter } from 'next/navigation';
+import NvidiaLogo from '@/components/Icons/NvidiaLogo';
+import SettingsNavigationItem from './SidebarItems/SettingsNavigationItem';
+import DefinitionsNavigationItem from './SidebarItems/DefinitionsNavigationItem';
+import FeedbackNavigationItem from './SidebarItems/FeedbackNavigationItem';
 import RawDataNavigationItem, {
   type RawDataItem,
-} from "./SidebarItems/RawDataNavigationItem";
-import ChatHistoryNavigationItem from "./SidebarItems/ChatHistoryNavigationItem";
-import { useChats } from "@/hooks/chats";
-import "@ui5/webcomponents-icons/dist/inspect.js";
+} from './SidebarItems/RawDataNavigationItem';
+import ChatHistoryNavigationItem from './SidebarItems/ChatHistoryNavigationItem';
+import { useChats } from '@/hooks/chats';
+import '@ui5/webcomponents-icons/dist/inspect.js';
 
 interface SideBarProps {
   sideNavCollapsed?: boolean;
@@ -36,7 +36,7 @@ const SideBarMenu: React.FC<SideBarProps> = ({
   } = useChats();
 
   const handleFeedbackSubmit = (feedback: string) => {
-    console.log("Feedback submitted:", feedback);
+    console.log('Feedback submitted:', feedback);
     // Implement feedback submission logic here
   };
 
@@ -44,17 +44,17 @@ const SideBarMenu: React.FC<SideBarProps> = ({
     selectedData: RawDataItem,
     filters: Record<number, string>
   ) => {
-    console.log("Raw data selected:", selectedData, filters);
+    console.log('Raw data selected:', selectedData, filters);
     // Implement data selection logic here
   };
 
   const handleChatSelect = (chatId: string) => {
-    console.log("Chat selected:", chatId);
+    console.log('Chat selected:', chatId);
     // Implement chat selection logic here
   };
 
   const handleChatItemSelect = (chatId: string, itemId: string) => {
-    console.log("Chat item selected:", chatId, itemId);
+    console.log('Chat item selected:', chatId, itemId);
     // Implement chat item selection logic here
   };
 

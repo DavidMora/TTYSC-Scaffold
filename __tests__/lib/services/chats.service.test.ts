@@ -1,5 +1,10 @@
-import { apiClient } from "@/lib/api";
-import { CHATS, CHAT, CHAT_MESSAGE, MESSAGE_FEEDBACK } from "@/lib/constants/api/routes";
+import { apiClient } from '@/lib/api';
+import {
+  CHATS,
+  CHAT,
+  CHAT_MESSAGE,
+  MESSAGE_FEEDBACK,
+} from '@/lib/constants/api/routes';
 import {
   getChats,
   getChat,
@@ -8,18 +13,18 @@ import {
   deleteChat,
   createChatMessage,
   updateMessageFeedback,
-} from "@/lib/services/chats.service";
+} from '@/lib/services/chats.service';
 import {
   Chat,
   BotResponse,
   CreateChatMessageRequest,
   UpdateChatRequest,
-} from "@/lib/types/chats";
-import { HttpClientResponse } from "@/lib/types/api/http-client";
-import { BaseResponse } from "@/lib/types/http/responses";
+} from '@/lib/types/chats';
+import { HttpClientResponse } from '@/lib/types/api/http-client';
+import { BaseResponse } from '@/lib/types/http/responses';
 
 // Mock the apiClient
-jest.mock("@/lib/api", () => ({
+jest.mock('@/lib/api', () => ({
   apiClient: {
     get: jest.fn(),
     post: jest.fn(),
@@ -30,48 +35,48 @@ jest.mock("@/lib/api", () => ({
 }));
 
 const generalMockChat: Chat = {
-  id: "test-chat-id",
-  date: "2023-07-17",
-  title: "Team Meeting",
+  id: 'test-chat-id',
+  date: '2023-07-17',
+  title: 'Team Meeting',
   messages: [],
-  draft: "",
+  draft: '',
   metadata: {
     analysis: {
-      key: "test-analysis-key",
-      name: "Test Analysis",
+      key: 'test-analysis-key',
+      name: 'Test Analysis',
     },
     organizations: {
-      key: "test-organization-key",
-      name: "Test Organization",
+      key: 'test-organization-key',
+      name: 'Test Organization',
     },
     CM: {
-      key: "test-cm-key",
-      name: "Test CM",
+      key: 'test-cm-key',
+      name: 'Test CM',
     },
     SKU: {
-      key: "test-sku-key",
-      name: "Test SKU",
+      key: 'test-sku-key',
+      name: 'Test SKU',
     },
     NVPN: {
-      key: "test-nvpn-key",
-      name: "Test NVPN",
+      key: 'test-nvpn-key',
+      name: 'Test NVPN',
     },
   },
 };
 
 const mockHttpClient = apiClient as jest.Mocked<typeof apiClient>;
 
-describe("Chats Service", () => {
+describe('Chats Service', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  describe("getChats", () => {
-    it("should call httpClient.get with correct URL", async () => {
+  describe('getChats', () => {
+    it('should call httpClient.get with correct URL', async () => {
       const mockResponse: HttpClientResponse<Chat[]> = {
         data: [],
         status: 200,
-        statusText: "OK",
+        statusText: 'OK',
         headers: {},
       };
 
@@ -83,26 +88,26 @@ describe("Chats Service", () => {
       expect(result).toBe(mockResponse);
     });
 
-    it("should return chat list successfully", async () => {
+    it('should return chat list successfully', async () => {
       const mockChats: Chat[] = [
         {
           ...generalMockChat,
         },
         {
           ...generalMockChat,
-          id: "test-chat-id-2",
-          title: "Project Discussion",
+          id: 'test-chat-id-2',
+          title: 'Project Discussion',
         },
       ];
 
       const mockResponse: HttpClientResponse<BaseResponse<Chat[]>> = {
         data: {
           data: mockChats,
-          message: "Chats retrieved successfully",
+          message: 'Chats retrieved successfully',
           success: true,
         },
         status: 200,
-        statusText: "OK",
+        statusText: 'OK',
         headers: {},
       };
 
@@ -114,22 +119,22 @@ describe("Chats Service", () => {
       expect(result.status).toBe(200);
     });
 
-    it("should handle error response", async () => {
-      const mockError = new Error("Network error");
+    it('should handle error response', async () => {
+      const mockError = new Error('Network error');
       mockHttpClient.get.mockRejectedValue(mockError);
 
-      await expect(getChats()).rejects.toThrow("Network error");
+      await expect(getChats()).rejects.toThrow('Network error');
     });
   });
 
-  describe("getChat", () => {
-    const testChatId = "test-chat-id";
+  describe('getChat', () => {
+    const testChatId = 'test-chat-id';
 
-    it("should call httpClient.get with correct URL and ID", async () => {
+    it('should call httpClient.get with correct URL and ID', async () => {
       const mockResponse: HttpClientResponse<Chat> = {
         data: {} as Chat,
         status: 200,
-        statusText: "OK",
+        statusText: 'OK',
         headers: {},
       };
 
@@ -141,25 +146,25 @@ describe("Chats Service", () => {
       expect(result).toBe(mockResponse);
     });
 
-    it("should return specific chat successfully", async () => {
+    it('should return specific chat successfully', async () => {
       const mockChat: Chat = {
         id: testChatId,
-        date: "2023-07-17",
-        title: "Team Meeting",
-        draft: "",
+        date: '2023-07-17',
+        title: 'Team Meeting',
+        draft: '',
         metadata: generalMockChat.metadata,
         messages: [
           {
-            id: "msg1",
-            created: "2023-07-17T10:00:00Z",
-            content: "Hello everyone!",
-            role: "user",
+            id: 'msg1',
+            created: '2023-07-17T10:00:00Z',
+            content: 'Hello everyone!',
+            role: 'user',
           },
           {
-            id: "msg2",
-            created: "2023-07-17T10:01:00Z",
-            content: "Hi John!",
-            role: "assistant",
+            id: 'msg2',
+            created: '2023-07-17T10:01:00Z',
+            content: 'Hi John!',
+            role: 'assistant',
           },
         ],
       };
@@ -167,7 +172,7 @@ describe("Chats Service", () => {
       const mockResponse: HttpClientResponse<Chat> = {
         data: mockChat,
         status: 200,
-        statusText: "OK",
+        statusText: 'OK',
         headers: {},
       };
 
@@ -179,98 +184,98 @@ describe("Chats Service", () => {
       expect(result.status).toBe(200);
     });
 
-    it("should handle chat not found", async () => {
+    it('should handle chat not found', async () => {
       const mockResponse: HttpClientResponse<Chat> = {
         data: {} as Chat,
         status: 404,
-        statusText: "Not Found",
+        statusText: 'Not Found',
         headers: {},
       };
 
       mockHttpClient.get.mockResolvedValue(mockResponse);
 
-      const result = await getChat("non-existent-id");
+      const result = await getChat('non-existent-id');
 
       expect(result.status).toBe(404);
-      expect(result.statusText).toBe("Not Found");
+      expect(result.statusText).toBe('Not Found');
     });
 
-    it("should handle error response", async () => {
-      const mockError = new Error("Network error");
+    it('should handle error response', async () => {
+      const mockError = new Error('Network error');
       mockHttpClient.get.mockRejectedValue(mockError);
 
-      await expect(getChat(testChatId)).rejects.toThrow("Network error");
+      await expect(getChat(testChatId)).rejects.toThrow('Network error');
     });
   });
 
-  describe("createChat", () => {
-    it("should call httpClient.post with correct URL and payload", async () => {
+  describe('createChat', () => {
+    it('should call httpClient.post with correct URL and payload', async () => {
       const mockCreatedChat: Chat = {
-        id: "new-chat-id",
-        date: "2023-07-17",
-        title: "New Chat",
+        id: 'new-chat-id',
+        date: '2023-07-17',
+        title: 'New Chat',
         messages: [],
-        draft: "",
+        draft: '',
         metadata: generalMockChat.metadata,
       };
 
       const mockResponse: HttpClientResponse<Chat> = {
         data: mockCreatedChat,
         status: 201,
-        statusText: "Created",
+        statusText: 'Created',
         headers: {},
       };
 
       mockHttpClient.post.mockResolvedValue(mockResponse);
 
-      const result = await createChat({ title: "New Chat" });
+      const result = await createChat({ title: 'New Chat' });
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(CHATS, {
-        title: "New Chat",
+        title: 'New Chat',
       });
       expect(result).toBe(mockResponse);
       expect(result.data).toEqual(mockCreatedChat);
       expect(result.status).toBe(201);
     });
 
-    it("should handle validation errors", async () => {
+    it('should handle validation errors', async () => {
       const mockResponse: HttpClientResponse<Chat> = {
         data: {} as Chat,
         status: 400,
-        statusText: "Bad Request",
+        statusText: 'Bad Request',
         headers: {},
       };
 
       mockHttpClient.post.mockResolvedValue(mockResponse);
 
-      const result = await createChat({ title: "New Chat" });
+      const result = await createChat({ title: 'New Chat' });
 
       expect(result.status).toBe(400);
-      expect(result.statusText).toBe("Bad Request");
+      expect(result.statusText).toBe('Bad Request');
     });
 
-    it("should handle error response", async () => {
-      const mockError = new Error("Server error");
+    it('should handle error response', async () => {
+      const mockError = new Error('Server error');
       mockHttpClient.post.mockRejectedValue(mockError);
 
-      await expect(createChat({ title: "New Chat" })).rejects.toThrow(
-        "Server error"
+      await expect(createChat({ title: 'New Chat' })).rejects.toThrow(
+        'Server error'
       );
     });
   });
 
-  describe("updateChat", () => {
-    it("should call httpClient.patch with correct URL and payload", async () => {
+  describe('updateChat', () => {
+    it('should call httpClient.patch with correct URL and payload', async () => {
       const mockPayload: UpdateChatRequest = {
-        id: "chat-to-update",
-        title: "Updated Chat Title",
+        id: 'chat-to-update',
+        title: 'Updated Chat Title',
       };
 
       const mockUpdatedChat: Chat = {
-        id: "chat-to-update",
-        date: "2023-07-17",
-        title: "Updated Chat Title",
-        draft: "",
+        id: 'chat-to-update',
+        date: '2023-07-17',
+        title: 'Updated Chat Title',
+        draft: '',
         metadata: generalMockChat.metadata,
         messages: [],
       };
@@ -278,7 +283,7 @@ describe("Chats Service", () => {
       const mockResponse: HttpClientResponse<Chat> = {
         data: mockUpdatedChat,
         status: 200,
-        statusText: "OK",
+        statusText: 'OK',
         headers: {},
       };
 
@@ -294,16 +299,16 @@ describe("Chats Service", () => {
       expect(result.data).toEqual(mockUpdatedChat);
     });
 
-    it("should handle partial updates", async () => {
+    it('should handle partial updates', async () => {
       const mockPayload: UpdateChatRequest = {
-        id: "chat-id",
-        title: "Updated Chat Title",
+        id: 'chat-id',
+        title: 'Updated Chat Title',
       };
 
       const mockResponse: HttpClientResponse<Chat> = {
         data: {} as Chat,
         status: 200,
-        statusText: "OK",
+        statusText: 'OK',
         headers: {},
       };
 
@@ -318,16 +323,16 @@ describe("Chats Service", () => {
       expect(result.status).toBe(200);
     });
 
-    it("should handle chat not found during update", async () => {
+    it('should handle chat not found during update', async () => {
       const mockPayload: UpdateChatRequest = {
-        id: "non-existent-chat",
-        title: "Updated Title",
+        id: 'non-existent-chat',
+        title: 'Updated Title',
       };
 
       const mockResponse: HttpClientResponse<Chat> = {
         data: {} as Chat,
         status: 404,
-        statusText: "Not Found",
+        statusText: 'Not Found',
         headers: {},
       };
 
@@ -336,30 +341,30 @@ describe("Chats Service", () => {
       const result = await updateChat(mockPayload);
 
       expect(result.status).toBe(404);
-      expect(result.statusText).toBe("Not Found");
+      expect(result.statusText).toBe('Not Found');
     });
 
-    it("should handle error response", async () => {
+    it('should handle error response', async () => {
       const mockPayload: UpdateChatRequest = {
-        id: "chat-id",
-        title: "Updated Title",
+        id: 'chat-id',
+        title: 'Updated Title',
       };
 
-      const mockError = new Error("Server error");
+      const mockError = new Error('Server error');
       mockHttpClient.patch.mockRejectedValue(mockError);
 
-      await expect(updateChat(mockPayload)).rejects.toThrow("Server error");
+      await expect(updateChat(mockPayload)).rejects.toThrow('Server error');
     });
   });
 
-  describe("deleteChat", () => {
-    const testChatId = "chat-to-delete";
+  describe('deleteChat', () => {
+    const testChatId = 'chat-to-delete';
 
-    it("should call httpClient.delete with correct URL", async () => {
+    it('should call httpClient.delete with correct URL', async () => {
       const mockResponse: HttpClientResponse<void> = {
         data: undefined,
         status: 204,
-        statusText: "No Content",
+        statusText: 'No Content',
         headers: {},
       };
 
@@ -372,11 +377,11 @@ describe("Chats Service", () => {
       expect(result.status).toBe(204);
     });
 
-    it("should handle successful deletion", async () => {
+    it('should handle successful deletion', async () => {
       const mockResponse: HttpClientResponse<void> = {
         data: undefined,
         status: 204,
-        statusText: "No Content",
+        statusText: 'No Content',
         headers: {},
       };
 
@@ -388,34 +393,34 @@ describe("Chats Service", () => {
       expect(result.status).toBe(204);
     });
 
-    it("should handle chat not found during deletion", async () => {
+    it('should handle chat not found during deletion', async () => {
       const mockResponse: HttpClientResponse<void> = {
         data: undefined,
         status: 404,
-        statusText: "Not Found",
+        statusText: 'Not Found',
         headers: {},
       };
 
       mockHttpClient.delete.mockResolvedValue(mockResponse);
 
-      const result = await deleteChat("non-existent-chat");
+      const result = await deleteChat('non-existent-chat');
 
       expect(result.status).toBe(404);
-      expect(result.statusText).toBe("Not Found");
+      expect(result.statusText).toBe('Not Found');
     });
 
-    it("should handle error response", async () => {
-      const mockError = new Error("Server error");
+    it('should handle error response', async () => {
+      const mockError = new Error('Server error');
       mockHttpClient.delete.mockRejectedValue(mockError);
 
-      await expect(deleteChat(testChatId)).rejects.toThrow("Server error");
+      await expect(deleteChat(testChatId)).rejects.toThrow('Server error');
     });
 
-    it("should handle unauthorized deletion", async () => {
+    it('should handle unauthorized deletion', async () => {
       const mockResponse: HttpClientResponse<void> = {
         data: undefined,
         status: 403,
-        statusText: "Forbidden",
+        statusText: 'Forbidden',
         headers: {},
       };
 
@@ -424,14 +429,14 @@ describe("Chats Service", () => {
       const result = await deleteChat(testChatId);
 
       expect(result.status).toBe(403);
-      expect(result.statusText).toBe("Forbidden");
+      expect(result.statusText).toBe('Forbidden');
     });
   });
 
-  describe("createChatMessage", () => {
-    it("should call httpClient.post with correct URL and payload", async () => {
+  describe('createChatMessage', () => {
+    it('should call httpClient.post with correct URL and payload', async () => {
       const mockPayload: CreateChatMessageRequest = {
-        chatId: "chat-id",
+        chatId: 'chat-id',
         messages: [],
         use_knowledge_base: false,
       };
@@ -439,7 +444,7 @@ describe("Chats Service", () => {
       const mockResponse: HttpClientResponse<BotResponse> = {
         data: {} as BotResponse,
         status: 200,
-        statusText: "OK",
+        statusText: 'OK',
         headers: {},
       };
 
@@ -454,31 +459,31 @@ describe("Chats Service", () => {
       expect(result).toBe(mockResponse);
     });
 
-    it("should handle error response", async () => {
-      const mockError = new Error("Failed to send message");
+    it('should handle error response', async () => {
+      const mockError = new Error('Failed to send message');
       mockHttpClient.post.mockRejectedValue(mockError);
 
       const mockPayload: CreateChatMessageRequest = {
-        chatId: "chat-id",
-        messages: [{ role: "user", content: "Hello" }],
+        chatId: 'chat-id',
+        messages: [{ role: 'user', content: 'Hello' }],
         use_knowledge_base: false,
       };
 
       await expect(createChatMessage(mockPayload)).rejects.toThrow(
-        "Failed to send message"
+        'Failed to send message'
       );
     });
 
-    it("should return bot response successfully", async () => {
+    it('should return bot response successfully', async () => {
       const mockBotResponse: BotResponse = {
-        id: "response-id",
-        object: "chat.completion",
-        model: "gpt-3.5-turbo",
-        created: "2023-07-17T10:00:00Z",
+        id: 'response-id',
+        object: 'chat.completion',
+        model: 'gpt-3.5-turbo',
+        created: '2023-07-17T10:00:00Z',
         choices: [
           {
-            message: { content: "Hello!", role: "assistant" },
-            finish_reason: "stop",
+            message: { content: 'Hello!', role: 'assistant' },
+            finish_reason: 'stop',
             index: 0,
           },
         ],
@@ -492,15 +497,15 @@ describe("Chats Service", () => {
       const mockResponse: HttpClientResponse<BotResponse> = {
         data: mockBotResponse,
         status: 200,
-        statusText: "OK",
+        statusText: 'OK',
         headers: {},
       };
 
       mockHttpClient.post.mockResolvedValue(mockResponse);
 
       const mockPayload: CreateChatMessageRequest = {
-        chatId: "chat-id",
-        messages: [{ role: "user", content: "Hello" }],
+        chatId: 'chat-id',
+        messages: [{ role: 'user', content: 'Hello' }],
         use_knowledge_base: true,
       };
 
@@ -511,26 +516,26 @@ describe("Chats Service", () => {
     });
   });
 
-  describe("Integration with API routes", () => {
-    it("should use correct CHATS endpoint", () => {
-      expect(CHATS).toBe("http://localhost:5000/chats");
+  describe('Integration with API routes', () => {
+    it('should use correct CHATS endpoint', () => {
+      expect(CHATS).toBe('http://localhost:5000/chats');
     });
 
-    it("should generate correct CHAT endpoint for specific ID", () => {
-      const chatId = "test-id";
+    it('should generate correct CHAT endpoint for specific ID', () => {
+      const chatId = 'test-id';
       expect(CHAT(chatId)).toBe(`http://localhost:5000/chats/${chatId}`);
     });
   });
 
-  describe("updateMessageFeedback", () => {
-    it("should call httpClient.put with correct URL and payload", async () => {
-      const messageId = "test-message-id";
-      const feedbackVote = "up" as const;
+  describe('updateMessageFeedback', () => {
+    it('should call httpClient.put with correct URL and payload', async () => {
+      const messageId = 'test-message-id';
+      const feedbackVote = 'up' as const;
 
       const mockResponse: HttpClientResponse<void> = {
         data: undefined,
         status: 200,
-        statusText: "OK",
+        statusText: 'OK',
         headers: {},
       };
 
@@ -546,26 +551,26 @@ describe("Chats Service", () => {
       expect(result.status).toBe(200);
     });
 
-    it("should handle error response", async () => {
-      const messageId = "test-message-id";
-      const feedbackVote = "down" as const;
+    it('should handle error response', async () => {
+      const messageId = 'test-message-id';
+      const feedbackVote = 'down' as const;
 
-      const mockError = new Error("Failed to update feedback");
+      const mockError = new Error('Failed to update feedback');
       mockHttpClient.put.mockRejectedValue(mockError);
 
-      await expect(updateMessageFeedback(messageId, feedbackVote)).rejects.toThrow(
-        "Failed to update feedback"
-      );
+      await expect(
+        updateMessageFeedback(messageId, feedbackVote)
+      ).rejects.toThrow('Failed to update feedback');
     });
 
-    it("should handle null feedback vote", async () => {
-      const messageId = "test-message-id";
+    it('should handle null feedback vote', async () => {
+      const messageId = 'test-message-id';
       const feedbackVote = null;
 
       const mockResponse: HttpClientResponse<void> = {
         data: undefined,
         status: 200,
-        statusText: "OK",
+        statusText: 'OK',
         headers: {},
       };
 

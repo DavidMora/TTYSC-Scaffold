@@ -1,22 +1,22 @@
-import { useState, useCallback, useMemo, useEffect, useRef } from "react";
+import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import {
   FILTER_ALL_VALUE,
   FILTER_OPTIONS,
   INITIAL_FILTERS,
-} from "@/lib/constants/UI/analysisFilters";
+} from '@/lib/constants/UI/analysisFilters';
 import {
   FilterKey,
   FilterOptions,
   FilterState,
   FilterValue,
-} from "@/lib/types/analysisFilters";
-import { useCasesAnalysis, useCasesByAnalysis } from "@/hooks/useCases";
+} from '@/lib/types/analysisFilters';
+import { useCasesAnalysis, useCasesByAnalysis } from '@/hooks/useCases';
 
 const DEPENDENT_FILTER_KEYS: ReadonlyArray<FilterKey> = [
-  "organizations",
-  "CM",
-  "SKU",
-  "NVPN",
+  'organizations',
+  'CM',
+  'SKU',
+  'NVPN',
 ] as const;
 
 const createFilterValue = (item: unknown): FilterValue => {
@@ -50,7 +50,7 @@ export const useAnalysisFilters = (
 
   const { data: analysisResponse, isLoading: isLoadingAnalysis } =
     useCasesAnalysis();
-  const analysisKey = filters.analysis.key || "";
+  const analysisKey = filters.analysis.key || '';
   const { data: casesResponse, isLoading: isLoadingCases } =
     useCasesByAnalysis(analysisKey);
 
@@ -84,7 +84,7 @@ export const useAnalysisFilters = (
       onUserChange?.();
 
       setFilters((prevFilters) => {
-        if (filterKey === "analysis") {
+        if (filterKey === 'analysis') {
           return {
             ...INITIAL_FILTERS,
             analysis: selectedOption,
@@ -106,7 +106,7 @@ export const useAnalysisFilters = (
 
   const isDisabled = useCallback(
     (filterKey: FilterKey): boolean => {
-      return filterKey !== "analysis" && !analysisKey;
+      return filterKey !== 'analysis' && !analysisKey;
     },
     [analysisKey]
   );

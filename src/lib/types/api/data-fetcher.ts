@@ -1,4 +1,4 @@
-import { HttpClientResponse } from "./http-client";
+import { HttpClientResponse } from './http-client';
 
 export type DataFetcherKey = string | readonly unknown[];
 
