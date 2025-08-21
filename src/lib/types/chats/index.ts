@@ -1,6 +1,7 @@
 import type { BaseResponse } from '@/lib/types/http/responses';
 import type { AIChartData } from '@/lib/types/charts';
 import { FilterState } from '../analysisFilters';
+import type { TableData } from '@/lib/types/datatable';
 
 export type VoteType = 'up' | 'down' | null;
 
@@ -12,6 +13,7 @@ export interface ChatMessage {
   chart?: AIChartData;
   created: string;
   feedbackVote?: VoteType;
+  table?: TableData;
 }
 
 export interface Chat {
@@ -129,6 +131,7 @@ export interface ExecutionMetadata {
   generated_sql: string;
   query_results: Omit<StreamDataQueryExecution, 'dataframe_records'> & {
     dataframe_records: Array<Record<string, unknown>>;
+    columns: string[];
   };
   // Optional visualization payload (may be provided by a later chunk)
   chart_type?: string | null;

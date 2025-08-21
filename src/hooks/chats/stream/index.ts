@@ -105,6 +105,10 @@ export function useChatStream(
     } else if (!prevContent.endsWith(msgContent)) {
       contentMapRef.current[idx] = prevContent + msgContent;
     }
+    const current = contentMapRef.current[idx] || '';
+    if (!current.endsWith('\n')) {
+      contentMapRef.current[idx] = current + '\n\n';
+    }
   }, []);
 
   const pushStep = useCallback(
