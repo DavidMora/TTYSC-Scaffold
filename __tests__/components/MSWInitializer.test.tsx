@@ -15,6 +15,7 @@ describe('MSWInitializer', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    delete (window as any).__MSW_STARTED__;
   });
 
   afterEach(() => {

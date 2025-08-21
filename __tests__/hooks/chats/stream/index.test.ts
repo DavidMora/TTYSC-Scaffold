@@ -385,6 +385,66 @@ describe('useChatStream', () => {
     });
   });
 
+  it('pushes step when only step is present', async () => {
+    const mockChunks: ChatStreamChunk[] = [
+      {
+        id: '1',
+        created: 'ts1',
+        object: 'chat.completion.chunk',
+        model: 'test',
+        choices: [
+          {
+            index: 0,
+            finish_reason: null,
+            message: { role: 'assistant', content: '' },
+            step: 'only-step',
+          } as any,
+        ],
+      },
+    ];
+    mockedNewChatMessageStream.mockResolvedValue(
+      createMockHttpStreamResponse(mockChunks)
+    );
+    const { result } = renderHook(() => useChatStream());
+    act(() => {
+      result.current.start(mockPayload);
+    });
+    await waitFor(() => expect(result.current.steps.length).toBe(1));
+    expect(result.current.steps[0]).toEqual(
+      expect.objectContaining({ step: 'only-step', ts: 'ts1' })
+    );
+  });
+
+  it('pushes step when only workflow_status is present', async () => {
+    const mockChunks: ChatStreamChunk[] = [
+      {
+        id: '1',
+        created: 'ts1',
+        object: 'chat.completion.chunk',
+        model: 'test',
+        choices: [
+          {
+            index: 0,
+            finish_reason: null,
+            message: { role: 'assistant', content: '' },
+            workflow_status: 'queued',
+          } as any,
+        ],
+      },
+    ];
+    mockedNewChatMessageStream.mockResolvedValue(
+      createMockHttpStreamResponse(mockChunks)
+    );
+    const { result } = renderHook(() => useChatStream());
+    act(() => {
+      result.current.start(mockPayload);
+    });
+    await waitFor(() => expect(result.current.steps.length).toBe(1));
+    expect(result.current.steps[0]).toEqual(
+      expect.objectContaining({ workflow_status: 'queued', ts: 'ts1' })
+    );
+  });
+
   it('should handle AbortError silently', async () => {
     const abortError = new DOMException(
       'The user aborted a request.',

@@ -158,6 +158,41 @@ describe('metadataToTableData', () => {
       ['a', 'b']
     );
   });
+
+  it('stringifyValue covers edge cases (nullish, bigint, symbol, function, circular)', () => {
+    const sym = Symbol('s');
+    const func = () => {};
+    const circular: any = { a: 1 };
+    circular.self = circular;
+
+    const md = makeBaseMetadata({
+      query_results: {
+        success: true,
+        limited_to: -1,
+        truncated: false,
+        columns: ['a', 'b', 'c', 'd', 'e', 'f'],
+        dataframe_records: [
+          {
+            a: null,
+            b: undefined,
+            c: BigInt(10),
+            d: sym,
+            e: func,
+            f: circular,
+          } as unknown as Record<string, unknown>,
+        ],
+      },
+    });
+
+    const table = metadataToTableData(md)!;
+    const row = table.rows[0] as Record<string, string>;
+    expect(row.a).toBe('');
+    expect(row.b).toBe('');
+    expect(row.c).toBe('10');
+    expect(row.d).toBe('s');
+    expect(row.e).toBe('[function]');
+    expect(row.f).toBe('[object]');
+  });
 });
 
 
