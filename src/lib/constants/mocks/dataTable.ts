@@ -3,13 +3,17 @@ import { TableData } from "@/lib/types/datatable";
 export const tableData: TableData = {
   rowIdentifier: "id",
   headers: [
-    { text: "Demand Priority", accessorKey: "demandPriority" },
-    { text: "Product Family", accessorKey: "productFamily" },
-    { text: "System", accessorKey: "system" },
-    { text: "Region", accessorKey: "region" },
-    { text: "Created Date", accessorKey: "created_date" },
-    { text: "Demand Units", accessorKey: "demandUnits" },
-    { text: "Fulfilled Demand Units", accessorKey: "fulfilledDemandUnits" },
+    { text: "Demand Priority", accessorKey: "demandPriority", visible: true },
+    { text: "Product Family", accessorKey: "productFamily", visible: true },
+    { text: "System", accessorKey: "system", visible: true },
+    { text: "Region", accessorKey: "region", visible: true },
+    { text: "Created Date", accessorKey: "created_date", visible: true },
+    { text: "Demand Units", accessorKey: "demandUnits", visible: true },
+    {
+      text: "Fulfilled Demand Units",
+      accessorKey: "fulfilledDemandUnits",
+      visible: true,
+    },
   ],
   rows: [
     {
@@ -215,6 +219,12 @@ export const tableData: TableData = {
   ],
   filters: [
     {
+      type: "date",
+      key: "created_date",
+      label: "Created Date",
+      placeholder: "yyyy-mm-dd",
+    },
+    {
       type: "select",
       key: "region",
       label: "Region",
@@ -228,12 +238,7 @@ export const tableData: TableData = {
     //   placeholder: "Select System",
     //   accessorKey: "system",
     // },
-    {
-      type: "date",
-      key: "created_date",
-      label: "Created Date",
-      placeholder: "yyyy-mm-dd",
-    },
+
     // {
     //   type: "select" as const,
     //   key: "priceRange",

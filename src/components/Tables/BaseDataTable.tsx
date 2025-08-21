@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import {
   Table,
   TableCell,
@@ -20,6 +20,7 @@ import TableToolbar from "@/components/Tables/TableToolbar";
 import { useTableData } from "@/hooks/useTableData";
 import { TableDataProps, TableDataRow } from "@/lib/types/datatable";
 import { getFormattedValueByAccessor } from "@/lib/utils/tableHelpers";
+import { SettingsModal, TableSettings } from "./SettingsModal";
 
 function getIdentifier(
   row: TableDataRow,
@@ -51,6 +52,35 @@ function getRowKey(row: TableDataRow, identifier: string | undefined): string {
 }
 
 const BaseDataTable: React.FC<Readonly<TableDataProps>> = (props) => {
+  // Settings modal state
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [currentSettings, setCurrentSettings] = useState<TableSettings>({
+    columns: [
+      { id: "product", name: "Product", visible: true, sortable: true },
+      { id: "supplier", name: "Supplier", visible: true, sortable: true },
+      { id: "weight", name: "Weight", visible: true, sortable: true },
+      { id: "price", name: "Price", visible: true, sortable: true },
+    ],
+    sortOrder: "none",
+    searchTerm: "",
+  });
+
+  const handleOpenModal = () => {
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+  };
+
+  const handleSaveSettings = (settings: typeof currentSettings) => {
+    setCurrentSettings(settings);
+    console.log("Settings saved:", settings);
+    // Here you might want to apply the settings to the table, e.g., update columns visibility
+  };
+
+  // Finish setting up the settings modal
+
   const {
     filteredRows,
     processedFilters,
@@ -78,6 +108,7 @@ const BaseDataTable: React.FC<Readonly<TableDataProps>> = (props) => {
         className={props.toolbarClassName}
         onFilterChange={handleFilterChange}
         onSearch={handleSearch}
+        onSettingsClick={handleOpenModal}
         disableFullScreen={props.disableFullScreen}
       />
       <Table
@@ -119,6 +150,12 @@ const BaseDataTable: React.FC<Readonly<TableDataProps>> = (props) => {
           );
         })}
       </Table>
+      <SettingsModal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        onSave={handleSaveSettings}
+        currentSettings={currentSettings}
+      />
     </div>
   );
 };

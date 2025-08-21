@@ -10,6 +10,7 @@ const nextConfig: NextConfig = {
   experimental: {
     // esmExternals: "loose",
   },
+  output: "standalone",
 };
 
 export default nextConfig;

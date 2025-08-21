@@ -45,8 +45,21 @@
 }
 
 /* RawDataModal Shadow DOM styles */
+ui5-dialog.paddingless-header::part(header) {
+  padding: 0.25rem 0rem;
+  border-bottom: none;
+}
+
 ui5-dialog.paddingless-content::part(content) {
   padding: 0rem;
   overflow: hidden;
   position: relative;
+}
+
+ui5-dialog.paddingless-footer::part(footer) {
+  padding: 0.25rem 0rem;
+}
+
+ui5-tabcontainer.paddingless-header::part(content) {
+  padding: 0rem 0rem;
 }
