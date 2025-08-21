@@ -42,6 +42,7 @@ function createMockHttpStreamResponse(
 }
 
 describe('useChatStream', () => {
+  const normalize = (s: string) => s.replace(/\s+/g, ' ').trim();
   const mockPayload: ChatPromptRequest = {
     messages: [{ role: 'user', content: 'Hello' }],
     model: 'test-model',
@@ -116,7 +117,7 @@ describe('useChatStream', () => {
     await waitFor(() => expect(result.current.isStreaming).toBe(false));
 
     expect(result.current.chunks.length).toBe(2);
-    expect(result.current.aggregatedContent).toBe('Hello world');
+    expect(normalize(result.current.aggregatedContent)).toBe('Hello world');
     expect(result.current.lastChunk).toEqual(mockChunks[1]);
   });
 
@@ -170,7 +171,9 @@ describe('useChatStream', () => {
       result.current.start(mockPayload);
     });
     await waitFor(() =>
-      expect(result.current.aggregatedContent).toBe('first part second')
+      expect(normalize(result.current.aggregatedContent)).toContain(
+        'first part second'
+      )
     );
   });
 

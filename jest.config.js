@@ -25,6 +25,7 @@ const customJestConfig = {
     '!src/**/*.test.{js,jsx,ts,tsx}',
     '!src/app/api/auth/\\[...nextauth\\]/route.ts',
     '!src/lib/constants/**',
+    '!src/mocks/**',
   ],
   coverageReporters: ['text', 'lcov', 'html', 'json-summary'],
   coverageDirectory: 'coverage',

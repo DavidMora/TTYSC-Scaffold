@@ -35,6 +35,11 @@ jest.mock('@/hooks/chats', () => ({
   useUpdateChat: () => ({
     mutate: mockUpdateChat,
   }),
+  useCreateChat: () => ({
+    mutate: jest.fn(),
+    isLoading: false,
+    error: null,
+  }),
 }));
 
 const mockUseAutoSave = jest.fn();
@@ -112,7 +117,7 @@ describe('AnalysisContainer', () => {
     mockUseChat.mockReturnValue({
       isLoading: false,
       isValidating: false,
-      error: {},
+      error: { message: '' },
       mutate: undefined,
     });
     renderWithProviders(<AnalysisContainer />);

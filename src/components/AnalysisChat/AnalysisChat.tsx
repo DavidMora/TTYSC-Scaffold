@@ -7,7 +7,7 @@ import { BusyIndicator } from '@ui5/webcomponents-react';
 import { MessageBubble } from '@/components/AnalysisChat/MessageBubble';
 import { ChatInput } from '@/components/AnalysisChat/ChatInput';
 import { useChatStream } from '@/hooks/chats/stream';
-import { recordsToMarkdownTable } from '@/lib/utils/tableMarkdown';
+import { metadataToTableData } from '@/lib/metadata/table';
 
 interface AnalysisChatProps {
   previousMessages: ChatMessage[];
@@ -150,40 +150,12 @@ export default function AnalysisChat({
     [model, reset, sendMessage]
   );
 
-  function buildMarkdownFromResults(): string {
-    const stepLines = Array.from(
-      new Set(
-        (steps || []).map((s) => s.step).filter((s): s is string => Boolean(s))
-      )
-    );
-
-    const rows: Array<Record<string, unknown>> =
-      (metadata &&
-        metadata.query_results &&
-        Array.isArray(metadata.query_results.dataframe_records) &&
-        metadata.query_results.dataframe_records) ||
-      [];
-
-    let md = '### Workflow progress\n';
-    for (const st of stepLines) md += `- ${st}\n`;
-    md += '\n';
-    md += recordsToMarkdownTable(rows, [
-      'nvpn',
-      'description',
-      'lt_weeks',
-      'mfr',
-      'cm_site_name',
-    ]);
-    return md;
-  }
-
   // When stream finishes, append the final assistant message to persist in chat
   useEffect(() => {
     if (!isStreaming) {
-      const finalContent = metadata?.query_results?.dataframe_records
-        ? buildMarkdownFromResults()
-        : aggregatedContent || '';
-      if (runId && appendedRunId !== runId && finalContent) {
+      const inlineTable = metadataToTableData(metadata);
+      const finalContent = aggregatedContent;
+      if (runId && appendedRunId !== runId && (finalContent || inlineTable)) {
         const assistantMessageId = `${Date.now()}-assistant`;
         setMessages((prev) => [
           ...prev,
@@ -193,13 +165,13 @@ export default function AnalysisChat({
             created: new Date().toLocaleString(),
             title: 'AI Response',
             content: finalContent,
+            table: inlineTable || undefined,
           },
         ]);
         setAppendedRunId(runId);
       }
       setShowLoader(false);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     isStreaming,
     finishReason,
