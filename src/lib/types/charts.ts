@@ -26,7 +26,7 @@ export interface ChartData {
 }
 
 export interface AIChartData {
-  headline: string;
+  headline?: string;
   timestamp: string;
   preamble?: string;
   content?: string;

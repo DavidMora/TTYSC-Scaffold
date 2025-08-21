@@ -11,7 +11,6 @@ export function metadataToAIChartData(
   const labels = (firstSeries.data || []).map((p) => String(p.x));
   const values = (firstSeries.data || []).map((p) => Number(p.y));
   return {
-    headline: meta?.chart_label || 'Chart',
     timestamp: new Date().toISOString(),
     label: meta?.chart_label || 'Chart',
     chart: {

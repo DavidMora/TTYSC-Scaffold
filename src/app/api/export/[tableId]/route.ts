@@ -7,9 +7,9 @@ export const runtime = 'nodejs';
 // GET /api/export/[tableId]?format=csv|excel -> upstream /export/[tableId]?format=...
 export async function GET(
   _req: Request,
-  { params }: { params: { tableId?: string } }
+  { params }: { params: Promise<{ tableId?: string }> }
 ) {
-  const tableId = params?.tableId;
+  const { tableId } = await params;
   if (!tableId) return errorResponse('Missing tableId', 400);
 
   try {

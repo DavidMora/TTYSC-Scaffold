@@ -30,7 +30,7 @@ export function AIChart({
 
   return (
     <div>
-      {!isFullscreen && (
+      {!isFullscreen && headline && (
         <Title level={TitleLevel.H2} style={{ marginBottom: 16 }}>
           {headline}
         </Title>

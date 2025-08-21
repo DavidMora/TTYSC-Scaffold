@@ -7,9 +7,9 @@ export const runtime = 'nodejs';
 // GET /api/auxiliary/chart/[chartId]?from=...&to=...&region=...
 export async function GET(
   req: Request,
-  { params }: { params: { chartId?: string } }
+  { params }: { params: Promise<{ chartId?: string }> }
 ) {
-  const chartId = params?.chartId;
+  const { chartId } = await params;
   if (!chartId) return errorResponse('Missing chartId', 400);
 
   try {
