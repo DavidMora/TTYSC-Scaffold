@@ -506,9 +506,9 @@ describe('useChatStream', () => {
     await waitFor(() => expect(result.current.isStreaming).toBe(false));
 
     // Expect duplicated append from the specific branch (with normalized whitespace)
-    expect(result.current.aggregatedContent.replace(/\s+/g, ' ').trim()).toContain(
-      'Hello world Hello'
-    );
+    expect(
+      result.current.aggregatedContent.replace(/\s+/g, ' ').trim()
+    ).toContain('Hello world Hello');
   });
 
   it('continues processing after finish when stopOnFinish is false', async () => {
@@ -557,12 +557,137 @@ describe('useChatStream', () => {
       createMockHttpStreamResponse(mockChunks)
     );
 
-    const { result } = renderHook(() =>
-      useChatStream({ stopOnFinish: false })
-    );
+    const { result } = renderHook(() => useChatStream({ stopOnFinish: false }));
     act(() => {
       result.current.start(mockPayload);
     });
     await waitFor(() => expect(result.current.chunks.length).toBe(3));
+  });
+
+  it('trims the chunk buffer when exceeding maxBuffer', async () => {
+    const mockChunks: ChatStreamChunk[] = [
+      {
+        id: '1',
+        created: 'ts1',
+        object: 'chat.completion.chunk',
+        model: 'test',
+        choices: [
+          {
+            index: 0,
+            finish_reason: null,
+            message: { role: 'assistant', content: 'a' },
+          },
+        ],
+      },
+      {
+        id: '2',
+        created: 'ts2',
+        object: 'chat.completion.chunk',
+        model: 'test',
+        choices: [
+          {
+            index: 0,
+            finish_reason: null,
+            message: { role: 'assistant', content: 'b' },
+          },
+        ],
+      },
+      {
+        id: '3',
+        created: 'ts3',
+        object: 'chat.completion.chunk',
+        model: 'test',
+        choices: [
+          {
+            index: 0,
+            finish_reason: null,
+            message: { role: 'assistant', content: 'c' },
+          },
+        ],
+      },
+    ];
+    mockedNewChatMessageStream.mockResolvedValue(
+      createMockHttpStreamResponse(mockChunks)
+    );
+
+    const { result } = renderHook(() => useChatStream({ maxBuffer: 1 }));
+    act(() => {
+      result.current.start(mockPayload);
+    });
+
+    await waitFor(() => expect(result.current.isStreaming).toBe(false));
+
+    expect(result.current.chunks.length).toBe(1);
+    expect(result.current.chunks[0].id).toBe('3');
+    expect(result.current.lastChunk?.id).toBe('3');
+  });
+
+  it('ignores finish and metadata for non-target choiceIndex', async () => {
+    const mockChunks: ChatStreamChunk[] = [
+      {
+        id: '1',
+        created: 'ts1',
+        object: 'chat.completion.chunk',
+        model: 'test',
+        choices: [
+          {
+            index: 0, // not the target index
+            finish_reason: 'stop',
+            message: { role: 'assistant', content: '' },
+            execution_metadata: { original_query: 'x' } as ExecutionMetadata,
+          },
+        ],
+      },
+    ];
+    mockedNewChatMessageStream.mockResolvedValue(
+      createMockHttpStreamResponse(mockChunks)
+    );
+
+    const { result } = renderHook(() =>
+      useChatStream({ choiceIndex: 1, stopOnFinish: false })
+    );
+    act(() => {
+      result.current.start(mockPayload);
+    });
+
+    await waitFor(() => expect(result.current.isStreaming).toBe(false));
+
+    expect(result.current.finishReason).toBeNull();
+    expect(result.current.metadata).toBeNull();
+  });
+
+  it('handles empty and undefined choices without errors', async () => {
+    // Cast to any to simulate undefined choices even though the type expects an array
+    const mockChunks: any[] = [
+      {
+        id: '1',
+        created: 'ts1',
+        object: 'chat.completion.chunk',
+        model: 'test',
+        choices: [],
+      },
+      {
+        id: '2',
+        created: 'ts2',
+        object: 'chat.completion.chunk',
+        model: 'test',
+        // choices intentionally undefined
+      },
+    ];
+    mockedNewChatMessageStream.mockResolvedValue(
+      // Type cast to satisfy the helper signature
+      createMockHttpStreamResponse(mockChunks as unknown as ChatStreamChunk[])
+    );
+
+    const { result } = renderHook(() => useChatStream());
+    act(() => {
+      result.current.start(mockPayload);
+    });
+
+    await waitFor(() => expect(result.current.isStreaming).toBe(false));
+
+    expect(result.current.chunks.length).toBe(2);
+    expect(result.current.aggregatedContent).toBe('');
+    expect(result.current.lastChunk?.id).toBe('2');
   });
 });
