@@ -155,10 +155,10 @@ export default function AnalysisChat({
   useEffect(() => {
     if (!isStreaming) {
       const inlineTable = metadataToTableData(metadata);
+      const inlineChart = metadataToAIChartData(metadata);
       const finalContent = aggregatedContent;
       if (runId && appendedRunId !== runId && (finalContent || inlineTable)) {
         const assistantMessageId = `${Date.now()}-assistant`;
-        const inlineChart = metadataToAIChartData(metadata);
         setMessages((prev) => [
           ...prev,
           {

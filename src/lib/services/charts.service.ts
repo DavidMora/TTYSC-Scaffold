@@ -1,12 +1,12 @@
-import { apiClient } from '@/lib/api';
-import { AUXILIARY_CHART } from '../constants/api/routes';
+import { httpClient } from '@/lib/api';
+import { BFF_AUXILIARY_CHART } from '../constants/api/bff-routes';
 import { AIChartData } from '@/lib/types/charts';
 import { BaseResponse } from '@/lib/types/http/responses';
 
 export type ChartFilters = { from?: string; to?: string; region?: string };
 
 export const getChart = async (chartId: string, filters?: ChartFilters) => {
-  let url = AUXILIARY_CHART(chartId);
+  let url = BFF_AUXILIARY_CHART(chartId);
   if (filters) {
     const params = new URLSearchParams();
     if (filters.from) params.set('from', filters.from);
@@ -15,5 +15,5 @@ export const getChart = async (chartId: string, filters?: ChartFilters) => {
     const qs = params.toString();
     if (qs) url += `?${qs}`;
   }
-  return apiClient.get<BaseResponse<AIChartData>>(url);
+  return httpClient.get<BaseResponse<AIChartData>>(url);
 };

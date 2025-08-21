@@ -6,6 +6,7 @@ import {
   BulletMeasure,
   ChartMeasureWithType,
   ChartDataInfo,
+  ChartType,
 } from '@/lib/types/charts';
 
 export const getSingleMeasures = (): ChartMeasure[] => [
@@ -63,7 +64,7 @@ export const addChartType = (
 ): ChartMeasureWithType[] =>
   measures.map((measure) => ({
     ...measure,
-    type: chartType,
+    type: chartType as ChartType,
   }));
 
 export const getMultiDataset = (

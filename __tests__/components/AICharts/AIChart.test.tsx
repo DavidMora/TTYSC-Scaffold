@@ -63,6 +63,7 @@ describe('AIChart', () => {
     timestamp: '2024-01-01T00:00:00Z',
     preamble: 'This is a test preamble',
     content: 'This is test content',
+    label: 'Test Chart Headline',
     chart: baseChart,
   };
 

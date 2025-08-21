@@ -1,5 +1,6 @@
-import { ExecutionMetadata } from '../types/chats';
-import { AIChartData } from '../types/charts';
+import { ExecutionMetadata } from '@/lib/types/chats';
+import { AIChartData, CHART_TYPE } from '@/lib/types/charts';
+import { CHART_TYPES } from '@/lib/constants/UI/chartTypes';
 
 export function metadataToAIChartData(
   meta?: ExecutionMetadata | null
@@ -14,7 +15,7 @@ export function metadataToAIChartData(
     timestamp: new Date().toISOString(),
     label: meta?.chart_label || 'Chart',
     chart: {
-      type: 'column',
+      type: CHART_TYPES[meta?.chart_type ?? ''] ?? CHART_TYPE.column,
       labels,
       data: [
         {

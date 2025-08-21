@@ -99,8 +99,8 @@ export function AIResponseBubble({
           <BaseDataTable data={message.table} tableClassName="h-96" />
         </div>
       )}
+      
       {/* Chart inline if it comes from the message */}
-
       {!isStreaming && message.chart && (
         <div style={{ width: '100%', marginTop: '1rem' }}>
           <AIChart data={message.chart} />

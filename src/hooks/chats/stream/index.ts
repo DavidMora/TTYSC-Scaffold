@@ -71,7 +71,6 @@ export function useChatStream(
   const abortRef = useRef<AbortController | null>(null);
   const runningRef = useRef(false);
   const contentMapRef = useRef<Record<number, string>>({}); // aggregated per choice
-  const latestMetadataRef = useRef<ExecutionMetadata | null>(null);
 
   const aggregatedContent = contentMapRef.current[choiceIndex] || '';
 
@@ -92,7 +91,6 @@ export function useChatStream(
     setSteps([]);
     setLastChunk(null);
     contentMapRef.current = {};
-    latestMetadataRef.current = null;
   }, []);
 
   const mergeMessageContent = useCallback((idx: number, msgContent: string) => {
@@ -133,46 +131,8 @@ export function useChatStream(
       if (choice.index !== targetIdx) return;
       if (choice.finish_reason)
         setFinishReason((prev) => prev || choice.finish_reason);
-      if (choice.execution_metadata) {
-        setMetadata((prev) => {
-          const next = choice.execution_metadata as ExecutionMetadata;
-          let merged: ExecutionMetadata;
-          if (prev) {
-            merged = {
-              ...prev,
-              ...next,
-              execution_plan: {
-                ...(prev.execution_plan ||
-                  ({} as ExecutionMetadata['execution_plan'])),
-                ...(next.execution_plan ||
-                  ({} as ExecutionMetadata['execution_plan'])),
-              },
-              entity_validation: {
-                ...(prev.entity_validation || { valid: [], inferred: {} }),
-                ...(next.entity_validation || { valid: [], inferred: {} }),
-              },
-              query_results: {
-                ...(prev.query_results || {
-                  dataframe_records: [],
-                  success: false,
-                  truncated: false,
-                  limited_to: -1,
-                }),
-                ...(next.query_results || {
-                  dataframe_records: [],
-                  success: false,
-                  truncated: false,
-                  limited_to: -1,
-                }),
-              },
-            } as ExecutionMetadata;
-          } else {
-            merged = next;
-          }
-          latestMetadataRef.current = merged ?? null;
-          return merged;
-        });
-      }
+      if (choice.execution_metadata)
+        setMetadata((prev) => prev || choice.execution_metadata || null);
     },
     []
   );
@@ -225,11 +185,7 @@ export function useChatStream(
                 (c) => c.index === choiceIndex && c.finish_reason
               );
               if (choice?.finish_reason) {
-                const m = latestMetadataRef.current;
-                const hasCharts = Boolean(
-                  m && (m.generated_chart || m.chart_type || m.chart_label)
-                );
-                if (hasCharts) break;
+                break;
               }
             }
           }
