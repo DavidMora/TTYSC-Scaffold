@@ -207,7 +207,11 @@ describe('metadataToAIChartData', () => {
         Series: [
           {
             name: 'No Data Series',
-            data: [],
+            // Intentionally undefined to validate fallback
+            data: undefined as unknown as Array<{
+              x: string | number;
+              y: number;
+            }>,
           },
         ],
         XAxisKey: 'x',

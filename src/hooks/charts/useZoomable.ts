@@ -150,6 +150,72 @@ export function useZoomable({
     [onWindowChange]
   );
 
+  // Helpers to lower cognitive complexity of wheel handling
+  const commitWindow = useCallback(
+    (next: ViewWindow) => {
+      setViewWindow(next);
+      onWindowChange?.(next);
+    },
+    [onWindowChange]
+  );
+
+  const snapIfNeeded = useCallback(
+    (win: ViewWindow) =>
+      dataLength ? snapWindowSpanToCount(win, dataLength) : win,
+    [dataLength]
+  );
+
+  const panWindow = useCallback(
+    (pixelDelta: number, viewportSize: number, spanAtStart: number) => {
+      const delta = -deltaFromPixels(pixelDelta, viewportSize, spanAtStart);
+      let next = shiftWindow(viewWindow, delta);
+      next = snapIfNeeded(next);
+      commitWindow(next);
+    },
+    [viewWindow, snapIfNeeded, commitWindow]
+  );
+
+  const zoomWithCtrl = useCallback(
+    (deltaY: number) => {
+      if (deltaY < 0 && visibleCount !== null && visibleCount <= 2) return;
+      let next =
+        deltaY < 0
+          ? zoomInWindow(viewWindow, step, maxZoom)
+          : zoomOutWindow(viewWindow, step, minZoom);
+      next = snapIfNeeded(next);
+      commitWindow(next);
+    },
+    [
+      viewWindow,
+      step,
+      maxZoom,
+      minZoom,
+      snapIfNeeded,
+      commitWindow,
+      visibleCount,
+    ]
+  );
+
+  const shouldPanHorizontally = useCallback((e: React.WheelEvent) => {
+    const hasHorizontalDelta = Math.abs(e.deltaX) > 0;
+    return hasHorizontalDelta || e.shiftKey;
+  }, []);
+
+  const shouldPanVertically = useCallback((e: React.WheelEvent) => {
+    const hasVerticalDelta = Math.abs(e.deltaY) > 0;
+    return hasVerticalDelta || e.shiftKey;
+  }, []);
+
+  const pixelDeltaForX = useCallback((e: React.WheelEvent) => {
+    const hasHorizontalDelta = Math.abs(e.deltaX) > 0;
+    return hasHorizontalDelta ? e.deltaX : e.deltaY;
+  }, []);
+
+  const pixelDeltaForY = useCallback((e: React.WheelEvent) => {
+    const hasVerticalDelta = Math.abs(e.deltaY) > 0;
+    return hasVerticalDelta ? e.deltaY : e.deltaX;
+  }, []);
+
   const handleZoomIn = useCallback(() => {
     if (mode === 'visual') {
       setZoom((z) => {
@@ -238,59 +304,57 @@ export function useZoomable({
     [mode, zoom, offset.x, offset.y, viewWindow]
   );
 
-  const onMouseMove = useCallback(
+  const handleMouseMoveVisual = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
       const panStart = panStartRef.current;
       if (!panStart) return;
-      if (mode === 'visual') {
-        const dx = e.clientX - panStart.x;
-        const dy = e.clientY - panStart.y;
-        const proposed = {
-          x: panStart.ox + dx,
-          y: panStart.oy + dy,
-        };
-        // throttle visual pan updates to animation frames to avoid flicker
-        pendingOffsetRef.current = clampOffsetToBounds(proposed, zoom);
-        panRafIdRef.current ??= requestAnimationFrame(() => {
-          panRafIdRef.current = null;
-          if (pendingOffsetRef.current) {
-            setOffset(pendingOffsetRef.current);
-            pendingOffsetRef.current = null;
-          }
-        });
-        return;
-      }
-      if (mode === 'dataX' && hasMultipleItems) {
-        const viewport = viewportRef.current;
-        if (!viewport) return;
-        const startWin = panStart.windowAtStart;
-        if (!startWin) return;
-        const dx = e.clientX - panStart.x;
-        const dy = e.clientY - panStart.y;
-        const rangeAtStart = startWin.end - startWin.start;
-        if (rangeAtStart >= 1 - 1e-6) return;
-        const pixelDelta = dataAxis === 'x' ? dx : dy;
-        const viewportSize =
-          dataAxis === 'x'
-            ? viewport.clientWidth || 1
-            : viewport.clientHeight || 1;
-        const delta = -deltaFromPixels(pixelDelta, viewportSize, rangeAtStart);
-        let next = shiftWindow(startWin, delta);
-        if (dataLength) {
-          next = snapWindowSpanToCount(next, dataLength);
+      const dx = e.clientX - panStart.x;
+      const dy = e.clientY - panStart.y;
+      const proposed = { x: panStart.ox + dx, y: panStart.oy + dy };
+      pendingOffsetRef.current = clampOffsetToBounds(proposed, zoom);
+      panRafIdRef.current ??= requestAnimationFrame(() => {
+        panRafIdRef.current = null;
+        if (pendingOffsetRef.current) {
+          setOffset(pendingOffsetRef.current);
+          pendingOffsetRef.current = null;
         }
-        scheduleWindowUpdate(next);
-      }
+      });
     },
-    [
-      mode,
-      scheduleWindowUpdate,
-      clampOffsetToBounds,
-      zoom,
-      dataLength,
-      hasMultipleItems,
-      dataAxis,
-    ]
+    [clampOffsetToBounds, zoom]
+  );
+
+  const handleMouseMoveDataX = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      if (!hasMultipleItems) return;
+      const panStart = panStartRef.current;
+      if (!panStart) return;
+      const viewport = viewportRef.current;
+      if (!viewport) return;
+      const startWin = panStart.windowAtStart;
+      if (!startWin) return;
+      const dx = e.clientX - panStart.x;
+      const dy = e.clientY - panStart.y;
+      const rangeAtStart = startWin.end - startWin.start;
+      if (rangeAtStart >= 1 - 1e-6) return;
+      const pixelDelta = dataAxis === 'x' ? dx : dy;
+      const viewportSize =
+        dataAxis === 'x'
+          ? viewport.clientWidth || 1
+          : viewport.clientHeight || 1;
+      const delta = -deltaFromPixels(pixelDelta, viewportSize, rangeAtStart);
+      let next = shiftWindow(startWin, delta);
+      if (dataLength) next = snapWindowSpanToCount(next, dataLength);
+      scheduleWindowUpdate(next);
+    },
+    [hasMultipleItems, dataAxis, dataLength, scheduleWindowUpdate]
+  );
+
+  const onMouseMove = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      if (mode === 'visual') return handleMouseMoveVisual(e);
+      if (mode === 'dataX') return handleMouseMoveDataX(e);
+    },
+    [mode, handleMouseMoveVisual, handleMouseMoveDataX]
   );
 
   const endPan = useCallback(() => {
@@ -298,106 +362,76 @@ export function useZoomable({
     panStartRef.current = null;
   }, []);
 
-  const onWheel = useCallback(
+  const handleWheelVisual = useCallback(
     (e: React.WheelEvent<HTMLDivElement>) => {
-      const handleWheelVisual = () => {
-        if (zoom <= 1) return;
-        e.preventDefault();
-        const proposed = (prev: { x: number; y: number }) =>
-          clampOffsetToBounds(
-            { x: prev.x - e.deltaX, y: prev.y - e.deltaY },
-            zoom
-          );
-        const next = proposed({ x: offset.x, y: offset.y });
-        pendingOffsetRef.current = next;
-        panRafIdRef.current ??= requestAnimationFrame(() => {
-          panRafIdRef.current = null;
-          if (pendingOffsetRef.current) {
-            setOffset(pendingOffsetRef.current);
-            pendingOffsetRef.current = null;
-          }
-        });
-      };
-
-      const handleWheelDataX = () => {
-        if (!hasMultipleItems) return;
-        const viewport = viewportRef.current;
-        if (!viewport) return;
-        const span = viewWindow.end - viewWindow.start;
-        if (e.ctrlKey) {
-          e.preventDefault();
-          if (e.deltaY < 0 && visibleCount !== null && visibleCount <= 2) {
-            // avoid futile zoom-in when already at 2 items
-            return;
-          }
-          let next =
-            e.deltaY < 0
-              ? zoomInWindow(viewWindow, step, maxZoom)
-              : zoomOutWindow(viewWindow, step, minZoom);
-          if (dataLength) next = snapWindowSpanToCount(next, dataLength);
-          setViewWindow(next);
-          onWindowChange?.(next);
-          return;
-        }
-        if (span >= 1 - 1e-6) return;
-        if (dataAxis === 'x') {
-          // Only hijack wheel when there is horizontal scroll intent or Shift is pressed.
-          // If the user is scrolling vertically (deltaY only), let the page scroll naturally.
-          const hasHorizontalDelta = Math.abs(e.deltaX) > 0;
-          const shouldPanHorizontally = hasHorizontalDelta || e.shiftKey;
-          if (!shouldPanHorizontally) return;
-          const pixelDx = hasHorizontalDelta ? e.deltaX : e.deltaY;
-          if (pixelDx === 0) return;
-          e.preventDefault();
-          const delta = -deltaFromPixels(
-            pixelDx,
-            viewport.clientWidth || 1,
-            span
-          );
-          let next = shiftWindow(viewWindow, delta);
-          if (dataLength) next = snapWindowSpanToCount(next, dataLength);
-          setViewWindow(next);
-          onWindowChange?.(next);
-          return;
-        }
-        // dataAxis === 'y'
-        // Only hijack wheel when there is vertical scroll intent or Shift is pressed.
-        const hasVerticalDelta = Math.abs(e.deltaY) > 0;
-        const shouldPanVertically = hasVerticalDelta || e.shiftKey;
-        if (!shouldPanVertically) return;
-        const pixelDy = hasVerticalDelta ? e.deltaY : e.deltaX;
-        if (pixelDy === 0) return;
-        e.preventDefault();
-        const delta = -deltaFromPixels(
-          pixelDy,
-          viewport.clientHeight || 1,
-          span
+      if (zoom <= 1) return;
+      e.preventDefault();
+      const proposed = (prev: { x: number; y: number }) =>
+        clampOffsetToBounds(
+          { x: prev.x - e.deltaX, y: prev.y - e.deltaY },
+          zoom
         );
-        let next = shiftWindow(viewWindow, delta);
-        if (dataLength) next = snapWindowSpanToCount(next, dataLength);
-        setViewWindow(next);
-        onWindowChange?.(next);
-      };
+      const next = proposed({ x: offset.x, y: offset.y });
+      pendingOffsetRef.current = next;
+      panRafIdRef.current ??= requestAnimationFrame(() => {
+        panRafIdRef.current = null;
+        if (pendingOffsetRef.current) {
+          setOffset(pendingOffsetRef.current);
+          pendingOffsetRef.current = null;
+        }
+      });
+    },
+    [zoom, clampOffsetToBounds, offset.x, offset.y]
+  );
 
-      if (mode === 'visual') return handleWheelVisual();
-      if (mode === 'dataX') return handleWheelDataX();
+  const handleWheelDataX = useCallback(
+    (e: React.WheelEvent<HTMLDivElement>) => {
+      if (!hasMultipleItems) return;
+      const viewport = viewportRef.current;
+      if (!viewport) return;
+      const span = viewWindow.end - viewWindow.start;
+
+      if (e.ctrlKey) {
+        e.preventDefault();
+        zoomWithCtrl(e.deltaY);
+        return;
+      }
+
+      if (span >= 1 - 1e-6) return;
+      if (dataAxis === 'x') {
+        if (!shouldPanHorizontally(e)) return;
+        const pixelDx = pixelDeltaForX(e);
+        if (pixelDx === 0) return;
+        e.preventDefault();
+        panWindow(pixelDx, viewport.clientWidth || 1, span);
+        return;
+      }
+
+      if (!shouldPanVertically(e)) return;
+      const pixelDy = pixelDeltaForY(e);
+      if (pixelDy === 0) return;
+      e.preventDefault();
+      panWindow(pixelDy, viewport.clientHeight || 1, span);
     },
     [
-      mode,
-      zoom,
-      clampOffsetToBounds,
-      viewWindow,
-      step,
-      maxZoom,
-      minZoom,
-      offset.x,
-      offset.y,
-      dataLength,
       hasMultipleItems,
-      visibleCount,
-      onWindowChange,
+      viewWindow,
+      zoomWithCtrl,
       dataAxis,
+      panWindow,
+      shouldPanHorizontally,
+      shouldPanVertically,
+      pixelDeltaForX,
+      pixelDeltaForY,
     ]
+  );
+
+  const onWheel = useCallback(
+    (e: React.WheelEvent<HTMLDivElement>) => {
+      if (mode === 'visual') return handleWheelVisual(e);
+      if (mode === 'dataX') return handleWheelDataX(e);
+    },
+    [mode, handleWheelVisual, handleWheelDataX]
   );
 
   const zoomActive = useMemo(

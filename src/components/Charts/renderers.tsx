@@ -18,6 +18,7 @@ import {
   ChartRendererProps,
   ChartMeasure,
   ChartSeries,
+  ChartType,
 } from '@/lib/types/charts';
 import {
   getBulletMeasures,
@@ -135,7 +136,7 @@ export const ComposedChartRenderer: React.FC<ChartRendererProps> = ({
 };
 
 export const UnsupportedChartRenderer: React.FC<{
-  chartType: string;
+  chartType: ChartType;
   isMulti: boolean;
 }> = ({ chartType, isMulti }) => (
   <MessageStrip
@@ -149,7 +150,7 @@ export const UnsupportedChartRenderer: React.FC<{
 );
 
 export const MultiSeriesRequiredRenderer: React.FC<{
-  chartType: string;
+  chartType: ChartType;
 }> = ({ chartType }) => (
   <MessageStrip
     design="Information"
