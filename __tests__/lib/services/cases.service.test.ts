@@ -1,5 +1,8 @@
 import { httpClient } from '@/lib/api';
-import { BFF_CASE_ANALYSIS, BFF_CASES_BY_ANALYSIS } from '@/lib/constants/api/bff-routes';
+import {
+  BFF_CASE_ANALYSIS,
+  BFF_CASES_BY_ANALYSIS,
+} from '@/lib/constants/api/bff-routes';
 import {
   getCasesAnalysis,
   getCasesByAnalysis,
