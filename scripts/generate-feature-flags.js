@@ -17,28 +17,39 @@ require('dotenv').config({ path: '.env.local' });
 const DEFAULT_FLAGS = {
   enableAuthentication: true,
   FF_Chat_Analysis_Screen: true,
+  FF_Full_Page_Navigation: true,
+  FF_Side_NavBar: true,
+  FF_Modals: true,
+};
+
+// Helper function for handling environment variables
+const handleEnvFlag = (key, envKey, defaultValue) => {
+  const envValue = process.env[envKey];
+  if (envValue !== undefined) {
+    return envValue.toLowerCase() === 'true';
+  } else {
+    process.env[envKey] = String(defaultValue);
+    return defaultValue;
+  }
 };
 
 // Generate flags from environment variables
 const flags = {};
 
+const ENV_KEYS = {
+  enableAuthentication: 'FEATURE_FLAG_ENABLE_AUTHENTICATION',
+  FF_Chat_Analysis_Screen: 'FEATURE_FLAG_FF_CHAT_ANALYSIS_SCREEN',
+  FF_Full_Page_Navigation: 'FF_FULL_PAGE_NAVIGATION',
+  FF_Side_NavBar: 'FF_SIDE_NAVBAR',
+  FF_Modals: 'FF_MODALS',
+};
+
 Object.keys(DEFAULT_FLAGS).forEach((key) => {
-  // Use proper naming convention: FEATURE_FLAG_ENABLE_AUTHENTICATION
-  const envKey = `FEATURE_FLAG_${key.toUpperCase().replace('AUTHENTICATION', 'AUTHENTICATION')}`;
-  // For enableAuthentication, use FEATURE_FLAG_ENABLE_AUTHENTICATION
-  const properEnvKey =
-    key === 'enableAuthentication'
-      ? 'FEATURE_FLAG_ENABLE_AUTHENTICATION'
-      : envKey;
-
-  const envValue = process.env[properEnvKey];
-
-  if (envValue !== undefined) {
-    flags[key] = envValue.toLowerCase() === 'true';
+  const envKey = ENV_KEYS[key];
+  if (envKey) {
+    flags[key] = handleEnvFlag(key, envKey, DEFAULT_FLAGS[key]);
   } else {
     flags[key] = DEFAULT_FLAGS[key];
-    // Set the environment variable for the current process
-    process.env[properEnvKey] = String(flags[key]);
   }
 });
 
@@ -66,7 +77,7 @@ const rootFlagsPath = path.join(process.cwd(), 'feature-flags.json');
 
 try {
   fs.writeFileSync(rootFlagsPath, jsonContent);
-} catch (error) {
+} catch {
   // Silent fail for backup file
 }
 
@@ -87,6 +98,7 @@ try {
   fs.writeFileSync(publicFlagsPath, jsonContent);
 } catch (error) {
   // Silent fail for public file
+  console.warn('Failed to write public feature-flags.json:', error.message);
 }
 
 // 4. Update .env.local if it doesn't exist for local development
@@ -101,10 +113,9 @@ if (fs.existsSync(envLocalPath)) {
 let envUpdated = false;
 Object.keys(DEFAULT_FLAGS).forEach((key) => {
   // Use proper naming convention
-  const properEnvKey =
-    key === 'enableAuthentication'
-      ? 'FEATURE_FLAG_ENABLE_AUTHENTICATION'
-      : `FEATURE_FLAG_${key.toUpperCase()}`;
+  let properEnvKey;
+
+  properEnvKey = ENV_KEYS[key] ?? `FEATURE_FLAG_${key.toUpperCase()}`;
 
   if (!envContent.includes(properEnvKey)) {
     envContent += `\n# Feature Flag: ${key}\n${properEnvKey}=${flags[key]}\n`;
@@ -115,7 +126,7 @@ Object.keys(DEFAULT_FLAGS).forEach((key) => {
 if (envUpdated) {
   try {
     fs.writeFileSync(envLocalPath, envContent);
-  } catch (error) {
+  } catch {
     // Silent fail for env update
   }
 }

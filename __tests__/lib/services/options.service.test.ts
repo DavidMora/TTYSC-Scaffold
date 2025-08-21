@@ -1,6 +1,6 @@
 import { getTableOptions } from '@/lib/services/options.service';
 import { httpClient } from '@/lib/api';
-import { TABLES } from '@/lib/constants/api/routes';
+import { BFF_TABLES } from '@/lib/constants/api/bff-routes';
 
 // Mock the httpClient
 jest.mock('@/lib/api', () => ({
@@ -10,8 +10,8 @@ jest.mock('@/lib/api', () => ({
 }));
 
 // Mock the constants
-jest.mock('@/lib/constants/api/routes', () => ({
-  TABLES: '/api/tables',
+jest.mock('@/lib/constants/api/bff-routes', () => ({
+  BFF_TABLES: '/api/options/tables',
 }));
 
 const mockHttpClient = httpClient as jest.Mocked<typeof httpClient>;
@@ -37,8 +37,8 @@ describe('options.service', () => {
 
       const result = getTableOptions();
 
-      expect(mockHttpClient.get).toHaveBeenCalledWith(TABLES);
-      expect(mockHttpClient.get).toHaveBeenCalledWith('/api/tables');
+      expect(mockHttpClient.get).toHaveBeenCalledWith(BFF_TABLES);
+      expect(mockHttpClient.get).toHaveBeenCalledWith('/api/options/tables');
       expect(result).toBeInstanceOf(Promise);
     });
 
@@ -67,7 +67,7 @@ describe('options.service', () => {
       getTableOptions();
 
       expect(mockHttpClient.get).toHaveBeenCalledTimes(1);
-      expect(mockHttpClient.get).toHaveBeenCalledWith('/api/tables');
+      expect(mockHttpClient.get).toHaveBeenCalledWith('/api/options/tables');
     });
   });
 });

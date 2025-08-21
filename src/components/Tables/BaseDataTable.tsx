@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import {
   Table,
   TableCell,
@@ -20,7 +20,6 @@ import TableToolbar from '@/components/Tables/TableToolbar';
 import { useTableData } from '@/hooks/useTableData';
 import { TableDataProps, TableDataRow } from '@/lib/types/datatable';
 import { getFormattedValueByAccessor } from '@/lib/utils/tableHelpers';
-import { SettingsModal, TableSettings } from './SettingsModal';
 
 function getIdentifier(
   row: TableDataRow,
@@ -93,6 +92,8 @@ const BaseDataTable: React.FC<Readonly<TableDataProps>> = (props) => {
     filters: props.data?.filters || [],
   });
 
+  const shouldEnableGrowing = filteredRows.length > 30;
+
   return (
     <div
       data-testid="base-data-table"
@@ -108,7 +109,6 @@ const BaseDataTable: React.FC<Readonly<TableDataProps>> = (props) => {
         className={props.toolbarClassName}
         onFilterChange={handleFilterChange}
         onSearch={handleSearch}
-        onSettingsClick={handleOpenModal}
         disableFullScreen={props.disableFullScreen}
       />
       <Table
@@ -116,7 +116,9 @@ const BaseDataTable: React.FC<Readonly<TableDataProps>> = (props) => {
           ...(hasResults
             ? [<TableSelectionMulti behavior="RowSelector" key="selection" />]
             : []),
-          <TableGrowing mode="Scroll" key="growing" />,
+          ...(shouldEnableGrowing
+            ? [<TableGrowing mode="Scroll" key="growing" />]
+            : []),
         ]}
         className={twMerge('h-auto', props.tableClassName)}
         noDataText="No results found"

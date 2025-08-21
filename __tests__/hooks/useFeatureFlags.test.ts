@@ -4,6 +4,7 @@ import {
   useFeatureFlag,
   useAuthenticationEnabled,
 } from '@/hooks/useFeatureFlags';
+import { FALLBACK_FLAGS } from '@/test-utils/featureFlags';
 
 // Mock fetch
 global.fetch = jest.fn();
@@ -54,10 +55,7 @@ describe('useFeatureFlags hooks', () => {
       });
 
       expect(result.current.error).toBe('Network error');
-      expect(result.current.flags).toEqual({
-        enableAuthentication: true,
-        FF_Chat_Analysis_Screen: true,
-      });
+      expect(result.current.flags).toEqual(FALLBACK_FLAGS);
     });
 
     it('should handle non-ok response', async () => {
@@ -87,10 +85,7 @@ describe('useFeatureFlags hooks', () => {
       });
 
       expect(result.current.error).toBe('Unknown error');
-      expect(result.current.flags).toEqual({
-        enableAuthentication: true,
-        FF_Chat_Analysis_Screen: true,
-      });
+      expect(result.current.flags).toEqual(FALLBACK_FLAGS);
     });
 
     it('should handle cancellation during json parsing', async () => {
@@ -102,7 +97,7 @@ describe('useFeatureFlags hooks', () => {
       mockFetch.mockResolvedValue({
         ok: true,
         json: slowJsonMock,
-      } as any);
+      } as unknown as Response);
 
       const { unmount } = renderHook(() => useFeatureFlags());
 
@@ -133,7 +128,7 @@ describe('useFeatureFlags hooks', () => {
       mockFetch.mockResolvedValue({
         ok: true,
         json: () => Promise.resolve({ enableAuthentication: true }),
-      } as any);
+      } as Response);
 
       const { unmount } = renderHook(() => useFeatureFlags());
 

@@ -293,6 +293,33 @@ describe('SWRMutationAdapter', () => {
       expect(mockTrigger).toHaveBeenCalledWith(variables);
     });
 
+    it('should handle invalidateQueries errors gracefully', async () => {
+      const mockData = { id: 1, name: 'test' };
+
+      // Mock the swr import to throw an error
+      jest.doMock('swr', () => {
+        throw new Error('Failed to import swr');
+      });
+
+      mockTrigger.mockResolvedValue(mockData);
+
+      const mutationFn = jest.fn().mockResolvedValue({
+        data: mockData,
+        status: 200,
+        statusText: 'OK',
+      } as HttpClientResponse<typeof mockData>);
+
+      const mutationKey = ['test-key'];
+      const response = adapter.mutateData(mutationKey, mutationFn, {
+        invalidateQueries: ['query1', 'query2'],
+      });
+      const variables = { name: 'test' };
+
+      // Should not throw even if invalidateQueries fails
+      const result = await response.mutate(variables);
+      expect(result).toEqual(mockData);
+    });
+
     it('should reset state when reset is called', () => {
       const mutationFn = jest.fn();
       const mutationKey = ['test-key'];

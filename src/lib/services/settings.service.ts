@@ -1,6 +1,6 @@
-import { apiClient } from '@/lib/api';
+import { apiClient } from '@/lib/api'; // apiClient targets FRONTEND_BASE_URL (BFF)
 import { HttpClientResponse } from '@/lib/types/api/http-client';
-import { SETTINGS } from '@/lib/constants/api/routes';
+import { BFF_SETTINGS } from '@/lib/constants/api/bff-routes';
 import {
   SettingsResponse,
   UpdateSettingsRequest,
@@ -10,11 +10,11 @@ import {
 export const getSettings = async (): Promise<
   HttpClientResponse<SettingsResponse>
 > => {
-  return await apiClient.get<SettingsResponse>(SETTINGS);
+  return await apiClient.get<SettingsResponse>(BFF_SETTINGS);
 };
 
 export const updateSettings = async (
   settings: UpdateSettingsRequest
 ): Promise<HttpClientResponse<UpdateSettingsResponse>> => {
-  return await apiClient.patch<UpdateSettingsResponse>(SETTINGS, settings);
+  return await apiClient.patch<UpdateSettingsResponse>(BFF_SETTINGS, settings);
 };

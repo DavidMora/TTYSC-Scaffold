@@ -5,11 +5,11 @@ import {
   FlexBoxAlignItems,
   Text,
   Icon,
-  Dialog,
   Button,
   Title,
   FlexBoxDirection,
 } from '@ui5/webcomponents-react';
+import { FeatureFlaggedDialog } from '@/components/Modals/FeatureFlaggedDialog';
 
 interface ModalAction {
   label: string;
@@ -42,7 +42,7 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   description,
 }) => {
   return (
-    <Dialog
+    <FeatureFlaggedDialog
       open={isOpen}
       onClose={onClose}
       aria-labelledby="modal-title"
@@ -127,6 +127,6 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
           </Text>
         )}
       </FlexBox>
-    </Dialog>
+    </FeatureFlaggedDialog>
   );
 };

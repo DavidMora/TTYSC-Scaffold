@@ -1,6 +1,7 @@
 import {
   httpClient,
   HttpClient,
+  apiClient,
   dataFetcher,
   DataFetcher,
   FetchAdapter,
@@ -14,6 +15,10 @@ describe('API index exports', () => {
   describe('Main exports', () => {
     it('should export httpClient as default instance', () => {
       expect(httpClient).toBeInstanceOf(HttpClient);
+    });
+
+    it('should export apiClient named instance', () => {
+      expect(apiClient).toBeInstanceOf(HttpClient);
     });
 
     it('should export HttpClient class', () => {

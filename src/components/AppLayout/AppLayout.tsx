@@ -29,8 +29,8 @@ export default function AppLayout({ children }: Readonly<AppLayoutProps>) {
           {/* Side Navigation */}
           <div
             className="
-              transition-[min-width] duration-300 ease-in-out border-r 
-              border-[var(--sapGroup_TitleBorderColor)] 
+              border-r
+              border-[var(--sapGroup_TitleBorderColor)]
               bg-[var(--sapGroup_ContentBackground)]
               min-w-auto
             "
@@ -49,7 +49,7 @@ export default function AppLayout({ children }: Readonly<AppLayoutProps>) {
             "
           >
             <HeaderBar {...HEADER_BAR_CONFIG.supplyChain} />
-            <hr className="h-[2px] bg-[var(--sapToolbar_SeparatorColor)]" />
+            <div className="h-[2px] bg-[var(--sapToolbar_SeparatorColor)]" />
             {children}
             <RawDataModalWithContext />
           </div>

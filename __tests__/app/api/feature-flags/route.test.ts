@@ -5,6 +5,9 @@ jest.mock('@/lib/utils/feature-flags', () => ({
   getFeatureFlags: jest.fn(),
   DEFAULT_FLAGS: {
     enableAuthentication: true,
+    FF_Chat_Analysis_Screen: true,
+    FF_Full_Page_Navigation: true,
+    FF_Modals: true,
   },
 }));
 
@@ -37,6 +40,9 @@ describe('/api/feature-flags', () => {
     // Arrange
     const mockFlags = {
       enableAuthentication: true,
+      FF_Chat_Analysis_Screen: true,
+      FF_Full_Page_Navigation: true,
+      FF_Modals: true,
     };
 
     mockGetFeatureFlags.mockResolvedValue(mockFlags);

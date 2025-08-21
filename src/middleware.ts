@@ -5,13 +5,29 @@ import { isFeatureEnabledEdge } from '@/lib/utils/feature-flags-edge';
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Skip middleware for auth routes, API routes, and static assets
-  if (
+  // Define public routes that don't require authentication
+  const publicAuthRoutes = [
+    '/api/auth/signin',
+    '/api/auth/signout',
+    '/api/auth/callback',
+    '/api/auth/providers',
+    '/api/auth/csrf',
+    '/api/auth/session',
+    '/api/auth/error',
+    '/api/auth/config',
+    '/api/auth/provider-sign-out',
+    '/api/auth/force-logout',
+    '/api/auth/restart-session',
+  ];
+
+  // Allow NextAuth routes, auth pages, and static assets
+  const isPublicRoute =
     pathname.startsWith('/auth/') ||
-    pathname.startsWith('/api/') ||
     pathname.startsWith('/_next/') ||
-    pathname.includes('.')
-  ) {
+    pathname.includes('.') ||
+    publicAuthRoutes.some((route) => pathname.startsWith(route));
+
+  if (isPublicRoute) {
     return NextResponse.next();
   }
 
@@ -31,6 +47,7 @@ export async function middleware(request: NextRequest) {
     // On error, default to requiring authentication for safety
   }
 
+  // Check authentication for all other routes (including protected API routes)
   try {
     const token = await getToken({
       req: request,
@@ -39,6 +56,15 @@ export async function middleware(request: NextRequest) {
     });
 
     if (!token) {
+      // For API routes, return 401 instead of redirecting
+      if (pathname.startsWith('/api/')) {
+        return NextResponse.json(
+          { error: 'Authentication required' },
+          { status: 401 }
+        );
+      }
+
+      // For page routes, redirect to signin
       const url = new URL('/auth/signin', request.url);
       url.searchParams.set('callbackUrl', request.url);
       // Use 307 redirect to preserve the original request method and body
@@ -47,7 +73,15 @@ export async function middleware(request: NextRequest) {
 
     return NextResponse.next();
   } catch {
-    // Redirect to signin on any middleware error
+    // For API routes, return error
+    if (pathname.startsWith('/api/')) {
+      return NextResponse.json(
+        { error: 'Authentication error' },
+        { status: 500 }
+      );
+    }
+
+    // Redirect to signin on any middleware error for page routes
     const url = new URL('/auth/signin', request.url);
     url.searchParams.set('callbackUrl', request.url);
     return NextResponse.redirect(url, 307);
@@ -55,5 +89,13 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!api|_next/static|_next/image|favicon.ico|auth|.*\\.).*)'],
+  matcher: [
+    /*
+     * Match all request paths except for the ones starting with:
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     */
+    '/((?!_next/static|_next/image|favicon.ico).*)',
+  ],
 };

@@ -1,0 +1,247 @@
+/** @jest-environment node */
+import { AxiosAdapter } from '@/lib/api/http-client-adapters/axios-adapter';
+import axios from 'axios';
+import * as sseModule from '@/lib/api/stream/parse-sse';
+
+jest.mock('axios');
+const mockedAxios = axios as jest.Mocked<typeof axios>;
+
+// Helper to build async iterable over Buffers
+function bufferStream(parts: (string | Buffer)[]): AsyncIterable<Buffer> {
+  let i = 0;
+  const buffers = parts.map((p) => (Buffer.isBuffer(p) ? p : Buffer.from(p)));
+  return {
+    [Symbol.asyncIterator]() {
+      return {
+        next: async () =>
+          i < buffers.length
+            ? { value: buffers[i++], done: false }
+            : { value: undefined, done: true },
+      } as AsyncIterator<Buffer>;
+    },
+  };
+}
+
+interface MockAxiosInstance {
+  request: jest.Mock;
+  get?: jest.Mock; // legacy usage not needed but kept for compatibility
+}
+
+describe('AxiosAdapter.stream extra coverage', () => {
+  let adapter: AxiosAdapter;
+  let mockAxiosInstance: MockAxiosInstance;
+
+  beforeEach(() => {
+    mockAxiosInstance = { request: jest.fn(), get: jest.fn() };
+    (mockedAxios.create as jest.Mock).mockReturnValue(
+      mockAxiosInstance as unknown as typeof axios
+    );
+    adapter = new AxiosAdapter();
+    // ensure node env
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    delete (global as any).window;
+  });
+
+  it('honors already-aborted external signal', async () => {
+    const controller = new AbortController();
+    controller.abort();
+    mockAxiosInstance.request.mockResolvedValue({
+      data: bufferStream(['{"a":1}']),
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+    });
+    const res = await adapter.stream('/json', {
+      parser: 'json',
+      signal: controller.signal,
+    });
+    const items: unknown[] = [];
+    for await (const c of res) items.push(c);
+    // Should still parse json
+    expect(items).toEqual([{ a: 1 }]);
+  });
+
+  it('handles empty NDJSON line skipped', async () => {
+    mockAxiosInstance.request.mockResolvedValue({
+      data: bufferStream(['\n', '{"x":1}\n']),
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+    });
+    const res = await adapter.stream('/ndjson', { parser: 'ndjson' });
+    const out: unknown[] = [];
+    for await (const v of res) out.push(v);
+    expect(out).toEqual([{ x: 1 }]);
+  });
+
+  it('parses SSE retry field', async () => {
+    const block = 'id:9\nevent:update\nretry:5000\ndata:done\n\n';
+    mockAxiosInstance.request.mockResolvedValue({
+      data: bufferStream([block]),
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+    });
+    const res = await adapter.stream('/sse', { parser: 'sse' });
+    const events: Record<string, unknown>[] = [];
+    for await (const e of res) events.push(e as Record<string, unknown>);
+    expect(events[0]).toMatchObject({
+      id: '9',
+      event: 'update',
+      retry: 5000,
+      data: 'done',
+    });
+  });
+
+  it('supports cancel method', async () => {
+    // Long json that would require two chunks
+    const json = JSON.stringify({ big: true, n: 1 });
+    mockAxiosInstance.request.mockResolvedValue({
+      data: bufferStream([json.slice(0, 3), json.slice(3)]),
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+    });
+    const res = await adapter.stream('/json', { parser: 'json' });
+    const iterator = res[Symbol.asyncIterator]();
+    const first = await iterator.next();
+    // Not yet parseable; will recurse until done, so we cancel to stop early
+    res.cancel();
+    // After cancel, simulate stream end
+    const second = await iterator.next();
+    expect(first.done).toBe(false); // might still be buffering
+    // cancellation leads to eventual done (value could be undefined)
+    expect(second.done).toBe(true);
+  });
+
+  it('fallback parser returns text when unknown parser provided', async () => {
+    mockAxiosInstance.request.mockResolvedValue({
+      data: bufferStream(['abc']),
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+    });
+    // @ts-expect-error testing fallback path
+    const res = await adapter.stream('/fallback', { parser: 'unknown' });
+    const out: string[] = [];
+    for await (const c of res) out.push(c as string);
+    expect(out).toEqual(['abc']);
+  });
+
+  it('throws when NDJSON buffer exceeds maxBufferSize', async () => {
+    const line = '{"a":1}\n';
+    mockAxiosInstance.request.mockResolvedValue({
+      data: bufferStream([line]),
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+    });
+    const res = await adapter.stream('/ndjson-big', {
+      parser: 'ndjson',
+      maxBufferSize: 5,
+    });
+    let caught: Error | undefined;
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      for await (const __chunk of res) {
+        // consume
+      }
+    } catch (e) {
+      caught = e as Error;
+    }
+    expect(caught).toBeDefined();
+    expect(String(caught)).toMatch(/NDJSON buffer exceeded/);
+  });
+
+  it('throws when SSE buffer exceeds maxBufferSize', async () => {
+    const evt = 'data:0123456789\n\n';
+    mockAxiosInstance.request.mockResolvedValue({
+      data: bufferStream([evt]),
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+    });
+    const res = await adapter.stream('/sse-big', {
+      parser: 'sse',
+      maxBufferSize: 5,
+    });
+    let caught: Error | undefined;
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      for await (const __chunk of res) {
+        // consume
+      }
+    } catch (e) {
+      caught = e as Error;
+    }
+    expect(caught).toBeDefined();
+    expect(String(caught)).toMatch(/SSE buffer exceeded/);
+  });
+
+  it('throws on invalid NDJSON line', async () => {
+    mockAxiosInstance.request.mockResolvedValue({
+      data: bufferStream(['{"a":1}\n{"b":}\n']),
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+    });
+    const res = await adapter.stream('/ndjson-invalid', { parser: 'ndjson' });
+    let caught: Error | undefined;
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      for await (const __c of res) {
+        /* consume */
+      }
+    } catch (e) {
+      caught = e as Error;
+    }
+    expect(caught).toBeDefined();
+  });
+
+  it('throws on leftover invalid NDJSON', async () => {
+    mockAxiosInstance.request.mockResolvedValue({
+      data: bufferStream(['{"a":1}\n{"b":']),
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+    });
+    const res = await adapter.stream('/ndjson-leftover', { parser: 'ndjson' });
+    let caught: Error | undefined;
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      for await (const __c of res) {
+        /* consume */
+      }
+    } catch (e) {
+      caught = e as Error;
+    }
+    expect(caught).toBeDefined();
+  });
+
+  it('throws on leftover SSE parse error (mocked)', async () => {
+    // Spy on mutable wrapper to avoid defineProperty error on ESM live binding
+    const spy = jest
+      .spyOn(sseModule.sseParser, 'parseSSEBlock')
+      .mockImplementation(() => {
+        throw new Error('boom');
+      });
+    mockAxiosInstance.request.mockResolvedValue({
+      data: bufferStream(['data:only']), // leftover no blank line to trigger leftover handling
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+    });
+    const res = await adapter.stream('/sse-leftover-error', { parser: 'sse' });
+    let caught: Error | undefined;
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      for await (const _ of res) {
+        /* consume */
+      }
+    } catch (e) {
+      caught = e as Error;
+    }
+    expect(caught).toBeDefined();
+    spy.mockRestore();
+  });
+});

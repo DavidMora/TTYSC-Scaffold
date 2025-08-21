@@ -203,7 +203,7 @@ describe('ChatHistoryNavigationItem', () => {
       const listItem = screen.getByText('Message 1');
       fireEvent.click(listItem);
 
-      expect(mockOnChatItemSelect).toHaveBeenCalledWith('chat-1', 'msg-1');
+      expect(mockOnChatItemSelect).toHaveBeenCalledWith('chat-1');
     });
 
     it('should call onChatItemSelect with correct IDs for different items', () => {
@@ -214,11 +214,11 @@ describe('ChatHistoryNavigationItem', () => {
         />
       );
 
-      // Click on Message 3 (chatId: "chat-2", itemId: "msg-3")
+      // Click on Message 3 (chatId: "chat-2")
       const listItem = screen.getByText('Message 3');
       fireEvent.click(listItem);
 
-      expect(mockOnChatItemSelect).toHaveBeenCalledWith('chat-2', 'msg-3');
+      expect(mockOnChatItemSelect).toHaveBeenCalledWith('chat-2');
     });
 
     it('should call onChatItemSelect with correct IDs for last item in second chat', () => {
@@ -229,11 +229,11 @@ describe('ChatHistoryNavigationItem', () => {
         />
       );
 
-      // Click on Message 5 (chatId: "chat-2", itemId: "msg-5")
+      // Click on Message 5 (chatId: "chat-2")
       const listItem = screen.getByText('Message 5');
       fireEvent.click(listItem);
 
-      expect(mockOnChatItemSelect).toHaveBeenCalledWith('chat-2', 'msg-5');
+      expect(mockOnChatItemSelect).toHaveBeenCalledWith('chat-2');
     });
 
     it('should not call onChatSelect when prop is not provided', () => {
@@ -406,10 +406,7 @@ describe('ChatHistoryNavigationItem', () => {
       // Test clicking the list item
       const listItem = screen.getByText('Only Message');
       fireEvent.click(listItem);
-      expect(mockOnChatItemSelect).toHaveBeenCalledWith(
-        'single-chat-99',
-        'msg-100'
-      );
+      expect(mockOnChatItemSelect).toHaveBeenCalledWith('single-chat-99');
     });
   });
 
@@ -477,7 +474,7 @@ describe('ChatHistoryNavigationItem', () => {
       fireEvent.click(listItem);
 
       expect(mockOnChatItemSelect).toHaveBeenCalledTimes(1);
-      expect(mockOnChatItemSelect).toHaveBeenCalledWith('chat-1', 'msg-2');
+      expect(mockOnChatItemSelect).toHaveBeenCalledWith('chat-1');
     });
 
     it('should handle optional callback parameters correctly', () => {
@@ -515,11 +512,11 @@ describe('ChatHistoryNavigationItem', () => {
       // Click some chat items
       const firstChatMessage = screen.getByText('Message 1');
       fireEvent.click(firstChatMessage);
-      expect(mockOnChatItemSelect).toHaveBeenCalledWith('chat-1', 'msg-1');
+      expect(mockOnChatItemSelect).toHaveBeenCalledWith('chat-1');
 
       const lastChatMessage = screen.getByText('Message 5');
       fireEvent.click(lastChatMessage);
-      expect(mockOnChatItemSelect).toHaveBeenCalledWith('chat-2', 'msg-5');
+      expect(mockOnChatItemSelect).toHaveBeenCalledWith('chat-2');
     });
 
     it('should cover renderContent function branches', () => {

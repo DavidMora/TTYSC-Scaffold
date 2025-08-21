@@ -13,6 +13,15 @@ jest.mock('next/font/google', () => ({
   })),
 }));
 
+// Mock MSWInitializer to avoid starting MSW in Jest environment
+jest.mock('@/components/MSWInitializer', () => {
+  const MockMSWInitializer = () => null;
+  Object.defineProperty(MockMSWInitializer, 'name', {
+    value: 'MockMSWInitializer',
+  });
+  return MockMSWInitializer;
+});
+
 describe('RootLayout', () => {
   it('renders children correctly', () => {
     render(

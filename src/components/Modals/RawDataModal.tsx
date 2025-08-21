@@ -1,9 +1,10 @@
 import React from 'react';
-import { Button, Dialog, FlexBox } from '@ui5/webcomponents-react';
+import { Button, FlexBox } from '@ui5/webcomponents-react';
 import type { DialogPropTypes, DialogDomRef } from '@ui5/webcomponents-react';
 import BaseDataTable from '@/components/Tables/BaseDataTable';
 import { tableData } from '@/lib/constants/mocks/dataTable';
 import { twMerge } from 'tailwind-merge';
+import { FeatureFlaggedDialog } from '@/components/Modals/FeatureFlaggedDialog';
 
 type RawDataDialogProps = DialogPropTypes & {
   data: {
@@ -20,7 +21,7 @@ export const RawDataModal = (props: RawDataDialogProps) => {
   };
 
   return (
-    <Dialog
+    <FeatureFlaggedDialog
       ref={dialogRef}
       {...props}
       header={
@@ -53,6 +54,6 @@ export const RawDataModal = (props: RawDataDialogProps) => {
           </Button>
         </FlexBox>
       </div>
-    </Dialog>
+    </FeatureFlaggedDialog>
   );
 };

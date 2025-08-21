@@ -26,4 +26,8 @@ export type {
   HttpClientConfig,
   HttpClientResponse,
   HttpClientAdapter,
+  HttpStreamConfig,
+  HttpStreamResponse,
+  HttpSSEEvent,
+  HttpStreamParser,
 } from '@/lib/types/api/http-client';

@@ -12,7 +12,8 @@ const customJestConfig = {
   testPathIgnorePatterns: [
     '<rootDir>/.next/',
     '<rootDir>/node_modules/',
-    '<rootDir>/__tests__/test-utils-internal/',
+    '<rootDir>/src/mocks/',
+    '<rootDir>/public/mockServiceWorker.js',
   ],
   moduleNameMapper: {
     '^@ui5/webcomponents-react$':
@@ -29,6 +30,7 @@ const customJestConfig = {
     '!src/**/*.test.{js,jsx,ts,tsx}',
     '!src/app/api/auth/\\[...nextauth\\]/route.ts',
     '!src/lib/constants/**',
+    '!src/mocks/**',
   ],
   coverageReporters: ['text', 'lcov', 'html', 'json-summary'],
   coverageDirectory: 'coverage',
@@ -40,7 +42,7 @@ const customJestConfig = {
 const jestConfig = async () => {
   const config = await createJestConfig(customJestConfig)();
   config.transformIgnorePatterns = [
-    'node_modules/(?!(@ui5|lit|lit-html|@zxing/library)/)',
+    'node_modules/(?!(@ui5|lit|lit-html|@zxing/library|marked|dompurify|jose|openid-client|@panva/hkdf|preact-render-to-string|preact)/)',
     '^.+\\.module\\.(css|sass|scss)$',
   ];
   return config;

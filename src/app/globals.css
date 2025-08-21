@@ -56,10 +56,61 @@ ui5-dialog.paddingless-content::part(content) {
   position: relative;
 }
 
-ui5-dialog.paddingless-footer::part(footer) {
-  padding: 0.25rem 0rem;
+ui5-card.chat-history-card::part(root) {
+  border-radius: 0.25rem;
+  border: 1px solid var(--sapButton_BorderColor);
+  box-shadow: var(--sapContent_Shadow);
 }
 
-ui5-tabcontainer.paddingless-header::part(content) {
-  padding: 0rem 0rem;
+ui5-card.chat-history-card ui5-panel::part(header) {
+  border-radius: 0rem;
+  border-bottom: 1px solid var(--sapContent_BorderColor);
+}
+
+ui5-card.chat-history-card ui5-panel::part(content) {
+  padding: 0rem;
+}
+
+/* Zoomable cursor helpers */
+.zoomable-cursor-move,
+.zoomable-cursor-move * {
+  cursor: move !important;
+}
+
+/* Markdown table styling (global) */
+.markdown table {
+  border-collapse: collapse !important;
+}
+
+/* Force visible borders regardless of theme variables */
+.markdown table,
+.markdown th,
+.markdown td {
+  background-color: var(--sapList_Background) !important;
+  border: 1px solid var(--sapList_BorderColor) !important;
+  margin: 1rem 0 0.25rem 0rem !important;
+  font-size: var(--sapFontSize) !important;
+  color: var(--sapTextColor) !important;
+  padding: 0.5rem !important;
+}
+
+.markdown thead th {
+  background: var(--sapBackgroundColor) !important;
+}
+
+.markdown p {
+  margin: 0.25rem 0 !important;
+  line-height: 1.2 !important;
+  font-size: var(--sapFontSize) !important;
+  color: var(--sapTextColor) !important;
+}
+.markdown ul,
+.markdown ol {
+  margin: 0.25rem 0 0.25rem 0.25rem !important;
+  font-size: var(--sapFontSize) !important;
+  color: var(--sapTextColor) !important;
+}
+.markdown li {
+  margin: 0.125rem 0 !important;
+  line-height: 1.2 !important;
 }

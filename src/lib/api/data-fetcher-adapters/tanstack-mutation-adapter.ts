@@ -17,11 +17,11 @@ export class TanStackMutationAdapter implements MutationAdapter {
   private readonly useQueryClient: UseQueryClientHook;
 
   constructor(
-    useMutationHook?: UseMutationHook,
-    useQueryClientHook?: UseQueryClientHook
+    useMutationHook = useTanStackMutation,
+    useQueryClientHook = useQueryClient
   ) {
-    this.useMutation = useMutationHook || useTanStackMutation;
-    this.useQueryClient = useQueryClientHook || useQueryClient;
+    this.useMutation = useMutationHook;
+    this.useQueryClient = useQueryClientHook;
   }
 
   mutateData<TData = unknown, TVariables = unknown>(
@@ -51,29 +51,19 @@ export class TanStackMutationAdapter implements MutationAdapter {
       mutationKey,
       mutationFn: tanStackMutationFn,
       onSuccess: (result, variables) => {
-        if (options.onSuccess) {
-          options.onSuccess(result, variables);
-        }
+        options.onSuccess?.(result, variables);
 
         // Invalidate queries if specified
-        if (options.invalidateQueries) {
-          options.invalidateQueries.forEach((queryKey) => {
-            const normalizedKey = Array.isArray(queryKey)
-              ? queryKey
-              : [queryKey];
-            queryClient.invalidateQueries({ queryKey: normalizedKey });
-          });
-        }
+        options.invalidateQueries?.forEach((queryKey) => {
+          const normalizedKey = Array.isArray(queryKey) ? queryKey : [queryKey];
+          queryClient.invalidateQueries({ queryKey: normalizedKey });
+        });
       },
       onError: (error, variables) => {
-        if (options.onError) {
-          options.onError(error, variables);
-        }
+        options.onError?.(error, variables);
       },
       onSettled: (data, error, variables) => {
-        if (options.onSettled) {
-          options.onSettled(data, error, variables);
-        }
+        options.onSettled?.(data, error, variables);
       },
     });
 

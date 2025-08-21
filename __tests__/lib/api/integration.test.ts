@@ -242,7 +242,7 @@ describe('API Module Integration Tests', () => {
       };
 
       const requestConfig = {
-        headers: { 'X-Request-ID': 'request-123' },
+        headers: { 'X-Request-Id': 'request-123' },
       };
 
       const customAdapter = new FetchAdapter(adapterConfig);
@@ -278,7 +278,7 @@ describe('API Module Integration Tests', () => {
         expect.objectContaining({
           'Content-Type': 'application/json', // From default config
           'X-API-Key': 'adapter-key', // From adapter config
-          'X-Request-ID': 'request-123', // From request config
+          'X-Request-Id': 'request-123', // From request config
         })
       );
     });

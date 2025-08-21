@@ -1,9 +1,14 @@
+'use client';
+
 import React, { useMemo } from 'react';
-import { Text } from '@ui5/webcomponents-react';
 import { CodeBlock } from '@/components/CodeBlock/CodeBlock';
 import BaseDataTable from '@/components/Tables/BaseDataTable';
 import { tableData } from '@/lib/constants/mocks/dataTable';
 import { parseContent } from '@/lib/utils/aiContentParser';
+import { AIChartContainer } from '@/components/AICharts/AIChartContainer';
+import { ParsedContentItemType } from '@/lib/types/chatContent';
+import DOMPurify from 'dompurify';
+import { marked } from 'marked';
 
 interface AIResponseRendererProps {
   content: string;
@@ -24,13 +29,26 @@ export function AIResponseRenderer({
     const matches = parseContent(content);
 
     if (matches.length === 0) {
-      return <Text style={textStyle}>{content}</Text>;
+      const html = marked.parse(content) as string;
+      const safe = DOMPurify.sanitize(html);
+      return (
+        <div
+          className="markdown"
+          style={{
+            ...textStyle,
+            whiteSpace: 'normal',
+            overflowWrap: 'anywhere',
+          }}
+          dangerouslySetInnerHTML={{ __html: safe }}
+        />
+      );
     }
 
     const parts: Array<{
-      type: 'text' | 'code' | 'table';
+      type: ParsedContentItemType;
       content?: string;
       language?: string;
+      chartId?: string;
     }> = [];
 
     let lastIndex = 0;
@@ -53,6 +71,8 @@ export function AIResponseRenderer({
         });
       } else if (match.type === 'table') {
         parts.push({ type: 'table' });
+      } else if (match.type === 'chart') {
+        parts.push({ type: 'chart', chartId: match.chartId });
       }
 
       lastIndex = match.index + (match.matchLength || 0);
@@ -89,10 +109,26 @@ export function AIResponseRenderer({
           </div>
         );
       }
+      if (part.type === 'chart') {
+        return (
+          <div key={key} style={{ marginTop: '1rem', width: '100%' }}>
+            <AIChartContainer chartId={part.chartId ?? ''} />
+          </div>
+        );
+      }
+      const html = marked.parse(part.content || '') as string;
+      const safe = DOMPurify.sanitize(html);
       return (
-        <Text key={key} style={textStyle}>
-          {part.content}
-        </Text>
+        <div
+          key={key}
+          className="markdown"
+          style={{
+            ...textStyle,
+            whiteSpace: 'normal',
+            overflowWrap: 'anywhere',
+          }}
+          dangerouslySetInnerHTML={{ __html: safe }}
+        />
       );
     });
   }, [content]);

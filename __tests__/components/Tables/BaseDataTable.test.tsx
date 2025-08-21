@@ -84,7 +84,7 @@ describe('BaseDataTable', () => {
       expect(screen.getByTestId('table-toolbar')).toBeInTheDocument();
     });
 
-    it('should render the table with correct features', () => {
+    it('should render the table with correct features (no growing when <= 30 rows)', () => {
       render(<BaseDataTable {...mockTableData} />);
 
       expect(screen.getByTestId('ui5-table')).toBeInTheDocument();
@@ -95,7 +95,7 @@ describe('BaseDataTable', () => {
       expect(
         screen.getByTestId('ui5-table-selection-multi')
       ).toBeInTheDocument();
-      expect(screen.getByTestId('ui5-table-growing')).toBeInTheDocument();
+      expect(screen.queryByTestId('ui5-table-growing')).not.toBeInTheDocument();
     });
 
     it('should render table headers correctly', () => {
@@ -317,8 +317,23 @@ describe('BaseDataTable', () => {
       expect(selectionFeature).toHaveAttribute('data-behavior', 'RowSelector');
     });
 
-    it('should render table growing feature with correct mode', () => {
-      render(<BaseDataTable {...mockTableData} />);
+    it('should render table growing feature with correct mode when > 30 rows', () => {
+      const bigData: TableDataProps = {
+        data: {
+          headers: [
+            { text: 'Name', accessorKey: 'name' },
+            { text: 'Age', accessorKey: 'age' },
+          ],
+          rows: Array.from({ length: 31 }, (_, i) => ({
+            id: `${i + 1}`,
+            name: `User ${i + 1}`,
+            age: 20 + (i % 10),
+          })),
+          rowIdentifier: 'id',
+        },
+      };
+
+      render(<BaseDataTable {...bigData} />);
 
       const growingFeature = screen.getByTestId('ui5-table-growing');
       expect(growingFeature).toHaveAttribute('data-mode', 'Scroll');
@@ -570,7 +585,7 @@ describe('BaseDataTable', () => {
       expect(mockOnSearch).toHaveBeenCalledWith('test');
     });
 
-    it('should handle empty data gracefully', () => {
+    it('should handle empty data gracefully (no growing when no results)', () => {
       const emptyData = {
         data: {
           headers: [
@@ -588,9 +603,46 @@ describe('BaseDataTable', () => {
       expect(
         screen.queryByTestId('ui5-table-selection-multi')
       ).not.toBeInTheDocument();
+      // Should not have the growing feature when no results
+      expect(screen.queryByTestId('ui5-table-growing')).not.toBeInTheDocument();
+    });
 
-      // Should still have the growing feature
-      expect(screen.getByTestId('ui5-table-growing')).toBeInTheDocument();
+    it('handles rows with null/undefined row identifier values', () => {
+      const dataWithNullIds: TableDataProps = {
+        data: {
+          headers: [{ text: 'Name', accessorKey: 'name' }],
+          rows: [
+            { id: null, name: 'Null ID' },
+            { name: 'Missing ID' }, // undefined case
+          ],
+          rowIdentifier: 'id',
+        },
+      };
+
+      render(<BaseDataTable {...dataWithNullIds} />);
+
+      // Component should still render despite null/undefined IDs
+      expect(screen.getByText('Null ID')).toBeInTheDocument();
+      expect(screen.getByText('Missing ID')).toBeInTheDocument();
+    });
+
+    it('handles rows with object row identifier values', () => {
+      const dataWithObjectIds: TableDataProps = {
+        data: {
+          headers: [{ text: 'Name', accessorKey: 'name' }],
+          rows: [
+            { id: { nested: 'value' }, name: 'Object ID' },
+            { id: { complex: { data: 'test' } }, name: 'Complex Object ID' },
+          ],
+          rowIdentifier: 'id',
+        },
+      };
+
+      render(<BaseDataTable {...dataWithObjectIds} />);
+
+      // Component should still render with object IDs
+      expect(screen.getByText('Object ID')).toBeInTheDocument();
+      expect(screen.getByText('Complex Object ID')).toBeInTheDocument();
     });
   });
 });

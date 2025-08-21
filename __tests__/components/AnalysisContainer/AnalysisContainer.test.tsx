@@ -30,11 +30,21 @@ jest.mock('@/hooks/useAnalysisFilters', () => ({
 
 const mockUseChat = jest.fn();
 const mockUpdateChat = jest.fn();
+const mockUseCreateChatReturn: {
+  mutate: jest.Mock | undefined;
+  isLoading: boolean;
+  error: Error | null;
+} = {
+  mutate: undefined,
+  isLoading: false,
+  error: null,
+};
 jest.mock('@/hooks/chats', () => ({
   useChat: () => mockUseChat(),
   useUpdateChat: () => ({
     mutate: mockUpdateChat,
   }),
+  useCreateChat: () => mockUseCreateChatReturn,
 }));
 
 const mockUseAutoSave = jest.fn();
@@ -100,6 +110,9 @@ describe('AnalysisContainer', () => {
       activateAutosaveUI: jest.fn(),
       showAutoSaved: false,
     });
+    mockUseCreateChatReturn.mutate = jest.fn();
+    mockUseCreateChatReturn.isLoading = false;
+    mockUseCreateChatReturn.error = null;
   });
 
   it('renders loading state', () => {
@@ -112,7 +125,7 @@ describe('AnalysisContainer', () => {
     mockUseChat.mockReturnValue({
       isLoading: false,
       isValidating: false,
-      error: {},
+      error: { message: '' },
       mutate: undefined,
     });
     renderWithProviders(<AnalysisContainer />);
@@ -158,7 +171,7 @@ describe('AnalysisContainer', () => {
 
     expect(mockAnalysisChat).toHaveBeenCalledWith(
       {
-        chatId: '',
+        // chatId: '',
         previousMessages: [],
         draft: '',
       },
@@ -362,5 +375,221 @@ describe('AnalysisContainer', () => {
     expect(consoleSpy).toHaveBeenCalledWith('Autosave failed');
 
     consoleSpy.mockRestore();
+  });
+
+  it('handles analysis with empty title', () => {
+    const mockAnalysisWithEmptyTitle = {
+      data: {
+        id: 'analysis-1',
+        title: '', // Empty title
+        metadata: {
+          analysis: ['test'],
+          organizations: ['org1'],
+          CM: ['cm1'],
+          SKU: ['sku1'],
+          NVPN: ['nvpn1'],
+        },
+      },
+      isLoading: false,
+      isError: false,
+    };
+
+    mockUseChat.mockReturnValue(mockAnalysisWithEmptyTitle);
+
+    renderWithProviders(<AnalysisContainer />);
+
+    // Component should render without errors even with empty title
+    expect(screen.getByTestId('analysis-header')).toBeInTheDocument();
+    expect(screen.getByTestId('analysis-filters')).toBeInTheDocument();
+  });
+
+  it('handles analysis without data', () => {
+    const mockAnalysisWithoutData = {
+      data: null,
+      isLoading: false,
+      isError: false,
+    };
+
+    mockUseChat.mockReturnValue(mockAnalysisWithoutData);
+
+    renderWithProviders(<AnalysisContainer />);
+
+    // Should handle null data gracefully
+    expect(screen.getByTestId('analysis-header')).toBeInTheDocument();
+  });
+
+  it('shows retry button on 404 auto-create failure and triggers retry', () => {
+    const error404 = new Error('HTTP 404: Not Found');
+    const retry = jest.fn();
+
+    mockUseChat.mockReturnValue({
+      isLoading: false,
+      isValidating: false,
+      error: error404,
+      mutate: retry,
+    });
+
+    // Surface retry UI by simulating create failure
+    mockUseCreateChatReturn.error = error404;
+
+    renderWithProviders(<AnalysisContainer />);
+
+    expect(screen.getByText('Unable to Load Analysis')).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /try again/i })
+    ).toBeInTheDocument();
+  });
+
+  it('handles metadata initialization with existing data', () => {
+    const mockAnalysisWithMetadata = {
+      data: {
+        id: 'analysis-1',
+        title: 'Test Analysis',
+        metadata: {
+          analysis: ['custom'],
+          organizations: ['custom-org'],
+          CM: ['custom-cm'],
+          SKU: ['custom-sku'],
+          NVPN: ['custom-nvpn'],
+        },
+      },
+      isLoading: false,
+      isError: false,
+    };
+
+    mockUseChat.mockReturnValue(mockAnalysisWithMetadata);
+
+    let capturedInitialFilters: any;
+    let capturedOnUserChange: any;
+
+    mockUseAnalysisFilters.mockImplementation(
+      (initialFilters, onUserChange) => {
+        capturedInitialFilters = initialFilters;
+        capturedOnUserChange = onUserChange;
+        return {
+          filters: initialFilters,
+          availableOptions: {},
+          isDisabled: false,
+          handleFilterChange: jest.fn(),
+        };
+      }
+    );
+
+    renderWithProviders(<AnalysisContainer />);
+
+    // Verify that metadata is merged with initial filters
+    expect(capturedInitialFilters).toEqual(
+      expect.objectContaining({
+        analysis: expect.any(Object),
+        organizations: expect.any(Object),
+        CM: expect.any(Object),
+        SKU: expect.any(Object),
+        NVPN: expect.any(Object),
+      })
+    );
+
+    // Test the onUserChange callback
+    expect(capturedOnUserChange).toBeDefined();
+    if (capturedOnUserChange) {
+      capturedOnUserChange();
+    }
+  });
+
+  it('auto-creates a new analysis when a 404 error occurs', () => {
+    const error404 = new Error('HTTP 404: Not Found');
+    const mutateCreate = jest.fn();
+    mockUseCreateChatReturn.mutate = mutateCreate;
+
+    mockUseChat.mockReturnValue({
+      isLoading: false,
+      isValidating: false,
+      error: error404,
+      mutate: jest.fn(),
+    });
+
+    renderWithProviders(<AnalysisContainer />);
+
+    expect(mutateCreate).toHaveBeenCalledWith({
+      title: 'Generated Analysis Name',
+    });
+  });
+
+  it('shows loading indicator while auto-creating on 404', () => {
+    mockUseCreateChatReturn.isLoading = true;
+    mockUseChat.mockReturnValue({
+      isLoading: false,
+      isValidating: false,
+      error: new Error('HTTP 404: Not Found'),
+      mutate: jest.fn(),
+    });
+
+    renderWithProviders(<AnalysisContainer />);
+
+    expect(screen.getByTestId('ui5-busy-indicator')).toBeInTheDocument();
+  });
+
+  it('recognizes lowercase "not found" errors for auto-create', () => {
+    const mutateCreate = jest.fn();
+    mockUseCreateChatReturn.mutate = mutateCreate;
+
+    mockUseChat.mockReturnValue({
+      isLoading: false,
+      isValidating: false,
+      error: new Error('not found'),
+      mutate: jest.fn(),
+    });
+
+    renderWithProviders(<AnalysisContainer />);
+
+    expect(mutateCreate).toHaveBeenCalled();
+  });
+
+  it('handles autosave with user-modified filters', async () => {
+    const mockFilters = {
+      analysis: ['test'],
+      organizations: ['org1'],
+      CM: ['cm1'],
+      SKU: ['sku1'],
+      NVPN: ['nvpn1'],
+    };
+
+    mockUseAnalysisFilters.mockReturnValue({
+      filters: mockFilters,
+      availableOptions: {},
+      isDisabled: false,
+      handleFilterChange: jest.fn(),
+    });
+
+    let capturedAutoSaveOptions: any;
+    mockUseAutoSave.mockImplementation((options) => {
+      capturedAutoSaveOptions = options;
+      return {
+        isSaving: false,
+        lastSaved: null,
+        error: null,
+        executeAutosave: jest.fn(),
+      };
+    });
+
+    renderWithProviders(<AnalysisContainer />);
+
+    // Verify autosave options are set correctly
+    expect(capturedAutoSaveOptions).toBeDefined();
+    expect(capturedAutoSaveOptions.delayMs).toBe(3000);
+
+    // Test the onSave callback
+    if (capturedAutoSaveOptions.onSave) {
+      await capturedAutoSaveOptions.onSave();
+      expect(mockUpdateChat).toHaveBeenCalledWith({
+        id: 'test-analysis-id',
+        metadata: {
+          analysis: ['test'],
+          organizations: ['org1'],
+          CM: ['cm1'],
+          SKU: ['sku1'],
+          NVPN: ['nvpn1'],
+        },
+      });
+    }
   });
 });

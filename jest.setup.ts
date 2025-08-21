@@ -1,3 +1,8 @@
+import { TextEncoder, TextDecoder } from 'util';
+
+global.TextEncoder = TextEncoder as any;
+global.TextDecoder = TextDecoder as typeof global.TextDecoder;
+
 // Learn more: https://github.com/testing-library/jest-dom
 import '@testing-library/jest-dom';
 
@@ -54,7 +59,7 @@ global.ResizeObserver = jest.fn().mockImplementation(() => ({
 }));
 
 // Mock fetch for Node.js environment
-global.fetch = jest.fn((url) => {
+global.fetch = jest.fn((url, init?: RequestInit) => {
   // Mock auth config API
   if (url.toString().includes('/api/auth/config')) {
     return Promise.resolve({
@@ -68,17 +73,59 @@ global.fetch = jest.fn((url) => {
     });
   }
 
+  // Mock feature flags API with defaults used in tests
+  if (url.toString().includes('/api/feature-flags')) {
+    return Promise.resolve({
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          enableAuthentication: true,
+          FF_Chat_Analysis_Screen: true,
+          FF_Full_Page_Navigation: true,
+          FF_Modals: true,
+        }),
+    });
+  }
+
+  // Mock markdown rendering API to echo back provided markdown as HTML
+  if (url.toString().includes('/api/renderMarkdown')) {
+    let html = '';
+    try {
+      const body = init?.body;
+      if (typeof body === 'string') {
+        const parsed = JSON.parse(body);
+        html = parsed?.markdown ?? '';
+      } else if (body instanceof URLSearchParams || body instanceof FormData) {
+        const entries = Object.fromEntries(body.entries());
+        html = (entries.markdown as string) ?? '';
+      } else if (body && typeof body === 'object') {
+        // e.g., tests passing a plain object
+        // @ts-expect-error body may not be typed as object
+        html = body.markdown ?? '';
+      }
+    } catch {
+      html = '';
+    }
+    return Promise.resolve({
+      ok: true,
+      headers: { 'content-type': 'application/json' } as unknown as Headers,
+      json: () => Promise.resolve({ html }),
+    });
+  }
+
   return Promise.resolve({
     ok: true,
     json: () => Promise.resolve({}),
   });
 }) as jest.Mock;
 
-// Mock adoptedStyleSheets for UI5 WebComponents
-Object.defineProperty(document, 'adoptedStyleSheets', {
-  value: [],
-  writable: true,
-});
+// Mock adoptedStyleSheets for UI5 WebComponents (only in jsdom environment)
+if (typeof document !== 'undefined') {
+  Object.defineProperty(document, 'adoptedStyleSheets', {
+    value: [],
+    writable: true,
+  });
+}
 
 // Mock CSSStyleSheet for UI5 WebComponents
 global.CSSStyleSheet = class {
@@ -108,3 +155,86 @@ global.CSSStyleSheet = class {
   }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 } as any;
+
+// Mock 'marked' ESM module (avoid transforming node_modules ESM in Jest)
+jest.mock('marked', () => ({
+  marked: {
+    parse: (content: string) => {
+      // Simple markdown to HTML conversion for tests
+      if (!content) return content;
+
+      // Convert links [text](url) to <a href="url">text</a>
+      let html = content.replace(
+        /\[([^\]]+)\]\(([^)]+)\)/g,
+        '<a href="$2">$1</a>'
+      );
+
+      // Convert tables
+      const lines = html.split('\n');
+      let inTable = false;
+      let tableHtml = '';
+      const resultLines: string[] = [];
+
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+
+        if (line.includes('|') && !inTable) {
+          // Start of table
+          inTable = true;
+          tableHtml = '<table>\n<thead>\n<tr>\n';
+          const headers = line
+            .split('|')
+            .map((h) => h.trim())
+            .filter((h) => h);
+          headers.forEach((header) => {
+            tableHtml += `<th>${header}</th>\n`;
+          });
+          tableHtml += '</tr>\n</thead>\n<tbody>';
+        } else if (line.includes('|') && inTable && !line.includes('---')) {
+          // Table row
+          const cells = line
+            .split('|')
+            .map((c) => c.trim())
+            .filter((c) => c);
+          tableHtml += '<tr>\n';
+          cells.forEach((cell) => {
+            tableHtml += `<td>${cell}</td>\n`;
+          });
+          tableHtml += '</tr>\n';
+        } else if (line.includes('---') && inTable) {
+          // Table separator, ignore
+          continue;
+        } else if (inTable && !line.includes('|')) {
+          // End of table
+          tableHtml += '</tbody></table>';
+          resultLines.push(tableHtml);
+          inTable = false;
+          tableHtml = '';
+          if (line) resultLines.push(line);
+        } else if (!inTable) {
+          resultLines.push(line);
+        }
+      }
+
+      if (inTable) {
+        tableHtml += '</tbody></table>';
+        resultLines.push(tableHtml);
+      }
+
+      html = resultLines.join('\n');
+
+      // Convert code blocks ```lang to <pre><code class="language-lang">
+      html = html.replace(/```(\w+)?\n([\s\S]*?)```/g, (match, lang, code) => {
+        const className = lang ? ` class="language-${lang}"` : '';
+        return `<pre><code${className}>${code.trim()}</code></pre>`;
+      });
+
+      // Wrap in paragraph if it's simple text and doesn't contain block elements
+      if (!html.includes('<') && html.trim()) {
+        html = `<p>${html}</p>`;
+      }
+
+      return html;
+    },
+  },
+}));

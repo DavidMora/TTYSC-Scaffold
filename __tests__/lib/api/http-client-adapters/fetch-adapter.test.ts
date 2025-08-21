@@ -1,8 +1,5 @@
-import {
-  FetchAdapter,
-  default as FetchAdapterDefault,
-} from '../../../../src/lib/api/http-client-adapters/fetch-adapter';
-import { HttpClientConfig } from '../../../../src/lib/types/api/http-client';
+import { FetchAdapter } from '@/lib/api/http-client-adapters/fetch-adapter';
+import { HttpClientConfig } from '@/lib/types/api/http-client';
 
 // Mock fetch globally
 const mockFetch = jest.fn();
@@ -22,27 +19,7 @@ describe('FetchAdapter', () => {
     jest.useRealTimers();
   });
 
-  describe('constructor', () => {
-    it('should create adapter with default config', () => {
-      const defaultAdapter = new FetchAdapter();
-      expect(defaultAdapter).toBeInstanceOf(FetchAdapter);
-    });
-
-    it('should create adapter with custom config', () => {
-      const config: HttpClientConfig = {
-        baseURL: 'https://api.example.com',
-        timeout: 5000,
-        headers: { Authorization: 'Bearer token' },
-      };
-      const customAdapter = new FetchAdapter(config);
-      expect(customAdapter).toBeInstanceOf(FetchAdapter);
-    });
-
-    it('should create adapter using default export', () => {
-      const defaultAdapter = new FetchAdapterDefault();
-      expect(defaultAdapter).toBeInstanceOf(FetchAdapter);
-    });
-  });
+  // Constructor creation tests removed (redundant for coverage; adapter instantiation exercised by other tests)
 
   describe('GET requests', () => {
     it('should make successful GET request', async () => {
@@ -152,13 +129,7 @@ describe('FetchAdapter', () => {
       await expect(adapter.get('/test')).rejects.toThrow('HTTP 404: Not Found');
     });
 
-    it('should configure timeout correctly', () => {
-      const config: HttpClientConfig = { timeout: 1000 };
-      const customAdapter = new FetchAdapter(config);
-
-      // Just verify the adapter can be created with timeout config
-      expect(customAdapter).toBeInstanceOf(FetchAdapter);
-    });
+    // Removed timeout-only constructor test (no unique coverage)
 
     it('should handle network errors', async () => {
       mockFetch.mockRejectedValue(new Error('Network error'));
@@ -510,6 +481,115 @@ describe('FetchAdapter', () => {
     });
   });
 
+  describe('basic authentication', () => {
+    it('should add Basic Authorization header when auth config is provided', async () => {
+      const config: HttpClientConfig = {
+        auth: {
+          username: 'testuser',
+          password: 'testpass',
+        },
+      };
+      const authAdapter = new FetchAdapter(config);
+
+      const mockResponse = {
+        ok: true,
+        status: 200,
+        statusText: 'OK',
+        headers: new Headers({ 'content-type': 'application/json' }),
+        json: jest.fn().mockResolvedValue({ data: 'success' }),
+      };
+      mockFetch.mockResolvedValue(mockResponse);
+
+      await authAdapter.get('/test');
+
+      expect(mockFetch).toHaveBeenCalledWith('/test', {
+        method: 'GET',
+        headers: expect.objectContaining({
+          'Content-Type': 'application/json',
+          Authorization: 'Basic dGVzdHVzZXI6dGVzdHBhc3M=', // Base64 of "testuser:testpass"
+          'X-Request-Id': expect.any(String),
+        }),
+        signal: expect.any(AbortSignal),
+      });
+    });
+
+    it('should add Basic Authorization header from request config', async () => {
+      const mockResponse = {
+        ok: true,
+        status: 200,
+        statusText: 'OK',
+        headers: new Headers({ 'content-type': 'application/json' }),
+        json: jest.fn().mockResolvedValue({ data: 'success' }),
+      };
+      mockFetch.mockResolvedValue(mockResponse);
+
+      await adapter.get('/test', {
+        auth: {
+          username: 'requestuser',
+          password: 'requestpass',
+        },
+      });
+
+      expect(mockFetch).toHaveBeenCalledWith('/test', {
+        method: 'GET',
+        headers: expect.objectContaining({
+          'Content-Type': 'application/json',
+          Authorization: 'Basic cmVxdWVzdHVzZXI6cmVxdWVzdHBhc3M=', // Base64 of "requestuser:requestpass"
+          'X-Request-Id': expect.any(String),
+        }),
+        signal: expect.any(AbortSignal),
+      });
+    });
+  });
+
+  describe('request ID', () => {
+    it('should add X-Request-Id header with UUIDv6 to all requests', async () => {
+      const mockResponse = {
+        ok: true,
+        status: 200,
+        statusText: 'OK',
+        headers: new Headers({ 'content-type': 'application/json' }),
+        json: jest.fn().mockResolvedValue({ data: 'success' }),
+      };
+      mockFetch.mockResolvedValue(mockResponse);
+
+      await adapter.get('/test');
+
+      expect(mockFetch).toHaveBeenCalledWith('/test', {
+        method: 'GET',
+        headers: expect.objectContaining({
+          'Content-Type': 'application/json',
+          'X-Request-Id': expect.stringMatching(
+            /^[0-9a-f]{8}-[0-9a-f]{4}-6[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+          ),
+        }),
+        signal: expect.any(AbortSignal),
+      });
+    });
+
+    it('should generate different request IDs for different requests', async () => {
+      const mockResponse = {
+        ok: true,
+        status: 200,
+        statusText: 'OK',
+        headers: new Headers({ 'content-type': 'application/json' }),
+        json: jest.fn().mockResolvedValue({ data: 'success' }),
+      };
+      mockFetch.mockResolvedValue(mockResponse);
+
+      await adapter.get('/test1');
+      await adapter.get('/test2');
+
+      const calls = mockFetch.mock.calls;
+      const requestId1 = calls[0][1].headers['X-Request-Id'];
+      const requestId2 = calls[1][1].headers['X-Request-Id'];
+
+      expect(requestId1).toBeDefined();
+      expect(requestId2).toBeDefined();
+      expect(requestId1).not.toBe(requestId2);
+    });
+  });
+
   describe('header merging', () => {
     it('should merge headers correctly with all levels', async () => {
       const config = {
@@ -539,6 +619,7 @@ describe('FetchAdapter', () => {
             'Content-Type': 'application/json',
             'X-Custom': 'value',
             'X-Override': 'test',
+            'X-Request-Id': expect.any(String),
           }),
         })
       );

@@ -150,4 +150,63 @@ describe('AppLayout', () => {
     expect(screen.getByTestId('sidebar-menu')).toBeInTheDocument();
     expect(screen.getByText('Talk to your supply chain')).toBeInTheDocument();
   });
+
+  it('renders with correct sidebar collapsed state', () => {
+    render(
+      <AppLayout>
+        <div>Test Child</div>
+      </AppLayout>
+    );
+
+    // Check that the sidebar has the correct collapsed state (false by default)
+    const sidebar = screen.getByTestId('sidebar-menu');
+    expect(sidebar).toHaveAttribute('data-collapsed', 'false');
+  });
+
+  it('renders header bar with correct configuration', () => {
+    render(
+      <AppLayout>
+        <div>Test Child</div>
+      </AppLayout>
+    );
+
+    // Verify HeaderBar is rendered with the supply chain configuration
+    expect(screen.getByText('Talk to your supply chain')).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        'Turn data into insights with advanced analytics from LLMs (Check for accuracy)'
+      )
+    ).toBeInTheDocument();
+  });
+
+  it('renders children content properly', () => {
+    const testContent = (
+      <div>
+        <h1>Test Header</h1>
+        <p>Test paragraph</p>
+        <button>Test Button</button>
+      </div>
+    );
+
+    render(<AppLayout>{testContent}</AppLayout>);
+
+    expect(screen.getByText('Test Header')).toBeInTheDocument();
+    expect(screen.getByText('Test paragraph')).toBeInTheDocument();
+    expect(screen.getByText('Test Button')).toBeInTheDocument();
+  });
+
+  it('has proper layout container structure', () => {
+    const { container } = render(
+      <AppLayout>
+        <div data-testid="test-content">Test Child</div>
+      </AppLayout>
+    );
+
+    // Check that the main structure is present
+    const testContent = screen.getByTestId('test-content');
+    expect(testContent).toBeInTheDocument();
+
+    // Verify the structure is rendered
+    expect(container.firstChild).toBeInTheDocument();
+  });
 });

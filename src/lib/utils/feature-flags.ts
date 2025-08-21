@@ -4,6 +4,9 @@ import { FeatureFlags, FeatureFlagKey } from '@/lib/types/feature-flags';
 export const DEFAULT_FLAGS: FeatureFlags = {
   enableAuthentication: true,
   FF_Chat_Analysis_Screen: true,
+  FF_Full_Page_Navigation: true,
+  FF_Side_NavBar: true,
+  FF_Modals: true,
 };
 
 /**
@@ -15,14 +18,42 @@ let cachedFlags: FeatureFlags | null = null;
  * Load feature flags from the generated JSON file
  * This is the primary source of truth when available
  */
-const loadFromGeneratedFile = async (): Promise<FeatureFlags | null> => {
+const loadFromGeneratedFile = async (
+  customPath?: string
+): Promise<FeatureFlags | null> => {
   try {
-    // Use dynamic import to load the JSON file
-    const featureFlags = await import('@/feature-flags.json');
-    return featureFlags.default as FeatureFlags;
+    // Use dynamic import to load the JSON file from the root
+    if (customPath) {
+      // For testing purposes - dynamic path
+      const featureFlags = await import(
+        /* webpackIgnore: true */
+        customPath
+      );
+      return featureFlags.default as FeatureFlags;
+    } else {
+      // Production path - static import for better webpack analysis
+      const featureFlags = await import('../../../feature-flags.json');
+      return featureFlags.default as FeatureFlags;
+    }
   } catch {
     return null;
   }
+};
+
+/**
+ * Parses a string-like boolean to a boolean with sensible defaults.
+ * Accepts: "true/1/yes/y/on" and "false/0/no/n/off" (case-insensitive).
+ */
+const parseBool = (
+  value: string | undefined,
+  defaultValue: boolean
+): boolean => {
+  if (value == null) return defaultValue;
+  const normalized = String(value).trim().toLowerCase();
+  if (['true', '1', 'yes', 'y', 'on'].includes(normalized)) return true;
+  if (['false', '0', 'no', 'n', 'off'].includes(normalized)) return false;
+  // If a value is provided but it's invalid, treat it as false to match previous behavior
+  return false;
 };
 
 /**
@@ -30,23 +61,35 @@ const loadFromGeneratedFile = async (): Promise<FeatureFlags | null> => {
  * Uses FEATURE_FLAG_ENABLE_AUTHENTICATION as the primary variable
  */
 const loadFromEnvironment = (): FeatureFlags => {
-  // Use FEATURE_FLAG_ENABLE_AUTHENTICATION or fall back to default
-  let enableAuth = DEFAULT_FLAGS.enableAuthentication;
-  let FF_Chat_Analysis_Screen = DEFAULT_FLAGS.FF_Chat_Analysis_Screen;
+  // Use environment variables with graceful fallbacks to defaults
+  const enableAuth = parseBool(
+    process.env.FEATURE_FLAG_ENABLE_AUTHENTICATION,
+    DEFAULT_FLAGS.enableAuthentication
+  );
 
-  if (process.env.FEATURE_FLAG_ENABLE_AUTHENTICATION !== undefined) {
-    enableAuth =
-      process.env.FEATURE_FLAG_ENABLE_AUTHENTICATION.toLowerCase() === 'true';
-  }
+  const FF_Chat_Analysis_Screen = parseBool(
+    process.env.FEATURE_FLAG_FF_CHAT_ANALYSIS_SCREEN,
+    DEFAULT_FLAGS.FF_Chat_Analysis_Screen
+  );
 
-  if (process.env.FF_Chat_Analysis_Screen !== undefined) {
-    FF_Chat_Analysis_Screen =
-      process.env.FF_Chat_Analysis_Screen.toLowerCase() === 'true';
-  }
+  const FF_Full_Page_Navigation = parseBool(
+    process.env.FF_FULL_PAGE_NAVIGATION,
+    DEFAULT_FLAGS.FF_Full_Page_Navigation
+  );
+
+  const FF_Side_NavBar = parseBool(
+    process.env.FF_SIDE_NAVBAR,
+    DEFAULT_FLAGS.FF_Side_NavBar
+  );
+
+  const FF_Modals = parseBool(process.env.FF_MODALS, DEFAULT_FLAGS.FF_Modals);
 
   const flags: FeatureFlags = {
     enableAuthentication: enableAuth,
     FF_Chat_Analysis_Screen: FF_Chat_Analysis_Screen,
+    FF_Full_Page_Navigation: FF_Full_Page_Navigation,
+    FF_Side_NavBar: FF_Side_NavBar,
+    FF_Modals: FF_Modals,
   };
 
   return flags;
@@ -56,14 +99,16 @@ const loadFromEnvironment = (): FeatureFlags => {
  * Main function to get feature flags (async version)
  * Priority: 1. Generated File -> 2. Environment Variables -> 3. Defaults
  */
-export const getFeatureFlags = async (): Promise<FeatureFlags> => {
+export const getFeatureFlags = async (
+  customPath?: string
+): Promise<FeatureFlags> => {
   // Return cached flags if available
   if (cachedFlags) {
     return cachedFlags;
   }
 
   // Try to load from generated file first
-  const fileFlags = await loadFromGeneratedFile();
+  const fileFlags = await loadFromGeneratedFile(customPath);
   if (fileFlags) {
     cachedFlags = fileFlags;
     return cachedFlags;

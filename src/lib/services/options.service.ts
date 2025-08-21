@@ -1,9 +1,9 @@
 import { httpClient, HttpClientResponse } from '@/lib/api';
-import { TABLES } from '@/lib/constants/api/routes';
+import { BFF_TABLES } from '@/lib/constants/api/bff-routes';
 import { OptionsTablesResponse } from '@/lib/types/options';
 
 export const getTableOptions = (): Promise<
   HttpClientResponse<OptionsTablesResponse>
 > => {
-  return httpClient.get<OptionsTablesResponse>(TABLES);
+  return httpClient.get<OptionsTablesResponse>(BFF_TABLES);
 };

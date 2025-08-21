@@ -19,6 +19,7 @@ jest.mock('next/server', () => ({
   NextResponse: {
     next: jest.fn(),
     redirect: jest.fn(),
+    json: jest.fn(),
   },
 }));
 
@@ -44,6 +45,7 @@ describe('middleware', () => {
     // Reset mocks
     mockNextResponse.next.mockReturnValue({} as any);
     mockNextResponse.redirect.mockReturnValue({} as any);
+    mockNextResponse.json.mockReturnValue({} as any);
     // Default to authentication enabled
     mockIsFeatureEnabledEdge.mockReturnValue(true);
   });
@@ -58,7 +60,7 @@ describe('middleware', () => {
       expect(mockGetToken).not.toHaveBeenCalled();
     });
 
-    it('skips middleware for API routes', async () => {
+    it('skips middleware for public auth API routes', async () => {
       mockRequest.nextUrl.pathname = '/api/auth/session';
 
       await middleware(mockRequest);
@@ -92,6 +94,47 @@ describe('middleware', () => {
 
       expect(mockNextResponse.next).toHaveBeenCalled();
       expect(mockGetToken).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('protected API routes', () => {
+    it('returns 401 for protected API routes without token', async () => {
+      mockRequest.nextUrl.pathname = '/api/feature-flags';
+      mockGetToken.mockResolvedValue(null);
+
+      await middleware(mockRequest);
+
+      expect(mockGetToken).toHaveBeenCalled();
+      expect(mockNextResponse.json).toHaveBeenCalledWith(
+        { error: 'Authentication required' },
+        { status: 401 }
+      );
+    });
+
+    it('allows access to protected API routes with valid token', async () => {
+      mockRequest.nextUrl.pathname = '/api/feature-flags';
+      mockGetToken.mockResolvedValue({
+        sub: '123',
+        name: 'Test User',
+        email: 'test@example.com',
+      });
+
+      await middleware(mockRequest);
+
+      expect(mockGetToken).toHaveBeenCalled();
+      expect(mockNextResponse.next).toHaveBeenCalled();
+    });
+
+    it('returns 500 for protected API routes when auth fails', async () => {
+      mockRequest.nextUrl.pathname = '/api/feature-flags';
+      mockGetToken.mockRejectedValue(new Error('Auth error'));
+
+      await middleware(mockRequest);
+
+      expect(mockNextResponse.json).toHaveBeenCalledWith(
+        { error: 'Authentication error' },
+        { status: 500 }
+      );
     });
   });
 

@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "predev": "node scripts/generate-feature-flags.js",
     "dev": "next dev --turbopack",
     "dev:no-turbo": "next dev",
     "prebuild": "node scripts/generate-feature-flags.js",
@@ -30,31 +31,48 @@
     "@ui5/webcomponents-icons-tnt": "^2.12.0",
     "@ui5/webcomponents-react": "^2.12.0",
     "@ui5/webcomponents-react-base": "^2.12.0",
+    "@ui5/webcomponents-react-charts": "^2.12.0",
     "axios": "^1.11.0",
+    "dompurify": "^3.2.6",
     "dotenv": "^17.2.1",
     "dotenv-expand": "^12.0.2",
     "jest": "^30.0.5",
     "jest-environment-jsdom": "^30.0.5",
+    "jsdom": "^26.1.0",
+    "marked": "^16.1.2",
     "next": "15.3.5",
     "next-auth": "^4.24.11",
     "prismjs": "^1.30.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "swr": "^2.3.4",
-    "tailwind-merge": "^3.3.1"
+    "tailwind-merge": "^3.3.1",
+    "uuid": "^11.1.0"
   },
   "devDependencies": {
     "@edge-runtime/jest-environment": "^4.0.0",
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
     "@testing-library/dom": "^10.4.0",
+    "@types/dompurify": "^3.0.5",
     "@types/node": "^20",
+    "@types/prismjs": "^1.26.5",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "@types/prismjs": "^1.26.5",
+    "@types/uuid": "^10.0.0",
     "eslint": "^9",
     "eslint-config-next": "15.3.5",
+    "msw": "^2.10.5",
+    "prettier": "^3.6.2",
     "tailwindcss": "^4",
     "typescript": "^5.8.3"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "msw": {
+    "workerDirectory": [
+      "public"
+    ]
   }
 }

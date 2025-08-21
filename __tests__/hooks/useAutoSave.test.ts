@@ -1,4 +1,4 @@
-import { renderHook } from '@testing-library/react';
+import { renderHook, act } from '@testing-library/react';
 import { useAutoSave } from '@/hooks/useAutoSave';
 
 describe('useAutoSave', () => {
@@ -166,8 +166,13 @@ describe('useAutoSave', () => {
 
       rerender({ value: 'changed' });
 
-      // Wait for the short delay
-      await new Promise((resolve) => setTimeout(resolve, 150));
+      // Wait for the delay and the async operation to complete
+      await new Promise((resolve) => setTimeout(resolve, 200));
+
+      // Use act to ensure all state updates are processed
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 50));
+      });
 
       expect(mockOnError).toHaveBeenCalledWith(mockError);
       expect(result.current.error).toBe(mockError);
