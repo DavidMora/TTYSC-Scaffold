@@ -27,7 +27,10 @@ describe('settings.service', () => {
     const mockResponse = { data: { success: true } };
     (httpClient.patch as jest.Mock).mockResolvedValue(mockResponse);
     const result = await updateSettings(settingsPayload);
-    expect(httpClient.patch).toHaveBeenCalledWith(BFF_SETTINGS, settingsPayload);
+    expect(httpClient.patch).toHaveBeenCalledWith(
+      BFF_SETTINGS,
+      settingsPayload
+    );
     expect(result).toBe(mockResponse);
   });
 

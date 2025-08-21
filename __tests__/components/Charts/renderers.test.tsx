@@ -406,7 +406,10 @@ describe('Chart Renderers', () => {
     describe('UnsupportedChartRenderer', () => {
       it('renders error message for unsupported chart type', () => {
         render(
-          <UnsupportedChartRenderer chartTypeName="unsupported" isMulti={false} />
+          <UnsupportedChartRenderer
+            chartTypeName="unsupported"
+            isMulti={false}
+          />
         );
 
         const messageStrip = screen.getByTestId('ui5-messagestrip');
@@ -418,7 +421,10 @@ describe('Chart Renderers', () => {
 
       it('renders error message for unsupported multi-series chart type', () => {
         render(
-          <UnsupportedChartRenderer chartTypeName="unsupported" isMulti={true} />
+          <UnsupportedChartRenderer
+            chartTypeName="unsupported"
+            isMulti={true}
+          />
         );
 
         const messageStrip = screen.getByTestId('ui5-messagestrip');

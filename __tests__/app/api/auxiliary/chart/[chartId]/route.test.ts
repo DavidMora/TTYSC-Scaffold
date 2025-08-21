@@ -34,7 +34,9 @@ describe('/api/auxiliary/chart/[chartId] route', () => {
         ok: true,
       });
 
-      const req = new NextRequest('http://localhost:3000/api/auxiliary/chart/chart123');
+      const req = new NextRequest(
+        'http://localhost:3000/api/auxiliary/chart/chart123'
+      );
       const result = await GET(req, { params: { chartId: 'chart123' } });
 
       expect(mockedBackendRequest).toHaveBeenCalledWith({
@@ -44,7 +46,7 @@ describe('/api/auxiliary/chart/[chartId] route', () => {
 
       expect(result.status).toBe(200);
       expect(result.headers.get('Content-Type')).toBe('application/json');
-      
+
       const responseData = await result.json();
       expect(responseData).toEqual(mockData);
     });
@@ -59,7 +61,9 @@ describe('/api/auxiliary/chart/[chartId] route', () => {
         ok: true,
       });
 
-      const req = new NextRequest('http://localhost:3000/api/auxiliary/chart/chart123?from=2024-01-01&to=2024-01-31&region=US');
+      const req = new NextRequest(
+        'http://localhost:3000/api/auxiliary/chart/chart123?from=2024-01-01&to=2024-01-31&region=US'
+      );
       const result = await GET(req, { params: { chartId: 'chart123' } });
 
       expect(mockedBackendRequest).toHaveBeenCalledWith({
@@ -82,7 +86,9 @@ describe('/api/auxiliary/chart/[chartId] route', () => {
         ok: true,
       });
 
-      const req = new NextRequest('http://localhost:3000/api/auxiliary/chart/chart123?from=2024-01-01&region=US');
+      const req = new NextRequest(
+        'http://localhost:3000/api/auxiliary/chart/chart123?from=2024-01-01&region=US'
+      );
       const result = await GET(req, { params: { chartId: 'chart123' } });
 
       expect(mockedBackendRequest).toHaveBeenCalledWith({
@@ -106,8 +112,12 @@ describe('/api/auxiliary/chart/[chartId] route', () => {
       });
 
       const chartIdWithSpecialChars = 'chart/with@special#chars';
-      const req = new NextRequest('http://localhost:3000/api/auxiliary/chart/chart%2Fwith%40special%23chars');
-      const result = await GET(req, { params: { chartId: chartIdWithSpecialChars } });
+      const req = new NextRequest(
+        'http://localhost:3000/api/auxiliary/chart/chart%2Fwith%40special%23chars'
+      );
+      const result = await GET(req, {
+        params: { chartId: chartIdWithSpecialChars },
+      });
 
       expect(mockedBackendRequest).toHaveBeenCalledWith({
         method: 'GET',
@@ -123,7 +133,9 @@ describe('/api/auxiliary/chart/[chartId] route', () => {
       const mockError = new Error('Backend error');
       mockedBackendRequest.mockRejectedValue(mockError);
 
-      const req = new NextRequest('http://localhost:3000/api/auxiliary/chart/chart123');
+      const req = new NextRequest(
+        'http://localhost:3000/api/auxiliary/chart/chart123'
+      );
       const result = await GET(req, { params: { chartId: 'chart123' } });
 
       expect(result.status).toBe(500);
@@ -134,7 +146,9 @@ describe('/api/auxiliary/chart/[chartId] route', () => {
     it('returns generic error message for non-Error exceptions', async () => {
       mockedBackendRequest.mockRejectedValue({ problem: 'oops' });
 
-      const req = new NextRequest('http://localhost:3000/api/auxiliary/chart/chart123');
+      const req = new NextRequest(
+        'http://localhost:3000/api/auxiliary/chart/chart123'
+      );
       const result = await GET(req, { params: { chartId: 'chart123' } });
 
       expect(result.status).toBe(500);
@@ -152,7 +166,9 @@ describe('/api/auxiliary/chart/[chartId] route', () => {
         ok: false,
       });
 
-      const req = new NextRequest('http://localhost:3000/api/auxiliary/chart/nonexistent');
+      const req = new NextRequest(
+        'http://localhost:3000/api/auxiliary/chart/nonexistent'
+      );
       const result = await GET(req, { params: { chartId: 'nonexistent' } });
 
       expect(result.status).toBe(404);

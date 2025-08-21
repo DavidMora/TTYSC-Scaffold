@@ -48,23 +48,30 @@ describe('/api/export/[tableId] route', () => {
 
       expect(result.status).toBe(200);
       expect(result.headers.get('Content-Type')).toBe('text/csv');
-      expect(result.headers.get('Content-Disposition')).toBe('attachment; filename="table123.csv"');
+      expect(result.headers.get('Content-Disposition')).toBe(
+        'attachment; filename="table123.csv"'
+      );
     });
 
     it('exports table with specified Excel format', async () => {
-      const mockBlob = new Blob(['excel,data'], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const mockBlob = new Blob(['excel,data'], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      });
       mockedBackendRequest.mockResolvedValue({
         data: mockBlob,
         status: 200,
         statusText: 'OK',
         headers: {
-          'content-type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+          'content-type':
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
           'content-disposition': 'attachment; filename="table123.xlsx"',
         },
         ok: true,
       });
 
-      const req = new NextRequest('http://localhost:3000/api/export/table123?format=excel');
+      const req = new NextRequest(
+        'http://localhost:3000/api/export/table123?format=excel'
+      );
       const result = await GET(req, { params: { tableId: 'table123' } });
 
       expect(mockedBackendRequest).toHaveBeenCalledWith({
@@ -74,8 +81,12 @@ describe('/api/export/[tableId] route', () => {
       });
 
       expect(result.status).toBe(200);
-      expect(result.headers.get('Content-Type')).toBe('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-      expect(result.headers.get('Content-Disposition')).toBe('attachment; filename="table123.xlsx"');
+      expect(result.headers.get('Content-Type')).toBe(
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      );
+      expect(result.headers.get('Content-Disposition')).toBe(
+        'attachment; filename="table123.xlsx"'
+      );
     });
 
     it('forwards Accept header from request', async () => {
@@ -117,8 +128,12 @@ describe('/api/export/[tableId] route', () => {
       });
 
       const tableIdWithSpecialChars = 'table/with@special#chars';
-      const req = new NextRequest('http://localhost:3000/api/export/table%2Fwith%40special%23chars?format=csv%2Ftest');
-      const result = await GET(req, { params: { tableId: tableIdWithSpecialChars } });
+      const req = new NextRequest(
+        'http://localhost:3000/api/export/table%2Fwith%40special%23chars?format=csv%2Ftest'
+      );
+      const result = await GET(req, {
+        params: { tableId: tableIdWithSpecialChars },
+      });
 
       expect(mockedBackendRequest).toHaveBeenCalledWith({
         method: 'GET',
@@ -163,7 +178,9 @@ describe('/api/export/[tableId] route', () => {
       const result = await GET(req, { params: { tableId: 'table123' } });
 
       expect(result.status).toBe(200);
-      expect(result.headers.get('Content-Type')).toBe('application/octet-stream');
+      expect(result.headers.get('Content-Type')).toBe(
+        'application/octet-stream'
+      );
     });
 
     it('returns error response when backend request throws', async () => {
@@ -201,7 +218,9 @@ describe('/api/export/[tableId] route', () => {
         ok: false,
       });
 
-      const req = new NextRequest('http://localhost:3000/api/export/nonexistent');
+      const req = new NextRequest(
+        'http://localhost:3000/api/export/nonexistent'
+      );
       const result = await GET(req, { params: { tableId: 'nonexistent' } });
 
       expect(result.status).toBe(404);
