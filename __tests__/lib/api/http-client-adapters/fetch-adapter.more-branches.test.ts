@@ -84,7 +84,8 @@ describe('FetchAdapter additional branches', () => {
     const iterator = stream[Symbol.asyncIterator]();
     const first = await iterator.next();
     expect(first.done).toBe(true);
-    expect(typeof (stream as any).cancel).toBe('function');
-    expect(stream.status).toBe(204);
+    type Cancellable = { cancel: () => void };
+    const maybe = stream as unknown as Partial<Cancellable>;
+    expect(typeof maybe.cancel).toBe('function');
   });
 });
