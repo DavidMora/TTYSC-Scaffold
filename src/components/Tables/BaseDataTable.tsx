@@ -63,6 +63,8 @@ const BaseDataTable: React.FC<Readonly<TableDataProps>> = (props) => {
     filters: props.data?.filters || [],
   });
 
+  const shouldEnableGrowing = filteredRows.length > 30;
+
   return (
     <div
       data-testid="base-data-table"
@@ -85,7 +87,9 @@ const BaseDataTable: React.FC<Readonly<TableDataProps>> = (props) => {
           ...(hasResults
             ? [<TableSelectionMulti behavior="RowSelector" key="selection" />]
             : []),
-          <TableGrowing mode="Scroll" key="growing" />,
+          ...(shouldEnableGrowing
+            ? [<TableGrowing mode="Scroll" key="growing" />]
+            : []),
         ]}
         className={twMerge('h-auto', props.tableClassName)}
         noDataText="No results found"
