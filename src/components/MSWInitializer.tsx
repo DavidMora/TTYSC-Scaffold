@@ -1,5 +1,5 @@
-// src/components/MSWInitializer.tsx
 'use client';
+
 import { useEffect } from 'react';
 
 export default function MSWInitializer() {
@@ -11,8 +11,8 @@ export default function MSWInitializer() {
       .then(({ worker }) => {
         (window as unknown as Record<string, boolean>).__MSW_STARTED__ = true;
         return worker.start({
-          onUnhandledRequest: 'bypass', // no rompas rutas reales
-          serviceWorker: { url: '/mockServiceWorker.js' }, // Vercel/Azure
+          onUnhandledRequest: 'bypass',
+          serviceWorker: { url: '/mockServiceWorker.js' },
         });
       })
       .catch((err) => {
