@@ -138,6 +138,26 @@ describe('metadataToTableData', () => {
     expect(r1.when).toBe(date.toISOString());
     expect(r1.rowKey).toBe('row-1');
   });
+
+  it('falls back to Object.keys when columns array is invalid', () => {
+    const md = makeBaseMetadata({
+      query_results: {
+        success: true,
+        limited_to: -1,
+        truncated: false,
+        // Invalid columns (includes non-string)
+        columns: ["a", 1 as unknown as string],
+        dataframe_records: [
+          { a: 'x', b: 'y' } as unknown as Record<string, unknown>,
+        ],
+      },
+    });
+    const table = metadataToTableData(md)!;
+    // Should derive keys from first row instead of columns array
+    expect(table.headers.map((h) => h.accessorKey).sort()).toEqual(
+      ['a', 'b']
+    );
+  });
 });
 
 

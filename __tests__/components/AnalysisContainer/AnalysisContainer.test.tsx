@@ -410,6 +410,30 @@ describe('AnalysisContainer', () => {
     expect(screen.getByTestId('analysis-header')).toBeInTheDocument();
   });
 
+  it('shows retry button on 404 auto-create failure and triggers retry', () => {
+    const error404 = new Error('HTTP 404: Not Found');
+    const retry = jest.fn();
+
+    mockUseChat.mockReturnValue({
+      isLoading: false,
+      isValidating: false,
+      error: error404,
+      mutate: retry,
+    });
+
+    // Simulate useCreateChat having an error to enable retry UI
+    jest.doMock('@/hooks/chats', () => ({
+      useChat: () => mockUseChat(),
+      useUpdateChat: () => ({ mutate: mockUpdateChat }),
+      useCreateChat: () => ({ mutate: jest.fn(), isLoading: false, error: error404 }),
+    }));
+
+    renderWithProviders(<AnalysisContainer />);
+
+    expect(screen.getByText('Unable to Load Analysis')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /try again/i })).toBeInTheDocument();
+  });
+
   it('handles metadata initialization with existing data', () => {
     const mockAnalysisWithMetadata = {
       data: {

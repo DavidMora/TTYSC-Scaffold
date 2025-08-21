@@ -464,4 +464,105 @@ describe('useChatStream', () => {
       expect(mockedNewChatMessageStream).toHaveBeenCalledTimes(1)
     );
   });
+
+  it('appends when content is included but not a suffix (mergeMessageContent branch)', async () => {
+    const mockChunks: ChatStreamChunk[] = [
+      {
+        id: '1',
+        created: 'ts1',
+        object: 'chat.completion.chunk',
+        model: 'test',
+        choices: [
+          {
+            index: 0,
+            finish_reason: null,
+            message: { role: 'assistant', content: 'Hello world' },
+          },
+        ],
+      },
+      {
+        id: '2',
+        created: 'ts2',
+        object: 'chat.completion.chunk',
+        model: 'test',
+        choices: [
+          {
+            index: 0,
+            finish_reason: null,
+            // this string is contained within previous content but is not a suffix
+            message: { role: 'assistant', content: 'Hello' },
+          },
+        ],
+      },
+    ];
+    mockedNewChatMessageStream.mockResolvedValue(
+      createMockHttpStreamResponse(mockChunks)
+    );
+
+    const { result } = renderHook(() => useChatStream());
+    act(() => {
+      result.current.start(mockPayload);
+    });
+    await waitFor(() => expect(result.current.isStreaming).toBe(false));
+
+    // Expect duplicated append from the specific branch (with normalized whitespace)
+    expect(result.current.aggregatedContent.replace(/\s+/g, ' ').trim()).toContain(
+      'Hello world Hello'
+    );
+  });
+
+  it('continues processing after finish when stopOnFinish is false', async () => {
+    const mockChunks: ChatStreamChunk[] = [
+      {
+        id: '1',
+        created: 'ts1',
+        object: 'chat.completion.chunk',
+        model: 'test',
+        choices: [
+          {
+            index: 0,
+            finish_reason: null,
+            message: { role: 'assistant', content: 'a' },
+          },
+        ],
+      },
+      {
+        id: '2',
+        created: 'ts2',
+        object: 'chat.completion.chunk',
+        model: 'test',
+        choices: [
+          {
+            index: 0,
+            finish_reason: 'stop',
+            message: { role: 'assistant', content: '' },
+          },
+        ],
+      },
+      {
+        id: '3',
+        created: 'ts3',
+        object: 'chat.completion.chunk',
+        model: 'test',
+        choices: [
+          {
+            index: 0,
+            finish_reason: null,
+            message: { role: 'assistant', content: 'b' },
+          },
+        ],
+      },
+    ];
+    mockedNewChatMessageStream.mockResolvedValue(
+      createMockHttpStreamResponse(mockChunks)
+    );
+
+    const { result } = renderHook(() =>
+      useChatStream({ stopOnFinish: false })
+    );
+    act(() => {
+      result.current.start(mockPayload);
+    });
+    await waitFor(() => expect(result.current.chunks.length).toBe(3));
+  });
 });
