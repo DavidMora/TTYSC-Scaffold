@@ -5,5 +5,3 @@ export function errorResponse(e: unknown, status = 500) {
     headers: { 'Content-Type': 'application/json' },
   });
 }
-
-

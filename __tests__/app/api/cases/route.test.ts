@@ -83,5 +83,3 @@ describe('/api/cases', () => {
     expect(responseBody).toEqual({ error: 'Internal error' });
   });
 });
-
-

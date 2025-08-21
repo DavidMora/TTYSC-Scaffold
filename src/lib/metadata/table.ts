@@ -78,7 +78,10 @@ export function metadataToTableData(
     for (const [key, value] of Object.entries(r)) {
       stringifiedRow[key] = stringifyValue(value);
     }
-    stringifiedRow.rowKey = buildRowKey(stringifiedRow as Record<string, string>, idx);
+    stringifiedRow.rowKey = buildRowKey(
+      stringifiedRow as Record<string, string>,
+      idx
+    );
     return stringifiedRow;
   });
 

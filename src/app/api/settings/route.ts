@@ -38,4 +38,3 @@ export async function GET() {
 export async function PATCH(req: NextRequest) {
   return forwardSettings('PATCH', req);
 }
-
