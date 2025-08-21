@@ -435,7 +435,9 @@ describe('AnalysisContainer', () => {
     renderWithProviders(<AnalysisContainer />);
 
     expect(screen.getByText('Unable to Load Analysis')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /try again/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /try again/i })
+    ).toBeInTheDocument();
   });
 
   it('handles metadata initialization with existing data', () => {
@@ -507,7 +509,9 @@ describe('AnalysisContainer', () => {
 
     renderWithProviders(<AnalysisContainer />);
 
-    expect(mutateCreate).toHaveBeenCalledWith({ title: 'Generated Analysis Name' });
+    expect(mutateCreate).toHaveBeenCalledWith({
+      title: 'Generated Analysis Name',
+    });
   });
 
   it('shows loading indicator while auto-creating on 404', () => {

@@ -139,7 +139,7 @@ export class FetchAdapter implements HttpClientAdapter {
 
       clearTimeout(timeoutId);
 
-      // Early throw on HTTP error statuses before touching headers/body
+      // Use default timeout when config.timeout is undefined (avoid aborting immediately)
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }

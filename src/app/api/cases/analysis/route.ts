@@ -19,4 +19,3 @@ export async function GET() {
     return errorResponse(e);
   }
 }
-

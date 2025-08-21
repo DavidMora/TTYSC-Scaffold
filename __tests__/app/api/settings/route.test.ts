@@ -171,5 +171,3 @@ describe('/api/settings', () => {
     });
   });
 });
-
-

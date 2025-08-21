@@ -4,7 +4,9 @@
 import { metadataToTableData } from '@/lib/metadata/table';
 import type { ExecutionMetadata } from '@/lib/types/chats';
 
-function makeBaseMetadata(partial?: Partial<ExecutionMetadata>): ExecutionMetadata {
+function makeBaseMetadata(
+  partial?: Partial<ExecutionMetadata>
+): ExecutionMetadata {
   return {
     original_query: 'q',
     final_query: 'q-final',
@@ -58,7 +60,15 @@ describe('metadataToTableData', () => {
         success: true,
         limited_to: -1,
         truncated: false,
-        columns: ['nvpn', 'cm_site_name', 'qt_mp', 'component_lt', 'lead_time_days', 'date', 'unknown_key'],
+        columns: [
+          'nvpn',
+          'cm_site_name',
+          'qt_mp',
+          'component_lt',
+          'lead_time_days',
+          'date',
+          'unknown_key',
+        ],
         dataframe_records: [
           {
             nvpn: 'N1',
@@ -101,7 +111,16 @@ describe('metadataToTableData', () => {
         success: true,
         limited_to: -1,
         truncated: false,
-        columns: ['nvpn', 'cm_site_name', 'qt_mp', 'date', 'component_lt', 'num', 'flag', 'obj'],
+        columns: [
+          'nvpn',
+          'cm_site_name',
+          'qt_mp',
+          'date',
+          'component_lt',
+          'num',
+          'flag',
+          'obj',
+        ],
         dataframe_records: [
           {
             nvpn: '123',
@@ -146,7 +165,7 @@ describe('metadataToTableData', () => {
         limited_to: -1,
         truncated: false,
         // Invalid columns (includes non-string)
-        columns: ["a", 1 as unknown as string],
+        columns: ['a', 1 as unknown as string],
         dataframe_records: [
           { a: 'x', b: 'y' } as unknown as Record<string, unknown>,
         ],
@@ -154,9 +173,7 @@ describe('metadataToTableData', () => {
     });
     const table = metadataToTableData(md)!;
     // Should derive keys from first row instead of columns array
-    expect(table.headers.map((h) => h.accessorKey).sort()).toEqual(
-      ['a', 'b']
-    );
+    expect(table.headers.map((h) => h.accessorKey).sort()).toEqual(['a', 'b']);
   });
 
   it('stringifyValue covers edge cases (nullish, bigint, symbol, function, circular)', () => {
@@ -194,5 +211,3 @@ describe('metadataToTableData', () => {
     expect(row.f).toBe('[object]');
   });
 });
-
-
