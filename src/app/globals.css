@@ -56,6 +56,14 @@ ui5-dialog.paddingless-content::part(content) {
   position: relative;
 }
 
+ui5-dialog.paddingless-footer::part(footer) {
+  padding: 0.25rem 0rem;
+}
+
+ui5-tabcontainer.paddingless-header::part(content) {
+  padding: 0rem 0rem;
+}
+
 ui5-card.chat-history-card::part(root) {
   border-radius: 0.25rem;
   border: 1px solid var(--sapButton_BorderColor);
