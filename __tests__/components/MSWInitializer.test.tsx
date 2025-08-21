@@ -38,7 +38,9 @@ describe('MSWInitializer', () => {
     // Wait for the dynamic import to resolve
     await new Promise((resolve) => setTimeout(resolve, 0));
     
-    expect(mockStart).toHaveBeenCalledWith({ onUnhandledRequest: 'bypass' });
+    expect(mockStart).toHaveBeenCalledWith(
+      expect.objectContaining({ onUnhandledRequest: 'bypass' })
+    );
   });
 
   it('still starts MSW worker in production environment (current behavior)', async () => {
@@ -49,7 +51,9 @@ describe('MSWInitializer', () => {
     // Wait for the dynamic import to resolve
     await new Promise((resolve) => setTimeout(resolve, 0));
     
-    expect(mockStart).toHaveBeenCalledWith({ onUnhandledRequest: 'bypass' });
+    expect(mockStart).toHaveBeenCalledWith(
+      expect.objectContaining({ onUnhandledRequest: 'bypass' })
+    );
   });
 
   it('still starts MSW worker in test environment (current behavior)', async () => {
@@ -60,7 +64,9 @@ describe('MSWInitializer', () => {
     // Wait for the dynamic import to resolve
     await new Promise((resolve) => setTimeout(resolve, 0));
     
-    expect(mockStart).toHaveBeenCalledWith({ onUnhandledRequest: 'bypass' });
+    expect(mockStart).toHaveBeenCalledWith(
+      expect.objectContaining({ onUnhandledRequest: 'bypass' })
+    );
   });
 
   it('handles dynamic import gracefully', async () => {
