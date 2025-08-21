@@ -18,7 +18,6 @@ import {
   ChartRendererProps,
   ChartMeasure,
   ChartSeries,
-  ChartType,
 } from '@/lib/types/charts';
 import {
   getBulletMeasures,
@@ -136,27 +135,27 @@ export const ComposedChartRenderer: React.FC<ChartRendererProps> = ({
 };
 
 export const UnsupportedChartRenderer: React.FC<{
-  chartType: ChartType;
+  chartTypeName: string;
   isMulti: boolean;
-}> = ({ chartType, isMulti }) => (
+}> = ({ chartTypeName, isMulti }) => (
   <MessageStrip
     design="Critical"
     hideCloseButton
     style={{ marginBlock: '16px' }}
   >
     Chart type not supported{isMulti ? ' for multiple series' : ''}:{' '}
-    <strong>{chartType}</strong>
+    <strong>{chartTypeName}</strong>
   </MessageStrip>
 );
 
 export const MultiSeriesRequiredRenderer: React.FC<{
-  chartType: ChartType;
-}> = ({ chartType }) => (
+  chartTypeName: string;
+}> = ({ chartTypeName }) => (
   <MessageStrip
     design="Information"
     hideCloseButton
     style={{ marginBlock: '16px' }}
   >
-    <strong>{chartType}</strong> requires multiple data series
+    <strong>{chartTypeName}</strong> requires multiple data series
   </MessageStrip>
 );

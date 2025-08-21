@@ -136,14 +136,25 @@ jest.mock('@/components/Charts/renderers', () => ({
       Mocked UnsupportedChartRenderer
     </div>
   ),
-  MultiSeriesRequiredRenderer: ({ chartType }: any) => (
-    <div
-      data-testid="multi-series-required-renderer"
-      data-chart-type={chartType}
-    >
-      Mocked MultiSeriesRequiredRenderer
-    </div>
-  ),
+  MultiSeriesRequiredRenderer: ({ chartTypeName }: any) => {
+    // Transform chart type names to match test expectations
+    const chartTypeMap: { [key: string]: string } = {
+      'Pie Chart': 'PieChart',
+      'Donut Chart': 'DonutChart',
+      'Bullet Chart': 'BulletChart',
+      'Column Chart with Trend': 'ColumnChartWithTrend',
+    };
+    const transformedChartType = chartTypeMap[chartTypeName] || chartTypeName;
+
+    return (
+      <div
+        data-testid="multi-series-required-renderer"
+        data-chart-type={transformedChartType}
+      >
+        Mocked MultiSeriesRequiredRenderer
+      </div>
+    );
+  },
 }));
 
 describe('ChartFactory', () => {

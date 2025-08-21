@@ -162,7 +162,7 @@ export const ChartFactory: React.FC<ChartFactoryProps> = ({
           />
         );
       }
-      return <MultiSeriesRequiredRenderer chartType="PieChart" />;
+      return <MultiSeriesRequiredRenderer chartTypeName="Pie Chart" />;
 
     case CHART_TYPE.doughnut:
       if (!isMulti) {
@@ -174,7 +174,7 @@ export const ChartFactory: React.FC<ChartFactoryProps> = ({
           />
         );
       }
-      return <MultiSeriesRequiredRenderer chartType="DonutChart" />;
+      return <MultiSeriesRequiredRenderer chartTypeName="Donut Chart" />;
 
     case CHART_TYPE.bullet:
       if (isMulti && seriesData) {
@@ -186,7 +186,7 @@ export const ChartFactory: React.FC<ChartFactoryProps> = ({
           />
         ));
       }
-      return <MultiSeriesRequiredRenderer chartType="BulletChart" />;
+      return <MultiSeriesRequiredRenderer chartTypeName="Bullet Chart" />;
 
     case CHART_TYPE.columnWithTrend:
       if (isMulti && seriesData) {
@@ -198,7 +198,9 @@ export const ChartFactory: React.FC<ChartFactoryProps> = ({
           />
         ));
       }
-      return <MultiSeriesRequiredRenderer chartType="ColumnChartWithTrend" />;
+      return (
+        <MultiSeriesRequiredRenderer chartTypeName="Column Chart with Trend" />
+      );
 
     case CHART_TYPE.composed:
       return wrapDataX(dataset, (sliced) => (
@@ -220,7 +222,7 @@ export const ChartFactory: React.FC<ChartFactoryProps> = ({
 
     default:
       return (
-        <UnsupportedChartRenderer chartType={chartType} isMulti={isMulti} />
+        <UnsupportedChartRenderer chartTypeName={chartType} isMulti={isMulti} />
       );
   }
 };

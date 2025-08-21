@@ -406,7 +406,7 @@ describe('Chart Renderers', () => {
     describe('UnsupportedChartRenderer', () => {
       it('renders error message for unsupported chart type', () => {
         render(
-          <UnsupportedChartRenderer chartType="unsupported" isMulti={false} />
+          <UnsupportedChartRenderer chartTypeName="unsupported" isMulti={false} />
         );
 
         const messageStrip = screen.getByTestId('ui5-messagestrip');
@@ -418,7 +418,7 @@ describe('Chart Renderers', () => {
 
       it('renders error message for unsupported multi-series chart type', () => {
         render(
-          <UnsupportedChartRenderer chartType="unsupported" isMulti={true} />
+          <UnsupportedChartRenderer chartTypeName="unsupported" isMulti={true} />
         );
 
         const messageStrip = screen.getByTestId('ui5-messagestrip');
@@ -431,7 +431,7 @@ describe('Chart Renderers', () => {
 
     describe('MultiSeriesRequiredRenderer', () => {
       it('renders error message for chart requiring multiple series', () => {
-        render(<MultiSeriesRequiredRenderer chartType="bullet" />);
+        render(<MultiSeriesRequiredRenderer chartTypeName="bullet" />);
 
         const messageStrip = screen.getByTestId('ui5-messagestrip');
         expect(messageStrip).toBeInTheDocument();
