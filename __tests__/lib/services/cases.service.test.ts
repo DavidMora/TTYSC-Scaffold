@@ -1,5 +1,8 @@
-import { apiClient } from '@/lib/api';
-import { CASE_ANALYSIS, CASES_BY_ANALYSIS } from '@/lib/constants/api/routes';
+import { httpClient } from '@/lib/api';
+import {
+  BFF_CASE_ANALYSIS,
+  BFF_CASES_BY_ANALYSIS,
+} from '@/lib/constants/api/bff-routes';
 import {
   getCasesAnalysis,
   getCasesByAnalysis,
@@ -10,10 +13,10 @@ import {
 } from '@/lib/types/analysisFilters';
 
 jest.mock('@/lib/api', () => ({
-  apiClient: { get: jest.fn() },
+  httpClient: { get: jest.fn() },
 }));
 
-const mockHttpClient = apiClient as jest.Mocked<typeof apiClient>;
+const mockHttpClient = httpClient as jest.Mocked<typeof httpClient>;
 const mockResponse = (data: unknown, status = 200) => ({
   data,
   status,
@@ -57,7 +60,7 @@ describe('casesService', () => {
 
       const result = await getCasesAnalysis();
 
-      expect(mockHttpClient.get).toHaveBeenCalledWith(CASE_ANALYSIS);
+      expect(mockHttpClient.get).toHaveBeenCalledWith(BFF_CASE_ANALYSIS);
       expect(mockHttpClient.get).toHaveBeenCalledTimes(1);
       expect(result).toEqual(response);
     });
@@ -71,7 +74,7 @@ describe('casesService', () => {
       const result = await getCasesByAnalysis('test-analysis');
 
       expect(mockHttpClient.get).toHaveBeenCalledWith(
-        CASES_BY_ANALYSIS('test-analysis')
+        BFF_CASES_BY_ANALYSIS('test-analysis')
       );
       expect(mockHttpClient.get).toHaveBeenCalledTimes(1);
       expect(result).toEqual(response);

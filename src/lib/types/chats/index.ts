@@ -1,5 +1,6 @@
 import type { BaseResponse } from '@/lib/types/http/responses';
 import { FilterState } from '../analysisFilters';
+import type { TableData } from '@/lib/types/datatable';
 
 export type VoteType = 'up' | 'down' | null;
 
@@ -10,6 +11,7 @@ export interface ChatMessage {
   content: string;
   created: string;
   feedbackVote?: VoteType;
+  table?: TableData;
 }
 
 export interface Chat {
@@ -127,6 +129,7 @@ export interface ExecutionMetadata {
   generated_sql: string;
   query_results: Omit<StreamDataQueryExecution, 'dataframe_records'> & {
     dataframe_records: Array<Record<string, unknown>>;
+    columns: string[];
   };
   completed_steps: string[];
   error: string | null;

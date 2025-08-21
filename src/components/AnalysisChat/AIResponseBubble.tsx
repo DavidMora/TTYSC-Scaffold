@@ -5,6 +5,7 @@ import { parseDate } from '@/lib/utils/dateUtils';
 import { FeedbackVote } from '@/components/FeedbackVote/FeedbackVote';
 import { AIResponseRenderer } from '@/components/AnalysisChat/AIResponseRenderer';
 import type { ChatStreamStepInfo } from '@/hooks/chats/stream';
+import BaseDataTable from '@/components/Tables/BaseDataTable';
 
 interface AIResponseBubbleProps {
   message: ChatMessage;
@@ -89,6 +90,12 @@ export function AIResponseBubble({
       {/* Keep the UI minimal during streaming: only show the loader with the active step text */}
       {!isStreaming && message.content && (
         <AIResponseRenderer content={message.content} />
+      )}
+      {/* Table inline if it comes from the message */}
+      {!isStreaming && message.table && (
+        <div style={{ width: '100%', marginTop: '1rem' }}>
+          <BaseDataTable data={message.table} tableClassName="h-96" />
+        </div>
       )}
     </div>
   );

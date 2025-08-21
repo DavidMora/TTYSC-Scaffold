@@ -9,7 +9,12 @@ const createJestConfig = nextJest({
 const customJestConfig = {
   setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
   testEnvironment: 'jest-environment-jsdom',
-  testPathIgnorePatterns: ['<rootDir>/.next/', '<rootDir>/node_modules/'],
+  testPathIgnorePatterns: [
+    '<rootDir>/.next/',
+    '<rootDir>/node_modules/',
+    '<rootDir>/src/mocks/',
+    '<rootDir>/public/mockServiceWorker.js',
+  ],
   moduleNameMapper: {
     '^@ui5/webcomponents-react$':
       '<rootDir>/__mocks__/@ui5/webcomponents-react.js',
@@ -25,6 +30,7 @@ const customJestConfig = {
     '!src/**/*.test.{js,jsx,ts,tsx}',
     '!src/app/api/auth/\\[...nextauth\\]/route.ts',
     '!src/lib/constants/**',
+    '!src/mocks/**',
   ],
   coverageReporters: ['text', 'lcov', 'html', 'json-summary'],
   coverageDirectory: 'coverage',
