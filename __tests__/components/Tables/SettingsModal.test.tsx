@@ -369,28 +369,6 @@ describe('SettingsModal', () => {
     expect(screen.getByText('Email')).toBeInTheDocument();
   });
 
-  it('should trigger console logs from table event handlers', () => {
-    const consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
-    setup();
-
-    // Use the hidden test buttons to trigger the actual event handlers
-    const rowActionButton = screen.getByTestId('trigger-row-action');
-    const moveButton = screen.getByTestId('trigger-move');
-    const moveOverButton = screen.getByTestId('trigger-move-over');
-
-    // Click the test buttons to trigger the event handlers
-    fireEvent.click(rowActionButton);
-    fireEvent.click(moveButton);
-    fireEvent.click(moveOverButton);
-
-    // Verify the console.log calls were made by the actual event handlers
-    expect(consoleSpy).toHaveBeenCalledWith('Row action triggered');
-    expect(consoleSpy).toHaveBeenCalledWith('Move action triggered');
-    expect(consoleSpy).toHaveBeenCalledWith('Move over action triggered');
-
-    consoleSpy.mockRestore();
-  });
-
   it('should test handleColumnToggle through TableSelectionMulti onChange', () => {
     setup();
 

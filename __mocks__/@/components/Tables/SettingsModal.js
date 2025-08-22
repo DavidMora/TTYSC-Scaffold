@@ -7,14 +7,19 @@ const SettingsModal = ({
   onSave,
   onReset,
   headers,
-  visibleColumns,
+  visibleColumns = [],
 }) => {
   if (!isOpen) return null;
   return (
     <div data-testid="mock-settings-modal">
       <button
         onClick={() =>
-          onSave && onSave({ columns: [], sortOrder: 'none', searchTerm: '' })
+          onSave &&
+          onSave({
+            columns: visibleColumns,
+            sortOrder: 'none',
+            searchTerm: '',
+          })
         }
       >
         OK

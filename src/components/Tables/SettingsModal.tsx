@@ -207,16 +207,6 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                     />
                   }
                   rowActionCount={4}
-                  onRowActionClick={function _ie(e) {
-                    console.log('Row action triggered');
-                    console.log(e);
-                  }}
-                  onMove={function _ie() {
-                    console.log('Move action triggered');
-                  }}
-                  onMoveOver={function _ie() {
-                    console.log('Move over action triggered');
-                  }}
                 >
                   {filteredColumns.map((column) => (
                     <TableRow

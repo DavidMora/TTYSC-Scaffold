@@ -575,7 +575,7 @@ const TableSelectionMulti = React.forwardRef(
         const mockEvent = {
           target: {
             getSelectedRows: () => [
-              { getAttribute: (attr) => null }, // This will trigger the || '' fallback
+              { getAttribute: () => null }, // This will trigger the || '' fallback
               { getAttribute: (attr) => (attr === 'row-key' ? 'name' : null) },
             ],
           },
