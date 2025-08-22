@@ -17,14 +17,19 @@ import {
   TableCell,
   TableSelectionMulti,
   TableRowAction,
+  Ui5CustomEvent,
+  TableSelectionMultiDomRef,
 } from '@ui5/webcomponents-react';
 import '@ui5/webcomponents-icons/dist/search.js';
+import { TableDataHeader } from '@/lib/types/datatable';
 
 interface SettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (settings: TableSettings) => void;
-  currentSettings?: TableSettings;
+  onReset?: () => void;
+  headers: TableDataHeader[];
+  visibleColumns: Record<string, boolean>;
 }
 
 export interface ColumnSetting {
@@ -40,32 +45,32 @@ export interface TableSettings {
   searchTerm?: string;
 }
 
-const defaultColumns: ColumnSetting[] = [
-  { id: 'product', name: 'Product', visible: true, sortable: true },
-  { id: 'supplier', name: 'Supplier', visible: true, sortable: true },
-  { id: 'weight', name: 'Weight', visible: true, sortable: true },
-  { id: 'price', name: 'Price', visible: true, sortable: true },
-];
-
-export const SettingsModal: React.FC<SettingsModalProps> = ({
+const SettingsModal: React.FC<SettingsModalProps> = ({
   isOpen,
   onClose,
   onSave,
-  currentSettings,
+  onReset,
+  headers,
+  visibleColumns,
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [columns, setColumns] = useState<ColumnSetting[]>(defaultColumns);
+  const [columns, setColumns] = useState<ColumnSetting[]>([]);
   const [sortOrder, setSortOrder] = useState<
     'ascending' | 'descending' | 'none'
   >('none');
 
   useEffect(() => {
-    if (currentSettings) {
-      setColumns(currentSettings.columns || defaultColumns);
-      setSortOrder(currentSettings.sortOrder || 'none');
-      setSearchTerm(currentSettings.searchTerm || '');
+    if (isOpen && headers.length > 0) {
+      const columnSettings = headers.map((header) => ({
+        id: header.accessorKey,
+        name: header.text,
+        visible: visibleColumns[header.accessorKey] !== false,
+        sortable: true,
+      }));
+
+      setColumns(columnSettings);
     }
-  }, [currentSettings, isOpen]);
+  }, [isOpen, headers, visibleColumns]);
 
   const handleSave = () => {
     const settings: TableSettings = {
@@ -74,28 +79,47 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       searchTerm,
     };
     onSave(settings);
-    onClose();
   };
 
   const handleCancel = () => {
-    // Reset to current settings
-    if (currentSettings) {
-      setColumns(currentSettings.columns || defaultColumns);
-      setSortOrder(currentSettings.sortOrder || 'none');
-      setSearchTerm(currentSettings.searchTerm || '');
-    }
     onClose();
   };
 
   const handleReset = () => {
-    setColumns(defaultColumns);
+    const resetColumns = headers.map((header) => ({
+      id: header.accessorKey,
+      name: header.text,
+      visible: true,
+      sortable: true,
+    }));
+    setColumns(resetColumns);
     setSortOrder('none');
     setSearchTerm('');
+
+    // Call external reset function if provided
+    if (onReset) {
+      onReset();
+    }
+  };
+
+  const handleColumnToggle = (selectedColumnIds: string[]) => {
+    setColumns((prevColumns) =>
+      prevColumns.map((col) => ({
+        ...col,
+        visible: selectedColumnIds.includes(col.id),
+      }))
+    );
   };
 
   const filteredColumns = columns.filter((column) =>
     column.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  // Get the currently selected column IDs (visible columns)
+  const selectedColumnIds = columns
+    .filter((column) => column.visible)
+    .map((column) => column.id)
+    .join(' ');
 
   const headerBar = (
     <Bar
@@ -135,16 +159,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       className="paddingless-header paddingless-content paddingless-footer w-[26rem] min-h-[30rem]"
     >
       <FlexBox direction={FlexBoxDirection.Column} className="h-full p-0">
-        {/* Columns Section */}
-
         <TabContainer
           className="paddingless-header"
           contentBackgroundDesign="Transparent"
           headerBackgroundDesign="Solid"
-          onMove={function _ie() {}}
-          onMoveOver={function _ie() {}}
-          onTabSelect={function _ie() {}}
-          tabLayout="Standard"
         >
           <Tab selected text="Columns">
             <FlexBox direction={FlexBoxDirection.Column} className="">
@@ -174,7 +192,20 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       <TableHeaderCell>List Header (1/6)</TableHeaderCell>
                     </TableHeaderRow>
                   }
-                  features={<TableSelectionMulti />}
+                  features={
+                    <TableSelectionMulti
+                      selected={selectedColumnIds}
+                      onChange={(
+                        event: Ui5CustomEvent<TableSelectionMultiDomRef, never>
+                      ) => {
+                        const selectedRows = event.target.getSelectedRows();
+                        const selectedRowsKeys = selectedRows.map(
+                          (row) => row.getAttribute('row-key') || ''
+                        );
+                        handleColumnToggle(selectedRowsKeys);
+                      }}
+                    />
+                  }
                   rowActionCount={4}
                   onRowActionClick={function _ie(e) {
                     console.log('Row action triggered');
@@ -217,22 +248,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     </TableRow>
                   ))}
                 </Table>
-                {/* {filteredColumns.map((column) => (
-                  <FlexBox
-                    key={column.id}
-                    alignItems={FlexBoxAlignItems.Center}
-                    className={`py-0 border-b border-gray-200 ${
-                      column.visible ? "bg-green-50" : "bg-transparent"
-                    }`}
-                  >
-                    <CheckBox
-                      checked={column.visible}
-                      onChange={() => handleColumnToggle(column.id)}
-                      text={column.name}
-                      className="flex-1"
-                    />
-                  </FlexBox>
-                ))} */}
               </FlexBox>
             </FlexBox>
           </Tab>
@@ -241,3 +256,5 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     </Dialog>
   );
 };
+
+export { SettingsModal };
