@@ -1,11 +1,15 @@
-import { ChartData } from '@/lib/types/charts';
+import { ChartData, ChartSeries } from '@/lib/types/charts';
 
 const isNonEmptyArray = (value: unknown): value is unknown[] => {
   return Array.isArray(value) && value.length > 0;
 };
 
 const isNumber = (value: unknown): value is number => {
-  return typeof value === 'number' && !Number.isNaN(value);
+  return typeof value === 'number' && Number.isFinite(value);
+};
+
+const isNonEmptyString = (value: unknown): value is string => {
+  return typeof value === 'string' && value.length > 0;
 };
 
 export const validateChart = (c: ChartData | undefined): string | undefined => {
@@ -35,8 +39,27 @@ export const validateChart = (c: ChartData | undefined): string | undefined => {
       return 'Data must be an array of numbers';
     }
 
-    if (dataArray.length !== (labels as unknown[]).length) {
+    if (dataArray.length !== labels.length) {
       return 'Data length must match labels length';
+    }
+  } else {
+    const looksLikeSeries = (v: unknown): v is ChartSeries =>
+      typeof v === 'object' &&
+      v !== null &&
+      'name' in v &&
+      'data' in v &&
+      isNonEmptyString(v.name) &&
+      Array.isArray(v.data) &&
+      v.data.length > 0 &&
+      v.data.every(isNumber);
+
+    if (!dataArray.every(looksLikeSeries)) {
+      return 'Data must be an array of { name: string; data: number[] }';
+    }
+
+    const invalid = dataArray.find((s) => s.data.length !== labels.length);
+    if (invalid) {
+      return 'Each series data length must match labels length';
     }
   }
 

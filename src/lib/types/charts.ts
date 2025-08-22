@@ -20,7 +20,7 @@ export const CHART_TYPE = {
 export type ChartType = (typeof CHART_TYPE)[keyof typeof CHART_TYPE];
 
 export interface ChartData {
-  type: ChartType;
+  type?: ChartType;
   labels: string[];
   data: number[] | ChartSeries[];
 }
