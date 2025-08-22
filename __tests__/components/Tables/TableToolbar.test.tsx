@@ -411,4 +411,95 @@ describe('TableToolbar', () => {
       expect(buttons).toHaveLength(4);
     });
   });
+
+  describe('Button Actions', () => {
+    it('should handle share button click', () => {
+      const consoleSpy = jest
+        .spyOn(console, 'log')
+        .mockImplementation(() => {});
+      render(<TableToolbar />);
+
+      const shareButton = screen.getAllByTestId('ui5-toolbar-button')[0];
+      fireEvent.click(shareButton);
+
+      expect(consoleSpy).toHaveBeenCalledWith('share');
+      consoleSpy.mockRestore();
+    });
+
+    it('should handle settings button click', () => {
+      const consoleSpy = jest
+        .spyOn(console, 'log')
+        .mockImplementation(() => {});
+      const mockOnSettingsClick = jest.fn();
+      render(<TableToolbar onSettingsClick={mockOnSettingsClick} />);
+
+      const settingsButton = screen.getAllByTestId('ui5-toolbar-button')[1];
+      fireEvent.click(settingsButton);
+
+      expect(consoleSpy).toHaveBeenCalledWith('settings');
+      expect(mockOnSettingsClick).toHaveBeenCalled();
+      consoleSpy.mockRestore();
+    });
+
+    it('should handle settings button click without onSettingsClick prop', () => {
+      const consoleSpy = jest
+        .spyOn(console, 'log')
+        .mockImplementation(() => {});
+      render(<TableToolbar />);
+
+      const settingsButton = screen.getAllByTestId('ui5-toolbar-button')[1];
+      fireEvent.click(settingsButton);
+
+      expect(consoleSpy).toHaveBeenCalledWith('settings');
+      consoleSpy.mockRestore();
+    });
+
+    it('should handle fullscreen button click with tableId', () => {
+      render(<TableToolbar tableId="test-table" />);
+
+      const fullscreenButton = screen.getAllByTestId('ui5-toolbar-button')[3];
+      fireEvent.click(fullscreenButton);
+
+      expect(mockPush).toHaveBeenCalledWith('/full-screen/table/test-table');
+    });
+
+    it('should handle fullscreen button click without tableId', () => {
+      render(<TableToolbar />);
+
+      const fullscreenButton = screen.getAllByTestId('ui5-toolbar-button')[3];
+      fireEvent.click(fullscreenButton);
+
+      // Should not call router.push if no tableId
+      expect(mockPush).not.toHaveBeenCalled();
+    });
+
+    it('should disable fullscreen button when disableFullScreen is true', () => {
+      render(<TableToolbar disableFullScreen={true} />);
+
+      const fullscreenButton = screen.getAllByTestId('ui5-toolbar-button')[3];
+      expect(fullscreenButton).toBeDisabled();
+    });
+  });
+
+  describe('Input Event Handlers', () => {
+    it('should handle all input events on search input', () => {
+      render(<TableToolbar />);
+
+      const searchInput = screen.getByTestId('ui5-input');
+
+      // Test onClose event
+      fireEvent.blur(searchInput);
+
+      // Test onOpen event
+      fireEvent.focus(searchInput);
+
+      // Test onSelect event
+      fireEvent.select(searchInput);
+
+      // Test onSelectionChange event
+      fireEvent.change(searchInput, {
+        target: { value: 'test', selectionStart: 0, selectionEnd: 2 },
+      });
+    });
+  });
 });

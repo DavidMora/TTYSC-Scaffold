@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Table,
   TableCell,
@@ -20,6 +20,9 @@ import TableToolbar from '@/components/Tables/TableToolbar';
 import { useTableData } from '@/hooks/useTableData';
 import { TableDataProps, TableDataRow } from '@/lib/types/datatable';
 import { getFormattedValueByAccessor } from '@/lib/utils/tableHelpers';
+import SettingsModal, {
+  TableSettings,
+} from '@/components/Tables/SettingsModal';
 
 function getIdentifier(
   row: TableDataRow,
@@ -51,9 +54,32 @@ function getRowKey(row: TableDataRow, identifier: string | undefined): string {
 }
 
 const BaseDataTable: React.FC<Readonly<TableDataProps>> = (props) => {
+  // Settings modal state
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handleOpenModal = () => {
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+  };
+
+  const handleSaveSettings = (settings: TableSettings) => {
+    // Apply column visibility settings
+    settings.columns.forEach((column) => {
+      setColumnVisibility(column.id, column.visible);
+    });
+    handleCloseModal();
+  };
+
   const {
     filteredRows,
     processedFilters,
+    visibleHeaders,
+    visibleColumns,
+    setColumnVisibility,
+    resetColumnVisibility,
     handleSearch,
     handleFilterChange,
     hasResults,
@@ -80,6 +106,7 @@ const BaseDataTable: React.FC<Readonly<TableDataProps>> = (props) => {
         className={props.toolbarClassName}
         onFilterChange={handleFilterChange}
         onSearch={handleSearch}
+        onSettingsClick={handleOpenModal}
         disableFullScreen={props.disableFullScreen}
       />
       <Table
@@ -96,7 +123,7 @@ const BaseDataTable: React.FC<Readonly<TableDataProps>> = (props) => {
         overflowMode="Scroll"
         headerRow={
           <TableHeaderRow sticky>
-            {props.data?.headers.map((column) => (
+            {visibleHeaders.map((column) => (
               <TableHeaderCell key={column.accessorKey}>
                 {column.text}
               </TableHeaderCell>
@@ -108,7 +135,7 @@ const BaseDataTable: React.FC<Readonly<TableDataProps>> = (props) => {
           const rowKey = getRowKey(row, props.data?.rowIdentifier);
           return (
             <TableRow key={rowKey} rowKey={rowKey}>
-              {props.data?.headers.map((column) => {
+              {visibleHeaders.map((column) => {
                 const value = getFormattedValueByAccessor(
                   row,
                   column.accessorKey
@@ -123,6 +150,14 @@ const BaseDataTable: React.FC<Readonly<TableDataProps>> = (props) => {
           );
         })}
       </Table>
+      <SettingsModal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        onSave={handleSaveSettings}
+        onReset={resetColumnVisibility}
+        headers={props.data?.headers || []}
+        visibleColumns={visibleColumns}
+      />
     </div>
   );
 };
