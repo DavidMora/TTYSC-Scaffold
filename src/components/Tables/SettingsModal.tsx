@@ -257,4 +257,4 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
   );
 };
 
-export { SettingsModal };
+export default SettingsModal;

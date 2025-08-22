@@ -1,3 +1,21 @@
+// Mock Bar component
+const Bar = ({ children, design, startContent, endContent, ...props }) => (
+  <div data-testid="ui5-bar" data-design={design} {...props}>
+    <div data-testid="ui5-bar-start">{startContent}</div>
+    {children}
+    <div data-testid="ui5-bar-end">{endContent}</div>
+  </div>
+);
+Bar.displayName = 'Bar';
+
+// Mock TableRowAction component
+const TableRowAction = ({ icon, text, children, ...props }) => (
+  <button data-testid="ui5-table-row-action" data-icon={icon} {...props}>
+    <span>{text}</span>
+    {children}
+  </button>
+);
+TableRowAction.displayName = 'TableRowAction';
 import React from 'react';
 import { AnalyticalTable } from './AnalyticalTable';
 
@@ -377,6 +395,10 @@ const Table = ({
   overflowMode,
   headerRow,
   noDataText,
+  rowActionCount,
+  onRowActionClick,
+  onMove,
+  onMoveOver,
 }) => {
   // Check if there are any table rows in children
   const hasTableRows = React.Children.toArray(children).some(
@@ -384,12 +406,33 @@ const Table = ({
       React.isValidElement(child) && child.type?.displayName === 'TableRow'
   );
 
+  // Add test buttons to trigger event handlers for testing
+  const handleTestRowAction = () => {
+    if (onRowActionClick) {
+      const mockEvent = { detail: { row: 'test-row' } };
+      onRowActionClick(mockEvent);
+    }
+  };
+
+  const handleTestMove = () => {
+    if (onMove) {
+      onMove();
+    }
+  };
+
+  const handleTestMoveOver = () => {
+    if (onMoveOver) {
+      onMoveOver();
+    }
+  };
+
   return (
     <div
       className={className}
       role="table"
       data-testid="ui5-table"
       data-overflow-mode={overflowMode}
+      data-row-action-count={rowActionCount}
     >
       {headerRow}
       {features}
@@ -403,6 +446,28 @@ const Table = ({
           </div>
         </div>
       )}
+      {/* Test buttons for triggering event handlers */}
+      <button
+        data-testid="trigger-row-action"
+        onClick={handleTestRowAction}
+        style={{ display: 'none' }}
+      >
+        Trigger Row Action
+      </button>
+      <button
+        data-testid="trigger-move"
+        onClick={handleTestMove}
+        style={{ display: 'none' }}
+      >
+        Trigger Move
+      </button>
+      <button
+        data-testid="trigger-move-over"
+        onClick={handleTestMoveOver}
+        style={{ display: 'none' }}
+      >
+        Trigger Move Over
+      </button>
     </div>
   );
 };
@@ -475,12 +540,75 @@ const TableCell = ({ children, className, ...props }) => (
 );
 TableCell.displayName = 'TableCell';
 
-const TableSelectionMulti = ({ behavior, ...props }) => (
-  <div
-    data-testid="ui5-table-selection-multi"
-    data-behavior={behavior}
-    data-key={props.key}
-  />
+const TableSelectionMulti = React.forwardRef(
+  ({ behavior, selected, onChange, ...props }, ref) => {
+    React.useImperativeHandle(ref, () => ({
+      getSelectedRows: () => {
+        // Mock returning selected rows based on the selected prop
+        if (selected) {
+          return selected.split(' ').map((id) => ({
+            getAttribute: (attr) => (attr === 'row-key' ? id : null),
+          }));
+        }
+        return [];
+      },
+    }));
+
+    // Add a test button to trigger onChange for testing purposes
+    const handleTestChange = () => {
+      if (onChange) {
+        const mockEvent = {
+          target: {
+            getSelectedRows: () => [
+              { getAttribute: (attr) => (attr === 'row-key' ? 'name' : null) },
+              { getAttribute: (attr) => (attr === 'row-key' ? 'email' : null) },
+            ],
+          },
+        };
+        onChange(mockEvent);
+      }
+    };
+
+    // Add another test button to trigger edge case (null row-key)
+    const handleTestChangeWithNull = () => {
+      if (onChange) {
+        const mockEvent = {
+          target: {
+            getSelectedRows: () => [
+              { getAttribute: (attr) => null }, // This will trigger the || '' fallback
+              { getAttribute: (attr) => (attr === 'row-key' ? 'name' : null) },
+            ],
+          },
+        };
+        onChange(mockEvent);
+      }
+    };
+
+    return (
+      <div
+        ref={ref}
+        data-testid="ui5-table-selection-multi"
+        data-behavior={behavior}
+        data-selected={selected}
+        data-key={props.key}
+      >
+        <button
+          data-testid="trigger-selection-change"
+          onClick={handleTestChange}
+          style={{ display: 'none' }}
+        >
+          Trigger Change
+        </button>
+        <button
+          data-testid="trigger-selection-change-null"
+          onClick={handleTestChangeWithNull}
+          style={{ display: 'none' }}
+        >
+          Trigger Change with Null
+        </button>
+      </div>
+    );
+  }
 );
 TableSelectionMulti.displayName = 'TableSelectionMulti';
 
@@ -855,6 +983,8 @@ const TextArea = React.forwardRef(
 TextArea.displayName = 'TextArea';
 
 module.exports = {
+  Bar,
+  TableRowAction,
   AnalyticalTable,
   BusyIndicator: () => <div data-testid="ui5-busy-indicator" />,
   Button,

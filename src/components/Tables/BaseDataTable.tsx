@@ -20,8 +20,7 @@ import TableToolbar from '@/components/Tables/TableToolbar';
 import { useTableData } from '@/hooks/useTableData';
 import { TableDataProps, TableDataRow } from '@/lib/types/datatable';
 import { getFormattedValueByAccessor } from '@/lib/utils/tableHelpers';
-import {
-  SettingsModal,
+import SettingsModal, {
   TableSettings,
 } from '@/components/Tables/SettingsModal';
 
