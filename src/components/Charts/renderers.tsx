@@ -135,7 +135,7 @@ export const ComposedChartRenderer: React.FC<ChartRendererProps> = ({
 };
 
 export const UnsupportedChartRenderer: React.FC<{
-  chartTypeName: string;
+  chartTypeName?: string;
   isMulti: boolean;
 }> = ({ chartTypeName, isMulti }) => (
   <MessageStrip
@@ -149,7 +149,7 @@ export const UnsupportedChartRenderer: React.FC<{
 );
 
 export const MultiSeriesRequiredRenderer: React.FC<{
-  chartTypeName: string;
+  chartTypeName?: string;
 }> = ({ chartTypeName }) => (
   <MessageStrip
     design="Information"

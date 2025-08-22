@@ -24,7 +24,7 @@ import {
 import { ZoomableContainer } from '@/components/Charts/ZoomableContainer';
 
 interface ChartFactoryProps {
-  chartType: ChartType;
+  chartType?: ChartType;
   chartDataInfo: ChartDataInfo;
   title?: string;
   chartIdForFullscreen?: string;
