@@ -103,7 +103,7 @@ export function AIResponseBubble({
       {/* Chart inline if it comes from the message */}
       {!isStreaming && message.chart && (
         <div style={{ width: '100%', marginTop: '1rem' }}>
-          <AIChart data={message.chart} />
+          <AIChart data={message.chart} chartGenError={message.chartGenError} />
         </div>
       )}
     </div>

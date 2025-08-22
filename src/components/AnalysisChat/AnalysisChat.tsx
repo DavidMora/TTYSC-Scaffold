@@ -169,6 +169,7 @@ export default function AnalysisChat({
             content: finalContent,
             chart: inlineChart || undefined,
             table: inlineTable || undefined,
+            chartGenError: metadata?.chartgen_error || undefined,
           },
         ]);
         setAppendedRunId(runId);
