@@ -4,6 +4,7 @@ import { ChatMessage } from '@/lib/types/chats';
 import { parseDate } from '@/lib/utils/dateUtils';
 import { FeedbackVote } from '@/components/FeedbackVote/FeedbackVote';
 import { AIResponseRenderer } from '@/components/AnalysisChat/AIResponseRenderer';
+import { AIChart } from '@/components/AICharts/AIChart';
 import type { ChatStreamStepInfo } from '@/hooks/chats/stream';
 import BaseDataTable from '@/components/Tables/BaseDataTable';
 
@@ -91,10 +92,18 @@ export function AIResponseBubble({
       {!isStreaming && message.content && (
         <AIResponseRenderer content={message.content} />
       )}
+
       {/* Table inline if it comes from the message */}
       {!isStreaming && message.table && (
         <div style={{ width: '100%', marginTop: '1rem' }}>
           <BaseDataTable data={message.table} tableClassName="h-96" />
+        </div>
+      )}
+
+      {/* Chart inline if it comes from the message */}
+      {!isStreaming && message.chart && (
+        <div style={{ width: '100%', marginTop: '1rem' }}>
+          <AIChart data={message.chart} />
         </div>
       )}
     </div>

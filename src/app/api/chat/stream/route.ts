@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
       try {
         upstream.cancel();
       } catch {
-        /* noop */
+        // noop
       }
     },
   });

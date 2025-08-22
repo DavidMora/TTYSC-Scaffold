@@ -7,6 +7,7 @@ import { BusyIndicator } from '@ui5/webcomponents-react';
 import { MessageBubble } from '@/components/AnalysisChat/MessageBubble';
 import { ChatInput } from '@/components/AnalysisChat/ChatInput';
 import { useChatStream } from '@/hooks/chats/stream';
+import { metadataToAIChartData } from '@/lib/metadata/chart';
 import { metadataToTableData } from '@/lib/metadata/table';
 
 interface AnalysisChatProps {
@@ -154,6 +155,7 @@ export default function AnalysisChat({
   useEffect(() => {
     if (!isStreaming) {
       const inlineTable = metadataToTableData(metadata);
+      const inlineChart = metadataToAIChartData(metadata);
       const finalContent = aggregatedContent;
       if (runId && appendedRunId !== runId && (finalContent || inlineTable)) {
         const assistantMessageId = `${Date.now()}-assistant`;
@@ -165,6 +167,7 @@ export default function AnalysisChat({
             created: new Date().toLocaleString(),
             title: 'AI Response',
             content: finalContent,
+            chart: inlineChart || undefined,
             table: inlineTable || undefined,
           },
         ]);

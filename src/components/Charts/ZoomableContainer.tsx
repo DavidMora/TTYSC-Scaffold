@@ -38,6 +38,7 @@ interface ZoomableContainerProps {
   title?: string;
   chartIdForFullscreen?: string;
   dataLength?: number;
+  dataAxis?: 'x' | 'y';
   exportContext?: {
     dataset: SingleDataPoint[] | MultiDataPoint[];
     dimensions: ChartDimension[];
@@ -64,6 +65,7 @@ export const ZoomableContainer: React.FC<Readonly<ZoomableContainerProps>> = ({
   exportContext,
   chartIdForFullscreen,
   dataLength,
+  dataAxis,
   onDateRangeChange,
   onRegionChange,
   dateRange,
@@ -85,7 +87,15 @@ export const ZoomableContainer: React.FC<Readonly<ZoomableContainerProps>> = ({
     onWheel,
     handleZoomIn,
     handleZoomOut,
-  } = useZoomable({ mode, minZoom, maxZoom, step, onWindowChange, dataLength });
+  } = useZoomable({
+    mode,
+    minZoom,
+    maxZoom,
+    step,
+    onWindowChange,
+    dataLength,
+    dataAxis,
+  });
 
   return (
     <div style={{ width: '100%' }}>

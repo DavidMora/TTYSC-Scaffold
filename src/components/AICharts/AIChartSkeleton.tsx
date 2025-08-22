@@ -62,7 +62,7 @@ export const ChartSkeleton: React.FC = () => (
 );
 
 export interface ChartErrorProps {
-  onRetry: () => void;
+  onRetry?: () => void;
   error?: string;
 }
 
@@ -111,8 +111,10 @@ export const ChartError: React.FC<ChartErrorProps> = ({ onRetry, error }) => (
         {error}
       </p>
     )}
-    <Button onClick={onRetry} design="Emphasized" style={{ marginTop: 8 }}>
-      Retry
-    </Button>
+    {onRetry && (
+      <Button onClick={onRetry} design="Emphasized" style={{ marginTop: 8 }}>
+        Retry
+      </Button>
+    )}
   </div>
 );

@@ -10,6 +10,7 @@ import {
   ComposedChart,
   RadarChart,
 } from '@ui5/webcomponents-react-charts';
+import { MessageStrip } from '@ui5/webcomponents-react';
 import {
   ChartDimension,
   SingleDataPoint,
@@ -134,18 +135,27 @@ export const ComposedChartRenderer: React.FC<ChartRendererProps> = ({
 };
 
 export const UnsupportedChartRenderer: React.FC<{
-  chartType: string;
+  chartTypeName?: string;
   isMulti: boolean;
-}> = ({ chartType, isMulti }) => (
-  <div style={{ padding: '20px', textAlign: 'center' }}>
-    Chart type not supported{isMulti ? ' for multiple series' : ''}: {chartType}
-  </div>
+}> = ({ chartTypeName, isMulti }) => (
+  <MessageStrip
+    design="Critical"
+    hideCloseButton
+    style={{ marginBlock: '16px' }}
+  >
+    Chart type not supported{isMulti ? ' for multiple series' : ''}:{' '}
+    <strong>{chartTypeName}</strong>
+  </MessageStrip>
 );
 
 export const MultiSeriesRequiredRenderer: React.FC<{
-  chartType: string;
-}> = ({ chartType }) => (
-  <div style={{ padding: '20px', textAlign: 'center' }}>
-    {chartType} requires multiple data series
-  </div>
+  chartTypeName?: string;
+}> = ({ chartTypeName }) => (
+  <MessageStrip
+    design="Information"
+    hideCloseButton
+    style={{ marginBlock: '16px' }}
+  >
+    <strong>{chartTypeName}</strong> requires multiple data series
+  </MessageStrip>
 );
