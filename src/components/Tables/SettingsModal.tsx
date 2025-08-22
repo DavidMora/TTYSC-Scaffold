@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Dialog,
   Bar,
   Button,
   Title,
@@ -22,6 +21,7 @@ import {
 } from '@ui5/webcomponents-react';
 import '@ui5/webcomponents-icons/dist/search.js';
 import { TableDataHeader } from '@/lib/types/datatable';
+import FeatureFlaggedDialog from '../Modals/FeatureFlaggedDialog';
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -150,7 +150,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
   );
 
   return (
-    <Dialog
+    <FeatureFlaggedDialog
       open={isOpen}
       headerText=""
       header={headerBar}
@@ -243,7 +243,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
           </Tab>
         </TabContainer>
       </FlexBox>
-    </Dialog>
+    </FeatureFlaggedDialog>
   );
 };
 
