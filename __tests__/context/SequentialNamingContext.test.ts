@@ -61,9 +61,13 @@ describe('useSequentialNaming', () => {
       wrapper: createWrapper(),
     });
 
+    // Move past initial mount de-duplication window
+    jest.advanceTimersByTime(800);
+
     for (let i = 1; i <= 20; i++) {
       act(() => {
-        jest.advanceTimersByTime(200);
+        // Ensure we clear the 300ms de-duplication threshold
+        jest.advanceTimersByTime(300);
         result.current.generateAnalysisName();
       });
     }
@@ -71,7 +75,7 @@ describe('useSequentialNaming', () => {
     expect(result.current.currentCounter).toBe(21);
 
     act(() => {
-      jest.advanceTimersByTime(200);
+      jest.advanceTimersByTime(300);
       result.current.generateAnalysisName();
     });
 
@@ -211,5 +215,93 @@ describe('useSequentialNaming', () => {
     await waitFor(() => {
       expect(result.current.currentCounter).toBe(9);
     });
+  });
+ 
+  it('falls back to 1 when storage access throws', async () => {
+    localStorageMock.getItem.mockImplementationOnce(() => {
+      throw new Error('boom');
+    });
+
+    const { result } = renderHook(() => useSequentialNaming(), {
+      wrapper: createWrapper(),
+    });
+
+    await waitFor(() => {
+      expect(localStorageMock.setItem).toHaveBeenCalledWith(
+        'sequentialNamingCounter:user:u1',
+        '1'
+      );
+    });
+
+    expect(result.current.currentCounter).toBe(1);
+  });
+
+  it('updates counter on storage event for matching key', async () => {
+    const { result } = renderHook(() => useSequentialNaming(), {
+      wrapper: createWrapper(),
+    });
+
+    expect(result.current.currentCounter).toBe(1);
+
+    window.dispatchEvent(
+      new StorageEvent('storage', {
+        key: 'sequentialNamingCounter:user:u1',
+        newValue: '11',
+      })
+    );
+
+    await waitFor(() => {
+      expect(result.current.currentCounter).toBe(11);
+    });
+  });
+
+  it('rehydrates from storage on visibilitychange when visible', async () => {
+    const { result } = renderHook(() => useSequentialNaming(), {
+      wrapper: createWrapper(),
+    });
+
+    expect(result.current.currentCounter).toBe(1);
+
+    // Update storage after mount
+    localStorageMock.setItem('sequentialNamingCounter:user:u1', '4');
+
+    // Force visibility to visible and dispatch event
+    Object.defineProperty(document, 'visibilityState', {
+      configurable: true,
+      value: 'visible',
+    });
+    document.dispatchEvent(new Event('visibilitychange'));
+
+    await waitFor(() => {
+      expect(result.current.currentCounter).toBe(4);
+    });
+  });
+
+  it('returns same name within dedupe window without incrementing', () => {
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date(0));
+
+    const { result } = renderHook(() => useSequentialNaming(), {
+      wrapper: createWrapper(),
+    });
+
+    let first: string = '';
+    act(() => {
+      first = result.current.generateAnalysisName();
+    });
+
+    expect(result.current.currentCounter).toBe(2);
+
+    let second: string = '';
+    act(() => {
+      // Within 300ms dedupe threshold (and within initial mount window)
+      jest.advanceTimersByTime(100);
+      second = result.current.generateAnalysisName();
+    });
+
+    expect(second).toBe(first);
+    expect(result.current.currentCounter).toBe(2);
+
+    jest.useRealTimers();
   });
 });

@@ -61,6 +61,9 @@ interface SequentialNamingProviderProps {
   children: ReactNode;
 }
 
+const DEDUPE_MS = 300;
+const MOUNT_DUPE_MS = 800;
+
 export const SequentialNamingProvider: React.FC<
   SequentialNamingProviderProps
 > = ({ children }) => {
@@ -72,7 +75,8 @@ export const SequentialNamingProvider: React.FC<
   const lastGeneratedAtRef = useRef<number>(0);
   const lastReturnedNameRef = useRef<string | null>(null);
   const lastUserIdRef = useRef<string | null>(null);
-  const isGeneratingRef = useRef<boolean>(false);
+  const counterRef = useRef<number>(1);
+  const mountedAtRef = useRef<number>(Date.now());
 
   const storageKey = useMemo(() => {
     const userId = (session as { user?: { id?: string | null } } | null)?.user
@@ -92,6 +96,7 @@ export const SequentialNamingProvider: React.FC<
   }, [storageKey]);
 
   const resetCounter = useCallback(() => {
+    counterRef.current = 1;
     setCounter(1);
     try {
       localStorage.setItem(storageKey, '1');
@@ -103,14 +108,50 @@ export const SequentialNamingProvider: React.FC<
       const saved = localStorage.getItem(storageKey);
       const parsed = saved ? parseInt(saved, 10) : NaN;
       if (!isNaN(parsed) && parsed > 0) {
+        counterRef.current = parsed;
         setCounter(parsed);
       } else {
+        counterRef.current = 1;
         resetCounter();
       }
     } catch {
+      counterRef.current = 1;
       resetCounter();
     }
   }, [storageKey, resetCounter]);
+
+  useEffect(() => {
+    counterRef.current = counter;
+  }, [counter]);
+
+  useEffect(() => {
+    mountedAtRef.current = Date.now();
+  }, []);
+
+  useEffect(() => {
+    const onStorage = (e: StorageEvent) => {
+      if (e.key !== storageKey) return;
+
+      const next = e.newValue ? parseInt(e.newValue, 10) : NaN;
+      if (Number.isFinite(next) && next > 0 && next !== counterRef.current) {
+        counterRef.current = next;
+        setCounter(next);
+      }
+    };
+
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        hydrateFromStorage();
+      }
+    };
+
+    window.addEventListener('storage', onStorage);
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => {
+      window.removeEventListener('storage', onStorage);
+      document.removeEventListener('visibilitychange', onVisibility);
+    };
+  }, [storageKey, hydrateFromStorage]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -137,51 +178,33 @@ export const SequentialNamingProvider: React.FC<
   const generateAnalysisName = useCallback((): string => {
     const now = Date.now();
 
-    // Protection against very rapid calls
-    if (now - lastGeneratedAtRef.current < 150 && lastReturnedNameRef.current) {
+    // Guard: prevent duplicate increments on immediate back-to-back calls
+    // Includes initial mount window to avoid double calls when reopening
+    if (
+      (now - lastGeneratedAtRef.current < DEDUPE_MS ||
+        now - mountedAtRef.current < MOUNT_DUPE_MS) &&
+      lastReturnedNameRef.current
+    ) {
       return lastReturnedNameRef.current;
     }
 
-    // Protection against race conditions
-    if (isGeneratingRef.current) {
-      return (
-        lastReturnedNameRef.current || generateNameString(counter, 'Analysis')
-      );
-    }
+    const current = counterRef.current;
+    const nameWithOrdinal = generateNameString(current, 'Analysis');
+    const next = current + 1;
 
-    isGeneratingRef.current = true;
+    // Synchronous increment to avoid duplicates on rapid calls
+    counterRef.current = next;
+    setCounter(next);
 
     try {
-      const current = counter;
-      const nameWithOrdinal = generateNameString(current, 'Analysis');
-      const next = current + 1;
+      localStorage.setItem(storageKey, next.toString());
+    } catch {}
 
-      // Update state first for immediate consistency
-      setCounter(next);
+    lastGeneratedAtRef.current = now;
+    lastReturnedNameRef.current = nameWithOrdinal;
 
-      // Update localStorage asynchronously
-      try {
-        localStorage.setItem(storageKey, next.toString());
-      } catch (error) {
-        // If localStorage fails, the state is already updated
-        if (process.env.NODE_ENV === 'development') {
-          console.warn('Failed to persist counter:', error);
-        }
-      }
-
-      // Update references for protection
-      lastGeneratedAtRef.current = now;
-      lastReturnedNameRef.current = nameWithOrdinal;
-
-      return nameWithOrdinal;
-    } finally {
-      // Release the flag after a small delay to avoid race conditions
-      // in case of very rapid re-renders
-      setTimeout(() => {
-        isGeneratingRef.current = false;
-      }, 10);
-    }
-  }, [counter, storageKey]);
+    return nameWithOrdinal;
+  }, [storageKey]);
 
   const value: SequentialNamingContextType = useMemo(
     () => ({
