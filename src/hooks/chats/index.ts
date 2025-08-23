@@ -130,8 +130,8 @@ export const useUpdateMessageFeedback = ({
       const feedbackPayload: SubmitFeedbackRequest = {
         feedback: feedbackValue,
         queryId: messageId,
-        query: 'Test query',
-        answer: 'Test answer',
+        query: '',
+        answer: '',
         comments: '',
       };
 

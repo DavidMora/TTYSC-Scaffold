@@ -96,6 +96,8 @@ describe('FeedbackVote', () => {
       expect(mockMutate).toHaveBeenCalledWith({
         messageId: 'test-message-id',
         feedbackVote: 'up',
+        query: '',
+        answer: '',
       });
     });
 
@@ -112,6 +114,8 @@ describe('FeedbackVote', () => {
       expect(mockMutate).toHaveBeenCalledWith({
         messageId: 'test-message-id',
         feedbackVote: 'down',
+        query: '',
+        answer: '',
       });
     });
 

@@ -482,8 +482,8 @@ describe('Chat Hooks', () => {
       expect(mockedSubmitFeedback).toHaveBeenCalledWith({
         feedback: 'good',
         queryId: 'test-message-id',
-        query: 'Test query',
-        answer: 'Test answer',
+        query: '',
+        answer: '',
         comments: '',
       });
     });
@@ -525,8 +525,8 @@ describe('Chat Hooks', () => {
       expect(mockedSubmitFeedback).toHaveBeenCalledWith({
         feedback: 'feedback provided',
         queryId: 'test-message-id',
-        query: 'Test query',
-        answer: 'Test answer',
+        query: '',
+        answer: '',
         comments: '',
       });
     });
@@ -568,8 +568,8 @@ describe('Chat Hooks', () => {
       expect(mockedSubmitFeedback).toHaveBeenCalledWith({
         feedback: 'bad',
         queryId: 'test-message-id',
-        query: 'Test query',
-        answer: 'Test answer',
+        query: '',
+        answer: '',
         comments: '',
       });
     });
