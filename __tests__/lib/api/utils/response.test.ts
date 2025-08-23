@@ -19,6 +19,28 @@ global.Response = class Response {
   get(key: string) {
     return this.headers.get(key.toLowerCase());
   }
+
+  // Add missing properties for compatibility
+  get ok() {
+    return this.status >= 200 && this.status < 300;
+  }
+
+  get statusText() {
+    return this.status >= 400 ? 'Error' : 'OK';
+  }
+
+  async json() {
+    if (typeof this.body === 'string') {
+      return JSON.parse(this.body);
+    }
+    return this.body;
+  }
+
+  async text() {
+    return typeof this.body === 'string'
+      ? this.body
+      : JSON.stringify(this.body);
+  }
 } as any;
 
 import {

@@ -14,28 +14,90 @@ jest.mock('next/server', () => ({
 }));
 
 // Mock global Response constructor for API routes
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
 global.Response = class MockResponse {
-  private _body: string;
+  private _body: string | object | null;
   private _status: number;
+  private _statusText: string;
+  private _headers: Record<string, string>;
+  private _ok: boolean;
 
   constructor(
-    body: string,
-    init?: { status?: number; headers?: Record<string, string> }
+    body?: string | object | null,
+    init?: {
+      status?: number;
+      statusText?: string;
+      headers?: Record<string, string>;
+    }
   ) {
-    this._body = body;
-    this._status = init?.status || 200;
-  }
-
-  async json() {
-    return JSON.parse(this._body);
+    this._body = body ?? null;
+    this._status = init?.status ?? 200;
+    this._statusText = init?.statusText ?? '';
+    this._headers = init?.headers ?? {};
+    this._ok = this._status >= 200 && this._status < 300;
   }
 
   get status() {
     return this._status;
   }
-};
+
+  get statusText() {
+    return this._statusText;
+  }
+
+  get ok() {
+    return this._ok;
+  }
+
+  get headers() {
+    return this._headers;
+  }
+
+  async json() {
+    if (this._body === null) {
+      return null;
+    }
+    if (typeof this._body === 'string') {
+      return JSON.parse(this._body);
+    }
+    if (typeof this._body === 'object') {
+      return this._body;
+    }
+    throw new Error('Body is not JSON-parseable');
+  }
+
+  async text() {
+    if (this._body === null) {
+      return '';
+    }
+    if (typeof this._body === 'string') {
+      return this._body;
+    }
+    if (typeof this._body === 'object') {
+      return JSON.stringify(this._body);
+    }
+    throw new Error('Body is not text-parseable');
+  }
+
+  // Static methods for TypeScript compatibility
+  static error() {
+    return new MockResponse(null, { status: 500 });
+  }
+
+  static json(
+    data: any,
+    init?: {
+      status?: number;
+      statusText?: string;
+      headers?: Record<string, string>;
+    }
+  ) {
+    return new MockResponse(JSON.stringify(data), init);
+  }
+
+  static redirect(url: string, status: number = 302) {
+    return new MockResponse(null, { status, headers: { location: url } });
+  }
+} as any;
 
 // Mock the backendRequest function
 jest.mock('@/lib/api/backend-request', () => ({
