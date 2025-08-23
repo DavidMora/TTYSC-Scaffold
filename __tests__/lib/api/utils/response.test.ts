@@ -2,67 +2,65 @@
  * Tests for response utilities
  */
 
-// Setup global Response for Node.js environment
-global.Response = class Response {
-  constructor(
-    public body: string,
-    public init: { status: number; headers?: any }
-  ) {
-    this.status = init.status;
-    this.headers = new Map();
+// Setup global Response for Node.js environment (restore after tests)
+const OriginalResponse = global.Response;
 
-    // Handle Headers object or plain object
-    if (init.headers) {
-      if (init.headers instanceof Map) {
-        init.headers.forEach((value: string, key: string) => {
-          this.headers.set(key.toLowerCase(), value);
-        });
-      } else if (
-        init.headers &&
-        typeof init.headers === 'object' &&
-        'forEach' in init.headers
-      ) {
-        // Handle Headers instance
-        init.headers.forEach((value: string, key: string) => {
-          this.headers.set(key.toLowerCase(), value);
-        });
-      } else if (typeof init.headers === 'object') {
-        Object.entries(init.headers).forEach(([key, value]) => {
-          this.headers.set(key.toLowerCase(), value as string);
-        });
-      }
+class TestResponse {
+  public readonly status: number;
+  public readonly statusText: string;
+  public readonly ok: boolean;
+  public readonly headers: Headers;
+
+  constructor(
+    public body: string | null,
+    init?: {
+      status?: number;
+      headers?: Record<string, string> | Headers;
+    }
+  ) {
+    this.status = init?.status ?? 200;
+    this.statusText = this.status >= 400 ? 'Error' : 'OK';
+    this.ok = this.status >= 200 && this.status < 300;
+
+    // Convert init.headers to Headers object
+    if (init?.headers) {
+      this.headers = new Headers(init.headers);
+    } else {
+      this.headers = new Headers();
+    }
+
+    // Set default content-type if body is provided and no content-type specified
+    if (body && !this.headers.has('content-type')) {
+      this.headers.set('content-type', 'application/json');
     }
   }
 
-  status: number;
-  headers: Map<string, string>;
-
-  get(key: string) {
-    return this.headers.get(key.toLowerCase());
-  }
-
-  // Add missing properties for compatibility
-  get ok() {
-    return this.status >= 200 && this.status < 300;
-  }
-
-  get statusText() {
-    return this.status >= 400 ? 'Error' : 'OK';
-  }
-
-  async json() {
+  async json(): Promise<unknown> {
+    if (this.body === null) {
+      throw new Error('Body is null');
+    }
     if (typeof this.body === 'string') {
       return JSON.parse(this.body);
     }
     return this.body;
   }
 
-  async text() {
+  async text(): Promise<string> {
+    if (this.body === null) {
+      return '';
+    }
     return typeof this.body === 'string'
       ? this.body
       : JSON.stringify(this.body);
   }
-} as any;
+
+  // Custom method for backward compatibility with existing tests
+  get(key: string): string | null {
+    return this.headers.get(key.toLowerCase());
+  }
+}
+
+global.Response = TestResponse as unknown as typeof globalThis.Response;
 
 import {
   createErrorResponse,
@@ -74,6 +72,10 @@ import {
 describe('Response Utilities', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+  });
+
+  afterAll(() => {
+    global.Response = OriginalResponse;
   });
 
   describe('createErrorResponse', () => {
