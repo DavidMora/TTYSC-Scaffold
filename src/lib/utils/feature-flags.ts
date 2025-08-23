@@ -7,7 +7,7 @@ export const DEFAULT_FLAGS: FeatureFlags = {
   FF_Full_Page_Navigation: true,
   FF_Side_NavBar: true,
   FF_Modals: true,
-  FF_Raw_Data_Navigation: true,
+  FF_Raw_Data_Navigation: false,
 };
 
 /**
