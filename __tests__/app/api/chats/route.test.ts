@@ -130,7 +130,7 @@ describe('/api/chats', () => {
       const responseBody = await response.json();
 
       expect(response.status).toBe(500);
-      expect(responseBody).toEqual({ error: 'Internal error' });
+      expect(responseBody).toEqual({ error: 'Internal server error' });
     });
   });
 });

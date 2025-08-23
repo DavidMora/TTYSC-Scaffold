@@ -225,7 +225,7 @@ describe('/api/messages/[messageId]/feedback', () => {
       const responseData = await response.json();
 
       expect(response.status).toBe(500);
-      expect(responseData).toEqual({ error: 'Internal error' });
+      expect(responseData).toEqual({ error: 'Internal server error' });
     });
 
     it('should propagate backend status codes', async () => {

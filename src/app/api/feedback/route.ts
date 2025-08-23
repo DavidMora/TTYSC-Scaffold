@@ -1,31 +1,22 @@
 import { NextRequest } from 'next/server';
 import { backendRequest } from '@/lib/api/backend-request';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/lib/auth/auth-options';
 import { AIFactoryFeedbackPayload } from '@/lib/types/feedback';
+import { getEnvironment } from '@/lib/api/utils/environment';
+import { apiResponse } from '@/lib/api/utils/response';
+import { requireAuthentication } from '@/lib/api/utils/auth';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-// Helper function to determine environment
-function getEnvironment(): 'dev' | 'stg' | 'prd' {
-  const env = process.env.NODE_ENV;
-  if (env === 'production') {
-    // Check for specific environment indicators
-    if (process.env.BACKEND_BASE_URL?.includes('stg')) return 'stg';
-    if (process.env.BACKEND_BASE_URL?.includes('prd')) return 'prd';
-    return 'prd'; // Default for production
-  }
-  return 'dev';
-}
-
 // POST /api/feedback -> upstream POST /api/v1/feedback
 export async function POST(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
-      return errorResponse('Authentication required', 401);
+    const authResult = await requireAuthentication();
+    if ('errorResponse' in authResult) {
+      return authResult.errorResponse;
     }
+
+    const { userEmail } = authResult;
 
     const body = await req.json();
 
@@ -33,12 +24,15 @@ export async function POST(req: NextRequest) {
 
     // Validate required fields
     if (!feedback || !queryId) {
-      return errorResponse('Missing required fields: feedback, queryId', 400);
+      return apiResponse.error(
+        'Missing required fields: feedback, queryId',
+        400
+      );
     }
 
     // Validate that we have either (query and answer) or comments
     if (!(query && answer) && !comments) {
-      return errorResponse(
+      return apiResponse.error(
         'Either (query and answer) or comments must be provided',
         400
       );
@@ -46,7 +40,7 @@ export async function POST(req: NextRequest) {
 
     // Validate feedback value
     if (!['good', 'bad', 'feedback provided'].includes(feedback)) {
-      return errorResponse(
+      return apiResponse.error(
         'Feedback must be either "good", "bad", or "feedback provided"',
         400
       );
@@ -63,7 +57,7 @@ export async function POST(req: NextRequest) {
       AdditionalDetails: [], // Explicitly empty as per requirements
       OwnerDLs: [], // Explicitly empty as per requirements
       UserConsent: true, // Required by API
-      Username: session.user.email,
+      Username: userEmail,
       Environment: getEnvironment(),
     };
 
@@ -76,12 +70,9 @@ export async function POST(req: NextRequest) {
       body: feedbackPayload,
     });
 
-    return new Response(JSON.stringify(upstream.data), {
-      status: upstream.status,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    return apiResponse.upstream(upstream);
   } catch (e) {
-    return errorResponse(e);
+    return apiResponse.error(e);
   }
 }
 
@@ -93,23 +84,8 @@ export async function GET() {
       path: '/api/v1/feedback',
     });
 
-    return new Response(JSON.stringify(upstream.data), {
-      status: upstream.status,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    return apiResponse.upstream(upstream);
   } catch (e) {
-    return errorResponse(e);
+    return apiResponse.error(e);
   }
-}
-
-function errorResponse(e: unknown, status = 500) {
-  let message: string;
-  if (typeof e === 'string') message = e;
-  else if (e instanceof Error) message = e.message;
-  else message = 'Internal server error';
-
-  return new Response(JSON.stringify({ error: message }), {
-    status,
-    headers: { 'Content-Type': 'application/json' },
-  });
 }

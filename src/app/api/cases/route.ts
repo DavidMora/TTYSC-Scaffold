@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 import { backendRequest } from '@/lib/api/backend-request';
-import { errorResponse } from '@/lib/utils/error-response';
+import { apiResponse } from '@/lib/api/utils/response';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -17,11 +17,8 @@ export async function GET(req: NextRequest) {
       method: 'GET',
       path,
     });
-    return new Response(JSON.stringify(upstream.data), {
-      status: upstream.status,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    return apiResponse.upstream(upstream);
   } catch (e) {
-    return errorResponse(e);
+    return apiResponse.error(e);
   }
 }
