@@ -24,7 +24,23 @@ class SettingsMemory {
    * Update settings with partial updates
    */
   update(updates: Partial<Settings>): Settings {
-    this.settings = { ...this.settings, ...updates };
+    const next: Settings = { ...this.settings };
+
+    if (Object.prototype.hasOwnProperty.call(updates, 'shareChats')) {
+      const v = updates.shareChats;
+      if (typeof v !== 'boolean')
+        throw new TypeError('shareChats must be a boolean');
+      next.shareChats = v;
+    }
+
+    if (Object.prototype.hasOwnProperty.call(updates, 'hideIndexTable')) {
+      const v = updates.hideIndexTable;
+      if (typeof v !== 'boolean')
+        throw new TypeError('hideIndexTable must be a boolean');
+      next.hideIndexTable = v;
+    }
+
+    this.settings = next;
     return this.get();
   }
 
