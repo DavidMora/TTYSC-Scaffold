@@ -1,5 +1,5 @@
-import { Button, Icon, Title } from '@ui5/webcomponents-react';
-import TitleLevel from '@ui5/webcomponents/dist/types/TitleLevel.js';
+import { Button, MessageStrip } from '@ui5/webcomponents-react';
+import { useEffect, useState } from 'react';
 
 // Constants for skeleton items
 const SKELETON_ITEMS = [1, 2, 3];
@@ -62,57 +62,49 @@ export const ChartSkeleton: React.FC = () => (
 );
 
 export interface ChartErrorProps {
-  onRetry: () => void;
+  onRetry?: () => void;
   error?: string;
+  closable?: boolean;
 }
 
-export const ChartError: React.FC<ChartErrorProps> = ({ onRetry, error }) => (
-  <div
-    style={{
-      borderRadius: 8,
-      padding: 16,
-      background: '#fff',
-      width: '100%',
-      height: 500,
-      marginBottom: 16,
-      marginTop: 16,
-      display: 'flex',
-      flexDirection: 'column',
-      justifyContent: 'center',
-      alignItems: 'center',
-      gap: 12,
-      border: '1px solid #ccc',
-    }}
-  >
-    <Icon
-      name="error"
+export const ChartError: React.FC<ChartErrorProps> = ({
+  onRetry,
+  error,
+  closable = true,
+}) => {
+  const [isOpen, setIsOpen] = useState(true);
+
+  // Show again when a new error message arrives
+  useEffect(() => {
+    if (error) {
+      setIsOpen(true);
+    }
+  }, [error]);
+
+  if (!isOpen) return null;
+
+  return (
+    <MessageStrip
+      design="Critical"
+      hideCloseButton={!closable}
+      onClose={() => setIsOpen(false)}
       style={{
-        fontSize: 48,
-        color: '#666',
-      }}
-    />
-    <Title
-      level={TitleLevel.H3}
-      style={{
-        color: '#333',
-        margin: 0,
+        width: '100%',
+        marginTop: '1rem',
       }}
     >
-      Error loading chart
-    </Title>
-    {error && (
-      <p
-        style={{
-          color: '#666',
-          textAlign: 'center',
-          margin: 0,
-        }}
-      >
-        {error}
-      </p>
-    )}
-    <Button onClick={onRetry} design="Emphasized" style={{ marginTop: 8 }}>
-      Retry
-    </Button>
-  </div>
-);
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <span style={{ flex: 1 }}>{error}</span>
+        {onRetry && (
+          <Button
+            design="Emphasized"
+            onClick={onRetry}
+            style={{ marginLeft: 'auto' }}
+          >
+            Retry
+          </Button>
+        )}
+      </div>
+    </MessageStrip>
+  );
+};

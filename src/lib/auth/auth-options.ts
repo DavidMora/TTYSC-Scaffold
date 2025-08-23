@@ -113,6 +113,37 @@ async function refreshAccessToken(token: JWT): Promise<JWT> {
 // Get OAuth configuration
 const oauthConfig = getOAuthConfig();
 
+function buildGraphPhotoUrl(sizeParam?: string): string {
+  const size = (sizeParam?.trim() || '96').toLowerCase();
+  const normalized = /^\d+$/.test(size) ? `${size}x${size}` : size;
+  return `https://graph.microsoft.com/v1.0/me/photos/${normalized}/$value`;
+}
+
+// Helper: fetch user photo from Graph and return as data URL; returns undefined on 404 or error
+async function fetchGraphPhotoDataUrl(
+  accessToken: string,
+  sizeParam?: string
+): Promise<string | undefined> {
+  try {
+    const photoUrl = buildGraphPhotoUrl(sizeParam);
+    const res = await fetch(photoUrl, {
+      headers: { Authorization: `Bearer ${String(accessToken)}` },
+      cache: 'no-store',
+    });
+
+    if (res.status === 404) return undefined;
+    if (!res.ok) return undefined;
+
+    const contentType = res.headers.get('content-type') || 'image/jpeg';
+    const arrayBuffer = await res.arrayBuffer();
+    const base64 = Buffer.from(arrayBuffer).toString('base64');
+    return `data:${contentType};base64,${base64}`;
+  } catch (error) {
+    console.error('[Auth] Failed to fetch Graph photo:', error);
+    return undefined;
+  }
+}
+
 // Debug logging
 console.log('[Auth Config] Environment variables:');
 console.log('[Auth Config] AUTH_PROCESS:', process.env.AUTH_PROCESS);
@@ -208,6 +239,21 @@ export const authOptions: NextAuthOptions = {
         console.log('[Auth] User data:', user);
         console.log(account);
 
+        const photoDataUrl = account.access_token
+          ? await fetchGraphPhotoDataUrl(account.access_token, '96x96')
+          : undefined;
+
+        const normalizedUser = {
+          ...(user as {
+            id: string;
+            name?: string | null;
+            email?: string | null;
+            image?: string | null;
+          }),
+          image:
+            (user as { image?: string | null })?.image ?? photoDataUrl ?? null,
+        };
+
         return {
           accessToken: account.access_token,
           idToken: account.id_token,
@@ -215,7 +261,7 @@ export const authOptions: NextAuthOptions = {
             ? account.expires_at * 1000
             : undefined,
           refreshToken: account.refresh_token,
-          user,
+          user: normalizedUser,
         };
       }
 

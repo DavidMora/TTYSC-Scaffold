@@ -6,6 +6,15 @@ import { useSendChatMessage } from '@/hooks/chats';
 import { useChatStream } from '@/hooks/chats/stream';
 import '@testing-library/jest-dom';
 
+// Mock auth to satisfy useCurrentUser dependency
+jest.mock('@/hooks/useAuth', () => ({
+  useAuth: () => ({
+    session: { user: { name: 'Test User', image: null } },
+    isLoading: false,
+    authError: null,
+  }),
+}));
+
 // Mock hooks
 jest.mock('@/hooks/chats', () => ({
   useSendChatMessage: jest.fn(),

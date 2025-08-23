@@ -7,7 +7,10 @@ import { BusyIndicator } from '@ui5/webcomponents-react';
 import { MessageBubble } from '@/components/AnalysisChat/MessageBubble';
 import { ChatInput } from '@/components/AnalysisChat/ChatInput';
 import { useChatStream } from '@/hooks/chats/stream';
+import { metadataToAIChartData } from '@/lib/metadata/chart';
 import { metadataToTableData } from '@/lib/metadata/table';
+import { useCurrentUser } from '@/hooks/useCurrentUser';
+import { WelcomeMessage } from '@/components/AnalysisChat/WelcomeMessage';
 
 interface AnalysisChatProps {
   previousMessages: ChatMessage[];
@@ -19,6 +22,7 @@ export default function AnalysisChat({
   draft,
 }: Readonly<AnalysisChatProps>) {
   const messagesContainerRef = useRef<HTMLDivElement | null>(null);
+  const { currentUser, getFirstName } = useCurrentUser();
 
   const scrollToBottom = ({
     behavior = 'smooth',
@@ -154,8 +158,14 @@ export default function AnalysisChat({
   useEffect(() => {
     if (!isStreaming) {
       const inlineTable = metadataToTableData(metadata);
+      const inlineChart = metadataToAIChartData(metadata);
+      const chartGenError = metadata?.chartgen_error;
       const finalContent = aggregatedContent;
-      if (runId && appendedRunId !== runId && (finalContent || inlineTable)) {
+      if (
+        runId &&
+        appendedRunId !== runId &&
+        (finalContent || inlineTable || inlineChart || chartGenError)
+      ) {
         const assistantMessageId = `${Date.now()}-assistant`;
         setMessages((prev) => [
           ...prev,
@@ -163,9 +173,11 @@ export default function AnalysisChat({
             id: assistantMessageId,
             role: 'assistant',
             created: new Date().toLocaleString(),
-            title: 'AI Response',
+            title: 'TTYSC Agent',
             content: finalContent,
-            table: inlineTable || undefined,
+            chart: inlineChart ?? undefined,
+            table: inlineTable ?? undefined,
+            chartGenError: chartGenError ?? undefined,
           },
         ]);
         setAppendedRunId(runId);
@@ -199,8 +211,18 @@ export default function AnalysisChat({
         ref={messagesContainerRef}
         style={{ flex: 1, overflow: 'auto', padding: '1rem 1.5rem' }}
       >
+        {messages.length === 0 && (
+          <WelcomeMessage
+            firstName={
+              currentUser.name === 'Unknown'
+                ? 'user'
+                : getFirstName(currentUser.name)
+            }
+          />
+        )}
+
         {messages.map((msg) => (
-          <MessageBubble key={msg.id} message={msg} />
+          <MessageBubble key={msg.id} message={msg} user={currentUser} />
         ))}
 
         {(isStreaming || showLoader) && (

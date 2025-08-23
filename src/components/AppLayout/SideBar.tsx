@@ -1,3 +1,4 @@
+import React, { useState } from 'react';
 import { NavBarItem } from '@/lib/types/NavBarItems';
 import {
   SideNavigation,
@@ -19,11 +20,12 @@ import { CHAT } from '@/lib/constants/routes/Dashboard';
 import { useAuth } from '@/hooks/useAuth';
 import { useFeatureFlag } from '@/hooks/useFeatureFlags';
 import { FeatureNotAvailable } from '@/components/FeatureNotAvailable';
+import { ConfirmationModal } from '@/components/Modals/ConfirmationModal';
 
 interface SideBarProps {
   sideNavCollapsed?: boolean;
   navItems: Array<NavBarItem>;
-  onShowRawDataModal?: () => void;
+  //onShowRawDataModal?: () => void;
 }
 
 const SideBarMenu: React.FC<SideBarProps> = ({
@@ -32,8 +34,9 @@ const SideBarMenu: React.FC<SideBarProps> = ({
 }) => {
   const pathname = usePathname();
   const router = useRouter();
-  const { logout } = useAuth();
+  const { logout, restartSession } = useAuth();
   const { flag: isSideNavEnabled, loading } = useFeatureFlag('FF_Side_NavBar');
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
 
   const {
     data: chatHistory,
@@ -74,43 +77,17 @@ const SideBarMenu: React.FC<SideBarProps> = ({
 
   const handleRestartSession = async () => {
     try {
-      // Clear local storage and session storage
-      if (typeof window !== 'undefined') {
-        localStorage.clear();
-        sessionStorage.clear();
-      }
-
-      // Send request to the server to restart the session
-      const response = await fetch('/api/auth/restart-session', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (response.ok) {
-        console.log('Session restarted successfully');
-        // You might want to trigger a refresh of certain components here
-        // or show a success message to the user
-      } else {
-        console.error('Failed to restart session:', await response.text());
-      }
+      await restartSession();
     } catch (error) {
-      console.error('Error during session restart:', error);
+      console.error('Error during restart session:', error);
     }
   };
 
   const handleNavSelection = (event: {
-    detail?: { item?: { dataset?: { path?: string; action?: string } } };
+    detail?: { item?: { dataset?: { path?: string } } };
   }) => {
     const path = event.detail?.item?.dataset?.path;
-    const action = event.detail?.item?.dataset?.action;
-
-    if (action === 'logout') {
-      handleLogout();
-    } else if (action === 'restart') {
-      handleRestartSession();
-    } else if (path) {
+    if (path) {
       router.push(path);
     }
   };
@@ -129,64 +106,94 @@ const SideBarMenu: React.FC<SideBarProps> = ({
   }
 
   return (
-    <SideNavigation
-      collapsed={sideNavCollapsed}
-      onSelectionChange={handleNavSelection}
-      header={
-        <div className="flex justify-center items-center p-8">
-          <NvidiaLogo className="w-full max-w-[7.5rem]" />
-        </div>
-      }
-      fixedItems={
-        <>
-          <SideNavigationItem
-            icon="restart"
-            text="Restart Session"
-            data-action="restart"
-          />
-          <SideNavigationItem
-            icon="journey-arrive"
-            text="Log Out"
-            data-action="logout"
-          />
-        </>
-      }
-    >
-      {/* Custom Navigation Items */}
-      <SettingsNavigationItem />
-      <DefinitionsNavigationItem />
-      <FeedbackNavigationItem onSubmitFeedback={handleFeedbackSubmit} />
-      <RawDataNavigationItem onDataSelection={handleRawDataSelection} />
-      <ChatHistoryNavigationItem
-        chatHistory={chatHistory?.data}
-        isLoading={isLoadingChatHistory}
-        errorLoading={chatHistoryError}
-        onChatSelect={handleChatSelect}
-        onChatItemSelect={handleChatItemSelect}
-      />
-
-      {/* Navigation Items */}
-      {navItems.map((item) => (
-        <SideNavigationItem
-          key={item.path || item.text}
-          text={item.text}
-          icon={item.icon}
-          unselectable={!!item.subItems?.length}
-          selected={item.path ? pathname === item.path : false}
-          data-path={item.path || undefined}
-        >
-          {item.subItems?.map((subItem) => (
-            <SideNavigationSubItem
-              key={subItem.path}
-              text={subItem.text}
-              icon={subItem.icon}
-              selected={pathname === subItem.path}
-              data-path={subItem.path}
+    <>
+      <SideNavigation
+        collapsed={sideNavCollapsed}
+        onSelectionChange={handleNavSelection}
+        header={
+          <div className="flex justify-center items-center p-8">
+            <NvidiaLogo className="w-full max-w-[7.5rem]" />
+          </div>
+        }
+        fixedItems={
+          <>
+            <SideNavigationItem
+              icon="restart"
+              text="Restart Session"
+              data-action="restart"
+              selected={false}
+              onClick={handleRestartSession}
             />
-          ))}
-        </SideNavigationItem>
-      ))}
-    </SideNavigation>
+            <SideNavigationItem
+              icon="journey-arrive"
+              text="Log Out"
+              data-action="logout"
+              selected={false}
+              onClick={() => setIsLogoutModalOpen(true)}
+            />
+          </>
+        }
+      >
+        {/* Custom Navigation Items */}
+        <SettingsNavigationItem />
+        <DefinitionsNavigationItem />
+        <FeedbackNavigationItem onSubmitFeedback={handleFeedbackSubmit} />
+        <RawDataNavigationItem onDataSelection={handleRawDataSelection} />
+        <ChatHistoryNavigationItem
+          chatHistory={chatHistory?.data}
+          isLoading={isLoadingChatHistory}
+          errorLoading={chatHistoryError}
+          onChatSelect={handleChatSelect}
+          onChatItemSelect={handleChatItemSelect}
+        />
+
+        {/* Navigation Items */}
+        {navItems.map((item) => (
+          <SideNavigationItem
+            key={item.path || item.text}
+            text={item.text}
+            icon={item.icon}
+            unselectable={!!item.subItems?.length}
+            selected={item.path ? pathname === item.path : false}
+            data-path={item.path || undefined}
+          >
+            {item.subItems?.map((subItem) => (
+              <SideNavigationSubItem
+                key={subItem.path}
+                text={subItem.text}
+                icon={subItem.icon}
+                selected={pathname === subItem.path}
+                data-path={subItem.path}
+              />
+            ))}
+          </SideNavigationItem>
+        ))}
+      </SideNavigation>
+
+      <ConfirmationModal
+        isOpen={isLogoutModalOpen}
+        onClose={() => setIsLogoutModalOpen(false)}
+        title="Log Out?"
+        message="Do you really want to log out?"
+        description="If you log out of the application now, please keep in mind that any unsaved changes will be lost. It's advisable to save your work before logging out to ensure that you don't lose any important information."
+        iconName="alert"
+        actions={[
+          {
+            label: 'Close',
+            design: 'Transparent',
+            onClick: () => setIsLogoutModalOpen(false),
+          },
+          {
+            label: 'Log Out',
+            design: 'Emphasized',
+            onClick: () => {
+              setIsLogoutModalOpen(false);
+              handleLogout();
+            },
+          },
+        ]}
+      />
+    </>
   );
 };
 

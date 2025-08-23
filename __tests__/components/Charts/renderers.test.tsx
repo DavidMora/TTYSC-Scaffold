@@ -406,34 +406,44 @@ describe('Chart Renderers', () => {
     describe('UnsupportedChartRenderer', () => {
       it('renders error message for unsupported chart type', () => {
         render(
-          <UnsupportedChartRenderer chartType="unsupported" isMulti={false} />
+          <UnsupportedChartRenderer
+            chartTypeName="unsupported"
+            isMulti={false}
+          />
         );
 
-        expect(
-          screen.getByText('Chart type not supported: unsupported')
-        ).toBeInTheDocument();
+        const messageStrip = screen.getByTestId('ui5-messagestrip');
+        expect(messageStrip).toBeInTheDocument();
+        expect(messageStrip.textContent).toBe(
+          'Chart type not supported: unsupported'
+        );
       });
 
       it('renders error message for unsupported multi-series chart type', () => {
         render(
-          <UnsupportedChartRenderer chartType="unsupported" isMulti={true} />
+          <UnsupportedChartRenderer
+            chartTypeName="unsupported"
+            isMulti={true}
+          />
         );
 
-        expect(
-          screen.getByText(
-            'Chart type not supported for multiple series: unsupported'
-          )
-        ).toBeInTheDocument();
+        const messageStrip = screen.getByTestId('ui5-messagestrip');
+        expect(messageStrip).toBeInTheDocument();
+        expect(messageStrip.textContent).toBe(
+          'Chart type not supported for multiple series: unsupported'
+        );
       });
     });
 
     describe('MultiSeriesRequiredRenderer', () => {
       it('renders error message for chart requiring multiple series', () => {
-        render(<MultiSeriesRequiredRenderer chartType="bullet" />);
+        render(<MultiSeriesRequiredRenderer chartTypeName="bullet" />);
 
-        expect(
-          screen.getByText('bullet requires multiple data series')
-        ).toBeInTheDocument();
+        const messageStrip = screen.getByTestId('ui5-messagestrip');
+        expect(messageStrip).toBeInTheDocument();
+        expect(messageStrip.textContent).toBe(
+          'bullet requires multiple data series'
+        );
       });
     });
   });

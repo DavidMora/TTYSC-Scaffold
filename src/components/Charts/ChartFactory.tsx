@@ -4,6 +4,8 @@ import {
   ChartDataInfo,
   SingleDataPoint,
   MultiDataPoint,
+  ChartType,
+  CHART_TYPE,
 } from '@/lib/types/charts';
 import {
   BarChartRenderer,
@@ -22,7 +24,7 @@ import {
 import { ZoomableContainer } from '@/components/Charts/ZoomableContainer';
 
 interface ChartFactoryProps {
-  chartType: string;
+  chartType?: ChartType;
   chartDataInfo: ChartDataInfo;
   title?: string;
   chartIdForFullscreen?: string;
@@ -69,7 +71,8 @@ export const ChartFactory: React.FC<ChartFactoryProps> = ({
 
   const wrapDataX = (
     datasetArray: SingleDataPoint[] | MultiDataPoint[],
-    render: (sliced: SingleDataPoint[] | MultiDataPoint[]) => React.ReactNode
+    render: (sliced: SingleDataPoint[] | MultiDataPoint[]) => React.ReactNode,
+    dataAxis?: 'x' | 'y'
   ) => {
     return (
       <ZoomableContainer
@@ -78,6 +81,7 @@ export const ChartFactory: React.FC<ChartFactoryProps> = ({
         title={title}
         chartIdForFullscreen={chartIdForFullscreen}
         dataLength={datasetArray.length}
+        dataAxis={dataAxis}
         exportContext={{
           dataset: datasetArray,
           dimensions,
@@ -108,16 +112,20 @@ export const ChartFactory: React.FC<ChartFactoryProps> = ({
   };
 
   switch (chartType) {
-    case 'bar':
-      return wrapDataX(dataset, (sliced) => (
-        <BarChartRenderer
-          dataset={sliced}
-          dimensions={dimensions}
-          measures={measures}
-        />
-      ));
+    case CHART_TYPE.bar:
+      return wrapDataX(
+        dataset,
+        (sliced) => (
+          <BarChartRenderer
+            dataset={sliced}
+            dimensions={dimensions}
+            measures={measures}
+          />
+        ),
+        'y'
+      );
 
-    case 'column':
+    case CHART_TYPE.column:
       return wrapDataX(dataset, (sliced) => (
         <ColumnChartRenderer
           dataset={sliced}
@@ -126,7 +134,7 @@ export const ChartFactory: React.FC<ChartFactoryProps> = ({
         />
       ));
 
-    case 'line':
+    case CHART_TYPE.line:
       return wrapDataX(dataset, (sliced) => (
         <LineChartRenderer
           dataset={sliced}
@@ -135,7 +143,7 @@ export const ChartFactory: React.FC<ChartFactoryProps> = ({
         />
       ));
 
-    case 'area':
+    case CHART_TYPE.area:
       return wrapDataX(dataset, (sliced) => (
         <AreaChartRenderer
           dataset={sliced}
@@ -144,7 +152,7 @@ export const ChartFactory: React.FC<ChartFactoryProps> = ({
         />
       ));
 
-    case 'pie':
+    case CHART_TYPE.pie:
       if (!isMulti) {
         return wrapVisual(
           <PieChartRenderer
@@ -154,9 +162,9 @@ export const ChartFactory: React.FC<ChartFactoryProps> = ({
           />
         );
       }
-      return <MultiSeriesRequiredRenderer chartType="PieChart" />;
+      return <MultiSeriesRequiredRenderer chartTypeName="Pie Chart" />;
 
-    case 'doughnut':
+    case CHART_TYPE.doughnut:
       if (!isMulti) {
         return wrapVisual(
           <DonutChartRenderer
@@ -166,9 +174,9 @@ export const ChartFactory: React.FC<ChartFactoryProps> = ({
           />
         );
       }
-      return <MultiSeriesRequiredRenderer chartType="DonutChart" />;
+      return <MultiSeriesRequiredRenderer chartTypeName="Donut Chart" />;
 
-    case 'bullet':
+    case CHART_TYPE.bullet:
       if (isMulti && seriesData) {
         return wrapDataX(dataset, (sliced) => (
           <BulletChartRenderer
@@ -178,9 +186,9 @@ export const ChartFactory: React.FC<ChartFactoryProps> = ({
           />
         ));
       }
-      return <MultiSeriesRequiredRenderer chartType="BulletChart" />;
+      return <MultiSeriesRequiredRenderer chartTypeName="Bullet Chart" />;
 
-    case 'columnWithTrend':
+    case CHART_TYPE.columnWithTrend:
       if (isMulti && seriesData) {
         return wrapDataX(dataset, (sliced) => (
           <ColumnWithTrendRenderer
@@ -190,9 +198,11 @@ export const ChartFactory: React.FC<ChartFactoryProps> = ({
           />
         ));
       }
-      return <MultiSeriesRequiredRenderer chartType="ColumnChartWithTrend" />;
+      return (
+        <MultiSeriesRequiredRenderer chartTypeName="Column Chart with Trend" />
+      );
 
-    case 'composed':
+    case CHART_TYPE.composed:
       return wrapDataX(dataset, (sliced) => (
         <ComposedChartRenderer
           dataset={sliced}
@@ -201,7 +211,7 @@ export const ChartFactory: React.FC<ChartFactoryProps> = ({
         />
       ));
 
-    case 'radar':
+    case CHART_TYPE.radar:
       return wrapVisual(
         <RadarChartRenderer
           dataset={dataset}
@@ -212,7 +222,7 @@ export const ChartFactory: React.FC<ChartFactoryProps> = ({
 
     default:
       return (
-        <UnsupportedChartRenderer chartType={chartType} isMulti={isMulti} />
+        <UnsupportedChartRenderer chartTypeName={chartType} isMulti={isMulti} />
       );
   }
 };

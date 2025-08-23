@@ -4,7 +4,6 @@ import { useFeatureFlags } from '@/hooks/useFeatureFlags';
 import { SessionProviderWrapper } from './SessionProviderWrapper';
 import { SuspenseAuthProvider } from '../hooks/useAuth';
 import AuthWrapper from './AuthWrapper';
-import ThemeProvider from '../providers/ThemeProvider';
 import AppLayout from './AppLayout/AppLayout';
 import { SequentialNamingProvider } from '../contexts/SequentialNamingContext';
 import { usePathname } from 'next/navigation';
@@ -25,14 +24,12 @@ export default function ConditionalAuthLayout({
     content: React.ReactNode,
     includeAuth: boolean = false
   ) => {
-    const wrappedContent = <ThemeProvider>{content}</ThemeProvider>;
-
     return (
       <SessionProviderWrapper>
         {includeAuth ? (
-          <SuspenseAuthProvider>{wrappedContent}</SuspenseAuthProvider>
+          <SuspenseAuthProvider>{content}</SuspenseAuthProvider>
         ) : (
-          wrappedContent
+          content
         )}
       </SessionProviderWrapper>
     );
@@ -59,7 +56,8 @@ export default function ConditionalAuthLayout({
         >
           Loading...
         </div>
-      </SequentialNamingProvider>
+      </SequentialNamingProvider>,
+      true
     );
   }
 
@@ -69,7 +67,7 @@ export default function ConditionalAuthLayout({
       'Feature flags failed to load, defaulting to no authentication:',
       error
     );
-    return wrapWithProviders(appContent);
+    return wrapWithProviders(appContent, true);
   }
 
   const isAuthEnabled = flags.enableAuthentication;

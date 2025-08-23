@@ -7,7 +7,10 @@ import React, {
   useCallback,
   useMemo,
   ReactNode,
+  useEffect,
+  useRef,
 } from 'react';
+import { useAuth } from '@/hooks/useAuth';
 
 const numberToOrdinalWord = (num: number): string => {
   const ordinals = [
@@ -61,26 +64,104 @@ interface SequentialNamingProviderProps {
 export const SequentialNamingProvider: React.FC<
   SequentialNamingProviderProps
 > = ({ children }) => {
-  const getInitialCounter = (): number => {
-    if (typeof window !== 'undefined') {
-      const savedCounter = localStorage.getItem('sequentialNamingCounter');
-      if (savedCounter) {
-        const parsedCounter = parseInt(savedCounter, 10);
-        if (!isNaN(parsedCounter)) {
-          return parsedCounter;
-        }
-      }
-    }
-    return 1;
-  };
+  const { session } = useAuth();
 
-  const [counter, setCounter] = useState(getInitialCounter);
+  const [counter, setCounter] = useState(1);
+
+  const hasSessionRef = useRef<boolean>(false);
+  const STORAGE_KEY = 'sequentialNamingCounter:session';
+  const INIT_KEY = `${STORAGE_KEY}:initialized`;
+
+  const clearSessionStorage = useCallback(() => {
+    try {
+      sessionStorage.removeItem(INIT_KEY);
+      sessionStorage.removeItem(STORAGE_KEY);
+    } catch {}
+  }, [INIT_KEY, STORAGE_KEY]);
+
+  const resetCounter = useCallback(() => {
+    setCounter(1);
+    try {
+      sessionStorage.setItem(STORAGE_KEY, '1');
+    } catch {}
+  }, [STORAGE_KEY]);
+
+  const hydrateFromStorage = useCallback(() => {
+    try {
+      const saved = sessionStorage.getItem(STORAGE_KEY);
+      const parsed = saved ? parseInt(saved, 10) : NaN;
+      if (!isNaN(parsed) && parsed > 0) {
+        setCounter(parsed);
+      } else {
+        resetCounter();
+      }
+    } catch {
+      resetCounter();
+    }
+  }, [STORAGE_KEY, resetCounter]);
+
+  const markInitialized = useCallback(() => {
+    try {
+      sessionStorage.setItem(INIT_KEY, 'true');
+    } catch {}
+  }, [INIT_KEY]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const isLoggedIn = !!session;
+
+    if (!isLoggedIn && hasSessionRef.current) {
+      clearSessionStorage();
+      resetCounter();
+      hasSessionRef.current = false;
+      return;
+    }
+
+    if (!isLoggedIn) {
+      hasSessionRef.current = false;
+      return;
+    }
+
+    if (!hasSessionRef.current) {
+      const alreadyInitialized = (() => {
+        try {
+          return sessionStorage.getItem(INIT_KEY) === 'true';
+        } catch {
+          return false;
+        }
+      })();
+
+      if (alreadyInitialized) {
+        hydrateFromStorage();
+      } else {
+        markInitialized();
+        resetCounter();
+      }
+      hasSessionRef.current = true;
+      return;
+    }
+
+    hydrateFromStorage();
+    hasSessionRef.current = true;
+  }, [
+    session,
+    clearSessionStorage,
+    resetCounter,
+    hydrateFromStorage,
+    markInitialized,
+    INIT_KEY,
+  ]);
 
   const generateAnalysisName = useCallback((): string => {
     const nameWithOrdinal = generateNameString(counter, 'Analysis');
-    const newCounter = counter + 1;
-    setCounter(newCounter);
-    localStorage.setItem('sequentialNamingCounter', newCounter.toString());
+    setCounter((prev) => {
+      const next = prev + 1;
+      try {
+        sessionStorage.setItem(STORAGE_KEY, next.toString());
+      } catch {}
+      return next;
+    });
     return nameWithOrdinal;
   }, [counter]);
 

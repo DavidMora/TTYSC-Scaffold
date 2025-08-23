@@ -193,7 +193,6 @@ describe('useZoomable', () => {
         return 0 as unknown as number;
       };
       // Override both window and globalThis to be safe in JSDOM
-      // @ts-expect-error override for tests
       globalThis.requestAnimationFrame = immediateRAF;
       rafSpyWin = jest
         .spyOn(window, 'requestAnimationFrame')
@@ -348,6 +347,95 @@ describe('useZoomable', () => {
       const after = result.current.offset;
       // With RAF mocked to run immediately, offset should update synchronously
       expect(after.x).not.toBe(before.x);
+    });
+
+    it('dataX: handleZoomOut forces nudge when already at full span', () => {
+      const onChange = jest.fn();
+      const { result } = renderHook(() =>
+        useZoomable({
+          mode: 'dataX',
+          dataLength: 100,
+          onWindowChange: onChange,
+        })
+      );
+
+      // Initially full span; zooming out would be a no-op and should trigger forced branch
+      act(() => {
+        result.current.handleZoomOut();
+      });
+      expect(onChange).toHaveBeenCalled();
+      expect(result.current.viewWindow).toEqual({ start: 0, end: 1 });
+    });
+
+    it('dataX + dataAxis=y: pans vertically via mouse and wheel', () => {
+      const { result } = renderHook(() =>
+        useZoomable({ mode: 'dataX', dataLength: 40, dataAxis: 'y' })
+      );
+      const viewport = setupContainer(300, 300);
+      act(() => {
+        result.current.viewportRef.current = viewport;
+      });
+
+      // Reduce span so pan is allowed
+      act(() => {
+        result.current.handleZoomIn();
+      });
+
+      const winStart = result.current.viewWindow;
+      act(() => {
+        result.current.onMouseDown({
+          clientX: 0,
+          clientY: 100,
+        } as React.MouseEvent<HTMLDivElement>);
+        result.current.onMouseMove({
+          clientX: 0,
+          clientY: 140,
+        } as React.MouseEvent<HTMLDivElement>);
+      });
+      const winAfterMouse = result.current.viewWindow;
+      expect(winAfterMouse.start).not.toBe(winStart.start);
+      expect(winAfterMouse.end).not.toBe(winStart.end);
+
+      // Wheel vertical pan (no ctrl)
+      const beforeWheel = result.current.viewWindow;
+      act(() => {
+        result.current.onWheel({
+          ctrlKey: false,
+          deltaX: 0,
+          deltaY: 20,
+          preventDefault: () => {},
+        } as React.WheelEvent<HTMLDivElement>);
+      });
+      const afterWheel = result.current.viewWindow;
+      expect(afterWheel.start).not.toBe(beforeWheel.start);
+    });
+
+    it('zoomActive: reflects mode-specific conditions', () => {
+      // visual: false at 1x, true when zoomed in
+      const visual = renderHook(() =>
+        useZoomable({ mode: 'visual', maxZoom: 3 })
+      );
+      expect(visual.result.current.zoomActive).toBe(false);
+      act(() => {
+        visual.result.current.handleZoomIn();
+      });
+      expect(visual.result.current.zoomActive).toBe(true);
+
+      // dataX: true when span < 1 and multiple items
+      const dataX = renderHook(() =>
+        useZoomable({ mode: 'dataX', dataLength: 10 })
+      );
+      expect(dataX.result.current.zoomActive).toBe(false);
+      act(() => {
+        dataX.result.current.handleZoomIn();
+      });
+      expect(dataX.result.current.zoomActive).toBe(true);
+
+      // dataX: false when there are not multiple items
+      const single = renderHook(() =>
+        useZoomable({ mode: 'dataX', dataLength: 1 })
+      );
+      expect(single.result.current.zoomActive).toBe(false);
     });
   });
 });

@@ -1,13 +1,13 @@
-import { apiClient } from '@/lib/api';
+import { httpClient } from '@/lib/api';
 import { BFF_EXPORT_TABLE } from '@/lib/constants/api/bff-routes';
 import { getExportTable } from '@/lib/services/export.service';
 import { ExportTableParams } from '@/lib/types/export';
 
 jest.mock('@/lib/api', () => ({
-  apiClient: { get: jest.fn() },
+  httpClient: { get: jest.fn() },
 }));
 
-const mockHttpClient = apiClient as jest.Mocked<typeof apiClient>;
+const mockHttpClient = httpClient as jest.Mocked<typeof httpClient>;
 
 describe('exportService', () => {
   const mockBlob = new Blob(['test data'], { type: 'text/csv' });

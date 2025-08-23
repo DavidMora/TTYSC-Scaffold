@@ -4,27 +4,33 @@ export interface ChartSeries {
   color?: string;
 }
 
+export const CHART_TYPE = {
+  bar: 'bar',
+  line: 'line',
+  pie: 'pie',
+  doughnut: 'doughnut',
+  area: 'area',
+  column: 'column',
+  bullet: 'bullet',
+  columnWithTrend: 'columnWithTrend',
+  composed: 'composed',
+  radar: 'radar',
+} as const;
+
+export type ChartType = (typeof CHART_TYPE)[keyof typeof CHART_TYPE];
+
 export interface ChartData {
-  type:
-    | 'bar'
-    | 'line'
-    | 'pie'
-    | 'doughnut'
-    | 'area'
-    | 'column'
-    | 'bullet'
-    | 'columnWithTrend'
-    | 'composed'
-    | 'radar';
+  type?: ChartType;
   labels: string[];
   data: number[] | ChartSeries[];
 }
 
 export interface AIChartData {
-  headline: string;
+  headline?: string;
   timestamp: string;
   preamble?: string;
   content?: string;
+  label?: string;
   chart: ChartData;
 }
 
@@ -57,7 +63,7 @@ export interface BulletMeasure extends ChartMeasure {
 }
 
 export interface ChartMeasureWithType extends ChartMeasure {
-  type: string;
+  type: ChartType;
 }
 
 export interface ChartRendererProps {

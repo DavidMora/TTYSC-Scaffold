@@ -17,6 +17,8 @@
   "routes": [
     { "pattern": "^/chat/stream$", "backend": "real" },
     { "pattern": "^/chats", "backend": "real" },
+    { "pattern": "^/export", "backend": "mock" },
+    { "pattern": "^/auxiliary/chart", "backend": "mock" },
     { "pattern": "^/settings", "backend": "mock" },
     { "pattern": "^/analysis", "backend": "mock" },
     { "pattern": "^/api/v1/feedback", "backend": "feedback" }

@@ -153,7 +153,7 @@ describe('AIResponseBubble', () => {
         <AIResponseBubble message={{ ...baseMessage, title: undefined }} />
       </TestWrapper>
     );
-    expect(screen.getByText('AI Response')).toBeInTheDocument();
+    expect(screen.getByText('TTYSC Agent')).toBeInTheDocument();
   });
 
   it('does not render content when not streaming and content is null', () => {
