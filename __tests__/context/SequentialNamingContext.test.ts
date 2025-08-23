@@ -12,33 +12,33 @@ jest.mock('@/hooks/useAuth', () => ({
   useAuth: jest.fn(() => mockAuthState),
 }));
 
-// Mock sessionStorage used by provider
-const sessionStore: Record<string, string> = {};
-const sessionStorageMock = {
+// Mock localStorage used by provider
+const localStore: Record<string, string> = {};
+const localStorageMock = {
   getItem: jest.fn((key: string) =>
-    key in sessionStore ? sessionStore[key] : null
+    key in localStore ? localStore[key] : null
   ),
   setItem: jest.fn((key: string, value: string) => {
-    sessionStore[key] = value;
+    localStore[key] = value;
   }),
   removeItem: jest.fn((key: string) => {
-    delete sessionStore[key];
+    delete localStore[key];
   }),
   clear: jest.fn(() => {
-    for (const k of Object.keys(sessionStore)) delete sessionStore[k];
+    for (const k of Object.keys(localStore)) delete localStore[k];
   }),
 };
-Object.defineProperty(window, 'sessionStorage', {
-  value: sessionStorageMock,
+Object.defineProperty(window, 'localStorage', {
+  value: localStorageMock,
 });
 
 describe('useSequentialNaming', () => {
   beforeEach(() => {
-    sessionStorageMock.getItem.mockClear();
-    sessionStorageMock.setItem.mockClear();
-    sessionStorageMock.removeItem.mockClear();
-    sessionStorageMock.clear.mockClear();
-    sessionStorageMock.clear();
+    localStorageMock.getItem.mockClear();
+    localStorageMock.setItem.mockClear();
+    localStorageMock.removeItem.mockClear();
+    localStorageMock.clear.mockClear();
+    localStorageMock.clear();
     // default to logged-in unless test overrides
     mockAuthState.session = { user: { id: 'u1' } } as unknown as {
       user: { id: string };
@@ -54,12 +54,16 @@ describe('useSequentialNaming', () => {
   };
 
   it('should handle numbers beyond 20', () => {
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date(0));
+
     const { result } = renderHook(() => useSequentialNaming(), {
       wrapper: createWrapper(),
     });
 
     for (let i = 1; i <= 20; i++) {
       act(() => {
+        jest.advanceTimersByTime(200);
         result.current.generateAnalysisName();
       });
     }
@@ -67,10 +71,13 @@ describe('useSequentialNaming', () => {
     expect(result.current.currentCounter).toBe(21);
 
     act(() => {
+      jest.advanceTimersByTime(200);
       result.current.generateAnalysisName();
     });
 
     expect(result.current.currentCounter).toBe(22);
+
+    jest.useRealTimers();
   });
 
   it('should throw error when used outside of provider', () => {
@@ -87,7 +94,7 @@ describe('useSequentialNaming', () => {
     consoleSpy.mockRestore();
   });
 
-  it('should start with counter 1 when sessionStorage is empty', () => {
+  it('should start with counter 1 when storage is empty', () => {
     // INIT_KEY not set -> provider resets to 1
 
     const { result } = renderHook(() => useSequentialNaming(), {
@@ -97,14 +104,10 @@ describe('useSequentialNaming', () => {
     expect(result.current.currentCounter).toBe(1);
   });
 
-  it('should start with counter 1 when sessionStorage returns invalid number', () => {
-    // Mark as initialized but with invalid stored value
-    sessionStorageMock.setItem(
-      'sequentialNamingCounter:session:initialized',
-      'true'
-    );
-    sessionStorageMock.setItem(
-      'sequentialNamingCounter:session',
+  it('should start with counter 1 when storage returns invalid number', () => {
+    // Set invalid stored value for user
+    localStorageMock.setItem(
+      'sequentialNamingCounter:user:u1',
       'invalid' as unknown as string
     );
 
@@ -115,12 +118,8 @@ describe('useSequentialNaming', () => {
     expect(result.current.currentCounter).toBe(1);
   });
 
-  it('should start with counter from sessionStorage when valid', () => {
-    sessionStorageMock.setItem(
-      'sequentialNamingCounter:session:initialized',
-      'true'
-    );
-    sessionStorageMock.setItem('sequentialNamingCounter:session', '5');
+  it('should start with counter from storage when valid', () => {
+    localStorageMock.setItem('sequentialNamingCounter:user:u1', '5');
 
     const { result } = renderHook(() => useSequentialNaming(), {
       wrapper: createWrapper(),
@@ -137,8 +136,8 @@ describe('useSequentialNaming', () => {
     });
 
     expect(result.current.currentCounter).toBe(1);
-    expect(sessionStorageMock.setItem).not.toHaveBeenCalled();
-    expect(sessionStorageMock.removeItem).not.toHaveBeenCalled();
+    expect(localStorageMock.setItem).not.toHaveBeenCalled();
+    expect(localStorageMock.removeItem).not.toHaveBeenCalled();
   });
 
   it('initializes on first login when not previously initialized', async () => {
@@ -155,23 +154,15 @@ describe('useSequentialNaming', () => {
     rerender();
 
     await waitFor(() => {
-      expect(sessionStorageMock.setItem).toHaveBeenCalledWith(
-        'sequentialNamingCounter:session:initialized',
-        'true'
-      );
-      expect(sessionStorageMock.setItem).toHaveBeenCalledWith(
-        'sequentialNamingCounter:session',
+      expect(localStorageMock.setItem).toHaveBeenCalledWith(
+        'sequentialNamingCounter:user:u1',
         '1'
       );
     });
   });
 
   it('hydrates from storage when already initialized on login', () => {
-    sessionStorageMock.setItem(
-      'sequentialNamingCounter:session:initialized',
-      'true'
-    );
-    sessionStorageMock.setItem('sequentialNamingCounter:session', '7');
+    localStorageMock.setItem('sequentialNamingCounter:user:u1', '7');
 
     const { result } = renderHook(() => useSequentialNaming(), {
       wrapper: createWrapper(),
@@ -185,7 +176,7 @@ describe('useSequentialNaming', () => {
     mockAuthState.session = { user: { id: 'u1' } } as unknown as {
       user: { id: string };
     };
-    const { rerender } = renderHook(() => useSequentialNaming(), {
+    const { result, rerender } = renderHook(() => useSequentialNaming(), {
       wrapper: createWrapper(),
     });
 
@@ -194,16 +185,11 @@ describe('useSequentialNaming', () => {
     rerender();
 
     await waitFor(() => {
-      expect(sessionStorageMock.removeItem).toHaveBeenCalledWith(
-        'sequentialNamingCounter:session:initialized'
+      expect(localStorageMock.removeItem).toHaveBeenCalledWith(
+        'sequentialNamingCounter:user:u1'
       );
-      expect(sessionStorageMock.removeItem).toHaveBeenCalledWith(
-        'sequentialNamingCounter:session'
-      );
-      expect(sessionStorageMock.setItem).toHaveBeenCalledWith(
-        'sequentialNamingCounter:session',
-        '1'
-      );
+      // state resets to 1 locally; storage write after logout is not required
+      expect(result.current.currentCounter).toBe(1);
     });
   });
 
@@ -216,7 +202,7 @@ describe('useSequentialNaming', () => {
     expect(result.current.currentCounter).toBe(1);
 
     // Update stored counter and trigger another logged-in render
-    sessionStorageMock.setItem('sequentialNamingCounter:session', '9');
+    localStorageMock.setItem('sequentialNamingCounter:user:u1', '9');
     mockAuthState.session = { user: { id: 'u1', v: '2' } } as unknown as {
       user: { id: string; v: string };
     };
