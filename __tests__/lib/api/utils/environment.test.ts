@@ -8,6 +8,13 @@ import {
 } from '@/lib/api/utils/environment';
 
 describe('Environment Utilities', () => {
+  const ORIGINAL_ENV = process.env;
+
+  afterEach(() => {
+    // Restore the original env object after every test run
+    jest.replaceProperty(process, 'env', ORIGINAL_ENV);
+  });
+
   describe('getEnvironment', () => {
     it('should return "dev" for non-production NODE_ENV', () => {
       jest.replaceProperty(process, 'env', {
