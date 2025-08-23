@@ -16,8 +16,8 @@ import {
   createChat,
   updateChat,
   createChatMessage,
-  updateMessageFeedback,
 } from '@/lib/services/chats.service';
+import { submitFeedback } from '@/lib/services/feedback.service';
 import { HttpClientResponse } from '@/lib/types/api/http-client';
 import { Chat, BotResponse, VoteType } from '@/lib/types/chats';
 
@@ -33,7 +33,9 @@ const mockedUpdateChat = updateChat as jest.MockedFunction<typeof updateChat>;
 const mockedCreateChatMessage = createChatMessage as jest.MockedFunction<
   typeof createChatMessage
 >;
-const mockedUpdateMessageFeedback = updateMessageFeedback;
+const mockedSubmitFeedback = submitFeedback as jest.MockedFunction<
+  typeof submitFeedback
+>;
 
 jest.mock('@/lib/services/chats.service', () => ({
   getChats: jest.fn(),
@@ -41,7 +43,10 @@ jest.mock('@/lib/services/chats.service', () => ({
   createChat: jest.fn(),
   updateChat: jest.fn(),
   createChatMessage: jest.fn(),
-  updateMessageFeedback: jest.fn(),
+}));
+
+jest.mock('@/lib/services/feedback.service', () => ({
+  submitFeedback: jest.fn(),
 }));
 
 describe('Chat Hooks', () => {
@@ -384,9 +389,7 @@ describe('Chat Hooks', () => {
         headers: {},
         ok: true,
       };
-      (mockedUpdateMessageFeedback as jest.Mock).mockResolvedValue(
-        mockResponse
-      );
+      (mockedSubmitFeedback as jest.Mock).mockResolvedValue(mockResponse);
 
       const onSuccess = jest.fn();
       const onError = jest.fn();
@@ -415,7 +418,7 @@ describe('Chat Hooks', () => {
 
     it('should call onError callback when feedback update fails', async () => {
       const mockError = new Error('Failed to update feedback');
-      (mockedUpdateMessageFeedback as jest.Mock).mockRejectedValue(mockError);
+      (mockedSubmitFeedback as jest.Mock).mockRejectedValue(mockError);
 
       const onSuccess = jest.fn();
       const onError = jest.fn();
@@ -442,7 +445,7 @@ describe('Chat Hooks', () => {
       expect(onError).toHaveBeenCalledWith(mockError);
     });
 
-    it('should call updateMessageFeedback service with correct parameters', async () => {
+    it('should call submitFeedback service with correct parameters', async () => {
       const mockResponse = {
         data: undefined,
         status: 200,
@@ -450,9 +453,7 @@ describe('Chat Hooks', () => {
         headers: {},
         ok: true,
       };
-      (mockedUpdateMessageFeedback as jest.Mock).mockResolvedValue(
-        mockResponse
-      );
+      (mockedSubmitFeedback as jest.Mock).mockResolvedValue(mockResponse);
 
       const onSuccess = jest.fn();
       const onError = jest.fn();
@@ -478,10 +479,13 @@ describe('Chat Hooks', () => {
       };
       await result.current.mutateAsync(payload);
 
-      expect(mockedUpdateMessageFeedback).toHaveBeenCalledWith(
-        'test-message-id',
-        'up'
-      );
+      expect(mockedSubmitFeedback).toHaveBeenCalledWith({
+        feedback: 'good',
+        queryId: 'test-message-id',
+        query: 'Test query',
+        answer: 'Test answer',
+        comments: '',
+      });
     });
   });
 
