@@ -110,9 +110,13 @@ export const useUpdateMessageFeedback = ({
     async ({
       messageId,
       feedbackVote,
+      query,
+      answer,
     }: {
       messageId: string;
       feedbackVote: VoteType;
+      query?: string;
+      answer?: string;
     }) => {
       let feedbackValue: 'good' | 'bad' | 'feedback provided';
       switch (feedbackVote) {
@@ -130,8 +134,8 @@ export const useUpdateMessageFeedback = ({
       const feedbackPayload: SubmitFeedbackRequest = {
         feedback: feedbackValue,
         queryId: messageId,
-        query: '',
-        answer: '',
+        query: query || '',
+        answer: answer || '',
         comments: '',
       };
 
