@@ -83,8 +83,8 @@ global.Response = class MockResponse {
     return new MockResponse(null, { status: 500 });
   }
 
-  static json(
-    data: any,
+  static json<T>(
+    data: T,
     init?: {
       status?: number;
       statusText?: string;
@@ -97,7 +97,7 @@ global.Response = class MockResponse {
   static redirect(url: string, status: number = 302) {
     return new MockResponse(null, { status, headers: { location: url } });
   }
-} as any;
+} as unknown as typeof Response;
 
 // Mock the backendRequest function
 jest.mock('@/lib/api/backend-request', () => ({
