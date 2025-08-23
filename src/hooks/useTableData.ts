@@ -19,6 +19,10 @@ interface UseTableDataReturn {
   activeFilters: Record<string, unknown>;
   filteredRows: TableDataRow[];
   processedFilters: Filter[];
+  visibleHeaders: { text: string; accessorKey: string }[];
+  visibleColumns: Record<string, boolean>;
+  setColumnVisibility: (accessorKey: string, visible: boolean) => void;
+  resetColumnVisibility: () => void;
   handleSearch: (term: string) => void;
   handleFilterChange: (event: FilterChangeEvent) => void;
   clearFilters: () => void;
@@ -197,6 +201,16 @@ export const useTableData = ({
   const [activeFilters, setActiveFilters] = useState<Record<string, unknown>>(
     {}
   );
+  const [visibleColumns, setVisibleColumns] = useState<Record<string, boolean>>(
+    () => {
+      // Initialize all columns as visible by default
+      const initialVisibility: Record<string, boolean> = {};
+      headers.forEach((header) => {
+        initialVisibility[header.accessorKey] = true;
+      });
+      return initialVisibility;
+    }
+  );
 
   // Process filters with memoization
   const processedFilters = useMemo(() => {
@@ -210,6 +224,13 @@ export const useTableData = ({
       searchText: buildSearchText(row, headers),
     }));
   }, [rows, headers]);
+
+  // Filter headers based on visibility
+  const visibleHeaders = useMemo(() => {
+    return headers.filter(
+      (header) => visibleColumns[header.accessorKey] !== false
+    );
+  }, [headers, visibleColumns]);
 
   // Apply filters first, then search
   const filteredRows = useMemo(() => {
@@ -249,6 +270,24 @@ export const useTableData = ({
     setSearchTerm('');
   }, []);
 
+  const setColumnVisibility = useCallback(
+    (accessorKey: string, visible: boolean) => {
+      setVisibleColumns((prev) => ({
+        ...prev,
+        [accessorKey]: visible,
+      }));
+    },
+    []
+  );
+
+  const resetColumnVisibility = useCallback(() => {
+    const resetVisibility: Record<string, boolean> = {};
+    headers.forEach((header) => {
+      resetVisibility[header.accessorKey] = true;
+    });
+    setVisibleColumns(resetVisibility);
+  }, [headers]);
+
   const hasResults = filteredRows.length > 0;
 
   return {
@@ -256,6 +295,10 @@ export const useTableData = ({
     activeFilters,
     filteredRows,
     processedFilters,
+    visibleHeaders,
+    visibleColumns,
+    setColumnVisibility,
+    resetColumnVisibility,
     handleSearch,
     handleFilterChange,
     clearFilters,

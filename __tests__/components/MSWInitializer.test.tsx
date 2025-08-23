@@ -43,7 +43,7 @@ describe('MSWInitializer', () => {
     );
   });
 
-  it('still starts MSW worker in production environment (current behavior)', async () => {
+  it('should not start MSW worker in production environment', async () => {
     process.env.NODE_ENV = 'production';
 
     render(<MSWInitializer />);
@@ -51,9 +51,7 @@ describe('MSWInitializer', () => {
     // Wait for the dynamic import to resolve
     await new Promise((resolve) => setTimeout(resolve, 0));
 
-    expect(mockStart).toHaveBeenCalledWith(
-      expect.objectContaining({ onUnhandledRequest: 'bypass' })
-    );
+    expect(mockStart).not.toHaveBeenCalled();
   });
 
   it('still starts MSW worker in test environment (current behavior)', async () => {

@@ -7,6 +7,11 @@ export default function MSWInitializer() {
     if (typeof window === 'undefined') return;
     if ((window as unknown as Record<string, boolean>).__MSW_STARTED__) return;
 
+    // Only start MSW in development
+    if (process.env.NODE_ENV === 'production') {
+      return;
+    }
+
     void import('@/mocks/browser')
       .then(({ worker }) => {
         (window as unknown as Record<string, boolean>).__MSW_STARTED__ = true;

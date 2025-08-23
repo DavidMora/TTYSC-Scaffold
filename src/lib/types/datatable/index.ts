@@ -46,12 +46,14 @@ export interface TableToolbarProps {
   filters?: Filter[];
   onFilterChange?: (event: FilterChangeEvent) => void;
   onSearch?: (searchTerm: string) => void;
+  onSettingsClick?: () => void;
   disableFullScreen?: boolean;
 }
 
 export interface TableDataHeader {
   text: string;
   accessorKey: string;
+  visible?: boolean;
 }
 
 export type TableDataRowPrimitive = string | number | boolean | null;
