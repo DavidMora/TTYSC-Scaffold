@@ -5,8 +5,8 @@ import {
   createChat,
   updateChat,
   createChatMessage,
-  updateMessageFeedback,
 } from '@/lib/services/chats.service';
+import { submitFeedback } from '@/lib/services/feedback.service';
 import {
   BotResponse,
   Chat,
@@ -15,6 +15,7 @@ import {
   UpdateChatRequest,
   VoteType,
 } from '@/lib/types/chats';
+import { SubmitFeedbackRequest } from '@/lib/types/feedback';
 
 export const CHATS_KEY = 'chatHistory';
 export const CHAT_KEY = (id: string) => `chat-${id}`;
@@ -113,8 +114,30 @@ export const useUpdateMessageFeedback = ({
       messageId: string;
       feedbackVote: VoteType;
     }) => {
+      let feedbackValue: 'good' | 'bad' | 'feedback provided';
+      switch (feedbackVote) {
+        case 'up':
+          feedbackValue = 'good';
+          break;
+        case 'down':
+          feedbackValue = 'bad';
+          break;
+        default:
+          feedbackValue = 'feedback provided';
+          break;
+      }
+
+      const feedbackPayload: SubmitFeedbackRequest = {
+        feedback: feedbackValue,
+        queryId: messageId,
+        query: 'Test query',
+        answer: 'Test answer',
+        comments: '',
+      };
+
       // Call the service with separate arguments as expected by the tests
-      return await updateMessageFeedback(messageId, feedbackVote);
+      // return await updateMessageFeedback(messageId, feedbackVote);
+      return await submitFeedback(feedbackPayload);
     },
     {
       invalidateQueries: [], // No need to invalidate any queries here
