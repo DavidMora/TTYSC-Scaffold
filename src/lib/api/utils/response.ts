@@ -48,10 +48,10 @@ export function createUpstreamResponse<T = unknown>({
   data: T;
   status: number;
 }): Response {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: { 'Content-Type': 'application/json' },
-  });
+  const headers = new Headers();
+  headers.set('Content-Type', 'application/json');
+
+  return new Response(JSON.stringify(data), { status, headers });
 }
 
 /**
