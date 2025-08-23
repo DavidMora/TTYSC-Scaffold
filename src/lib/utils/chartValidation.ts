@@ -14,21 +14,21 @@ const isNonEmptyString = (value: unknown): value is string => {
 
 export const validateChart = (c: ChartData | undefined): string | undefined => {
   if (!c) {
-    return 'Invalid chart configuration';
+    return 'Error Displaying Chart: Invalid chart configuration';
   }
 
   if (!c.type) {
-    return 'Chart type is required';
+    return 'Error Displaying Chart: Chart type is required';
   }
 
   const { labels, data } = c;
 
   if (!isNonEmptyArray(labels)) {
-    return 'Labels must be a non-empty array';
+    return 'Error Displaying Chart: Labels must be a non-empty array';
   }
 
   if (!isNonEmptyArray(data)) {
-    return 'Data must be a non-empty array';
+    return 'Error Displaying Chart: Data must be a non-empty array';
   }
 
   const dataArray = data as unknown[];
@@ -36,11 +36,11 @@ export const validateChart = (c: ChartData | undefined): string | undefined => {
 
   if (typeof firstItem === 'number') {
     if (!dataArray.every(isNumber)) {
-      return 'Data must be an array of numbers';
+      return 'Error Displaying Chart: Data must be an array of numbers';
     }
 
     if (dataArray.length !== labels.length) {
-      return 'Data length must match labels length';
+      return 'Error Displaying Chart: Data length must match labels length';
     }
   } else {
     const looksLikeSeries = (v: unknown): v is ChartSeries =>
@@ -54,17 +54,17 @@ export const validateChart = (c: ChartData | undefined): string | undefined => {
       v.data.every(isNumber);
 
     if (!dataArray.every(looksLikeSeries)) {
-      return 'Data must be an array of { name: string; data: number[] }';
+      return 'Error Displaying Chart: Data must be an array of { name: string; data: number[] }';
     }
 
     const invalid = dataArray.find((s) => s.data.length !== labels.length);
     if (invalid) {
-      return 'Each series data length must match labels length';
+      return 'Error Displaying Chart: Each series data length must match labels length';
     }
   }
 
   if (labels.some((label) => label === 'undefined')) {
-    return 'Labels must be an array of strings';
+    return 'Error Displaying Chart: Labels must be an array of strings';
   }
 
   return undefined;

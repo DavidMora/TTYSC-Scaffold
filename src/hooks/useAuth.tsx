@@ -35,6 +35,7 @@ interface AuthContextType {
   retryCount: number;
   logout: () => Promise<void>;
   login: () => Promise<void>;
+  restartSession: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -359,6 +360,40 @@ function useAuthInternal(): AuthContextType {
     }
   };
 
+  // Lightweight client-side session restart to clear local caches and re-fetch session
+  const restartSession = async () => {
+    try {
+      console.log('[Auth] Restart session requested');
+
+      // Ask the server to validate there is an active session
+      const response = await fetch('/api/auth/restart-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      if (!response.ok) {
+        const text = await response.text();
+        console.error('[Auth] Restart session failed:', text);
+        return;
+      }
+
+      if (typeof window !== 'undefined') {
+        // Clear local caches/state; cookies (auth) are server-managed
+        try {
+          window.localStorage.clear();
+          window.sessionStorage.clear();
+        } catch (e) {
+          console.warn('[Auth] Failed to clear storage during restart:', e);
+        }
+
+        // Soft refresh to re-hydrate client from current server session
+        window.location.reload();
+      }
+    } catch (error) {
+      console.error('[Auth] Error during session restart:', error);
+    }
+  };
+
   return {
     session: extendedSession,
     authProcess: 'azure', // Simplified to always return azure
@@ -369,6 +404,7 @@ function useAuthInternal(): AuthContextType {
     retryCount,
     logout,
     login,
+    restartSession,
   };
 }
 

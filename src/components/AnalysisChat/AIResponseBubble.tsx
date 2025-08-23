@@ -7,6 +7,7 @@ import { AIResponseRenderer } from '@/components/AnalysisChat/AIResponseRenderer
 import { AIChart } from '@/components/AICharts/AIChart';
 import type { ChatStreamStepInfo } from '@/hooks/chats/stream';
 import BaseDataTable from '@/components/Tables/BaseDataTable';
+import { ChartError } from '@/components/AICharts/AIChartSkeleton';
 
 interface AIResponseBubbleProps {
   message: ChatMessage;
@@ -67,7 +68,7 @@ export function AIResponseBubble({
             fontWeight: '700',
           }}
         >
-          {message.title ?? 'AI Response'}
+          {message.title ?? 'TTYSC Agent'}
         </Text>
       </div>
 
@@ -104,6 +105,13 @@ export function AIResponseBubble({
       {!isStreaming && message.chart && (
         <div style={{ width: '100%', marginTop: '1rem' }}>
           <AIChart data={message.chart} />
+        </div>
+      )}
+
+      {/* Show chart generation error even if chart is missing */}
+      {!isStreaming && !message.chart && message.chartGenError && (
+        <div style={{ width: '100%', marginTop: '1rem' }}>
+          <ChartError error={message.chartGenError} />
         </div>
       )}
     </div>

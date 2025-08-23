@@ -103,6 +103,7 @@ jest.mock('@ui5/webcomponents-react', () => {
       text,
       children,
       selected,
+      onClick,
       __onSelectionChange,
       // absorb unselectable from component props so it is not forwarded to DOM
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -115,6 +116,7 @@ jest.mock('@ui5/webcomponents-react', () => {
       children?: React.ReactNode;
       selected?: boolean;
       unselectable?: boolean;
+      onClick?: () => void;
       __onSelectionChange?: (event: {
         detail: { item: { dataset: { path: string; action?: string } } };
       }) => void;
@@ -124,7 +126,10 @@ jest.mock('@ui5/webcomponents-react', () => {
           data-testid={`nav-item-${text.toLowerCase().replace(/\s+/g, '-')}`}
           data-selected={selected}
           data-action={dataAction}
-          onClick={() =>
+          onClick={() => {
+            // call the item's own onClick handler if provided (e.g., logout/restart)
+            onClick?.();
+            // also simulate a selection change for navigation items
             __onSelectionChange?.({
               detail: {
                 item: {
@@ -134,8 +139,8 @@ jest.mock('@ui5/webcomponents-react', () => {
                   },
                 },
               },
-            })
-          }
+            });
+          }}
         >
           {text}
         </button>
@@ -249,9 +254,11 @@ jest.mock(
 
 // Mock useAuth hook - moved here to be properly hoisted
 const mockLogout = jest.fn();
+const mockRestartSession = jest.fn();
 jest.mock('@/hooks/useAuth', () => ({
   useAuth: () => ({
     logout: mockLogout,
+    restartSession: mockRestartSession,
     session: null,
     isLoading: false,
     authError: null,
@@ -478,19 +485,17 @@ describe('SideBarMenu', () => {
     const logoutButton = screen.getByTestId('nav-item-log-out');
     expect(logoutButton).toBeInTheDocument();
 
-    // Check if data-action is set correctly
-    expect(logoutButton).toHaveAttribute('data-action', 'logout');
-
-    // Click the button which should trigger the mock onClick
+    // Open confirmation modal
     fireEvent.click(logoutButton);
 
-    // Wait for async execution
-    await waitFor(
-      () => {
-        expect(mockLogout).toHaveBeenCalled();
-      },
-      { timeout: 2000 }
-    );
+    // Confirm logout in modal (pick emphasized button inside dialog)
+    const dialog = screen.getByTestId('ui5-dialog');
+    const confirmButtons = dialog.querySelectorAll('button');
+    fireEvent.click(confirmButtons[1]);
+
+    await waitFor(() => {
+      expect(mockLogout).toHaveBeenCalled();
+    });
   });
 
   it('covers handleLogout error path', async () => {
@@ -501,6 +506,9 @@ describe('SideBarMenu', () => {
 
     const logoutButton = screen.getByTestId('nav-item-log-out');
     fireEvent.click(logoutButton);
+    const dialog = screen.getByTestId('ui5-dialog');
+    const confirmButtons = dialog.querySelectorAll('button');
+    fireEvent.click(confirmButtons[1]);
 
     await waitFor(() => {
       expect(mockLogout).toHaveBeenCalled();
@@ -510,87 +518,31 @@ describe('SideBarMenu', () => {
   });
 
   it('handles restart session action when restart item is triggered', async () => {
-    const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
-
-    // Mock fetch for successful restart session API call
-    global.fetch = jest.fn().mockResolvedValue({
-      ok: true,
-    });
-
-    // Mock localStorage and sessionStorage
-    const mockLocalStorageClear = jest.fn();
-    const mockSessionStorageClear = jest.fn();
-
-    Object.defineProperty(window, 'localStorage', {
-      value: { clear: mockLocalStorageClear },
-      writable: true,
-    });
-
-    Object.defineProperty(window, 'sessionStorage', {
-      value: { clear: mockSessionStorageClear },
-      writable: true,
-    });
+    mockRestartSession.mockResolvedValue(undefined);
 
     render(<SideBarMenu navItems={mockNavItems} />);
 
-    // Find and click the restart session item
     const restartItem = screen.getByTestId('nav-item-restart-session');
     fireEvent.click(restartItem);
 
-    // Wait for the API call
     await waitFor(() => {
-      expect(mockLocalStorageClear).toHaveBeenCalled();
-      expect(mockSessionStorageClear).toHaveBeenCalled();
-      expect(global.fetch).toHaveBeenCalledWith('/api/auth/restart-session', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-      expect(consoleLogSpy).toHaveBeenCalledWith(
-        'Session restarted successfully'
-      );
+      expect(mockRestartSession).toHaveBeenCalled();
     });
-
-    consoleLogSpy.mockRestore();
   });
 
   it('handles restart session API error gracefully', async () => {
     const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
-
-    // Mock fetch for the restart session API call to return error
-    global.fetch = jest.fn().mockResolvedValue({
-      ok: false,
-      text: () => Promise.resolve('Server Error'),
-    });
-
-    // Mock localStorage and sessionStorage
-    const mockLocalStorageClear = jest.fn();
-    const mockSessionStorageClear = jest.fn();
-
-    Object.defineProperty(window, 'localStorage', {
-      value: { clear: mockLocalStorageClear },
-      writable: true,
-    });
-
-    Object.defineProperty(window, 'sessionStorage', {
-      value: { clear: mockSessionStorageClear },
-      writable: true,
-    });
+    mockRestartSession.mockRejectedValue('Server Error');
 
     render(<SideBarMenu navItems={mockNavItems} />);
 
-    // Find and click the restart session item
     const restartItem = screen.getByTestId('nav-item-restart-session');
     fireEvent.click(restartItem);
 
-    // Wait for the API call and error handling
     await waitFor(() => {
-      expect(mockLocalStorageClear).toHaveBeenCalled();
-      expect(mockSessionStorageClear).toHaveBeenCalled();
-      expect(global.fetch).toHaveBeenCalled();
+      expect(mockRestartSession).toHaveBeenCalled();
       expect(consoleErrorSpy).toHaveBeenCalledWith(
-        'Failed to restart session:',
+        'Error during restart session:',
         'Server Error'
       );
     });
@@ -601,35 +553,17 @@ describe('SideBarMenu', () => {
   it('handles restart session network error gracefully', async () => {
     const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
 
-    // Mock fetch to throw an error
-    global.fetch = jest.fn().mockRejectedValue(new Error('Network error'));
-
-    // Mock localStorage and sessionStorage
-    const mockLocalStorageClear = jest.fn();
-    const mockSessionStorageClear = jest.fn();
-
-    Object.defineProperty(window, 'localStorage', {
-      value: { clear: mockLocalStorageClear },
-      writable: true,
-    });
-
-    Object.defineProperty(window, 'sessionStorage', {
-      value: { clear: mockSessionStorageClear },
-      writable: true,
-    });
+    mockRestartSession.mockRejectedValue(new Error('Network error'));
 
     render(<SideBarMenu navItems={mockNavItems} />);
 
-    // Find and click the restart session item
     const restartItem = screen.getByTestId('nav-item-restart-session');
     fireEvent.click(restartItem);
 
-    // Wait for the error handling
     await waitFor(() => {
-      expect(mockLocalStorageClear).toHaveBeenCalled();
-      expect(mockSessionStorageClear).toHaveBeenCalled();
+      expect(mockRestartSession).toHaveBeenCalled();
       expect(consoleErrorSpy).toHaveBeenCalledWith(
-        'Error during session restart:',
+        'Error during restart session:',
         expect.any(Error)
       );
     });

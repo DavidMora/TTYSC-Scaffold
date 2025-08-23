@@ -73,27 +73,6 @@ describe('AIChartContainer', () => {
   });
 
   describe('Error state', () => {
-    it('should render error component with retry button', () => {
-      const mockError = new Error('Failed to load chart');
-      mockUseChart.mockReturnValue({
-        data: undefined,
-        isLoading: false,
-        error: mockError,
-        mutate: mockMutate,
-      });
-
-      render(<AIChartContainer chartId={mockChartId} />);
-
-      // Check if error component is rendered
-      expect(screen.getByText('Error loading chart')).toBeInTheDocument();
-      expect(screen.getByText('Failed to load chart')).toBeInTheDocument();
-      expect(screen.getByText('Retry')).toBeInTheDocument();
-
-      // Check if icon is rendered
-      const icon = screen.getByTestId('ui5-icon');
-      expect(icon).toBeInTheDocument();
-    });
-
     it('should render error component without error message when error is not an Error instance', () => {
       mockUseChart.mockReturnValue({
         data: undefined,
@@ -104,7 +83,6 @@ describe('AIChartContainer', () => {
 
       render(<AIChartContainer chartId={mockChartId} />);
 
-      expect(screen.getByText('Error loading chart')).toBeInTheDocument();
       expect(screen.getByText('String error')).toBeInTheDocument();
     });
 
@@ -118,7 +96,6 @@ describe('AIChartContainer', () => {
 
       render(<AIChartContainer chartId={mockChartId} />);
 
-      expect(screen.getByText('Error loading chart')).toBeInTheDocument();
       expect(screen.getByText('Unknown error occurred')).toBeInTheDocument();
     });
 

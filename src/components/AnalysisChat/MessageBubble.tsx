@@ -4,12 +4,14 @@ import { ChatMessage } from '@/lib/types/chats';
 import { parseDate } from '@/lib/utils/dateUtils';
 import { AIResponseBubble } from '@/components/AnalysisChat/AIResponseBubble';
 import type { ChatStreamStepInfo } from '@/hooks/chats/stream';
+import Image from 'next/image';
 
 interface MessageBubbleProps {
   message: ChatMessage;
   user?: {
     name: string;
     initials: string;
+    image?: string | null;
   };
   steps?: ChatStreamStepInfo[];
   isStreaming?: boolean;
@@ -48,15 +50,26 @@ export function MessageBubble({
             alignItems={'Center'}
             style={{ marginBottom: '7px', gap: '10px' }}
           >
-            <Avatar
-              initials={user.initials}
-              size="XS"
-              style={{
-                backgroundColor: '#5B738B80',
-                color: 'white',
-                fontSize: 'var(--sapFontSize)',
-              }}
-            />
+            {user.image ? (
+              <Avatar size="XS" style={{ fontSize: 'var(--sapFontSize)' }}>
+                <Image
+                  src={user.image}
+                  alt={user.name}
+                  width={20}
+                  height={20}
+                />
+              </Avatar>
+            ) : (
+              <Avatar
+                initials={user.initials}
+                size="XS"
+                style={{
+                  backgroundColor: '#5B738B80',
+                  color: 'white',
+                  fontSize: 'var(--sapFontSize)',
+                }}
+              />
+            )}
             <div>
               <Text
                 style={{

@@ -10,10 +10,11 @@ export interface ChatMessage {
   role: 'user' | 'assistant';
   title?: string;
   content: string;
-  chart?: AIChartData;
   created: string;
   feedbackVote?: VoteType;
+  chart?: AIChartData;
   table?: TableData;
+  chartGenError?: string;
 }
 
 export interface Chat {

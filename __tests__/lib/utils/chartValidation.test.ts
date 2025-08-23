@@ -3,12 +3,16 @@ import { CHART_TYPE, ChartData, ChartSeries } from '@/lib/types/charts';
 
 describe('validateChart', () => {
   it('returns error when chart is undefined', () => {
-    expect(validateChart(undefined)).toBe('Invalid chart configuration');
+    expect(validateChart(undefined)).toBe(
+      'Error Displaying Chart: Invalid chart configuration'
+    );
   });
 
   it('returns error when chart type is missing', () => {
     const chart = { labels: ['A'], data: [1] } as unknown as ChartData;
-    expect(validateChart(chart)).toBe('Chart type is required');
+    expect(validateChart(chart)).toBe(
+      'Error Displaying Chart: Chart type is required'
+    );
   });
 
   it('returns error when labels is not a non-empty array', () => {
@@ -18,7 +22,9 @@ describe('validateChart', () => {
       data: [1, 2, 3],
     } as unknown as ChartData;
 
-    expect(validateChart(chart)).toBe('Labels must be a non-empty array');
+    expect(validateChart(chart)).toBe(
+      'Error Displaying Chart: Labels must be a non-empty array'
+    );
   });
 
   it('returns error when data is not a non-empty array', () => {
@@ -28,7 +34,9 @@ describe('validateChart', () => {
       data: [],
     } as unknown as ChartData;
 
-    expect(validateChart(chart)).toBe('Data must be a non-empty array');
+    expect(validateChart(chart)).toBe(
+      'Error Displaying Chart: Data must be a non-empty array'
+    );
   });
 
   it('returns error when data contains non-number values for numeric data', () => {
@@ -38,7 +46,9 @@ describe('validateChart', () => {
       data: [1, '2', 3] as unknown as number[],
     } as ChartData;
 
-    expect(validateChart(chart)).toBe('Data must be an array of numbers');
+    expect(validateChart(chart)).toBe(
+      'Error Displaying Chart: Data must be an array of numbers'
+    );
   });
 
   it('returns error when data length does not match labels length for numeric data', () => {
@@ -48,7 +58,9 @@ describe('validateChart', () => {
       data: [1, 2],
     } as ChartData;
 
-    expect(validateChart(chart)).toBe('Data length must match labels length');
+    expect(validateChart(chart)).toBe(
+      'Error Displaying Chart: Data length must match labels length'
+    );
   });
 
   it('accepts valid numeric data and matching labels', () => {
@@ -83,6 +95,8 @@ describe('validateChart', () => {
       data: [1, 2, 3],
     };
 
-    expect(validateChart(chart)).toBe('Labels must be an array of strings');
+    expect(validateChart(chart)).toBe(
+      'Error Displaying Chart: Labels must be an array of strings'
+    );
   });
 });
