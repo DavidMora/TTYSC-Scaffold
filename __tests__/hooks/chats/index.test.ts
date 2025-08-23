@@ -487,6 +487,92 @@ describe('Chat Hooks', () => {
         comments: '',
       });
     });
+
+    it('should handle default case in feedbackVote switch statement', async () => {
+      const mockResponse = {
+        data: undefined,
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        ok: true,
+      };
+      (mockedSubmitFeedback as jest.Mock).mockResolvedValue(mockResponse);
+
+      const onSuccess = jest.fn();
+      const onError = jest.fn();
+
+      const mockMutateData = jest
+        .fn()
+        .mockImplementation((mutationKey, mutationFn, options) => ({
+          mutate: jest.fn(),
+          mutateAsync: mutationFn,
+          mutationKey,
+          mutationFn,
+          options,
+        }));
+      mockedDataFetcher.mutateData = mockMutateData;
+
+      const { result } = renderHook(() =>
+        useUpdateMessageFeedback({ onSuccess, onError })
+      );
+
+      const payload = {
+        messageId: 'test-message-id',
+        feedbackVote: 'neutral' as VoteType, // This will trigger the default case
+      };
+      await result.current.mutateAsync(payload);
+
+      expect(mockedSubmitFeedback).toHaveBeenCalledWith({
+        feedback: 'feedback provided',
+        queryId: 'test-message-id',
+        query: 'Test query',
+        answer: 'Test answer',
+        comments: '',
+      });
+    });
+
+    it('should handle "down" vote case correctly', async () => {
+      const mockResponse = {
+        data: undefined,
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        ok: true,
+      };
+      (mockedSubmitFeedback as jest.Mock).mockResolvedValue(mockResponse);
+
+      const onSuccess = jest.fn();
+      const onError = jest.fn();
+
+      const mockMutateData = jest
+        .fn()
+        .mockImplementation((mutationKey, mutationFn, options) => ({
+          mutate: jest.fn(),
+          mutateAsync: mutationFn,
+          mutationKey,
+          mutationFn,
+          options,
+        }));
+      mockedDataFetcher.mutateData = mockMutateData;
+
+      const { result } = renderHook(() =>
+        useUpdateMessageFeedback({ onSuccess, onError })
+      );
+
+      const payload = {
+        messageId: 'test-message-id',
+        feedbackVote: 'down' as VoteType,
+      };
+      await result.current.mutateAsync(payload);
+
+      expect(mockedSubmitFeedback).toHaveBeenCalledWith({
+        feedback: 'bad',
+        queryId: 'test-message-id',
+        query: 'Test query',
+        answer: 'Test answer',
+        comments: '',
+      });
+    });
   });
 
   describe('Constants', () => {

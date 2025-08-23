@@ -124,4 +124,60 @@ describe('backend-resolver', () => {
       expect(b.baseURL).toMatch(/^https:\/\//);
     });
   });
+
+  it('throws error when cache is empty and file reading fails', async () => {
+    (process.env as Record<string, string>).NODE_ENV = 'development';
+    await withModule(({ resolveBackend }) => {
+      // Simulate initial read failure with no cache
+      mockFs.readFileSync.mockImplementation(() => {
+        throw new Error('fs error');
+      });
+      expect(() => resolveBackend('/anything')).toThrow('fs error');
+    });
+  });
+
+  it('applies FEEDBACK_BACKEND_BASE_URL environment override', () => {
+    process.env.FEEDBACK_BACKEND_BASE_URL = 'https://override.feedback';
+    const feedbackMap = {
+      default: 'feedback',
+      backends: {
+        feedback: {
+          baseURL: 'https://feedback.example',
+          auth: { type: 'basic' },
+        },
+        real: {
+          baseURL: 'https://real.example',
+          auth: { type: 'bearer-id-token' },
+        },
+      },
+      routes: [],
+    };
+    mockFs.readFileSync.mockReturnValue(JSON.stringify(feedbackMap));
+
+    withModule(({ resolveBackend }) => {
+      expect(resolveBackend('/anything').baseURL).toBe(
+        'https://override.feedback'
+      );
+    });
+  });
+
+  it('falls back to default when route references non-existent backend', () => {
+    const missingBackendMap = {
+      default: 'real',
+      backends: {
+        real: {
+          baseURL: 'https://real.example',
+          auth: { type: 'bearer-id-token' },
+        },
+      },
+      routes: [{ pattern: '^/api/missing', backend: 'nonexistent' }],
+    };
+    mockFs.readFileSync.mockReturnValue(JSON.stringify(missingBackendMap));
+
+    withModule(({ resolveBackend }) => {
+      const result = resolveBackend('/api/missing');
+      expect(result.key).toBe('real');
+      expect(result.baseURL).toBe('https://real.example');
+    });
+  });
 });

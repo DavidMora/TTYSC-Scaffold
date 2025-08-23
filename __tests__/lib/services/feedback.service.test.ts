@@ -1,6 +1,7 @@
 import {
   getFeedbacks,
   getFeedback,
+  submitFeedback,
   createFeedback,
   updateFeedback,
   deleteFeedback,
@@ -20,6 +21,7 @@ const mockResponse = (data: unknown, status = 200) => ({
   status,
   statusText: 'OK',
   headers: {},
+  ok: status >= 200 && status < 300,
 });
 
 describe('FeedbackService', () => {
@@ -81,6 +83,44 @@ describe('FeedbackService', () => {
       await getFeedback(feedbackId);
 
       expect(mockHttpClient.get).toHaveBeenCalledWith(BFF_FEEDBACK(feedbackId));
+    });
+  });
+
+  describe('submitFeedback', () => {
+    it('should call httpClient.post with correct endpoint and payload', async () => {
+      const payload = {
+        conversation_id: 'conv-123',
+        message_id: 'msg-456',
+        feedback: 'positive',
+        feedback_text: 'Great response!',
+      };
+      const mockData = {
+        id: 'feedback-789',
+        conversation_id: payload.conversation_id,
+        message_id: payload.message_id,
+        feedback: payload.feedback,
+        feedback_text: payload.feedback_text,
+      };
+      const response = mockResponse(mockData, 201);
+      mockHttpClient.post.mockResolvedValue(response);
+
+      const result = await submitFeedback(payload);
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(BFF_FEEDBACKS, payload);
+      expect(result).toEqual(response);
+    });
+
+    it('should handle validation errors', async () => {
+      const payload = {
+        conversation_id: 'conv-123',
+        message_id: 'msg-456',
+        feedback: 'positive',
+      };
+      const mockError = new Error('Validation error');
+      mockHttpClient.post.mockRejectedValue(mockError);
+
+      await expect(submitFeedback(payload)).rejects.toThrow('Validation error');
+      expect(mockHttpClient.post).toHaveBeenCalledWith(BFF_FEEDBACKS, payload);
     });
   });
 
