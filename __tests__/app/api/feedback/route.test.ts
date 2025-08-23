@@ -367,14 +367,20 @@ describe('/api/feedback', () => {
 
     it('should use different environment values based on NODE_ENV and BACKEND_BASE_URL', async () => {
       const originalBackendBaseUrl = process.env.BACKEND_BASE_URL;
+      const originalNodeEnv = process.env.NODE_ENV;
 
       try {
         // Test staging environment
         Object.defineProperty(process.env, 'NODE_ENV', {
           value: 'production',
           configurable: true,
+          writable: true,
         });
-        process.env.BACKEND_BASE_URL = 'https://api.stg.example.com';
+        Object.defineProperty(process.env, 'BACKEND_BASE_URL', {
+          value: 'https://api.stg.example.com',
+          configurable: true,
+          writable: true,
+        });
 
         mockGetServerSession.mockResolvedValue(mockSession);
         mockBackendRequest.mockResolvedValue({
@@ -402,23 +408,34 @@ describe('/api/feedback', () => {
           })
         );
       } finally {
-        process.env.BACKEND_BASE_URL = originalBackendBaseUrl;
-        Object.defineProperty(process.env, 'NODE_ENV', {
-          value: 'test',
+        Object.defineProperty(process.env, 'BACKEND_BASE_URL', {
+          value: originalBackendBaseUrl,
           configurable: true,
+          writable: true,
+        });
+        Object.defineProperty(process.env, 'NODE_ENV', {
+          value: originalNodeEnv,
+          configurable: true,
+          writable: true,
         });
       }
     });
 
     it('should use prod environment for production URL', async () => {
       const originalBackendBaseUrl = process.env.BACKEND_BASE_URL;
+      const originalNodeEnv = process.env.NODE_ENV;
 
       try {
         Object.defineProperty(process.env, 'NODE_ENV', {
           value: 'production',
           configurable: true,
+          writable: true,
         });
-        process.env.BACKEND_BASE_URL = 'https://api.prd.example.com';
+        Object.defineProperty(process.env, 'BACKEND_BASE_URL', {
+          value: 'https://api.prd.example.com',
+          configurable: true,
+          writable: true,
+        });
 
         mockGetServerSession.mockResolvedValue(mockSession);
         mockBackendRequest.mockResolvedValue({
@@ -446,23 +463,34 @@ describe('/api/feedback', () => {
           })
         );
       } finally {
-        process.env.BACKEND_BASE_URL = originalBackendBaseUrl;
-        Object.defineProperty(process.env, 'NODE_ENV', {
-          value: 'test',
+        Object.defineProperty(process.env, 'BACKEND_BASE_URL', {
+          value: originalBackendBaseUrl,
           configurable: true,
+          writable: true,
+        });
+        Object.defineProperty(process.env, 'NODE_ENV', {
+          value: originalNodeEnv,
+          configurable: true,
+          writable: true,
         });
       }
     });
 
     it('should use prd environment as default for production', async () => {
       const originalBackendBaseUrl = process.env.BACKEND_BASE_URL;
+      const originalNodeEnv = process.env.NODE_ENV;
 
       try {
         Object.defineProperty(process.env, 'NODE_ENV', {
           value: 'production',
           configurable: true,
+          writable: true,
         });
-        process.env.BACKEND_BASE_URL = 'https://api.example.com';
+        Object.defineProperty(process.env, 'BACKEND_BASE_URL', {
+          value: 'https://api.example.com',
+          configurable: true,
+          writable: true,
+        });
 
         mockGetServerSession.mockResolvedValue(mockSession);
         mockBackendRequest.mockResolvedValue({
@@ -490,10 +518,15 @@ describe('/api/feedback', () => {
           })
         );
       } finally {
-        process.env.BACKEND_BASE_URL = originalBackendBaseUrl;
-        Object.defineProperty(process.env, 'NODE_ENV', {
-          value: 'test',
+        Object.defineProperty(process.env, 'BACKEND_BASE_URL', {
+          value: originalBackendBaseUrl,
           configurable: true,
+          writable: true,
+        });
+        Object.defineProperty(process.env, 'NODE_ENV', {
+          value: originalNodeEnv,
+          configurable: true,
+          writable: true,
         });
       }
     });
@@ -502,7 +535,11 @@ describe('/api/feedback', () => {
       const originalWorkflowName = process.env.FEEDBACK_WORKFLOW_NAME;
 
       try {
-        delete process.env.FEEDBACK_WORKFLOW_NAME;
+        Object.defineProperty(process.env, 'FEEDBACK_WORKFLOW_NAME', {
+          value: undefined,
+          configurable: true,
+          writable: true,
+        });
 
         mockGetServerSession.mockResolvedValue(mockSession);
         mockBackendRequest.mockResolvedValue({
@@ -530,9 +567,11 @@ describe('/api/feedback', () => {
           })
         );
       } finally {
-        if (originalWorkflowName !== undefined) {
-          process.env.FEEDBACK_WORKFLOW_NAME = originalWorkflowName;
-        }
+        Object.defineProperty(process.env, 'FEEDBACK_WORKFLOW_NAME', {
+          value: originalWorkflowName,
+          configurable: true,
+          writable: true,
+        });
       }
     });
   });
