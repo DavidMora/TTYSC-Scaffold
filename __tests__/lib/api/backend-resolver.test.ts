@@ -44,28 +44,46 @@ describe('backend-resolver', () => {
     });
   }
 
-  it('matches route by regex', () => {
-    withModule(({ resolveBackend }) => {
+  it('matches route by regex', async () => {
+    await withModule(({ resolveBackend }) => {
       const b = resolveBackend('/api/chats/1');
       expect(b.key).toBe('real');
     });
   });
 
-  it('applies env overrides', () => {
+  it('applies env overrides', async () => {
+    const prevMockBackend = process.env.MOCK_BACKEND_BASE_URL;
+    const prevBackend = process.env.BACKEND_BASE_URL;
     process.env.MOCK_BACKEND_BASE_URL = 'https://override.mock';
     process.env.BACKEND_BASE_URL = 'https://override.real';
-    withModule(({ resolveBackend }) => {
-      expect(resolveBackend('/api/mock/x').baseURL).toBe(
-        'https://override.mock'
-      );
-      expect(resolveBackend('/api/chats').baseURL).toBe(
-        'https://override.real'
-      );
-    });
+
+    try {
+      await withModule(({ resolveBackend }) => {
+        expect(resolveBackend('/api/mock/x').baseURL).toBe(
+          'https://override.mock'
+        );
+        expect(resolveBackend('/api/chats').baseURL).toBe(
+          'https://override.real'
+        );
+      });
+    } finally {
+      // Restore environment variables
+      if (prevMockBackend === undefined) {
+        delete process.env.MOCK_BACKEND_BASE_URL;
+      } else {
+        process.env.MOCK_BACKEND_BASE_URL = prevMockBackend;
+      }
+
+      if (prevBackend === undefined) {
+        delete process.env.BACKEND_BASE_URL;
+      } else {
+        process.env.BACKEND_BASE_URL = prevBackend;
+      }
+    }
   });
 
-  it('falls back to default when no route matches', () => {
-    withModule(({ resolveBackend }) => {
+  it('falls back to default when no route matches', async () => {
+    await withModule(({ resolveBackend }) => {
       expect(resolveBackend('/none').key).toBe('real');
     });
   });
@@ -91,13 +109,13 @@ describe('backend-resolver', () => {
     });
   });
 
-  it('ignores invalid regex', () => {
-    withModule(({ resolveBackend }) => {
+  it('ignores invalid regex', async () => {
+    await withModule(({ resolveBackend }) => {
       expect(() => resolveBackend('/anything')).not.toThrow();
     });
   });
 
-  it('throws when default backend missing', () => {
+  it('throws when default backend missing', async () => {
     mockFs.readFileSync.mockReturnValue(
       JSON.stringify({
         default: 'missing',
@@ -105,7 +123,7 @@ describe('backend-resolver', () => {
         routes: [],
       })
     );
-    withModule(({ resolveBackend }) => {
+    await withModule(({ resolveBackend }) => {
       expect(() => resolveBackend('/x')).toThrow('Default backend not defined');
     });
   });
@@ -136,7 +154,8 @@ describe('backend-resolver', () => {
     });
   });
 
-  it('applies FEEDBACK_BACKEND_BASE_URL environment override', () => {
+  it('applies FEEDBACK_BACKEND_BASE_URL environment override', async () => {
+    const prevFeedback = process.env.FEEDBACK_BACKEND_BASE_URL;
     process.env.FEEDBACK_BACKEND_BASE_URL = 'https://override.feedback';
     const feedbackMap = {
       default: 'feedback',
@@ -154,14 +173,22 @@ describe('backend-resolver', () => {
     };
     mockFs.readFileSync.mockReturnValue(JSON.stringify(feedbackMap));
 
-    withModule(({ resolveBackend }) => {
-      expect(resolveBackend('/anything').baseURL).toBe(
-        'https://override.feedback'
-      );
-    });
+    try {
+      await withModule(({ resolveBackend }) => {
+        expect(resolveBackend('/anything').baseURL).toBe(
+          'https://override.feedback'
+        );
+      });
+    } finally {
+      if (prevFeedback === undefined) {
+        delete process.env.FEEDBACK_BACKEND_BASE_URL;
+      } else {
+        process.env.FEEDBACK_BACKEND_BASE_URL = prevFeedback;
+      }
+    }
   });
 
-  it('falls back to default when route references non-existent backend', () => {
+  it('falls back to default when route references non-existent backend', async () => {
     const missingBackendMap = {
       default: 'real',
       backends: {
@@ -174,7 +201,7 @@ describe('backend-resolver', () => {
     };
     mockFs.readFileSync.mockReturnValue(JSON.stringify(missingBackendMap));
 
-    withModule(({ resolveBackend }) => {
+    await withModule(({ resolveBackend }) => {
       const result = resolveBackend('/api/missing');
       expect(result.key).toBe('real');
       expect(result.baseURL).toBe('https://real.example');
