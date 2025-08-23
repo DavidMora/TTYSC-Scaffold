@@ -68,7 +68,7 @@ export function AIResponseBubble({
             fontWeight: '700',
           }}
         >
-          {message.title ?? 'TTTYSC Agent'}
+          {message.title ?? 'TTYSC Agent'}
         </Text>
       </div>
 
