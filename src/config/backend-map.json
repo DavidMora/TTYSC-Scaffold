@@ -8,6 +8,10 @@
     "real": {
       "baseURL": "http://localhost:8000",
       "auth": { "type": "bearer-id-token" }
+    },
+    "feedback": {
+      "baseURL": "https://nvaifactory-feedback-prd.nvidia.com",
+      "auth": { "type": "bearer-id-token" }
     }
   },
   "routes": [
@@ -16,6 +20,7 @@
     { "pattern": "^/export", "backend": "mock" },
     { "pattern": "^/auxiliary/chart", "backend": "mock" },
     { "pattern": "^/settings", "backend": "mock" },
-    { "pattern": "^/analysis", "backend": "mock" }
+    { "pattern": "^/analysis", "backend": "mock" },
+    { "pattern": "^/api/v1/feedback", "backend": "feedback" }
   ]
 }

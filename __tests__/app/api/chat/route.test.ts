@@ -97,7 +97,7 @@ describe('POST /api/chat', () => {
     const responseBody = await response.json();
 
     expect(response.status).toBe(500);
-    expect(responseBody).toEqual({ error: 'Internal error' });
+    expect(responseBody).toEqual({ error: 'Internal server error' });
   });
 
   it('should handle non-JSON body gracefully', async () => {

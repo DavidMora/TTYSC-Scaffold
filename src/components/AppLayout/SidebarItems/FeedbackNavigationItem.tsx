@@ -7,7 +7,8 @@ import {
   Button,
 } from '@ui5/webcomponents-react';
 import { useState, useCallback } from 'react';
-import { createFeedback } from '@/lib/services/feedback.service';
+import { submitFeedback } from '@/lib/services/feedback.service';
+import { v6 as uuidv6 } from 'uuid';
 
 interface FeedbackNavigationItemProps {
   onSubmitFeedback?: (feedback: string) => void;
@@ -25,9 +26,12 @@ export const processFeedback = async (
   onError?: (error: unknown) => void
 ): Promise<void> => {
   try {
-    await createFeedback({
-      message: text.trim(),
-      category: 'general',
+    await submitFeedback({
+      feedback: 'feedback provided',
+      query: '',
+      answer: '',
+      comments: text.trim(),
+      queryId: uuidv6(),
     });
     onSuccess?.();
   } catch (error) {

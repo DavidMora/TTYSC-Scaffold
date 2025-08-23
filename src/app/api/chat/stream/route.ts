@@ -27,6 +27,7 @@ export async function POST(request: NextRequest) {
       body,
       stream: true,
       parser: 'bytes',
+      timeout: -1,
     });
   } catch (error) {
     console.log(error);

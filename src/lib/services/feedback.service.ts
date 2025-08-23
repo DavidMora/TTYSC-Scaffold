@@ -3,10 +3,13 @@ import { HttpClientResponse } from '@/lib/types/api/http-client';
 import { BFF_FEEDBACKS, BFF_FEEDBACK } from '@/lib/constants/api/bff-routes';
 import {
   Feedback,
+  SubmitFeedbackRequest,
+  SubmitFeedbackResponse,
   CreateFeedbackRequest,
   UpdateFeedbackRequest,
 } from '@/lib/types/feedback';
 
+// Updated service to work with NVIDIA AI Factory feedback API
 export const getFeedbacks = async (): Promise<
   HttpClientResponse<Feedback[]>
 > => {
@@ -19,6 +22,14 @@ export const getFeedback = async (
   return await httpClient.get<Feedback>(BFF_FEEDBACK(id));
 };
 
+// New method for submitting feedback to NVIDIA AI Factory
+export const submitFeedback = async (
+  payload: SubmitFeedbackRequest
+): Promise<HttpClientResponse<SubmitFeedbackResponse>> => {
+  return await httpClient.post<SubmitFeedbackResponse>(BFF_FEEDBACKS, payload);
+};
+
+// Legacy methods (maintaining backward compatibility)
 export const createFeedback = async (
   payload: CreateFeedbackRequest
 ): Promise<HttpClientResponse<Feedback>> => {

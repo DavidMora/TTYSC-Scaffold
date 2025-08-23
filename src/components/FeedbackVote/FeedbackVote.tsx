@@ -10,6 +10,8 @@ interface FeedbackVoteProps {
   className?: string;
   style?: React.CSSProperties;
   messageId: string;
+  query?: string;
+  answer?: string;
 }
 
 export function FeedbackVote({
@@ -18,6 +20,8 @@ export function FeedbackVote({
   className,
   style,
   messageId,
+  query = '',
+  answer = '',
 }: Readonly<FeedbackVoteProps>) {
   const { activateAutosaveUI } = useAutosaveUI();
   const [error, setError] = useState<string | null>(null);
@@ -40,6 +44,8 @@ export function FeedbackVote({
     updateFeedbackMutation.mutate({
       messageId,
       feedbackVote: voteType,
+      query,
+      answer,
     });
     setCurrentVote(voteType);
   };

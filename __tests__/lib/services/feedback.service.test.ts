@@ -1,6 +1,7 @@
 import {
   getFeedbacks,
   getFeedback,
+  submitFeedback,
   createFeedback,
   updateFeedback,
   deleteFeedback,
@@ -10,6 +11,10 @@ import {
   BFF_FEEDBACKS,
   BFF_FEEDBACK,
 } from '../../../src/lib/constants/api/bff-routes';
+import {
+  SubmitFeedbackRequest,
+  SubmitFeedbackResponse,
+} from '../../../src/lib/types/feedback';
 
 // Mock the httpClient
 jest.mock('../../../src/lib/api');
@@ -20,6 +25,7 @@ const mockResponse = (data: unknown, status = 200) => ({
   status,
   statusText: 'OK',
   headers: {},
+  ok: status >= 200 && status < 300,
 });
 
 describe('FeedbackService', () => {
@@ -81,6 +87,44 @@ describe('FeedbackService', () => {
       await getFeedback(feedbackId);
 
       expect(mockHttpClient.get).toHaveBeenCalledWith(BFF_FEEDBACK(feedbackId));
+    });
+  });
+
+  describe('submitFeedback', () => {
+    it('should call httpClient.post with correct endpoint and payload', async () => {
+      const payload: SubmitFeedbackRequest = {
+        feedback: 'good',
+        queryId: 'conv-123',
+        query: 'User prompt',
+        answer: 'Assistant answer',
+        comments: 'Great response!',
+      };
+      const mockData: SubmitFeedbackResponse = {
+        success: true,
+        message: 'Feedback submitted successfully!',
+      };
+      const response = mockResponse(mockData, 201);
+      mockHttpClient.post.mockResolvedValue(response);
+
+      const result = await submitFeedback(payload);
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(BFF_FEEDBACKS, payload);
+      expect(result).toEqual(response);
+    });
+
+    it('should handle validation errors', async () => {
+      const payload: SubmitFeedbackRequest = {
+        feedback: 'bad',
+        queryId: 'conv-456',
+        query: 'Another user prompt',
+        answer: 'Another assistant answer',
+        comments: 'Needs improvement',
+      };
+      const mockError = new Error('Validation error');
+      mockHttpClient.post.mockRejectedValue(mockError);
+
+      await expect(submitFeedback(payload)).rejects.toThrow('Validation error');
+      expect(mockHttpClient.post).toHaveBeenCalledWith(BFF_FEEDBACKS, payload);
     });
   });
 
