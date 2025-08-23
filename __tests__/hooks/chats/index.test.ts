@@ -37,14 +37,6 @@ const mockedSubmitFeedback = submitFeedback as jest.MockedFunction<
   typeof submitFeedback
 >;
 
-jest.mock('@/lib/services/chats.service', () => ({
-  getChats: jest.fn(),
-  getChat: jest.fn(),
-  createChat: jest.fn(),
-  updateChat: jest.fn(),
-  createChatMessage: jest.fn(),
-}));
-
 jest.mock('@/lib/services/feedback.service', () => ({
   submitFeedback: jest.fn(),
 }));
