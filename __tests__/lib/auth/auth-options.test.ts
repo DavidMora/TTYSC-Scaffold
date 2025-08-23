@@ -162,7 +162,11 @@ describe('Auth Options', () => {
         userPrincipalName: 'upn@example.com',
       };
       const result = provider.profile(mockProfile);
-      expect(result).toEqual({ id: 'min-1', name: undefined, email: 'upn@example.com' });
+      expect(result).toEqual({
+        id: 'min-1',
+        name: undefined,
+        email: 'upn@example.com',
+      });
     });
   });
 
@@ -251,8 +255,12 @@ describe('Auth Options', () => {
       (global.fetch as jest.Mock).mockResolvedValueOnce({
         ok: true,
         status: 200,
-        headers: { get: (k: string) => (k.toLowerCase() === 'content-type' ? 'image/png' : null) },
-        arrayBuffer: () => Promise.resolve(Uint8Array.from([1, 2, 3, 4]).buffer),
+        headers: {
+          get: (k: string) =>
+            k.toLowerCase() === 'content-type' ? 'image/png' : null,
+        },
+        arrayBuffer: () =>
+          Promise.resolve(Uint8Array.from([1, 2, 3, 4]).buffer),
       });
 
       const result = await authOptions.callbacks!.jwt!({
