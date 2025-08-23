@@ -6,8 +6,6 @@ export interface AIFactoryFeedbackPayload {
   Query: string;
   Answer: string;
   Comments: string;
-  AdditionalDetails?: never[]; // DON'T USE per requirements
-  OwnerDLs?: never[]; // DON'T USE per requirements
   UserConsent: boolean;
   Username: string;
   Environment: 'dev' | 'stg' | 'prd';
