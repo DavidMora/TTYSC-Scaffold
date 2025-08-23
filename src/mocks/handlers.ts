@@ -1,5 +1,7 @@
 import { http, HttpResponse } from 'msw';
 import { chatsMemory } from '@/mocks/chatsMemory';
+import { settingsMemory } from '@/mocks/settingsMemory';
+import type { Settings } from '@/lib/types/settings';
 
 export const handlers = [
   // List chats
@@ -49,5 +51,32 @@ export const handlers = [
     const id = String(params.id);
     const removed = chatsMemory.delete(id);
     return new HttpResponse(null, { status: removed ? 204 : 404 });
+  }),
+
+  // Get settings
+  http.get('/api/settings', () => {
+    const settings = settingsMemory.get();
+    return HttpResponse.json(
+      { success: true, data: settings },
+      { status: 200 }
+    );
+  }),
+
+  // Update settings
+  http.patch('/api/settings', async ({ request }) => {
+    try {
+      const body = await request.json();
+      const updatedSettings = settingsMemory.update(body as Partial<Settings>);
+
+      return HttpResponse.json(
+        { success: true, data: updatedSettings },
+        { status: 200 }
+      );
+    } catch {
+      return HttpResponse.json(
+        { success: false, error: 'Invalid request body' },
+        { status: 400 }
+      );
+    }
   }),
 ];
