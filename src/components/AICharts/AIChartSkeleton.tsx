@@ -1,5 +1,5 @@
 import { Button, MessageStrip } from '@ui5/webcomponents-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 // Constants for skeleton items
 const SKELETON_ITEMS = [1, 2, 3];
@@ -73,6 +73,13 @@ export const ChartError: React.FC<ChartErrorProps> = ({
   closable = true,
 }) => {
   const [isOpen, setIsOpen] = useState(true);
+
+  // Show again when a new error message arrives
+  useEffect(() => {
+    if (error) {
+      setIsOpen(true);
+    }
+  }, [error]);
 
   if (!isOpen) return null;
 

@@ -25,7 +25,7 @@ import { ConfirmationModal } from '@/components/Modals/ConfirmationModal';
 interface SideBarProps {
   sideNavCollapsed?: boolean;
   navItems: Array<NavBarItem>;
-  onShowRawDataModal?: () => void;
+  //onShowRawDataModal?: () => void;
 }
 
 const SideBarMenu: React.FC<SideBarProps> = ({

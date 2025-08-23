@@ -173,7 +173,7 @@ export default function AnalysisChat({
             id: assistantMessageId,
             role: 'assistant',
             created: new Date().toLocaleString(),
-            title: 'TTTYSC Agent',
+            title: 'TTYSC Agent',
             content: finalContent,
             chart: inlineChart ?? undefined,
             table: inlineTable ?? undefined,
@@ -212,7 +212,13 @@ export default function AnalysisChat({
         style={{ flex: 1, overflow: 'auto', padding: '1rem 1.5rem' }}
       >
         {messages.length === 0 && (
-          <WelcomeMessage firstName={getFirstName(currentUser.name)} />
+          <WelcomeMessage
+            firstName={
+              currentUser.name === 'Unknown'
+                ? 'user'
+                : getFirstName(currentUser.name)
+            }
+          />
         )}
 
         {messages.map((msg) => (

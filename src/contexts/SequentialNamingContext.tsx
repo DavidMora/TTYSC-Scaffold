@@ -90,7 +90,7 @@ export const SequentialNamingProvider: React.FC<
     try {
       const saved = sessionStorage.getItem(STORAGE_KEY);
       const parsed = saved ? parseInt(saved, 10) : NaN;
-      if (!isNaN(parsed)) {
+      if (!isNaN(parsed) && parsed > 0) {
         setCounter(parsed);
       } else {
         resetCounter();
@@ -155,11 +155,13 @@ export const SequentialNamingProvider: React.FC<
 
   const generateAnalysisName = useCallback((): string => {
     const nameWithOrdinal = generateNameString(counter, 'Analysis');
-    const newCounter = counter + 1;
-    setCounter(newCounter);
-    try {
-      sessionStorage.setItem(STORAGE_KEY, newCounter.toString());
-    } catch {}
+    setCounter((prev) => {
+      const next = prev + 1;
+      try {
+        sessionStorage.setItem(STORAGE_KEY, next.toString());
+      } catch {}
+      return next;
+    });
     return nameWithOrdinal;
   }, [counter]);
 
