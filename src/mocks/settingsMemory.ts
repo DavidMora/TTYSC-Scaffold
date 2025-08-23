@@ -26,14 +26,14 @@ class SettingsMemory {
   update(updates: Partial<Settings>): Settings {
     const next: Settings = { ...this.settings };
 
-    if (Object.prototype.hasOwnProperty.call(updates, 'shareChats')) {
+    if (Object.hasOwn(updates, 'shareChats')) {
       const v = updates.shareChats;
       if (typeof v !== 'boolean')
         throw new TypeError('shareChats must be a boolean');
       next.shareChats = v;
     }
 
-    if (Object.prototype.hasOwnProperty.call(updates, 'hideIndexTable')) {
+    if (Object.hasOwn(updates, 'hideIndexTable')) {
       const v = updates.hideIndexTable;
       if (typeof v !== 'boolean')
         throw new TypeError('hideIndexTable must be a boolean');
