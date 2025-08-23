@@ -83,7 +83,7 @@ global.Response = class MockResponse {
   }
 
   static json(
-    data: any,
+    data: unknown,
     init?: {
       status?: number;
       statusText?: string;
@@ -121,7 +121,7 @@ describe('/api/feedback', () => {
       expires: '2024-12-31',
     };
 
-    const createMockRequest = (body: any): NextRequest => {
+    const createMockRequest = (body: Record<string, unknown>): NextRequest => {
       return {
         json: jest.fn().mockResolvedValue(body),
       } as unknown as NextRequest;
