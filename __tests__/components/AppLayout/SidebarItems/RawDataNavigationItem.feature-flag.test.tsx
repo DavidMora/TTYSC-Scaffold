@@ -1,19 +1,13 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { RawDataModalProvider } from '@/contexts/RawDataModalContext';
 import RawDataNavigationItem from '@/components/AppLayout/SidebarItems/RawDataNavigationItem';
 
 // Mock the useFeatureFlag hook
-jest.mock('@/hooks/useFeatureFlags', () => ({
-  useFeatureFlag: (flag: string) => ({
-    flag: true,
-    loading: false,
-    error: null,
-  }),
-}));
+jest.mock('@/hooks/useFeatureFlags');
 
-// Mock UI5 components with simple implementations
+// Mock UI5 components with complete implementations
 jest.mock('@ui5/webcomponents-react', () => ({
   SideNavigationItem: ({ children, text, icon, unselectable }: any) => (
     <div
@@ -26,7 +20,11 @@ jest.mock('@ui5/webcomponents-react', () => ({
     </div>
   ),
   FlexBox: ({ children, direction, className }: any) => (
-    <div data-testid="flex-box" className={className}>
+    <div
+      data-testid="flex-box"
+      data-direction={direction}
+      className={className}
+    >
       {children}
     </div>
   ),
@@ -87,32 +85,79 @@ jest.mock('@ui5/webcomponents-react', () => ({
       className={className}
       onClick={onClick}
       aria-label={ariaLabel}
-      type="button"
     >
       {children}
     </button>
   ),
 }));
 
-describe('RawDataNavigationItem', () => {
+describe('RawDataNavigationItem Feature Flag Tests', () => {
   const renderWithProvider = (component: React.ReactElement) => {
     return render(<RawDataModalProvider>{component}</RawDataModalProvider>);
   };
 
-  it('renders with default props', () => {
-    const { container } = renderWithProvider(<RawDataNavigationItem />);
-    expect(container).toBeInTheDocument();
-  });
+  describe('FF_Raw_Data_Navigation feature flag', () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
 
-  it('renders without crashing', () => {
-    const { container } = renderWithProvider(<RawDataNavigationItem />);
-    expect(container).toBeInTheDocument();
-  });
+    it('renders when feature flag is enabled', () => {
+      const useFeatureFlag = require('@/hooks/useFeatureFlags').useFeatureFlag;
+      useFeatureFlag.mockReturnValue({
+        flag: true,
+        loading: false,
+        error: null,
+      });
 
-  it('handles empty rawDataItems', () => {
-    const { container } = renderWithProvider(
-      <RawDataNavigationItem rawDataItems={[]} />
-    );
-    expect(container).toBeInTheDocument();
+      const { container } = renderWithProvider(<RawDataNavigationItem />);
+      expect(container).not.toBeEmptyDOMElement();
+    });
+
+    it('returns null when feature flag is disabled', () => {
+      const useFeatureFlag = require('@/hooks/useFeatureFlags').useFeatureFlag;
+      useFeatureFlag.mockReturnValue({
+        flag: false,
+        loading: false,
+        error: null,
+      });
+
+      const { container } = renderWithProvider(<RawDataNavigationItem />);
+      expect(container).toBeEmptyDOMElement();
+    });
+
+    it('returns null when feature flag is loading', () => {
+      const useFeatureFlag = require('@/hooks/useFeatureFlags').useFeatureFlag;
+      useFeatureFlag.mockReturnValue({
+        loading: true,
+        error: null,
+      });
+
+      const { container } = renderWithProvider(<RawDataNavigationItem />);
+      expect(container).toBeEmptyDOMElement();
+    });
+
+    it('returns null when feature flag has error', () => {
+      const useFeatureFlag = require('@/hooks/useFeatureFlags').useFeatureFlag;
+      useFeatureFlag.mockReturnValue({
+        flag: true,
+        loading: false,
+        error: new Error('Feature flag error'),
+      });
+
+      const { container } = renderWithProvider(<RawDataNavigationItem />);
+      expect(container).toBeEmptyDOMElement();
+    });
+
+    it('uses the correct feature flag key', () => {
+      const useFeatureFlag = require('@/hooks/useFeatureFlags').useFeatureFlag;
+      useFeatureFlag.mockReturnValue({
+        flag: true,
+        loading: false,
+        error: null,
+      });
+
+      renderWithProvider(<RawDataNavigationItem />);
+      expect(useFeatureFlag).toHaveBeenCalledWith('FF_Raw_Data_Navigation');
+    });
   });
 });

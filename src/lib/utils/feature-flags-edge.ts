@@ -11,7 +11,8 @@ import { DEFAULT_FLAGS } from './feature-flags';
  * - FEATURE_FLAG_FF_CHAT_ANALYSIS_SCREEN (true/false)
  * - FF_FULL_PAGE_NAVIGATION (true/false)
  * - FF_SIDE_NAVBAR (true/false)
- * - FF_Modals (true/false)
+ * - FF_MODALS (true/false)
+ * - FEATURE_FLAG_FF_RAW_DATA_NAVIGATION (true/false)
  */
 export function loadFeatureFlagsEdge(): FeatureFlags {
   try {
@@ -21,7 +22,9 @@ export function loadFeatureFlagsEdge(): FeatureFlags {
         process.env.FEATURE_FLAG_FF_CHAT_ANALYSIS_SCREEN !== 'false',
       FF_Full_Page_Navigation: process.env.FF_FULL_PAGE_NAVIGATION !== 'false',
       FF_Side_NavBar: process.env.FF_SIDE_NAVBAR !== 'false',
-      FF_Modals: process.env.FF_Modals !== 'false',
+      FF_Modals: process.env.FF_MODALS !== 'false',
+      FF_Raw_Data_Navigation:
+        process.env.FEATURE_FLAG_FF_RAW_DATA_NAVIGATION !== 'false',
     };
   } catch (error) {
     console.warn(

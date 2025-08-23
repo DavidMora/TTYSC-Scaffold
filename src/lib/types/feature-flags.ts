@@ -4,6 +4,7 @@ export interface FeatureFlags {
   FF_Full_Page_Navigation: boolean;
   FF_Side_NavBar: boolean;
   FF_Modals: boolean;
+  FF_Raw_Data_Navigation: boolean;
 }
 
 export type FeatureFlagKey = keyof FeatureFlags;
