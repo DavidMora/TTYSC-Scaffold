@@ -39,19 +39,21 @@ export function createJsonResponse<T = unknown>(
 /**
  * Creates a response from upstream backend data
  * @param upstream - The upstream response data
- * @returns Response object with upstream data
+ * @returns Response object with upstream data and merged headers
  */
-export function createUpstreamResponse<T = unknown>({
-  data,
-  status,
-}: {
+export function createUpstreamResponse<T = unknown>(upstream: {
   data: T;
   status: number;
+  headers?: Record<string, string>;
 }): Response {
-  const headers = new Headers();
+  // Clone and merge upstream headers, then enforce JSON content type
+  const headers = new Headers(upstream.headers || {});
   headers.set('Content-Type', 'application/json');
 
-  return new Response(JSON.stringify(data), { status, headers });
+  return new Response(JSON.stringify(upstream.data), {
+    status: upstream.status,
+    headers,
+  });
 }
 
 /**

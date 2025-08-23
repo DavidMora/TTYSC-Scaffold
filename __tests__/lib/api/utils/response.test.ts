@@ -6,11 +6,32 @@
 global.Response = class Response {
   constructor(
     public body: string,
-    public init: { status: number }
+    public init: { status: number; headers?: any }
   ) {
     this.status = init.status;
     this.headers = new Map();
-    this.headers.set('content-type', 'application/json');
+
+    // Handle Headers object or plain object
+    if (init.headers) {
+      if (init.headers instanceof Map) {
+        init.headers.forEach((value: string, key: string) => {
+          this.headers.set(key.toLowerCase(), value);
+        });
+      } else if (
+        init.headers &&
+        typeof init.headers === 'object' &&
+        'forEach' in init.headers
+      ) {
+        // Handle Headers instance
+        init.headers.forEach((value: string, key: string) => {
+          this.headers.set(key.toLowerCase(), value);
+        });
+      } else if (typeof init.headers === 'object') {
+        Object.entries(init.headers).forEach(([key, value]) => {
+          this.headers.set(key.toLowerCase(), value as string);
+        });
+      }
+    }
   }
 
   status: number;
@@ -117,22 +138,26 @@ describe('Response Utilities', () => {
       const upstream = {
         data: { message: 'Success', items: [1, 2, 3] },
         status: 200,
+        headers: { 'cache-control': 'max-age=3600' },
       };
 
       const result = createUpstreamResponse(upstream);
 
       expect(result.status).toBe(200);
+      expect(result.headers.get('content-type')).toBe('application/json');
     });
 
     it('should create upstream response with error status', () => {
       const upstream = {
         data: { error: 'Not found' },
         status: 404,
+        headers: { 'x-error-source': 'backend' },
       };
 
       const result = createUpstreamResponse(upstream);
 
       expect(result.status).toBe(404);
+      expect(result.headers.get('content-type')).toBe('application/json');
     });
 
     it('should handle empty data', () => {
@@ -144,6 +169,31 @@ describe('Response Utilities', () => {
       const result = createUpstreamResponse(upstream);
 
       expect(result.status).toBe(204);
+    });
+
+    it('should handle missing headers', () => {
+      const upstream = {
+        data: { message: 'No headers' },
+        status: 200,
+      };
+
+      const result = createUpstreamResponse(upstream);
+
+      expect(result.status).toBe(200);
+      expect(result.headers.get('content-type')).toBe('application/json');
+    });
+
+    it('should preserve upstream headers when provided', () => {
+      const upstream = {
+        data: { message: 'Test' },
+        status: 200,
+        headers: { 'x-custom': 'value' },
+      };
+
+      const result = createUpstreamResponse(upstream);
+
+      expect(result.status).toBe(200);
+      expect(result.headers.get('content-type')).toBe('application/json');
     });
   });
 
