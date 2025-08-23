@@ -1,3 +1,25 @@
+// NVIDIA AI Factory Feedback Types
+export interface AIFactoryFeedbackPayload {
+  WorkflowName: string;
+  Feedback: 'good' | 'bad' | 'feedback provided';
+  QueryId: string;
+  Query: string;
+  Answer: string;
+  Comments: string;
+  AdditionalDetails?: never[]; // DON'T USE per requirements
+  OwnerDLs?: never[]; // DON'T USE per requirements
+  UserConsent: boolean;
+  Username: string;
+  Environment: 'dev' | 'stg' | 'prd';
+}
+
+export interface AIFactoryFeedbackResponse {
+  success: boolean;
+  data?: unknown;
+  message?: string;
+}
+
+// Legacy feedback types (for backward compatibility)
 export interface Feedback {
   id: string;
   userId: string;
@@ -24,5 +46,19 @@ export interface FeedbackListResponse {
   success: boolean;
   data: Feedback[];
   totalCount: number;
+  message?: string;
+}
+
+// Request types for frontend
+export interface SubmitFeedbackRequest {
+  feedback: 'good' | 'bad' | 'feedback provided';
+  queryId: string;
+  query: string;
+  answer: string;
+  comments: string;
+}
+
+export interface SubmitFeedbackResponse {
+  success: boolean;
   message?: string;
 }

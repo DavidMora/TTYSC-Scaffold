@@ -62,13 +62,20 @@ function getMap(): BackendMapFile {
 
 export function resolveBackend(pathname: string): ResolvedBackend {
   const map = getMap();
+
   // Inject environment overrides for base URLs (runtime-configurable without editing JSON file)
   if (map.backends.mock && process.env.MOCK_BACKEND_BASE_URL) {
     map.backends.mock.baseURL = process.env.MOCK_BACKEND_BASE_URL;
   }
+
   if (map.backends.real && process.env.BACKEND_BASE_URL) {
     map.backends.real.baseURL = process.env.BACKEND_BASE_URL;
   }
+
+  if (map.backends.feedback && process.env.FEEDBACK_BACKEND_BASE_URL) {
+    map.backends.feedback.baseURL = process.env.FEEDBACK_BACKEND_BASE_URL;
+  }
+
   for (const rule of map.routes) {
     try {
       const regex = new RegExp(rule.pattern);
@@ -80,7 +87,9 @@ export function resolveBackend(pathname: string): ResolvedBackend {
       // ignore bad regex
     }
   }
+
   const def = map.backends[map.default];
+
   if (!def) {
     throw new Error('Default backend not defined in backend-map.json');
   }

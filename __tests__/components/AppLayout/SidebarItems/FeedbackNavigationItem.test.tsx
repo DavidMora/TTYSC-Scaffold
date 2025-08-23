@@ -11,7 +11,7 @@ import FeedbackNavigationItem, {
   validateFeedbackText,
   processFeedback,
 } from '../../../../src/components/AppLayout/SidebarItems/FeedbackNavigationItem';
-import { createFeedback } from '../../../../src/lib/services/feedback.service';
+import { submitFeedback } from '../../../../src/lib/services/feedback.service';
 
 // Mock UI5 components
 jest.mock('@ui5/webcomponents-react', () => ({
@@ -54,11 +54,11 @@ jest.mock('@ui5/webcomponents-react', () => ({
 
 // Mock the feedback service
 jest.mock('../../../../src/lib/services/feedback.service', () => ({
-  createFeedback: jest.fn(),
+  submitFeedback: jest.fn(),
 }));
 
-const mockCreateFeedback = createFeedback as jest.MockedFunction<
-  typeof createFeedback
+const mockSubmitFeedback = submitFeedback as jest.MockedFunction<
+  typeof submitFeedback
 >;
 
 describe('FeedbackNavigationItem', () => {
@@ -66,9 +66,9 @@ describe('FeedbackNavigationItem', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    mockCreateFeedback.mockResolvedValue({
-      id: '123',
-      message: 'Success',
+    mockSubmitFeedback.mockResolvedValue({
+      data: { success: true },
+      status: 200,
     } as any);
   });
 
@@ -102,9 +102,12 @@ describe('FeedbackNavigationItem', () => {
 
       await processFeedback('test feedback', onSuccess, onError);
 
-      expect(mockCreateFeedback).toHaveBeenCalledWith({
-        message: 'test feedback',
-        category: 'general',
+      expect(mockSubmitFeedback).toHaveBeenCalledWith({
+        feedback: 'feedback provided',
+        query: '',
+        answer: '',
+        comments: 'test feedback',
+        queryId: expect.any(String),
       });
       expect(onSuccess).toHaveBeenCalled();
       expect(onError).not.toHaveBeenCalled();
@@ -112,7 +115,7 @@ describe('FeedbackNavigationItem', () => {
 
     it('handles errors and calls onError callback', async () => {
       const error = new Error('API Error');
-      mockCreateFeedback.mockRejectedValue(error);
+      mockSubmitFeedback.mockRejectedValue(error);
 
       const onSuccess = jest.fn();
       const onError = jest.fn();
@@ -137,9 +140,12 @@ describe('FeedbackNavigationItem', () => {
 
       await processFeedback('  test feedback  ', onSuccess);
 
-      expect(mockCreateFeedback).toHaveBeenCalledWith({
-        message: 'test feedback',
-        category: 'general',
+      expect(mockSubmitFeedback).toHaveBeenCalledWith({
+        feedback: 'feedback provided',
+        query: '',
+        answer: '',
+        comments: 'test feedback',
+        queryId: expect.any(String),
       });
     });
 
@@ -149,7 +155,7 @@ describe('FeedbackNavigationItem', () => {
 
     it('handles error without onError callback', async () => {
       const error = new Error('API Error');
-      mockCreateFeedback.mockRejectedValue(error);
+      mockSubmitFeedback.mockRejectedValue(error);
       const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
 
       await expect(processFeedback('test feedback')).rejects.toThrow(
@@ -219,9 +225,12 @@ describe('FeedbackNavigationItem', () => {
       });
 
       await waitFor(() => {
-        expect(mockCreateFeedback).toHaveBeenCalledWith({
-          message: 'test feedback',
-          category: 'general',
+        expect(mockSubmitFeedback).toHaveBeenCalledWith({
+          feedback: 'feedback provided',
+          query: '',
+          answer: '',
+          comments: 'test feedback',
+          queryId: expect.any(String),
         });
       });
 
@@ -250,7 +259,7 @@ describe('FeedbackNavigationItem', () => {
       const controlledPromise = new Promise<any>((resolve) => {
         resolvePromise = resolve;
       });
-      mockCreateFeedback.mockReturnValue(controlledPromise);
+      mockSubmitFeedback.mockReturnValue(controlledPromise);
 
       render(<FeedbackNavigationItem />);
       const textarea = screen.getByTestId('textarea');
@@ -295,7 +304,7 @@ describe('FeedbackNavigationItem', () => {
       expect(consoleSpy).toHaveBeenCalledWith(
         'Feedback text is empty or only whitespace'
       );
-      expect(mockCreateFeedback).not.toHaveBeenCalled();
+      expect(mockSubmitFeedback).not.toHaveBeenCalled();
 
       consoleSpy.mockRestore();
     });
@@ -317,7 +326,7 @@ describe('FeedbackNavigationItem', () => {
       expect(consoleSpy).toHaveBeenCalledWith(
         'Feedback text is empty or only whitespace'
       );
-      expect(mockCreateFeedback).not.toHaveBeenCalled();
+      expect(mockSubmitFeedback).not.toHaveBeenCalled();
 
       consoleSpy.mockRestore();
     });
@@ -334,7 +343,7 @@ describe('FeedbackNavigationItem', () => {
       });
 
       await waitFor(() => {
-        expect(mockCreateFeedback).toHaveBeenCalled();
+        expect(mockSubmitFeedback).toHaveBeenCalled();
       });
 
       // Should not throw error even without callback

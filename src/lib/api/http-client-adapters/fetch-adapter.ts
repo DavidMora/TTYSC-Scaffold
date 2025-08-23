@@ -531,9 +531,11 @@ export class FetchAdapter implements HttpClientAdapter {
     );
 
     const timeoutMs = mergedConfig.timeout ?? this.defaultConfig.timeout;
-    const timeoutId = timeoutMs
-      ? setTimeout(() => controller.abort(), timeoutMs)
-      : undefined;
+
+    const timeoutId =
+      timeoutMs && timeoutMs !== -1
+        ? setTimeout(() => controller.abort(), timeoutMs)
+        : undefined;
 
     let response: Response;
     try {

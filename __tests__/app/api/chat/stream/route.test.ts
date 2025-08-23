@@ -83,6 +83,7 @@ describe('POST /api/chat/stream', () => {
       body: { message: 'stream this' },
       stream: true,
       parser: 'bytes',
+      timeout: -1,
     });
   });
 
