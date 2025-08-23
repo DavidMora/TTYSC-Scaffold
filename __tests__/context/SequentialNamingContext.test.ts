@@ -6,7 +6,8 @@ import {
 } from '@/contexts/SequentialNamingContext';
 
 // Mock auth context used inside provider (mutable session)
-const mockAuthState = { session: { user: { id: 'u1' } } as any };
+const mockAuthState = { session: { user: { id: 'u1' } } };
+
 jest.mock('@/hooks/useAuth', () => ({
   useAuth: jest.fn(() => mockAuthState),
 }));
@@ -39,7 +40,9 @@ describe('useSequentialNaming', () => {
     sessionStorageMock.clear.mockClear();
     sessionStorageMock.clear();
     // default to logged-in unless test overrides
-    mockAuthState.session = { user: { id: 'u1' } } as any;
+    mockAuthState.session = { user: { id: 'u1' } } as unknown as {
+      user: { id: string };
+    };
   });
 
   const createWrapper = () => {
@@ -127,7 +130,7 @@ describe('useSequentialNaming', () => {
   });
 
   it('does not initialize when not logged in', () => {
-    mockAuthState.session = null as any;
+    mockAuthState.session = null as unknown as { user: { id: string } };
 
     const { result } = renderHook(() => useSequentialNaming(), {
       wrapper: createWrapper(),
@@ -138,25 +141,29 @@ describe('useSequentialNaming', () => {
     expect(sessionStorageMock.removeItem).not.toHaveBeenCalled();
   });
 
-  it('initializes on first login when not previously initialized', () => {
+  it('initializes on first login when not previously initialized', async () => {
     // Start logged out
-    mockAuthState.session = null as any;
+    mockAuthState.session = null as unknown as { user: { id: string } };
     const { rerender } = renderHook(() => useSequentialNaming(), {
       wrapper: createWrapper(),
     });
 
     // Log in
-    mockAuthState.session = { user: { id: 'u1' } } as any;
+    mockAuthState.session = { user: { id: 'u1' } } as unknown as {
+      user: { id: string };
+    };
     rerender();
 
-    expect(sessionStorageMock.setItem).toHaveBeenCalledWith(
-      'sequentialNamingCounter:session:initialized',
-      'true'
-    );
-    expect(sessionStorageMock.setItem).toHaveBeenCalledWith(
-      'sequentialNamingCounter:session',
-      '1'
-    );
+    await waitFor(() => {
+      expect(sessionStorageMock.setItem).toHaveBeenCalledWith(
+        'sequentialNamingCounter:session:initialized',
+        'true'
+      );
+      expect(sessionStorageMock.setItem).toHaveBeenCalledWith(
+        'sequentialNamingCounter:session',
+        '1'
+      );
+    });
   });
 
   it('hydrates from storage when already initialized on login', () => {
@@ -173,30 +180,34 @@ describe('useSequentialNaming', () => {
     expect(result.current.currentCounter).toBe(7);
   });
 
-  it('clears storage and resets on logout', () => {
+  it('clears storage and resets on logout', async () => {
     // Mount while logged in
-    mockAuthState.session = { user: { id: 'u1' } } as any;
+    mockAuthState.session = { user: { id: 'u1' } } as unknown as {
+      user: { id: string };
+    };
     const { rerender } = renderHook(() => useSequentialNaming(), {
       wrapper: createWrapper(),
     });
 
     // Then log out
-    mockAuthState.session = null as any;
+    mockAuthState.session = null as unknown as { user: { id: string } };
     rerender();
 
-    expect(sessionStorageMock.removeItem).toHaveBeenCalledWith(
-      'sequentialNamingCounter:session:initialized'
-    );
-    expect(sessionStorageMock.removeItem).toHaveBeenCalledWith(
-      'sequentialNamingCounter:session'
-    );
-    expect(sessionStorageMock.setItem).toHaveBeenCalledWith(
-      'sequentialNamingCounter:session',
-      '1'
-    );
+    await waitFor(() => {
+      expect(sessionStorageMock.removeItem).toHaveBeenCalledWith(
+        'sequentialNamingCounter:session:initialized'
+      );
+      expect(sessionStorageMock.removeItem).toHaveBeenCalledWith(
+        'sequentialNamingCounter:session'
+      );
+      expect(sessionStorageMock.setItem).toHaveBeenCalledWith(
+        'sequentialNamingCounter:session',
+        '1'
+      );
+    });
   });
 
-  it('rehydrates on subsequent logged-in renders after first initialization', () => {
+  it('rehydrates on subsequent logged-in renders after first initialization', async () => {
     // First login initializes
     const { result, rerender } = renderHook(() => useSequentialNaming(), {
       wrapper: createWrapper(),
@@ -206,9 +217,13 @@ describe('useSequentialNaming', () => {
 
     // Update stored counter and trigger another logged-in render
     sessionStorageMock.setItem('sequentialNamingCounter:session', '9');
-    mockAuthState.session = { user: { id: 'u1', v: '2' } } as any; // change ref
+    mockAuthState.session = { user: { id: 'u1', v: '2' } } as unknown as {
+      user: { id: string; v: string };
+    };
     rerender();
 
-    expect(result.current.currentCounter).toBe(9);
+    await waitFor(() => {
+      expect(result.current.currentCounter).toBe(9);
+    });
   });
 });

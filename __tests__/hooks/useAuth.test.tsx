@@ -2016,7 +2016,11 @@ describe('useAuth Hook', () => {
         }),
     } as Response);
 
-    mockUseSession.mockReturnValue({ data: null, status: 'unauthenticated', update: mockUpdate });
+    mockUseSession.mockReturnValue({
+      data: null,
+      status: 'unauthenticated',
+      update: mockUpdate,
+    });
 
     // Override window.location to be on logout page
     delete (window as any).location;
@@ -2040,9 +2044,16 @@ describe('useAuth Hook', () => {
 
   it('logout performs cleanup, signOut and redirects', async () => {
     // Authenticated with idToken
-    mockUseSession.mockReturnValue({ data: { user: {}, idToken: 'idtok' } as any, status: 'authenticated', update: mockUpdate });
+    mockUseSession.mockReturnValue({
+      data: { user: {}, idToken: 'idtok' } as any,
+      status: 'authenticated',
+      update: mockUpdate,
+    });
     mockSignOut.mockResolvedValueOnce(undefined as any);
-    mockFetch.mockResolvedValueOnce({ ok: true, json: async () => ({}) } as any);
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({}),
+    } as any);
 
     // Mock location to capture href changes
     delete (window as any).location;
@@ -2059,8 +2070,14 @@ describe('useAuth Hook', () => {
     });
 
     expect(logoutState.setManuallyLoggedOut).toHaveBeenCalled();
-    expect(mockLocalStorage.setItem).toHaveBeenCalledWith('user_manually_logged_out', 'true');
-    expect(mockSessionStorage.setItem).toHaveBeenCalledWith('logout_in_progress', 'true');
+    expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
+      'user_manually_logged_out',
+      'true'
+    );
+    expect(mockSessionStorage.setItem).toHaveBeenCalledWith(
+      'logout_in_progress',
+      'true'
+    );
     expect(performCompleteLogoutCleanup).toHaveBeenCalled();
     expect(mockSignOut).toHaveBeenCalledWith({ redirect: false });
     // Second fetch call should be provider sign-out URL; options may be omitted
@@ -2073,8 +2090,14 @@ describe('useAuth Hook', () => {
 
   it('logout fallback path on error still redirects', async () => {
     // Make cleanup throw to enter catch block
-    (performCompleteLogoutCleanup as jest.Mock).mockRejectedValueOnce(new Error('cleanup fail'));
-    mockUseSession.mockReturnValue({ data: { user: {} } as any, status: 'authenticated', update: mockUpdate });
+    (performCompleteLogoutCleanup as jest.Mock).mockRejectedValueOnce(
+      new Error('cleanup fail')
+    );
+    mockUseSession.mockReturnValue({
+      data: { user: {} } as any,
+      status: 'authenticated',
+      update: mockUpdate,
+    });
 
     // Mock location (no strict assertion on href to avoid JSDOM limitations)
     delete (window as any).location;
@@ -2098,11 +2121,22 @@ describe('useAuth Hook', () => {
     mockFetch
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ authProcess: 'azure', isAuthDisabled: false, autoLogin: false }),
+        json: async () => ({
+          authProcess: 'azure',
+          isAuthDisabled: false,
+          autoLogin: false,
+        }),
       } as any)
-      .mockResolvedValueOnce({ ok: true, json: async () => ({ success: true }) } as any);
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ success: true }),
+      } as any);
 
-    mockUseSession.mockReturnValue({ data: { user: {} } as any, status: 'authenticated', update: mockUpdate });
+    mockUseSession.mockReturnValue({
+      data: { user: {} } as any,
+      status: 'authenticated',
+      update: mockUpdate,
+    });
 
     render(
       <AuthProvider>
@@ -2122,11 +2156,19 @@ describe('useAuth Hook', () => {
     mockFetch
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ authProcess: 'azure', isAuthDisabled: false, autoLogin: false }),
+        json: async () => ({
+          authProcess: 'azure',
+          isAuthDisabled: false,
+          autoLogin: false,
+        }),
       } as any)
       .mockResolvedValueOnce({ ok: false, text: async () => 'fail' } as any);
 
-    mockUseSession.mockReturnValue({ data: { user: {} } as any, status: 'authenticated', update: mockUpdate });
+    mockUseSession.mockReturnValue({
+      data: { user: {} } as any,
+      status: 'authenticated',
+      update: mockUpdate,
+    });
 
     render(
       <AuthProvider>
