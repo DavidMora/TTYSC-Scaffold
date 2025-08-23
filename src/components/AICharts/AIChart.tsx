@@ -15,7 +15,6 @@ interface AIChartProps {
   onRegionChange?: (region: string) => void;
   dateRange?: string;
   region?: string;
-  chartGenError?: string;
 }
 
 export function AIChart({
@@ -26,13 +25,12 @@ export function AIChart({
   onRegionChange,
   dateRange,
   region,
-  chartGenError,
 }: Readonly<AIChartProps>) {
   const { headline, preamble, content, chart, label } = data;
 
   const validationError = validateChart(chart);
-  if (validationError || chartGenError) {
-    return <ChartError error={validationError || chartGenError} />;
+  if (validationError) {
+    return <ChartError error={validationError} />;
   }
 
   const chartDataInfo = getChartDataInfo({

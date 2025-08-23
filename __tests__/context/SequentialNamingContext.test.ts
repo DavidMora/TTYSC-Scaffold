@@ -5,22 +5,38 @@ import {
   SequentialNamingProvider,
 } from '@/contexts/SequentialNamingContext';
 
-// Mock localStorage
-const localStorageMock = {
-  getItem: jest.fn(),
-  setItem: jest.fn(),
-  clear: jest.fn(),
+// Mock auth context used inside provider
+jest.mock('@/hooks/useAuth', () => ({
+  useAuth: () => ({ session: { user: { id: 'u1' } } }),
+}));
+
+// Mock sessionStorage used by provider
+const sessionStore: Record<string, string> = {};
+const sessionStorageMock = {
+  getItem: jest.fn((key: string) =>
+    key in sessionStore ? sessionStore[key] : null
+  ),
+  setItem: jest.fn((key: string, value: string) => {
+    sessionStore[key] = value;
+  }),
+  removeItem: jest.fn((key: string) => {
+    delete sessionStore[key];
+  }),
+  clear: jest.fn(() => {
+    for (const k of Object.keys(sessionStore)) delete sessionStore[k];
+  }),
 };
-Object.defineProperty(window, 'localStorage', {
-  value: localStorageMock,
+Object.defineProperty(window, 'sessionStorage', {
+  value: sessionStorageMock,
 });
 
 describe('useSequentialNaming', () => {
   beforeEach(() => {
-    localStorageMock.getItem.mockClear();
-    localStorageMock.setItem.mockClear();
-    localStorageMock.clear.mockClear();
-    localStorageMock.getItem.mockReturnValue(null);
+    sessionStorageMock.getItem.mockClear();
+    sessionStorageMock.setItem.mockClear();
+    sessionStorageMock.removeItem.mockClear();
+    sessionStorageMock.clear.mockClear();
+    sessionStorageMock.clear();
   });
 
   const createWrapper = () => {
@@ -65,8 +81,8 @@ describe('useSequentialNaming', () => {
     consoleSpy.mockRestore();
   });
 
-  it('should start with counter 1 when localStorage is empty', () => {
-    localStorageMock.getItem.mockReturnValue(null);
+  it('should start with counter 1 when sessionStorage is empty', () => {
+    // INIT_KEY not set -> provider resets to 1
 
     const { result } = renderHook(() => useSequentialNaming(), {
       wrapper: createWrapper(),
@@ -75,8 +91,16 @@ describe('useSequentialNaming', () => {
     expect(result.current.currentCounter).toBe(1);
   });
 
-  it('should start with counter 1 when localStorage returns invalid number', () => {
-    localStorageMock.getItem.mockReturnValue('invalid');
+  it('should start with counter 1 when sessionStorage returns invalid number', () => {
+    // Mark as initialized but with invalid stored value
+    sessionStorageMock.setItem(
+      'sequentialNamingCounter:session:initialized',
+      'true'
+    );
+    sessionStorageMock.setItem(
+      'sequentialNamingCounter:session',
+      'invalid' as unknown as string
+    );
 
     const { result } = renderHook(() => useSequentialNaming(), {
       wrapper: createWrapper(),
@@ -85,8 +109,12 @@ describe('useSequentialNaming', () => {
     expect(result.current.currentCounter).toBe(1);
   });
 
-  it('should start with counter from localStorage when valid', () => {
-    localStorageMock.getItem.mockReturnValue('5');
+  it('should start with counter from sessionStorage when valid', () => {
+    sessionStorageMock.setItem(
+      'sequentialNamingCounter:session:initialized',
+      'true'
+    );
+    sessionStorageMock.setItem('sequentialNamingCounter:session', '5');
 
     const { result } = renderHook(() => useSequentialNaming(), {
       wrapper: createWrapper(),

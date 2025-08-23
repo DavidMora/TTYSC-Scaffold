@@ -153,6 +153,17 @@ describe('Auth Options', () => {
         email: 'oid@example.com',
       });
     });
+
+    it('should map minimal profile using userPrincipalName when mail missing', () => {
+      const provider = authOptions.providers[0] as any;
+      const mockProfile = {
+        id: 'min-1',
+        name: undefined,
+        userPrincipalName: 'upn@example.com',
+      };
+      const result = provider.profile(mockProfile);
+      expect(result).toEqual({ id: 'min-1', name: undefined, email: 'upn@example.com' });
+    });
   });
 
   describe('userinfo request', () => {
@@ -216,10 +227,49 @@ describe('Auth Options', () => {
         idToken: 'id-token',
         accessTokenExpires: 1234567890000,
         refreshToken: 'refresh-token',
-        user: mockUser,
+        user: { ...mockUser, image: null },
       });
       expect(consoleSpy).toHaveBeenCalledWith(
         expect.stringContaining('[Auth] Initial sign in for user at')
+      );
+    });
+
+    it('should attach Graph photo as user image when available', async () => {
+      const mockAccount = {
+        access_token: 'access-token',
+        id_token: 'id-token',
+        refresh_token: 'refresh-token',
+        expires_at: 1234567890,
+      };
+      const mockUser = {
+        id: 'user-123',
+        name: 'Test User',
+        email: 'test@example.com',
+      };
+
+      // Mock fetch for photo endpoint (first and only call in this test)
+      (global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: { get: (k: string) => (k.toLowerCase() === 'content-type' ? 'image/png' : null) },
+        arrayBuffer: () => Promise.resolve(Uint8Array.from([1, 2, 3, 4]).buffer),
+      });
+
+      const result = await authOptions.callbacks!.jwt!({
+        token: {},
+        account: mockAccount,
+        user: mockUser as any,
+      } as any);
+
+      expect(result.user).toBeDefined();
+      expect(result.user!.image).toMatch(/^data:image\/png;base64,/);
+      // Ensure other fields preserved
+      expect(result).toEqual(
+        expect.objectContaining({
+          accessToken: 'access-token',
+          idToken: 'id-token',
+          refreshToken: 'refresh-token',
+        })
       );
     });
 
@@ -398,6 +448,7 @@ describe('Auth Options', () => {
           id: 'user-123',
           name: 'Test User',
           email: 'test@example.com',
+          image: undefined,
         },
       });
     });
