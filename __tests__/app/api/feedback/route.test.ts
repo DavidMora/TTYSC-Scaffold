@@ -365,6 +365,102 @@ describe('/api/feedback', () => {
       expect(responseData).toEqual({ error: 'Internal server error' });
     });
 
+    it('should return 400 when request body is null', async () => {
+      mockGetServerSession.mockResolvedValue(mockSession);
+
+      const request = {
+        json: jest.fn().mockResolvedValue(null),
+      } as unknown as NextRequest;
+
+      const response = await POST(request);
+      const responseData = await response.json();
+
+      expect(response.status).toBe(400);
+      expect(responseData).toEqual({
+        error: 'Invalid request body: expected JSON object',
+      });
+    });
+
+    it('should return 400 when request body is not an object', async () => {
+      mockGetServerSession.mockResolvedValue(mockSession);
+
+      const request = {
+        json: jest.fn().mockResolvedValue('invalid string'),
+      } as unknown as NextRequest;
+
+      const response = await POST(request);
+      const responseData = await response.json();
+
+      expect(response.status).toBe(400);
+      expect(responseData).toEqual({
+        error: 'Invalid request body: expected JSON object',
+      });
+    });
+
+    it('should return 400 when request body is an array', async () => {
+      mockGetServerSession.mockResolvedValue(mockSession);
+
+      const request = {
+        json: jest.fn().mockResolvedValue(['invalid', 'array']),
+      } as unknown as NextRequest;
+
+      const response = await POST(request);
+      const responseData = await response.json();
+
+      expect(response.status).toBe(400);
+      expect(responseData).toEqual({
+        error: 'Invalid request body: expected JSON object',
+      });
+    });
+
+    it('should return 400 when request body is a number', async () => {
+      mockGetServerSession.mockResolvedValue(mockSession);
+
+      const request = {
+        json: jest.fn().mockResolvedValue(123),
+      } as unknown as NextRequest;
+
+      const response = await POST(request);
+      const responseData = await response.json();
+
+      expect(response.status).toBe(400);
+      expect(responseData).toEqual({
+        error: 'Invalid request body: expected JSON object',
+      });
+    });
+
+    it('should return 400 when request body is a boolean', async () => {
+      mockGetServerSession.mockResolvedValue(mockSession);
+
+      const request = {
+        json: jest.fn().mockResolvedValue(true),
+      } as unknown as NextRequest;
+
+      const response = await POST(request);
+      const responseData = await response.json();
+
+      expect(response.status).toBe(400);
+      expect(responseData).toEqual({
+        error: 'Invalid request body: expected JSON object',
+      });
+    });
+
+    it('should return 400 when JSON parsing fails', async () => {
+      mockGetServerSession.mockResolvedValue(mockSession);
+
+      const request = {
+        json: jest.fn().mockRejectedValue(new SyntaxError('Invalid JSON')),
+      } as unknown as NextRequest;
+
+      const response = await POST(request);
+      const responseData = await response.json();
+
+      expect(response.status).toBe(400);
+      expect(responseData).toEqual({
+        error: 'Invalid JSON in request body',
+      });
+    });
+
     it('should use different environment values based on NODE_ENV and BACKEND_BASE_URL', async () => {
       const originalBackendBaseUrl = process.env.BACKEND_BASE_URL;
       const originalNodeEnv = process.env.NODE_ENV;

@@ -18,7 +18,20 @@ export async function POST(req: NextRequest) {
 
     const { userEmail } = authResult;
 
-    const body = await req.json();
+    let body;
+    try {
+      body = await req.json();
+    } catch {
+      return apiResponse.error('Invalid JSON in request body', 400);
+    }
+
+    // Validate request body structure before destructuring
+    if (!body || typeof body !== 'object' || Array.isArray(body)) {
+      return apiResponse.error(
+        'Invalid request body: expected JSON object',
+        400
+      );
+    }
 
     const { feedback, queryId, query, answer, comments } = body;
 
