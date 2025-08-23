@@ -11,6 +11,10 @@ import {
   BFF_FEEDBACKS,
   BFF_FEEDBACK,
 } from '../../../src/lib/constants/api/bff-routes';
+import {
+  SubmitFeedbackRequest,
+  SubmitFeedbackResponse,
+} from '../../../src/lib/types/feedback';
 
 // Mock the httpClient
 jest.mock('../../../src/lib/api');
@@ -88,18 +92,16 @@ describe('FeedbackService', () => {
 
   describe('submitFeedback', () => {
     it('should call httpClient.post with correct endpoint and payload', async () => {
-      const payload = {
-        conversation_id: 'conv-123',
-        message_id: 'msg-456',
-        feedback: 'positive',
-        feedback_text: 'Great response!',
+      const payload: SubmitFeedbackRequest = {
+        feedback: 'good',
+        queryId: 'conv-123',
+        query: 'User prompt',
+        answer: 'Assistant answer',
+        comments: 'Great response!',
       };
-      const mockData = {
-        id: 'feedback-789',
-        conversation_id: payload.conversation_id,
-        message_id: payload.message_id,
-        feedback: payload.feedback,
-        feedback_text: payload.feedback_text,
+      const mockData: SubmitFeedbackResponse = {
+        success: true,
+        message: 'Feedback submitted successfully!',
       };
       const response = mockResponse(mockData, 201);
       mockHttpClient.post.mockResolvedValue(response);
@@ -111,10 +113,12 @@ describe('FeedbackService', () => {
     });
 
     it('should handle validation errors', async () => {
-      const payload = {
-        conversation_id: 'conv-123',
-        message_id: 'msg-456',
-        feedback: 'positive',
+      const payload: SubmitFeedbackRequest = {
+        feedback: 'bad',
+        queryId: 'conv-456',
+        query: 'Another user prompt',
+        answer: 'Another assistant answer',
+        comments: 'Needs improvement',
       };
       const mockError = new Error('Validation error');
       mockHttpClient.post.mockRejectedValue(mockError);
