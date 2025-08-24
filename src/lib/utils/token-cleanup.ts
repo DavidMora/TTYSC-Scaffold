@@ -174,171 +174,148 @@ export function createTokenCleanup(options: TokenCleanupOptions = {}) {
     location = typeof window !== 'undefined' ? window.location : null,
   } = options;
 
+  // Local, closure-bound implementations (no reliance on `this`)
+  const clearAllAuthCookies = (): void => {
+    if (!windowObj || !doc || !location) return;
+
+    const cookieNames = getNextAuthCookieNames();
+    const domains = getDomainVariations(location.hostname);
+    const paths = ['/', '/api', '/auth'];
+
+    logger.log('[Token Cleanup] Clearing cookies:', {
+      cookieNames,
+      domains,
+      paths,
+    });
+
+    // Helper function to clear a single cookie
+    const clearCookie = (
+      name: string,
+      path?: string,
+      domain?: string,
+      sameSite?: string,
+      secure?: boolean
+    ) => {
+      let cookieStr = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
+      if (path) cookieStr += `; path=${path}`;
+      if (domain) cookieStr += `; domain=${domain}`;
+      if (sameSite) cookieStr += `; SameSite=${sameSite}`;
+      if (secure) cookieStr += `; Secure`;
+      doc.cookie = cookieStr;
+    };
+
+    // Clear standard auth cookies
+    clearStandardAuthCookies(cookieNames, domains, paths, clearCookie);
+
+    // Clear any remaining auth-related cookies
+    clearRemainingAuthCookies(doc.cookie, domains, paths, clearCookie);
+  };
+
+  const clearAllAuthStorage = (): void => {
+    if (!windowObj || !storage || !sessionStore) return;
+
+    logger.log(
+      '[Token Cleanup] Clearing browser storage (preserving logout state)'
+    );
+
+    // CRITICAL: Preserve logout state flags during cleanup
+    const logoutFlag = storage.getItem('user_manually_logged_out');
+    const logoutTimestamp = storage.getItem('logout_timestamp');
+
+    // Clear localStorage (but preserve logout state)
+    const keysToPreserve = ['user_manually_logged_out', 'logout_timestamp'];
+    const localStorageKeys = Object.keys(storage);
+
+    localStorageKeys.forEach((key) => {
+      if (!keysToPreserve.includes(key)) {
+        storage.removeItem(key);
+      }
+    });
+
+    // Restore logout state if it was cleared accidentally
+    if (logoutFlag === 'true') {
+      storage.setItem('user_manually_logged_out', 'true');
+    }
+    if (logoutTimestamp) {
+      storage.setItem('logout_timestamp', logoutTimestamp);
+    }
+
+    logger.log('[Token Cleanup] Logout state preserved:', {
+      logoutFlag: storage.getItem('user_manually_logged_out'),
+      timestamp: storage.getItem('logout_timestamp'),
+    });
+
+    // Clear sessionStorage completely
+    sessionStore.clear();
+
+    // Clear any IndexedDB databases (if they exist)
+    try {
+      if (windowObj && 'indexedDB' in windowObj) {
+        // Common database names that might contain auth data
+        const dbNames = ['next-auth', 'auth', 'session', 'tokens'];
+        dbNames.forEach((dbName) => {
+          windowObj.indexedDB.deleteDatabase(dbName);
+        });
+      }
+    } catch (error) {
+      logger.warn('[Token Cleanup] Failed to clear IndexedDB:', error);
+    }
+  };
+
+  const invalidateServerSession = async (): Promise<void> => {
+    try {
+      logger.log('[Token Cleanup] Invalidating server session');
+
+      // Call our force logout endpoint for comprehensive server-side clearing
+      const forceLogoutResponse = await fetch('/api/auth/force-logout', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (forceLogoutResponse.ok) {
+        const result = await forceLogoutResponse.json();
+        logger.log('[Token Cleanup] Force logout result:', result);
+      }
+
+      // Avoid duplicate signout/restart calls here; the caller coordinates redirects/cleanup
+    } catch (error) {
+      logger.warn('[Token Cleanup] Server session invalidation failed:', error);
+    }
+  };
+
+  const performCompleteLogoutCleanup = async (): Promise<void> => {
+    logger.log('[Token Cleanup] Starting comprehensive logout cleanup');
+
+    // Clear all cookies
+    clearAllAuthCookies();
+
+    // Clear all storage
+    clearAllAuthStorage();
+
+    // Invalidate server session
+    await invalidateServerSession();
+
+    // Wait a moment for cleanup to complete
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    // Verify cleanup by checking remaining cookies
+    const remainingCookies = doc?.cookie || '';
+    logger.log(
+      '[Token Cleanup] Remaining cookies after cleanup:',
+      remainingCookies
+    );
+
+    logger.log('[Token Cleanup] Comprehensive cleanup completed');
+  };
+
   return {
-    /**
-     * Clear all NextAuth cookies from all possible domains and paths
-     */
-    clearAllAuthCookies(): void {
-      if (!windowObj || !doc || !location) return;
-
-      const cookieNames = getNextAuthCookieNames();
-      const domains = getDomainVariations(location.hostname);
-      const paths = ['/', '/api', '/auth'];
-
-      logger.log('[Token Cleanup] Clearing cookies:', {
-        cookieNames,
-        domains,
-        paths,
-      });
-
-      // Helper function to clear a single cookie
-      const clearCookie = (
-        name: string,
-        path?: string,
-        domain?: string,
-        sameSite?: string,
-        secure?: boolean
-      ) => {
-        let cookieStr = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
-        if (path) cookieStr += `; path=${path}`;
-        if (domain) cookieStr += `; domain=${domain}`;
-        if (sameSite) cookieStr += `; SameSite=${sameSite}`;
-        if (secure) cookieStr += `; Secure`;
-        doc.cookie = cookieStr;
-      };
-
-      // Clear standard auth cookies
-      clearStandardAuthCookies(cookieNames, domains, paths, clearCookie);
-
-      // Clear any remaining auth-related cookies
-      clearRemainingAuthCookies(doc.cookie, domains, paths, clearCookie);
-    },
-
-    /**
-     * Clear all browser storage that might contain auth data
-     */
-    clearAllAuthStorage(): void {
-      if (!windowObj || !storage || !sessionStore) return;
-
-      logger.log(
-        '[Token Cleanup] Clearing browser storage (preserving logout state)'
-      );
-
-      // CRITICAL: Preserve logout state flags during cleanup
-      const logoutFlag = storage.getItem('user_manually_logged_out');
-      const logoutTimestamp = storage.getItem('logout_timestamp');
-
-      // Clear localStorage (but preserve logout state)
-      const keysToPreserve = ['user_manually_logged_out', 'logout_timestamp'];
-      const localStorageKeys = Object.keys(storage);
-
-      localStorageKeys.forEach((key) => {
-        if (!keysToPreserve.includes(key)) {
-          storage.removeItem(key);
-        }
-      });
-
-      // Restore logout state if it was cleared accidentally
-      if (logoutFlag === 'true') {
-        storage.setItem('user_manually_logged_out', 'true');
-      }
-      if (logoutTimestamp) {
-        storage.setItem('logout_timestamp', logoutTimestamp);
-      }
-
-      logger.log('[Token Cleanup] Logout state preserved:', {
-        logoutFlag: storage.getItem('user_manually_logged_out'),
-        timestamp: storage.getItem('logout_timestamp'),
-      });
-
-      // Clear sessionStorage completely
-      sessionStore.clear();
-
-      // Clear any IndexedDB databases (if they exist)
-      try {
-        if (windowObj && 'indexedDB' in windowObj) {
-          // Common database names that might contain auth data
-          const dbNames = ['next-auth', 'auth', 'session', 'tokens'];
-          dbNames.forEach((dbName) => {
-            windowObj.indexedDB.deleteDatabase(dbName);
-          });
-        }
-      } catch (error) {
-        logger.warn('[Token Cleanup] Failed to clear IndexedDB:', error);
-      }
-    },
-
-    /**
-     * Force a server-side session invalidation
-     */
-    async invalidateServerSession(): Promise<void> {
-      try {
-        logger.log('[Token Cleanup] Invalidating server session');
-
-        // Call our force logout endpoint for comprehensive server-side clearing
-        const forceLogoutResponse = await fetch('/api/auth/force-logout', {
-          method: 'POST',
-          credentials: 'same-origin',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-
-        if (forceLogoutResponse.ok) {
-          const result = await forceLogoutResponse.json();
-          logger.log('[Token Cleanup] Force logout result:', result);
-        }
-
-        // Also call NextAuth's built-in signout
-        await fetch('/api/auth/signout', {
-          method: 'POST',
-          credentials: 'same-origin',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ callbackUrl: '/auth/logged-out' }),
-        });
-
-        // Call restart session endpoint as backup
-        await fetch('/api/auth/restart-session', {
-          method: 'POST',
-          credentials: 'same-origin',
-        });
-      } catch (error) {
-        logger.warn(
-          '[Token Cleanup] Server session invalidation failed:',
-          error
-        );
-      }
-    },
-
-    /**
-     * Comprehensive cleanup of all authentication data
-     */
-    async performCompleteLogoutCleanup(): Promise<void> {
-      logger.log('[Token Cleanup] Starting comprehensive logout cleanup');
-
-      // Clear all cookies
-      this.clearAllAuthCookies();
-
-      // Clear all storage
-      this.clearAllAuthStorage();
-
-      // Invalidate server session
-      await this.invalidateServerSession();
-
-      // Wait a moment for cleanup to complete
-      await new Promise((resolve) => setTimeout(resolve, 100));
-
-      // Verify cleanup by checking remaining cookies
-      const remainingCookies = doc?.cookie || '';
-      logger.log(
-        '[Token Cleanup] Remaining cookies after cleanup:',
-        remainingCookies
-      );
-
-      logger.log('[Token Cleanup] Comprehensive cleanup completed');
-    },
+    clearAllAuthCookies,
+    clearAllAuthStorage,
+    invalidateServerSession,
+    performCompleteLogoutCleanup,
   };
 }
 

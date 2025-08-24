@@ -3,7 +3,9 @@ import { Title } from '@ui5/webcomponents-react';
 import TitleLevel from '@ui5/webcomponents/dist/types/TitleLevel.js';
 import { AIChartData } from '@/lib/types/charts';
 import { getChartDataInfo } from '@/lib/utils/chartUtils';
+import { validateChart } from '@/lib/utils/chartValidation';
 import { ChartFactory } from '@/components/Charts/ChartFactory';
+import { ChartError } from './AIChartSkeleton';
 
 interface AIChartProps {
   data: AIChartData;
@@ -24,13 +26,21 @@ export function AIChart({
   dateRange,
   region,
 }: Readonly<AIChartProps>) {
-  const { headline, preamble, content, chart } = data;
+  const { headline, preamble, content, chart, label } = data;
 
-  const chartDataInfo = getChartDataInfo(chart);
+  const validationError = validateChart(chart);
+  if (validationError) {
+    return <ChartError error={validationError} />;
+  }
+
+  const chartDataInfo = getChartDataInfo({
+    data: chart.data,
+    labels: chart.labels,
+  });
 
   return (
     <div>
-      {!isFullscreen && (
+      {!isFullscreen && headline && (
         <Title level={TitleLevel.H2} style={{ marginBottom: 16 }}>
           {headline}
         </Title>
@@ -65,7 +75,7 @@ export function AIChart({
         height={isFullscreen ? 800 : 400}
         chartType={chart.type}
         chartDataInfo={chartDataInfo}
-        title={headline}
+        title={label}
         chartIdForFullscreen={isFullscreen ? undefined : chartId}
         onDateRangeChange={onDateRangeChange}
         onRegionChange={onRegionChange}

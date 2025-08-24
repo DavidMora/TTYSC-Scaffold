@@ -1,4 +1,5 @@
 import type { BaseResponse } from '@/lib/types/http/responses';
+import type { AIChartData } from '@/lib/types/charts';
 import { FilterState } from '../analysisFilters';
 import type { TableData } from '@/lib/types/datatable';
 
@@ -11,7 +12,9 @@ export interface ChatMessage {
   content: string;
   created: string;
   feedbackVote?: VoteType;
+  chart?: AIChartData;
   table?: TableData;
+  chartGenError?: string;
 }
 
 export interface Chat {
@@ -131,6 +134,25 @@ export interface ExecutionMetadata {
     dataframe_records: Array<Record<string, unknown>>;
     columns: string[];
   };
+  // Optional visualization payload (may be provided by a later chunk)
+  chart_type?: string | null;
+  chart_label?: string | null;
+  generated_chart?: {
+    Series: Array<{
+      name: string;
+      data: Array<{ x: string | number; y: number }>;
+    }>;
+    XAxisKey: string;
+    YAxisKey: string;
+  } | null;
+  chartgen_error?: string | null;
+  // Optional follow-up suggestions
+  followup_questions?: string[];
+  followup_metadata?: {
+    original_question: string;
+    num_questions: number;
+  };
+  followup_error?: string | null;
   completed_steps: string[];
   error: string | null;
 }

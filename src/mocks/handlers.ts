@@ -7,7 +7,7 @@ export const handlers = [
   // List chats
   http.get('/api/chats', () => {
     const body = chatsMemory.list();
-    return HttpResponse.json(body, { status: 200 });
+    return HttpResponse.json({ success: true, data: body }, { status: 200 });
   }),
 
   // Create chat
@@ -15,10 +15,16 @@ export const handlers = [
     try {
       const json = (await request.json()) as { title?: string };
       const created = chatsMemory.create({ title: json?.title || 'Untitled' });
-      return HttpResponse.json(created, { status: 201 });
+      return HttpResponse.json(
+        { success: true, data: created },
+        { status: 201 }
+      );
     } catch {
       const created = chatsMemory.create({ title: 'Untitled' });
-      return HttpResponse.json(created, { status: 201 });
+      return HttpResponse.json(
+        { success: true, data: created },
+        { status: 201 }
+      );
     }
   }),
 
@@ -27,7 +33,10 @@ export const handlers = [
     const id = String(params.id);
     const found = chatsMemory.get(id);
     if (!found)
-      return HttpResponse.json({ error: 'Not Found' }, { status: 404 });
+      return HttpResponse.json(
+        { success: false, error: 'Chat not found' },
+        { status: 404 }
+      );
     return HttpResponse.json({ success: true, data: found }, { status: 200 });
   }),
 
@@ -42,8 +51,11 @@ export const handlers = [
     }
     const updated = chatsMemory.update({ ...(body || {}), id });
     if (!updated)
-      return HttpResponse.json({ error: 'Not Found' }, { status: 404 });
-    return HttpResponse.json(updated, { status: 200 });
+      return HttpResponse.json(
+        { success: false, error: 'Chat not found' },
+        { status: 404 }
+      );
+    return HttpResponse.json({ success: true, data: updated }, { status: 200 });
   }),
 
   // Delete chat
@@ -66,15 +78,59 @@ export const handlers = [
   http.patch('/api/settings', async ({ request }) => {
     try {
       const body = await request.json();
-      const updatedSettings = settingsMemory.update(body as Partial<Settings>);
+
+      // Basic shape check
+      if (!body || typeof body !== 'object' || Array.isArray(body)) {
+        return HttpResponse.json(
+          {
+            success: false,
+            error: 'Invalid request body: expected JSON object',
+          },
+          { status: 400 }
+        );
+      }
+
+      // Enforce allowed keys and boolean types
+      const updates: Partial<Settings> = {};
+      const bodyRecord = body as Record<string, unknown>;
+
+      if ('shareChats' in bodyRecord) {
+        if (typeof bodyRecord.shareChats !== 'boolean') {
+          return HttpResponse.json(
+            { success: false, error: 'shareChats must be a boolean' },
+            { status: 400 }
+          );
+        }
+        updates.shareChats = bodyRecord.shareChats;
+      }
+      if ('hideIndexTable' in bodyRecord) {
+        if (typeof bodyRecord.hideIndexTable !== 'boolean') {
+          return HttpResponse.json(
+            { success: false, error: 'hideIndexTable must be a boolean' },
+            { status: 400 }
+          );
+        }
+        updates.hideIndexTable = bodyRecord.hideIndexTable;
+      }
+
+      if (Object.keys(updates).length === 0) {
+        return HttpResponse.json(
+          { success: false, error: 'No valid settings fields provided' },
+          { status: 400 }
+        );
+      }
+
+      const updatedSettings = settingsMemory.update(updates);
 
       return HttpResponse.json(
         { success: true, data: updatedSettings },
         { status: 200 }
       );
-    } catch {
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : 'Invalid request body';
       return HttpResponse.json(
-        { success: false, error: 'Invalid request body' },
+        { success: false, error: message },
         { status: 400 }
       );
     }

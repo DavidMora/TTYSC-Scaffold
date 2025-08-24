@@ -1,25 +1,25 @@
 import { getChart } from '@/lib/services/charts.service';
-import { apiClient } from '@/lib/api';
-import { AUXILIARY_CHART } from '@/lib/constants/api/routes';
+import { httpClient } from '@/lib/api';
+import { BFF_AUXILIARY_CHART } from '@/lib/constants/api/bff-routes';
 import { AIChartData } from '@/lib/types/charts';
 import { BaseResponse } from '@/lib/types/http/responses';
 import { HttpClientResponse } from '@/lib/types/api/http-client';
 
-// Mock the apiClient
+// Mock the HttpClient
 jest.mock('@/lib/api', () => ({
-  apiClient: {
+  httpClient: {
     get: jest.fn(),
   },
 }));
 
 // Mock the routes
-jest.mock('@/lib/constants/api/routes', () => ({
-  AUXILIARY_CHART: jest.fn(),
+jest.mock('@/lib/constants/api/bff-routes', () => ({
+  BFF_AUXILIARY_CHART: jest.fn(),
 }));
 
-const mockApiClient = apiClient as jest.Mocked<typeof apiClient>;
-const mockAUXILIARY_CHART = AUXILIARY_CHART as jest.MockedFunction<
-  typeof AUXILIARY_CHART
+const mockHttpClient = httpClient as jest.Mocked<typeof httpClient>;
+const mockAUXILIARY_CHART = BFF_AUXILIARY_CHART as jest.MockedFunction<
+  typeof BFF_AUXILIARY_CHART
 >;
 
 describe('charts.service', () => {
@@ -53,22 +53,22 @@ describe('charts.service', () => {
   });
 
   describe('getChart', () => {
-    it('should call apiClient.get with correct parameters', async () => {
-      const mockUrl = '/api/charts/test-chart-id';
+    it('should call httpClient.get with correct parameters', async () => {
+      const mockUrl = '/api/auxiliary/chart/test-chart-id';
       mockAUXILIARY_CHART.mockReturnValue(mockUrl);
-      mockApiClient.get.mockResolvedValue(mockResponse);
+      mockHttpClient.get.mockResolvedValue(mockResponse);
 
       const result = await getChart(mockChartId);
 
       expect(mockAUXILIARY_CHART).toHaveBeenCalledWith(mockChartId);
-      expect(mockApiClient.get).toHaveBeenCalledWith<[string]>(mockUrl);
+      expect(mockHttpClient.get).toHaveBeenCalledWith<[string]>(mockUrl);
       expect(result).toEqual(mockResponse);
     });
 
     it('should handle successful response', async () => {
-      const mockUrl = '/api/charts/test-chart-id';
+      const mockUrl = '/api/auxiliary/chart/test-chart-id';
       mockAUXILIARY_CHART.mockReturnValue(mockUrl);
-      mockApiClient.get.mockResolvedValue(mockResponse);
+      mockHttpClient.get.mockResolvedValue(mockResponse);
 
       const result = await getChart(mockChartId);
 
@@ -78,7 +78,7 @@ describe('charts.service', () => {
     });
 
     it('should handle error response', async () => {
-      const mockUrl = '/api/charts/test-chart-id';
+      const mockUrl = '/api/auxiliary/chart/test-chart-id';
       const errorResponse: HttpClientResponse<BaseResponse<AIChartData>> = {
         data: {
           success: false,
@@ -92,7 +92,7 @@ describe('charts.service', () => {
       };
 
       mockAUXILIARY_CHART.mockReturnValue(mockUrl);
-      mockApiClient.get.mockResolvedValue(errorResponse);
+      mockHttpClient.get.mockResolvedValue(errorResponse);
 
       const result = await getChart(mockChartId);
 
@@ -109,15 +109,15 @@ describe('charts.service', () => {
       mockAUXILIARY_CHART
         .mockReturnValueOnce(mockUrl1)
         .mockReturnValueOnce(mockUrl2);
-      mockApiClient.get.mockResolvedValue(mockResponse);
+      mockHttpClient.get.mockResolvedValue(mockResponse);
 
       await getChart(chartId1);
       await getChart(chartId2);
 
       expect(mockAUXILIARY_CHART).toHaveBeenCalledWith(chartId1);
       expect(mockAUXILIARY_CHART).toHaveBeenCalledWith(chartId2);
-      expect(mockApiClient.get).toHaveBeenCalledWith(mockUrl1);
-      expect(mockApiClient.get).toHaveBeenCalledWith(mockUrl2);
+      expect(mockHttpClient.get).toHaveBeenCalledWith(mockUrl1);
+      expect(mockHttpClient.get).toHaveBeenCalledWith(mockUrl2);
     });
 
     it('should handle API errors', async () => {
@@ -125,13 +125,13 @@ describe('charts.service', () => {
       const mockError = new Error('Network error');
 
       mockAUXILIARY_CHART.mockReturnValue(mockUrl);
-      mockApiClient.get.mockRejectedValue(mockError);
+      mockHttpClient.get.mockRejectedValue(mockError);
 
       await expect(getChart(mockChartId)).rejects.toThrow('Network error');
     });
 
     it('should handle empty chart data', async () => {
-      const mockUrl = '/api/charts/test-chart-id';
+      const mockUrl = '/api/auxiliary/chart/test-chart-id';
       const emptyResponse: HttpClientResponse<BaseResponse<AIChartData>> = {
         data: {
           success: true,
@@ -152,7 +152,7 @@ describe('charts.service', () => {
       };
 
       mockAUXILIARY_CHART.mockReturnValue(mockUrl);
-      mockApiClient.get.mockResolvedValue(emptyResponse);
+      mockHttpClient.get.mockResolvedValue(emptyResponse);
 
       const result = await getChart(mockChartId);
 
@@ -163,7 +163,7 @@ describe('charts.service', () => {
     });
 
     it('should handle chart data with optional fields', async () => {
-      const mockUrl = '/api/charts/test-chart-id';
+      const mockUrl = '/api/auxiliary/chart/test-chart-id';
       const chartDataWithoutOptional: AIChartData = {
         headline: 'Test Chart',
         timestamp: '2024-01-01T00:00:00Z',
@@ -188,7 +188,7 @@ describe('charts.service', () => {
       };
 
       mockAUXILIARY_CHART.mockReturnValue(mockUrl);
-      mockApiClient.get.mockResolvedValue(responseWithoutOptional);
+      mockHttpClient.get.mockResolvedValue(responseWithoutOptional);
 
       const result = await getChart(mockChartId);
 
@@ -236,7 +236,7 @@ describe('charts.service', () => {
         };
 
         mockAUXILIARY_CHART.mockReturnValue(mockUrl);
-        mockApiClient.get.mockResolvedValue(response);
+        mockHttpClient.get.mockResolvedValue(response);
 
         const result = await getChart(mockChartId);
 
@@ -247,7 +247,7 @@ describe('charts.service', () => {
     it('appends query params when filters are provided (from, to, region)', async () => {
       const mockUrl = '/api/charts/test-chart-id';
       mockAUXILIARY_CHART.mockReturnValue(mockUrl);
-      mockApiClient.get.mockResolvedValue(mockResponse);
+      mockHttpClient.get.mockResolvedValue(mockResponse);
 
       await getChart(mockChartId, {
         from: '2024-01-01',
@@ -255,41 +255,43 @@ describe('charts.service', () => {
         region: 'north',
       });
 
-      expect(mockApiClient.get).toHaveBeenCalledWith(
+      expect(mockHttpClient.get).toHaveBeenCalledWith(
         `${mockUrl}?from=2024-01-01&to=2024-01-31&region=north`
       );
     });
 
     it('includes only provided filter params and preserves order', async () => {
-      const baseUrl = '/api/charts/test-chart-id';
+      const baseUrl = '/api/auxiliary/chart/test-chart-id';
       mockAUXILIARY_CHART.mockReturnValue(baseUrl);
-      mockApiClient.get.mockResolvedValue(mockResponse);
+      mockHttpClient.get.mockResolvedValue(mockResponse);
 
       // Only from
       await getChart(mockChartId, { from: '2024-02-01' });
-      expect(mockApiClient.get).toHaveBeenCalledWith(
+      expect(mockHttpClient.get).toHaveBeenCalledWith(
         `${baseUrl}?from=2024-02-01`
       );
 
       // Only to
       await getChart(mockChartId, { to: '2024-02-28' });
-      expect(mockApiClient.get).toHaveBeenCalledWith(
+      expect(mockHttpClient.get).toHaveBeenCalledWith(
         `${baseUrl}?to=2024-02-28`
       );
 
       // Only region
       await getChart(mockChartId, { region: 'south' });
-      expect(mockApiClient.get).toHaveBeenCalledWith(`${baseUrl}?region=south`);
+      expect(mockHttpClient.get).toHaveBeenCalledWith(
+        `${baseUrl}?region=south`
+      );
     });
 
     it("does not append a '?' when filters object is empty", async () => {
-      const baseUrl = '/api/charts/test-chart-id';
+      const baseUrl = '/api/auxiliary/chart/test-chart-id';
       mockAUXILIARY_CHART.mockReturnValue(baseUrl);
-      mockApiClient.get.mockResolvedValue(mockResponse);
+      mockHttpClient.get.mockResolvedValue(mockResponse);
 
       await getChart(mockChartId, {});
 
-      expect(mockApiClient.get).toHaveBeenCalledWith(baseUrl);
+      expect(mockHttpClient.get).toHaveBeenCalledWith(baseUrl);
     });
   });
 });
