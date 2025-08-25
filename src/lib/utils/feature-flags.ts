@@ -59,31 +59,37 @@ export const parseBool = (
 
 /**
  * Load feature flags from environment variables
- * Uses FEATURE_FLAG_ENABLE_AUTHENTICATION as the primary variable
+ * Uses FEATURE_FLAG_* as the preferred naming convention with legacy fallbacks
  */
 const loadFromEnvironment = (): FeatureFlags => {
   // Use environment variables with graceful fallbacks to defaults
   const enableAuth = parseBool(
-    process.env.FEATURE_FLAG_ENABLE_AUTHENTICATION,
+    process.env.FEATURE_FLAG_ENABLE_AUTHENTICATION ??
+      process.env.ENABLE_AUTHENTICATION,
     DEFAULT_FLAGS.enableAuthentication
   );
 
   const FF_Chat_Analysis_Screen = parseBool(
-    process.env.FEATURE_FLAG_FF_CHAT_ANALYSIS_SCREEN,
+    process.env.FEATURE_FLAG_FF_CHAT_ANALYSIS_SCREEN ??
+      process.env.FF_CHAT_ANALYSIS_SCREEN,
     DEFAULT_FLAGS.FF_Chat_Analysis_Screen
   );
 
   const FF_Full_Page_Navigation = parseBool(
-    process.env.FF_FULL_PAGE_NAVIGATION,
+    process.env.FEATURE_FLAG_FF_FULL_PAGE_NAVIGATION ??
+      process.env.FF_FULL_PAGE_NAVIGATION,
     DEFAULT_FLAGS.FF_Full_Page_Navigation
   );
 
   const FF_Side_NavBar = parseBool(
-    process.env.FF_SIDE_NAVBAR,
+    process.env.FEATURE_FLAG_FF_SIDE_NAVBAR ?? process.env.FF_SIDE_NAVBAR,
     DEFAULT_FLAGS.FF_Side_NavBar
   );
 
-  const FF_Modals = parseBool(process.env.FF_MODALS, DEFAULT_FLAGS.FF_Modals);
+  const FF_Modals = parseBool(
+    process.env.FEATURE_FLAG_FF_MODALS ?? process.env.FF_MODALS,
+    DEFAULT_FLAGS.FF_Modals
+  );
 
   const FF_Raw_Data_Navigation = parseBool(
     process.env.FEATURE_FLAG_RAW_DATA_NAVIGATION,

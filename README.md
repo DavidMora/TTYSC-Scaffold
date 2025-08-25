@@ -51,21 +51,35 @@ cp feature-flags.example.json feature-flags.json
 For production deployments, use environment variables:
 
 ```bash
-# Environment variable format: FEATURE_FLAG_<FLAG_NAME>
+# Environment variable format: FEATURE_FLAG_<FLAG_NAME> (preferred)
 export FEATURE_FLAG_ENABLE_AUTHENTICATION=true
-```
 
-For edge runtime contexts (middleware), use simplified variables:
-
-```bash
+# Legacy naming is also supported as fallback
 export ENABLE_AUTHENTICATION=true
 ```
 
+#### Environment Variable Priority
+
+The system reads environment variables in the following priority order:
+
+1. **FEATURE*FLAG*\* (preferred)** - New naming convention
+2. **Legacy naming** - Backward compatible naming
+3. **Defaults** - Built-in safe fallback values
+
+For example:
+
+- `FEATURE_FLAG_ENABLE_AUTHENTICATION` (preferred) → `ENABLE_AUTHENTICATION` (legacy) → `true` (default)
+
 ### Available Feature Flags
 
-| Flag Name              | Description                          | Default Value | Environment Variable                 |
-| ---------------------- | ------------------------------------ | ------------- | ------------------------------------ |
-| `enableAuthentication` | Enable/disable authentication system | `true`        | `FEATURE_FLAG_ENABLE_AUTHENTICATION` |
+| Flag Name                 | Description                          | Default Value | Environment Variables (Preferred → Legacy)                         |
+| ------------------------- | ------------------------------------ | ------------- | ------------------------------------------------------------------ |
+| `enableAuthentication`    | Enable/disable authentication system | `true`        | `FEATURE_FLAG_ENABLE_AUTHENTICATION` → `ENABLE_AUTHENTICATION`     |
+| `FF_Chat_Analysis_Screen` | Enable chat analysis screen feature  | `true`        | `FEATURE_FLAG_FF_CHAT_ANALYSIS_SCREEN` → `FF_CHAT_ANALYSIS_SCREEN` |
+| `FF_Full_Page_Navigation` | Enable full page navigation          | `true`        | `FEATURE_FLAG_FF_FULL_PAGE_NAVIGATION` → `FF_FULL_PAGE_NAVIGATION` |
+| `FF_Side_NavBar`          | Enable side navigation bar           | `true`        | `FEATURE_FLAG_FF_SIDE_NAVBAR` → `FF_SIDE_NAVBAR`                   |
+| `FF_Modals`               | Enable modal dialogs                 | `true`        | `FEATURE_FLAG_FF_MODALS` → `FF_MODALS`                             |
+| `FF_Raw_Data_Navigation`  | Enable raw data navigation           | `false`       | `FEATURE_FLAG_RAW_DATA_NAVIGATION`                                 |
 
 ### Usage in Code
 
