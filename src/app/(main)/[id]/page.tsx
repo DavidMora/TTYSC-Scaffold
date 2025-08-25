@@ -11,7 +11,7 @@ export default function AnalysisPage() {
   // Intentionally no auto streaming here; a component will invoke useChatStream().
 
   const { flag: isEnabled, loading } = useFeatureFlag(
-    'FF_Chat_Analysis_Screen'
+    'FF_CHAT_ANALYSIS_SCREEN'
   );
 
   if (loading) {

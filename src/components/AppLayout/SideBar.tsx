@@ -35,7 +35,7 @@ const SideBarMenu: React.FC<SideBarProps> = ({
   const pathname = usePathname();
   const router = useRouter();
   const { logout, restartSession } = useAuth();
-  const { flag: isSideNavEnabled, loading } = useFeatureFlag('FF_Side_NavBar');
+  const { flag: isSideNavEnabled, loading } = useFeatureFlag('FF_SIDE_NAVBAR');
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
 
   const {

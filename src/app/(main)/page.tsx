@@ -141,7 +141,7 @@ const AnalysisCreation = () => {
 
 export default function Home() {
   const { flag: isEnabled, loading } = useFeatureFlag(
-    'FF_Chat_Analysis_Screen'
+    'FF_CHAT_ANALYSIS_SCREEN'
   );
 
   if (loading) {

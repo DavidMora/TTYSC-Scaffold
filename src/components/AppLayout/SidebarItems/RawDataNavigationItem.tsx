@@ -124,7 +124,7 @@ export default function RawDataNavigationItem(
     flag: isEnabled,
     loading,
     error,
-  } = useFeatureFlag('FF_Raw_Data_Navigation');
+  } = useFeatureFlag('FF_RAW_DATA_NAVIGATION');
 
   const handleRawDataChange = (id: number) => {
     const selected = rawDataItems.find((item) => item.id === id);

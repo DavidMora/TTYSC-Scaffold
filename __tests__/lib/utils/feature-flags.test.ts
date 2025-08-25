@@ -17,6 +17,11 @@ describe('Feature Flags Utils', () => {
 
     // Reset environment variables
     delete process.env.FEATURE_FLAG_ENABLE_AUTHENTICATION;
+    delete process.env.FF_CHAT_ANALYSIS_SCREEN;
+    delete process.env.FF_FULL_PAGE_NAVIGATION;
+    delete process.env.FF_SIDE_NAVBAR;
+    delete process.env.FF_MODALS;
+    delete process.env.FF_RAW_DATA_NAVIGATION;
   });
 
   describe('getFeatureFlagsSync', () => {
@@ -223,19 +228,19 @@ describe('Feature Flags Utils', () => {
 
       // Set environment variable for fallback
       process.env.FEATURE_FLAG_ENABLE_AUTHENTICATION = 'false';
-      process.env.FF_Chat_Analysis_Screen = 'false';
+      process.env.FF_CHAT_ANALYSIS_SCREEN = 'false';
 
       // Load flags - will use JSON file if it exists, environment otherwise
       const flags = await getFeatureFlags();
 
       expect(flags).toBeDefined();
       expect(typeof flags.enableAuthentication).toBe('boolean');
-      expect(typeof flags.FF_Chat_Analysis_Screen).toBe('boolean');
+      expect(typeof flags.FF_CHAT_ANALYSIS_SCREEN).toBe('boolean');
 
       // The exact values depend on whether JSON file exists or not
       // but both are valid scenarios the system should handle
       expect(flags).toHaveProperty('enableAuthentication');
-      expect(flags).toHaveProperty('FF_Chat_Analysis_Screen');
+      expect(flags).toHaveProperty('FF_CHAT_ANALYSIS_SCREEN');
     });
 
     it('should test import failure path by removing the feature-flags.json file from path', async () => {
@@ -253,14 +258,14 @@ describe('Feature Flags Utils', () => {
     });
   });
 
-  describe('FF_Chat_Analysis_Screen flag', () => {
-    it('should always use default value for FF_Chat_Analysis_Screen', () => {
+  describe('FF_CHAT_ANALYSIS_SCREEN flag', () => {
+    it('should always use default value for FF_CHAT_ANALYSIS_SCREEN', () => {
       clearFeatureFlagsCache();
 
-      // FF_Chat_Analysis_Screen should always use default value
+      // FF_CHAT_ANALYSIS_SCREEN should always use default value
       const flags = getFeatureFlagsSync();
-      expect(flags.FF_Chat_Analysis_Screen).toBe(
-        DEFAULT_FLAGS.FF_Chat_Analysis_Screen
+      expect(flags.FF_CHAT_ANALYSIS_SCREEN).toBe(
+        DEFAULT_FLAGS.FF_CHAT_ANALYSIS_SCREEN
       );
     });
   });
@@ -274,9 +279,9 @@ describe('Feature Flags Utils', () => {
 
       // Should return valid flag structure
       expect(flags).toHaveProperty('enableAuthentication');
-      expect(flags).toHaveProperty('FF_Chat_Analysis_Screen');
+      expect(flags).toHaveProperty('FF_CHAT_ANALYSIS_SCREEN');
       expect(typeof flags.enableAuthentication).toBe('boolean');
-      expect(typeof flags.FF_Chat_Analysis_Screen).toBe('boolean');
+      expect(typeof flags.FF_CHAT_ANALYSIS_SCREEN).toBe('boolean');
 
       // Should be cached
       const cachedFlags = await getFeatureFlags();
@@ -288,7 +293,7 @@ describe('Feature Flags Utils', () => {
 
       // Set environment variables to different values
       process.env.FEATURE_FLAG_ENABLE_AUTHENTICATION = 'false';
-      process.env.FF_Chat_Analysis_Screen = 'false';
+      process.env.FF_CHAT_ANALYSIS_SCREEN = 'false';
 
       // Get flags - JSON file should take precedence if it exists
       const flags = await getFeatureFlags();
@@ -297,12 +302,12 @@ describe('Feature Flags Utils', () => {
       // If JSON file doesn't exist (CI), it should use env vars
       // We test that the system works correctly in both cases
       expect(typeof flags.enableAuthentication).toBe('boolean');
-      expect(typeof flags.FF_Chat_Analysis_Screen).toBe('boolean');
+      expect(typeof flags.FF_CHAT_ANALYSIS_SCREEN).toBe('boolean');
 
       // The exact values depend on whether the JSON file exists
       // but we ensure the system handles both scenarios gracefully
       expect(flags).toHaveProperty('enableAuthentication');
-      expect(flags).toHaveProperty('FF_Chat_Analysis_Screen');
+      expect(flags).toHaveProperty('FF_CHAT_ANALYSIS_SCREEN');
     });
   });
 
@@ -319,10 +324,10 @@ describe('Feature Flags Utils', () => {
       // Test the synchronous version which uses environment variables
       const flags = getFeatureFlagsSync();
 
-      // Should use environment variables for enableAuthentication, default for FF_Chat_Analysis_Screen
+      // Should use environment variables for enableAuthentication, default for FF_CHAT_ANALYSIS_SCREEN
       expect(flags.enableAuthentication).toBe(true);
-      expect(flags.FF_Chat_Analysis_Screen).toBe(
-        DEFAULT_FLAGS.FF_Chat_Analysis_Screen
+      expect(flags.FF_CHAT_ANALYSIS_SCREEN).toBe(
+        DEFAULT_FLAGS.FF_CHAT_ANALYSIS_SCREEN
       );
     });
 
@@ -339,31 +344,31 @@ describe('Feature Flags Utils', () => {
       expect(flags.enableAuthentication).toBe(
         DEFAULT_FLAGS.enableAuthentication
       );
-      expect(flags.FF_Chat_Analysis_Screen).toBe(
-        DEFAULT_FLAGS.FF_Chat_Analysis_Screen
+      expect(flags.FF_CHAT_ANALYSIS_SCREEN).toBe(
+        DEFAULT_FLAGS.FF_CHAT_ANALYSIS_SCREEN
       );
     });
   });
 
-  describe('isFeatureEnabled with FF_Chat_Analysis_Screen', () => {
-    it('should check FF_Chat_Analysis_Screen flag correctly', async () => {
+  describe('isFeatureEnabled with FF_CHAT_ANALYSIS_SCREEN', () => {
+    it('should check FF_CHAT_ANALYSIS_SCREEN flag correctly', async () => {
       clearFeatureFlagsCache();
 
       // Test that the flag returns a valid boolean value
-      const result = await isFeatureEnabled('FF_Chat_Analysis_Screen');
+      const result = await isFeatureEnabled('FF_CHAT_ANALYSIS_SCREEN');
       expect(typeof result).toBe('boolean');
     });
 
-    it('should check FF_Chat_Analysis_Screen flag synchronously', () => {
+    it('should check FF_CHAT_ANALYSIS_SCREEN flag synchronously', () => {
       clearFeatureFlagsCache();
 
       // Test with default value (no environment variable override)
-      const result = isFeatureEnabledSync('FF_Chat_Analysis_Screen');
-      expect(result).toBe(DEFAULT_FLAGS.FF_Chat_Analysis_Screen);
+      const result = isFeatureEnabledSync('FF_CHAT_ANALYSIS_SCREEN');
+      expect(result).toBe(DEFAULT_FLAGS.FF_CHAT_ANALYSIS_SCREEN);
     });
   });
 
-  describe('FF_Full_Page_Navigation environment variable handling', () => {
+  describe('FF_FULL_PAGE_NAVIGATION environment variable handling', () => {
     it('should handle FF_FULL_PAGE_NAVIGATION environment variable when set to true', () => {
       clearFeatureFlagsCache();
 
@@ -371,7 +376,7 @@ describe('Feature Flags Utils', () => {
       process.env.FF_FULL_PAGE_NAVIGATION = 'true';
 
       const flags = getFeatureFlagsSync();
-      expect(flags.FF_Full_Page_Navigation).toBe(true);
+      expect(flags.FF_FULL_PAGE_NAVIGATION).toBe(true);
 
       // Clean up
       delete process.env.FF_FULL_PAGE_NAVIGATION;
@@ -384,7 +389,7 @@ describe('Feature Flags Utils', () => {
       process.env.FF_FULL_PAGE_NAVIGATION = 'false';
 
       const flags = getFeatureFlagsSync();
-      expect(flags.FF_Full_Page_Navigation).toBe(false);
+      expect(flags.FF_FULL_PAGE_NAVIGATION).toBe(false);
 
       // Clean up
       delete process.env.FF_FULL_PAGE_NAVIGATION;
@@ -397,20 +402,20 @@ describe('Feature Flags Utils', () => {
       delete process.env.FF_FULL_PAGE_NAVIGATION;
 
       const flags = getFeatureFlagsSync();
-      expect(flags.FF_Full_Page_Navigation).toBe(
-        DEFAULT_FLAGS.FF_Full_Page_Navigation
+      expect(flags.FF_FULL_PAGE_NAVIGATION).toBe(
+        DEFAULT_FLAGS.FF_FULL_PAGE_NAVIGATION
       );
     });
   });
 
-  describe('FF_Side_NavBar environment variable handling', () => {
+  describe('FF_SIDE_NAVBAR environment variable handling', () => {
     it('should handle FF_SIDE_NAVBAR environment variable when set to true', () => {
       clearFeatureFlagsCache();
 
       process.env.FF_SIDE_NAVBAR = 'true';
 
       const flags = getFeatureFlagsSync();
-      expect(flags.FF_Side_NavBar).toBe(true);
+      expect(flags.FF_SIDE_NAVBAR).toBe(true);
 
       delete process.env.FF_SIDE_NAVBAR;
     });
@@ -421,7 +426,7 @@ describe('Feature Flags Utils', () => {
       process.env.FF_SIDE_NAVBAR = 'false';
 
       const flags = getFeatureFlagsSync();
-      expect(flags.FF_Side_NavBar).toBe(false);
+      expect(flags.FF_SIDE_NAVBAR).toBe(false);
 
       delete process.env.FF_SIDE_NAVBAR;
     });
@@ -432,7 +437,7 @@ describe('Feature Flags Utils', () => {
       delete process.env.FF_SIDE_NAVBAR;
 
       const flags = getFeatureFlagsSync();
-      expect(flags.FF_Side_NavBar).toBe(DEFAULT_FLAGS.FF_Side_NavBar);
+      expect(flags.FF_SIDE_NAVBAR).toBe(DEFAULT_FLAGS.FF_SIDE_NAVBAR);
     });
   });
 
@@ -445,13 +450,13 @@ describe('Feature Flags Utils', () => {
 
       expect(flags).toBeDefined();
       expect(typeof flags.enableAuthentication).toBe('boolean');
-      expect(typeof flags.FF_Chat_Analysis_Screen).toBe('boolean');
-      expect(typeof flags.FF_Full_Page_Navigation).toBe('boolean');
+      expect(typeof flags.FF_CHAT_ANALYSIS_SCREEN).toBe('boolean');
+      expect(typeof flags.FF_FULL_PAGE_NAVIGATION).toBe('boolean');
 
       // The values should match whatever is in the JSON file
       expect(flags).toHaveProperty('enableAuthentication');
-      expect(flags).toHaveProperty('FF_Chat_Analysis_Screen');
-      expect(flags).toHaveProperty('FF_Full_Page_Navigation');
+      expect(flags).toHaveProperty('FF_CHAT_ANALYSIS_SCREEN');
+      expect(flags).toHaveProperty('FF_FULL_PAGE_NAVIGATION');
     });
 
     it('should successfully load and cache flags from JSON file', async () => {
@@ -471,8 +476,8 @@ describe('Feature Flags Utils', () => {
 
       // Should have valid boolean values
       expect(typeof flags1.enableAuthentication).toBe('boolean');
-      expect(typeof flags1.FF_Chat_Analysis_Screen).toBe('boolean');
-      expect(typeof flags1.FF_Full_Page_Navigation).toBe('boolean');
+      expect(typeof flags1.FF_CHAT_ANALYSIS_SCREEN).toBe('boolean');
+      expect(typeof flags1.FF_FULL_PAGE_NAVIGATION).toBe('boolean');
     });
   });
 
@@ -485,9 +490,9 @@ describe('Feature Flags Utils', () => {
 
       expect(flags).toBeDefined();
       expect(typeof flags.enableAuthentication).toBe('boolean');
-      expect(typeof flags.FF_Chat_Analysis_Screen).toBe('boolean');
-      expect(typeof flags.FF_Full_Page_Navigation).toBe('boolean');
-      expect(typeof flags.FF_Side_NavBar).toBe('boolean');
+      expect(typeof flags.FF_CHAT_ANALYSIS_SCREEN).toBe('boolean');
+      expect(typeof flags.FF_FULL_PAGE_NAVIGATION).toBe('boolean');
+      expect(typeof flags.FF_SIDE_NAVBAR).toBe('boolean');
     });
   });
 
@@ -503,9 +508,9 @@ describe('Feature Flags Utils', () => {
       const flags = getFeatureFlagsSync();
 
       expect(flags.enableAuthentication).toBe(false);
-      expect(flags.FF_Full_Page_Navigation).toBe(true);
-      expect(flags.FF_Chat_Analysis_Screen).toBe(
-        DEFAULT_FLAGS.FF_Chat_Analysis_Screen
+      expect(flags.FF_FULL_PAGE_NAVIGATION).toBe(true);
+      expect(flags.FF_CHAT_ANALYSIS_SCREEN).toBe(
+        DEFAULT_FLAGS.FF_CHAT_ANALYSIS_SCREEN
       );
 
       // Clean up
@@ -544,7 +549,7 @@ describe('Feature Flags Utils', () => {
       const flags = getFeatureFlagsSync();
 
       expect(flags.enableAuthentication).toBe(true);
-      expect(flags.FF_Full_Page_Navigation).toBe(false);
+      expect(flags.FF_FULL_PAGE_NAVIGATION).toBe(false);
 
       // Clean up
       delete process.env.FEATURE_FLAG_ENABLE_AUTHENTICATION;
@@ -561,7 +566,7 @@ describe('Feature Flags Utils', () => {
       const flags = getFeatureFlagsSync();
 
       expect(flags.enableAuthentication).toBe(false);
-      expect(flags.FF_Full_Page_Navigation).toBe(true);
+      expect(flags.FF_FULL_PAGE_NAVIGATION).toBe(true);
 
       // Clean up
       delete process.env.FEATURE_FLAG_ENABLE_AUTHENTICATION;
@@ -579,7 +584,7 @@ describe('Feature Flags Utils', () => {
 
       // Invalid values should be treated as false
       expect(flags.enableAuthentication).toBe(false);
-      expect(flags.FF_Full_Page_Navigation).toBe(false);
+      expect(flags.FF_FULL_PAGE_NAVIGATION).toBe(false);
 
       // Clean up
       delete process.env.FEATURE_FLAG_ENABLE_AUTHENTICATION;
@@ -598,8 +603,8 @@ describe('Feature Flags Utils', () => {
 
       // Should have valid flags - values depend on what's in the JSON file
       expect(typeof flags.enableAuthentication).toBe('boolean');
-      expect(typeof flags.FF_Full_Page_Navigation).toBe('boolean');
-      expect(typeof flags.FF_Chat_Analysis_Screen).toBe('boolean');
+      expect(typeof flags.FF_FULL_PAGE_NAVIGATION).toBe('boolean');
+      expect(typeof flags.FF_CHAT_ANALYSIS_SCREEN).toBe('boolean');
 
       // Clean up
       delete process.env.FEATURE_FLAG_ENABLE_AUTHENTICATION;
@@ -617,7 +622,7 @@ describe('Feature Flags Utils', () => {
       // Use synchronous version to test environment-only path, which exercises different code paths
       const syncFlags = getFeatureFlagsSync();
       expect(syncFlags.enableAuthentication).toBe(true);
-      expect(syncFlags.FF_Full_Page_Navigation).toBe(false);
+      expect(syncFlags.FF_FULL_PAGE_NAVIGATION).toBe(false);
 
       // Clean up
       delete process.env.FEATURE_FLAG_ENABLE_AUTHENTICATION;
@@ -639,16 +644,16 @@ describe('Feature Flags Utils', () => {
 
       // Should use environment variables
       expect(syncFlags.enableAuthentication).toBe(true); // From env var
-      expect(syncFlags.FF_Full_Page_Navigation).toBe(false); // From env var
-      expect(syncFlags.FF_Chat_Analysis_Screen).toBe(
-        DEFAULT_FLAGS.FF_Chat_Analysis_Screen
+      expect(syncFlags.FF_FULL_PAGE_NAVIGATION).toBe(false); // From env var
+      expect(syncFlags.FF_CHAT_ANALYSIS_SCREEN).toBe(
+        DEFAULT_FLAGS.FF_CHAT_ANALYSIS_SCREEN
       ); // Default
 
       // Now test that async version can also work
       clearFeatureFlagsCache();
       const asyncFlags = await getFeatureFlags();
       expect(typeof asyncFlags.enableAuthentication).toBe('boolean');
-      expect(typeof asyncFlags.FF_Full_Page_Navigation).toBe('boolean');
+      expect(typeof asyncFlags.FF_FULL_PAGE_NAVIGATION).toBe('boolean');
 
       // Clean up
       delete process.env.FEATURE_FLAG_ENABLE_AUTHENTICATION;
@@ -672,9 +677,9 @@ describe('Feature Flags Utils', () => {
 
       // Should use environment variables as fallback (covers lines 25, 76-78)
       expect(flags.enableAuthentication).toBe(true); // From env var
-      expect(flags.FF_Full_Page_Navigation).toBe(false); // From env var
-      expect(flags.FF_Chat_Analysis_Screen).toBe(
-        DEFAULT_FLAGS.FF_Chat_Analysis_Screen
+      expect(flags.FF_FULL_PAGE_NAVIGATION).toBe(false); // From env var
+      expect(flags.FF_CHAT_ANALYSIS_SCREEN).toBe(
+        DEFAULT_FLAGS.FF_CHAT_ANALYSIS_SCREEN
       ); // Default
 
       // Clean up
@@ -691,13 +696,13 @@ describe('Feature Flags Utils', () => {
 
       // Should load from JSON file successfully
       expect(typeof flags.enableAuthentication).toBe('boolean');
-      expect(typeof flags.FF_Chat_Analysis_Screen).toBe('boolean');
-      expect(typeof flags.FF_Full_Page_Navigation).toBe('boolean');
+      expect(typeof flags.FF_CHAT_ANALYSIS_SCREEN).toBe('boolean');
+      expect(typeof flags.FF_FULL_PAGE_NAVIGATION).toBe('boolean');
 
       // Values should be valid booleans (don't hardcode expected values)
       expect(flags).toHaveProperty('enableAuthentication');
-      expect(flags).toHaveProperty('FF_Chat_Analysis_Screen');
-      expect(flags).toHaveProperty('FF_Full_Page_Navigation');
+      expect(flags).toHaveProperty('FF_CHAT_ANALYSIS_SCREEN');
+      expect(flags).toHaveProperty('FF_FULL_PAGE_NAVIGATION');
     });
 
     it('should test both success and failure paths for complete coverage', async () => {
@@ -716,7 +721,7 @@ describe('Feature Flags Utils', () => {
       const failureFlags = await getFeatureFlags(nonExistentPath);
 
       expect(failureFlags.enableAuthentication).toBe(true); // From env var (fallback)
-      expect(failureFlags.FF_Full_Page_Navigation).toBe(true); // From env var (fallback)
+      expect(failureFlags.FF_FULL_PAGE_NAVIGATION).toBe(true); // From env var (fallback)
 
       // Clean up
       delete process.env.FEATURE_FLAG_ENABLE_AUTHENTICATION;
@@ -724,20 +729,20 @@ describe('Feature Flags Utils', () => {
     });
   });
 
-  describe('isFeatureEnabled with FF_Full_Page_Navigation', () => {
-    it('should check FF_Full_Page_Navigation flag correctly (async)', async () => {
+  describe('isFeatureEnabled with FF_FULL_PAGE_NAVIGATION', () => {
+    it('should check FF_FULL_PAGE_NAVIGATION flag correctly (async)', async () => {
       clearFeatureFlagsCache();
 
       // Test that the flag returns a valid boolean value
-      const result = await isFeatureEnabled('FF_Full_Page_Navigation');
+      const result = await isFeatureEnabled('FF_FULL_PAGE_NAVIGATION');
       expect(typeof result).toBe('boolean');
     });
 
-    it('should check FF_Full_Page_Navigation flag correctly (sync)', () => {
+    it('should check FF_FULL_PAGE_NAVIGATION flag correctly (sync)', () => {
       clearFeatureFlagsCache();
 
       // Test with default value (no environment variable override)
-      const result = isFeatureEnabledSync('FF_Full_Page_Navigation');
+      const result = isFeatureEnabledSync('FF_FULL_PAGE_NAVIGATION');
       expect(typeof result).toBe('boolean');
     });
   });

@@ -72,14 +72,14 @@ For example:
 
 ### Available Feature Flags
 
-| Flag Name                 | Description                          | Default Value | Environment Variables (Preferred → Legacy)                         |
-| ------------------------- | ------------------------------------ | ------------- | ------------------------------------------------------------------ |
-| `enableAuthentication`    | Enable/disable authentication system | `true`        | `FEATURE_FLAG_ENABLE_AUTHENTICATION` → `ENABLE_AUTHENTICATION`     |
-| `FF_Chat_Analysis_Screen` | Enable chat analysis screen feature  | `true`        | `FEATURE_FLAG_FF_CHAT_ANALYSIS_SCREEN` → `FF_CHAT_ANALYSIS_SCREEN` |
-| `FF_Full_Page_Navigation` | Enable full page navigation          | `true`        | `FEATURE_FLAG_FF_FULL_PAGE_NAVIGATION` → `FF_FULL_PAGE_NAVIGATION` |
-| `FF_Side_NavBar`          | Enable side navigation bar           | `true`        | `FEATURE_FLAG_FF_SIDE_NAVBAR` → `FF_SIDE_NAVBAR`                   |
-| `FF_Modals`               | Enable modal dialogs                 | `true`        | `FEATURE_FLAG_FF_MODALS` → `FF_MODALS`                             |
-| `FF_Raw_Data_Navigation`  | Enable raw data navigation           | `false`       | `FEATURE_FLAG_RAW_DATA_NAVIGATION`                                 |
+| Flag Name                 | Description                          | Default Value | Environment Variables (Preferred → Legacy)                     |
+| ------------------------- | ------------------------------------ | ------------- | -------------------------------------------------------------- |
+| `enableAuthentication`    | Enable/disable authentication system | `true`        | `FEATURE_FLAG_ENABLE_AUTHENTICATION` → `ENABLE_AUTHENTICATION` |
+| `FF_CHAT_ANALYSIS_SCREEN` | Enable chat analysis screen feature  | `true`        | `FF_CHAT_ANALYSIS_SCREEN` → `FF_CHAT_ANALYSIS_SCREEN`          |
+| `FF_FULL_PAGE_NAVIGATION` | Enable full page navigation          | `true`        | `FF_FULL_PAGE_NAVIGATION` → `FF_FULL_PAGE_NAVIGATION`          |
+| `FF_SIDE_NAVBAR`          | Enable side navigation bar           | `true`        | `FF_SIDE_NAVBAR` → `FF_SIDE_NAVBAR`                            |
+| `FF_MODALS`               | Enable modal dialogs                 | `true`        | `FF_MODALS` → `FF_MODALS`                                      |
+| `FF_RAW_DATA_NAVIGATION`  | Enable raw data navigation           | `false`       | `FF_RAW_DATA_NAVIGATION`                                       |
 
 ### Usage in Code
 

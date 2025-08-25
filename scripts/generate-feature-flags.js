@@ -16,11 +16,11 @@ require('dotenv').config({ path: '.env.local' });
 // Define default flags (must match DEFAULT_FLAGS in feature-flags.ts)
 const DEFAULT_FLAGS = {
   enableAuthentication: true,
-  FF_Chat_Analysis_Screen: true,
-  FF_Full_Page_Navigation: true,
-  FF_Side_NavBar: true,
-  FF_Modals: true,
-  FF_Raw_Data_Navigation: false,
+  FF_CHAT_ANALYSIS_SCREEN: true,
+  FF_FULL_PAGE_NAVIGATION: true,
+  FF_SIDE_NAVBAR: true,
+  FF_MODALS: true,
+  FF_RAW_DATA_NAVIGATION: false,
 };
 
 // Helper function for handling environment variables with legacy fallbacks
@@ -53,17 +53,11 @@ const ENV_KEYS = {
     'FEATURE_FLAG_ENABLE_AUTHENTICATION',
     'ENABLE_AUTHENTICATION',
   ],
-  FF_Chat_Analysis_Screen: [
-    'FEATURE_FLAG_FF_CHAT_ANALYSIS_SCREEN',
-    'FF_CHAT_ANALYSIS_SCREEN',
-  ],
-  FF_Full_Page_Navigation: [
-    'FEATURE_FLAG_FF_FULL_PAGE_NAVIGATION',
-    'FF_FULL_PAGE_NAVIGATION',
-  ],
-  FF_Side_NavBar: ['FEATURE_FLAG_FF_SIDE_NAVBAR', 'FF_SIDE_NAVBAR'],
-  FF_Modals: ['FEATURE_FLAG_FF_MODALS', 'FF_MODALS'],
-  FF_Raw_Data_Navigation: ['FEATURE_FLAG_RAW_DATA_NAVIGATION'],
+  FF_CHAT_ANALYSIS_SCREEN: ['FF_CHAT_ANALYSIS_SCREEN'],
+  FF_FULL_PAGE_NAVIGATION: ['FF_FULL_PAGE_NAVIGATION'],
+  FF_SIDE_NAVBAR: ['FF_SIDE_NAVBAR'],
+  FF_MODALS: ['FF_MODALS'],
+  FF_RAW_DATA_NAVIGATION: ['FF_RAW_DATA_NAVIGATION'],
 };
 
 Object.keys(DEFAULT_FLAGS).forEach((key) => {

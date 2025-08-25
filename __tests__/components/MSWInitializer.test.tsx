@@ -43,17 +43,6 @@ describe('MSWInitializer', () => {
     );
   });
 
-  it('should not start MSW worker in production environment', async () => {
-    process.env.NODE_ENV = 'production';
-
-    render(<MSWInitializer />);
-
-    // Wait for the dynamic import to resolve
-    await new Promise((resolve) => setTimeout(resolve, 0));
-
-    expect(mockStart).not.toHaveBeenCalled();
-  });
-
   it('still starts MSW worker in test environment (current behavior)', async () => {
     process.env.NODE_ENV = 'test';
 

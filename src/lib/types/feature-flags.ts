@@ -1,10 +1,10 @@
 export interface FeatureFlags {
   enableAuthentication: boolean;
-  FF_Chat_Analysis_Screen: boolean;
-  FF_Full_Page_Navigation: boolean;
-  FF_Side_NavBar: boolean;
-  FF_Modals: boolean;
-  FF_Raw_Data_Navigation: boolean;
+  FF_CHAT_ANALYSIS_SCREEN: boolean;
+  FF_FULL_PAGE_NAVIGATION: boolean;
+  FF_SIDE_NAVBAR: boolean;
+  FF_MODALS: boolean;
+  FF_RAW_DATA_NAVIGATION: boolean;
 }
 
 export type FeatureFlagKey = keyof FeatureFlags;

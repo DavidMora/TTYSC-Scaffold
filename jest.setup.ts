@@ -80,9 +80,9 @@ global.fetch = jest.fn((url, init?: RequestInit) => {
       json: () =>
         Promise.resolve({
           enableAuthentication: true,
-          FF_Chat_Analysis_Screen: true,
-          FF_Full_Page_Navigation: true,
-          FF_Modals: true,
+          FF_CHAT_ANALYSIS_SCREEN: true,
+          FF_FULL_PAGE_NAVIGATION: true,
+          FF_MODALS: true,
         }),
     });
   }
