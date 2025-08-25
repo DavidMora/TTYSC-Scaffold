@@ -43,7 +43,7 @@ const ENV_KEYS = {
   FF_Full_Page_Navigation: 'FF_FULL_PAGE_NAVIGATION',
   FF_Side_NavBar: 'FF_SIDE_NAVBAR',
   FF_Modals: 'FF_MODALS',
-  FF_Raw_Data_Navigation: 'FF_RAW_DATA_NAVIGATION',
+  FF_Raw_Data_Navigation: 'FEATURE_FLAG_RAW_DATA_NAVIGATION',
 };
 
 Object.keys(DEFAULT_FLAGS).forEach((key) => {

@@ -12,7 +12,7 @@ import { DEFAULT_FLAGS } from './feature-flags';
  * - FF_FULL_PAGE_NAVIGATION (true/false)
  * - FF_SIDE_NAVBAR (true/false)
  * - FF_MODALS (true/false)
- * - FEATURE_FLAG_FF_RAW_DATA_NAVIGATION (true/false)
+ * - FEATURE_FLAG_RAW_DATA_NAVIGATION (true/false)
  */
 export function loadFeatureFlagsEdge(): FeatureFlags {
   try {
@@ -24,8 +24,8 @@ export function loadFeatureFlagsEdge(): FeatureFlags {
       FF_Side_NavBar: process.env.FF_SIDE_NAVBAR !== 'false',
       FF_Modals: process.env.FF_MODALS !== 'false',
       FF_Raw_Data_Navigation:
-        process.env.FEATURE_FLAG_FF_RAW_DATA_NAVIGATION != null
-          ? process.env.FEATURE_FLAG_FF_RAW_DATA_NAVIGATION === 'true'
+        process.env.FEATURE_FLAG_RAW_DATA_NAVIGATION != null
+          ? process.env.FEATURE_FLAG_RAW_DATA_NAVIGATION === 'true'
           : DEFAULT_FLAGS.FF_Raw_Data_Navigation,
     };
   } catch (error) {

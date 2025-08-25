@@ -86,7 +86,7 @@ const loadFromEnvironment = (): FeatureFlags => {
   const FF_Modals = parseBool(process.env.FF_MODALS, DEFAULT_FLAGS.FF_Modals);
 
   const FF_Raw_Data_Navigation = parseBool(
-    process.env.FEATURE_FLAG_FF_RAW_DATA_NAVIGATION,
+    process.env.FEATURE_FLAG_RAW_DATA_NAVIGATION,
     DEFAULT_FLAGS.FF_Raw_Data_Navigation
   );
 

@@ -23,7 +23,7 @@ describe('feature-flags-edge', () => {
       'FF_SIDE_NAVBAR',
       'FEATURE_FLAG_ENABLE_AUTHENTICATION',
       'FF_MODALS',
-      'FEATURE_FLAG_FF_RAW_DATA_NAVIGATION',
+      'FEATURE_FLAG_RAW_DATA_NAVIGATION',
     ];
     for (const key of keysToReset) {
       delete (process.env as Record<string, string | undefined>)[key];
@@ -41,7 +41,7 @@ describe('feature-flags-edge', () => {
       'FF_SIDE_NAVBAR',
       'FEATURE_FLAG_ENABLE_AUTHENTICATION',
       'FF_MODALS',
-      'FEATURE_FLAG_FF_RAW_DATA_NAVIGATION',
+      'FEATURE_FLAG_RAW_DATA_NAVIGATION',
     ];
     for (const key of keysToReset) {
       delete (process.env as Record<string, string | undefined>)[key];
@@ -157,7 +157,7 @@ describe('feature-flags-edge', () => {
       delete process.env.FF_Full_Page_Navigation;
       delete process.env.FF_SIDE_NAVBAR;
       delete process.env.FF_Modals;
-      process.env.FEATURE_FLAG_FF_RAW_DATA_NAVIGATION = 'true';
+      process.env.FEATURE_FLAG_RAW_DATA_NAVIGATION = 'true';
 
       const result = loadFeatureFlagsEdge();
 
