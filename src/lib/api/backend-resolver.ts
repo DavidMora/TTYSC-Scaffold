@@ -76,6 +76,11 @@ export function resolveBackend(pathname: string): ResolvedBackend {
     map.backends.feedback.baseURL = process.env.FEEDBACK_BACKEND_BASE_URL;
   }
 
+  if (map.backends.userMetrics && process.env.USER_METRICS_BACKEND_BASE_URL) {
+    map.backends.userMetrics.baseURL =
+      process.env.USER_METRICS_BACKEND_BASE_URL;
+  }
+
   for (const rule of map.routes) {
     try {
       const regex = new RegExp(rule.pattern);

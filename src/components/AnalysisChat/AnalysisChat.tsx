@@ -10,6 +10,7 @@ import { useChatStream } from '@/hooks/chats/stream';
 import { metadataToAIChartData } from '@/lib/metadata/chart';
 import { metadataToTableData } from '@/lib/metadata/table';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
+import { useUserMetricsWithSession } from '@/hooks/user-metrics';
 import { WelcomeMessage } from '@/components/AnalysisChat/WelcomeMessage';
 
 interface AnalysisChatProps {
@@ -23,6 +24,7 @@ export default function AnalysisChat({
 }: Readonly<AnalysisChatProps>) {
   const messagesContainerRef = useRef<HTMLDivElement | null>(null);
   const { currentUser, getFirstName } = useCurrentUser();
+  const { submitUserMetrics } = useUserMetricsWithSession();
 
   const scrollToBottom = ({
     behavior = 'smooth',
@@ -161,12 +163,32 @@ export default function AnalysisChat({
       const inlineChart = metadataToAIChartData(metadata);
       const chartGenError = metadata?.chartgen_error;
       const finalContent = aggregatedContent;
+
       if (
         runId &&
         appendedRunId !== runId &&
         (finalContent || inlineTable || inlineChart || chartGenError)
       ) {
         const assistantMessageId = `${Date.now()}-assistant`;
+
+        // Find the last user message for metrics
+        const lastUserMessage = messages
+          .slice()
+          .reverse()
+          .find((msg) => msg.role === 'user');
+
+        // Submit user metrics for this interaction
+        if (lastUserMessage && finalContent) {
+          submitUserMetrics({
+            conversationId: runId.toString(),
+            query: lastUserMessage.content,
+            response: finalContent,
+          }).catch((error) => {
+            // Log error but don't break the UI
+            console.error('Failed to submit user metrics:', error);
+          });
+        }
+
         setMessages((prev) => [
           ...prev,
           {
@@ -191,6 +213,8 @@ export default function AnalysisChat({
     metadata,
     runId,
     appendedRunId,
+    messages,
+    submitUserMetrics,
   ]);
 
   return (

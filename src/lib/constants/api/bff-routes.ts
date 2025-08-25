@@ -43,3 +43,6 @@ export const BFF_EXPORT_TABLE = (tableId: string, format: string) =>
 // Auxiliary charts
 export const BFF_AUXILIARY_CHART = (chartId: string) =>
   `/api/auxiliary/chart/${encodeURIComponent(chartId)}`;
+
+// User Metrics
+export const BFF_USER_METRICS = '/api/user-metrics';
