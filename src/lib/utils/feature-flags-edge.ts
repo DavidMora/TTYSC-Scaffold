@@ -24,7 +24,9 @@ export function loadFeatureFlagsEdge(): FeatureFlags {
       FF_Side_NavBar: process.env.FF_SIDE_NAVBAR !== 'false',
       FF_Modals: process.env.FF_MODALS !== 'false',
       FF_Raw_Data_Navigation:
-        process.env.FEATURE_FLAG_FF_RAW_DATA_NAVIGATION !== 'false',
+        process.env.FEATURE_FLAG_FF_RAW_DATA_NAVIGATION != null
+          ? process.env.FEATURE_FLAG_FF_RAW_DATA_NAVIGATION === 'true'
+          : DEFAULT_FLAGS.FF_Raw_Data_Navigation,
     };
   } catch (error) {
     console.warn(

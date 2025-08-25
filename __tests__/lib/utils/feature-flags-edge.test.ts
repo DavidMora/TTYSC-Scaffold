@@ -67,7 +67,7 @@ describe('feature-flags-edge', () => {
         FF_Full_Page_Navigation: true, // default is true when env var is not 'false'
         FF_Side_NavBar: true, // default is true when env var is not 'false'
         FF_Modals: true, // default is true when env var is not 'false'
-        FF_Raw_Data_Navigation: true, // default is true when env var is not 'false'
+        FF_Raw_Data_Navigation: false, // default is false when env var is not set
       });
     });
 
@@ -87,7 +87,7 @@ describe('feature-flags-edge', () => {
         FF_Full_Page_Navigation: true,
         FF_Side_NavBar: true,
         FF_Modals: true,
-        FF_Raw_Data_Navigation: true,
+        FF_Raw_Data_Navigation: false,
       });
     });
 
@@ -107,7 +107,7 @@ describe('feature-flags-edge', () => {
         FF_Full_Page_Navigation: true,
         FF_Side_NavBar: true,
         FF_Modals: true,
-        FF_Raw_Data_Navigation: true,
+        FF_Raw_Data_Navigation: false,
       });
     });
 
@@ -127,7 +127,7 @@ describe('feature-flags-edge', () => {
         FF_Full_Page_Navigation: true,
         FF_Side_NavBar: true,
         FF_Modals: true,
-        FF_Raw_Data_Navigation: true,
+        FF_Raw_Data_Navigation: false,
       });
     });
 
@@ -179,7 +179,7 @@ describe('feature-flags-edge', () => {
       expect(isFeatureEnabledEdge('FF_Full_Page_Navigation')).toBe(true);
       expect(isFeatureEnabledEdge('FF_Side_NavBar')).toBe(true);
       expect(isFeatureEnabledEdge('FF_Modals')).toBe(true);
-      expect(isFeatureEnabledEdge('FF_Raw_Data_Navigation')).toBe(true);
+      expect(isFeatureEnabledEdge('FF_Raw_Data_Navigation')).toBe(false);
     });
 
     it('should return false when feature flag is disabled via environment variable', () => {
