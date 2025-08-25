@@ -39,8 +39,8 @@ export const getChat = async (
 
 export const createChat = async (
   payload: CreateChatRequest
-): Promise<HttpClientResponse<Chat>> => {
-  return await httpClient.post<Chat>(BFF_CHATS, payload);
+): Promise<HttpClientResponse<ChatResponse>> => {
+  return await httpClient.post<ChatResponse>(BFF_CHATS, payload);
 };
 
 export const updateChat = async (

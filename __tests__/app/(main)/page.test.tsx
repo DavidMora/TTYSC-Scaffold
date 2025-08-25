@@ -112,11 +112,15 @@ describe('Home page', () => {
 
   it('navigates to analysis page on successful creation', async () => {
     const mockAnalysis = {
-      id: 'test-analysis-id',
-      date: '2021-01-01',
-      participants: [],
-      title: 'Test Analysis',
-      messages: [],
+      success: true,
+      message: 'Analysis created successfully',
+      data: {
+        id: 'test-analysis-id',
+        date: '2021-01-01',
+        participants: [],
+        title: 'Test Analysis',
+        messages: [],
+      },
     };
 
     mockGenerateAnalysisName.mockReturnValue('Analysis One');
