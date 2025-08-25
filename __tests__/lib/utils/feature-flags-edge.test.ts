@@ -131,13 +131,13 @@ describe('feature-flags-edge', () => {
       });
     });
 
-    it('should return FF_Raw_Data_Navigation as false when FEATURE_FLAG_FF_RAW_DATA_NAVIGATION is "false"', () => {
+    it('should return FF_Raw_Data_Navigation as false when FEATURE_FLAG_RAW_DATA_NAVIGATION is "false"', () => {
       delete process.env.ENABLE_AUTHENTICATION;
       delete process.env.FF_Chat_Analysis_Screen;
       delete process.env.FF_Full_Page_Navigation;
       delete process.env.FF_SIDE_NAVBAR;
       delete process.env.FF_Modals;
-      process.env.FEATURE_FLAG_FF_RAW_DATA_NAVIGATION = 'false';
+      process.env.FEATURE_FLAG_RAW_DATA_NAVIGATION = 'false';
 
       const result = loadFeatureFlagsEdge();
 
@@ -151,7 +151,7 @@ describe('feature-flags-edge', () => {
       });
     });
 
-    it('should return FF_Raw_Data_Navigation as true when FEATURE_FLAG_FF_RAW_DATA_NAVIGATION is "true"', () => {
+    it('should return FF_Raw_Data_Navigation as true when FEATURE_FLAG_RAW_DATA_NAVIGATION is "true"', () => {
       delete process.env.ENABLE_AUTHENTICATION;
       delete process.env.FF_Chat_Analysis_Screen;
       delete process.env.FF_Full_Page_Navigation;
@@ -188,7 +188,7 @@ describe('feature-flags-edge', () => {
       process.env.FF_FULL_PAGE_NAVIGATION = 'false';
       process.env.FF_SIDE_NAVBAR = 'false';
       process.env.FF_MODALS = 'false';
-      process.env.FEATURE_FLAG_FF_RAW_DATA_NAVIGATION = 'false';
+      process.env.FEATURE_FLAG_RAW_DATA_NAVIGATION = 'false';
 
       expect(isFeatureEnabledEdge('enableAuthentication')).toBe(false);
       expect(isFeatureEnabledEdge('FF_Chat_Analysis_Screen')).toBe(false);

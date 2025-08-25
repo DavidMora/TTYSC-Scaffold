@@ -57,7 +57,7 @@ describe('RawDataNavigationItem Feature Flag Tests', () => {
       setFlag({
         flag: true,
         loading: false,
-        error: new Error('Feature flag error'),
+        error: 'Feature flag error',
       });
 
       const { container } = renderWithProvider(<RawDataNavigationItem />);
