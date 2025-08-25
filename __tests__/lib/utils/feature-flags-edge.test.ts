@@ -56,7 +56,7 @@ describe('feature-flags-edge', () => {
       delete process.env.FF_Chat_Analysis_Screen;
       delete process.env.FF_Full_Page_Navigation;
       delete process.env.FF_SIDE_NAVBAR;
-      delete process.env.FF_Modals;
+      delete process.env.FF_MODALS;
       delete process.env.FEATURE_FLAG_FF_RAW_DATA_NAVIGATION;
 
       const result = loadFeatureFlagsEdge();
