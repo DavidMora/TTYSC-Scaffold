@@ -45,7 +45,7 @@ const loadFromGeneratedFile = async (
  * Parses a string-like boolean to a boolean with sensible defaults.
  * Accepts: "true/1/yes/y/on" and "false/0/no/n/off" (case-insensitive).
  */
-const parseBool = (
+export const parseBool = (
   value: string | undefined,
   defaultValue: boolean
 ): boolean => {

@@ -1,5 +1,5 @@
 import { FeatureFlags, FeatureFlagKey } from '@/lib/types/feature-flags';
-import { DEFAULT_FLAGS } from './feature-flags';
+import { DEFAULT_FLAGS, parseBool } from './feature-flags';
 
 // Default values if no configuration exists
 /**
@@ -17,20 +17,27 @@ import { DEFAULT_FLAGS } from './feature-flags';
 export function loadFeatureFlagsEdge(): FeatureFlags {
   try {
     return {
-      enableAuthentication: process.env.ENABLE_AUTHENTICATION !== 'false',
-      FF_Chat_Analysis_Screen:
-        process.env.FEATURE_FLAG_FF_CHAT_ANALYSIS_SCREEN !== 'false',
-      FF_Full_Page_Navigation: process.env.FF_FULL_PAGE_NAVIGATION !== 'false',
-      FF_Side_NavBar: process.env.FF_SIDE_NAVBAR !== 'false',
-      FF_Modals:
-        process.env.FF_MODALS !== undefined
-          ? process.env.FF_MODALS.toLowerCase() === 'true'
-          : DEFAULT_FLAGS.FF_Modals,
-      FF_Raw_Data_Navigation:
-        process.env.FEATURE_FLAG_RAW_DATA_NAVIGATION !== undefined
-          ? process.env.FEATURE_FLAG_RAW_DATA_NAVIGATION.toLowerCase() ===
-            'true'
-          : DEFAULT_FLAGS.FF_Raw_Data_Navigation,
+      enableAuthentication: parseBool(
+        process.env.ENABLE_AUTHENTICATION,
+        DEFAULT_FLAGS.enableAuthentication
+      ),
+      FF_Chat_Analysis_Screen: parseBool(
+        process.env.FEATURE_FLAG_FF_CHAT_ANALYSIS_SCREEN,
+        DEFAULT_FLAGS.FF_Chat_Analysis_Screen
+      ),
+      FF_Full_Page_Navigation: parseBool(
+        process.env.FF_FULL_PAGE_NAVIGATION,
+        DEFAULT_FLAGS.FF_Full_Page_Navigation
+      ),
+      FF_Side_NavBar: parseBool(
+        process.env.FF_SIDE_NAVBAR,
+        DEFAULT_FLAGS.FF_Side_NavBar
+      ),
+      FF_Modals: parseBool(process.env.FF_MODALS, DEFAULT_FLAGS.FF_Modals),
+      FF_Raw_Data_Navigation: parseBool(
+        process.env.FEATURE_FLAG_RAW_DATA_NAVIGATION,
+        DEFAULT_FLAGS.FF_Raw_Data_Navigation
+      ),
     };
   } catch (error) {
     console.warn(

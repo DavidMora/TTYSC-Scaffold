@@ -57,17 +57,17 @@ describe('feature-flags-edge', () => {
       delete process.env.FF_Full_Page_Navigation;
       delete process.env.FF_SIDE_NAVBAR;
       delete process.env.FF_MODALS;
-      delete process.env.FEATURE_FLAG_FF_RAW_DATA_NAVIGATION;
+      delete process.env.FEATURE_FLAG_RAW_DATA_NAVIGATION;
 
       const result = loadFeatureFlagsEdge();
 
       expect(result).toEqual({
-        enableAuthentication: true, // default is true when env var is not 'false'
-        FF_Chat_Analysis_Screen: true, // default is true when env var is not 'false'
-        FF_Full_Page_Navigation: true, // default is true when env var is not 'false'
-        FF_Side_NavBar: true, // default is true when env var is not 'false'
-        FF_Modals: true, // default is true when env var is not 'false'
-        FF_Raw_Data_Navigation: false, // default is false when env var is not set
+        enableAuthentication: true, // from DEFAULT_FLAGS
+        FF_Chat_Analysis_Screen: true, // from DEFAULT_FLAGS
+        FF_Full_Page_Navigation: true, // from DEFAULT_FLAGS
+        FF_Side_NavBar: true, // from DEFAULT_FLAGS
+        FF_Modals: true, // from DEFAULT_FLAGS
+        FF_Raw_Data_Navigation: false, // from DEFAULT_FLAGS
       });
     });
 
@@ -77,7 +77,7 @@ describe('feature-flags-edge', () => {
       delete process.env.FF_Full_Page_Navigation;
       delete process.env.FF_SIDE_NAVBAR;
       delete process.env.FF_Modals;
-      delete process.env.FEATURE_FLAG_FF_RAW_DATA_NAVIGATION;
+      delete process.env.FEATURE_FLAG_RAW_DATA_NAVIGATION;
 
       const result = loadFeatureFlagsEdge();
 
@@ -97,7 +97,7 @@ describe('feature-flags-edge', () => {
       delete process.env.FF_Full_Page_Navigation;
       delete process.env.FF_SIDE_NAVBAR;
       delete process.env.FF_Modals;
-      delete process.env.FEATURE_FLAG_FF_RAW_DATA_NAVIGATION;
+      delete process.env.FEATURE_FLAG_RAW_DATA_NAVIGATION;
 
       const result = loadFeatureFlagsEdge();
 
@@ -117,7 +117,7 @@ describe('feature-flags-edge', () => {
       delete process.env.FF_Full_Page_Navigation;
       delete process.env.FF_SIDE_NAVBAR;
       delete process.env.FF_Modals;
-      delete process.env.FEATURE_FLAG_FF_RAW_DATA_NAVIGATION;
+      delete process.env.FEATURE_FLAG_RAW_DATA_NAVIGATION;
 
       const result = loadFeatureFlagsEdge();
 
