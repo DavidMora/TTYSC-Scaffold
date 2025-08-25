@@ -139,9 +139,21 @@ export class FetchAdapter implements HttpClientAdapter {
 
       clearTimeout(timeoutId);
 
-      // Use default timeout when config.timeout is undefined (avoid aborting immediately)
+      // Surface server error details for non-2xx responses
       if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        const contentType = this.extractContentType(response);
+        let errorBody: unknown = undefined;
+        try {
+          errorBody = await this.parseResponseData(response, contentType);
+        } catch {
+          /* ignore parse failures */
+        }
+        const err = new Error(
+          `HTTP ${response.status}: ${response.statusText}`
+        ) as Error & { status: number; body?: unknown };
+        err.status = response.status;
+        err.body = errorBody; // prefer { success:false, error: string }
+        throw err;
       }
 
       const contentType = this.extractContentType(response);

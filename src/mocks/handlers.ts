@@ -1,11 +1,13 @@
 import { http, HttpResponse } from 'msw';
 import { chatsMemory } from '@/mocks/chatsMemory';
+import { settingsMemory } from '@/mocks/settingsMemory';
+import type { Settings } from '@/lib/types/settings';
 
 export const handlers = [
   // List chats
   http.get('/api/chats', () => {
     const body = chatsMemory.list();
-    return HttpResponse.json(body, { status: 200 });
+    return HttpResponse.json({ success: true, data: body }, { status: 200 });
   }),
 
   // Create chat
@@ -13,10 +15,18 @@ export const handlers = [
     try {
       const json = (await request.json()) as { title?: string };
       const created = chatsMemory.create({ title: json?.title || 'Untitled' });
-      return HttpResponse.json(created, { status: 201 });
+      return HttpResponse.json(
+        { success: true, data: created },
+        {
+          status: 201,
+          headers: { Location: `/api/chats/${created.id}` },
+        }
+      );
     } catch {
-      const created = chatsMemory.create({ title: 'Untitled' });
-      return HttpResponse.json(created, { status: 201 });
+      return HttpResponse.json(
+        { success: false, error: 'Invalid JSON body' },
+        { status: 400 }
+      );
     }
   }),
 
@@ -25,29 +35,115 @@ export const handlers = [
     const id = String(params.id);
     const found = chatsMemory.get(id);
     if (!found)
-      return HttpResponse.json({ error: 'Not Found' }, { status: 404 });
+      return HttpResponse.json(
+        { success: false, error: 'Chat not found' },
+        { status: 404 }
+      );
     return HttpResponse.json({ success: true, data: found }, { status: 200 });
   }),
 
   // Update chat
   http.patch('/api/chats/:id', async ({ params, request }) => {
     const id = String(params.id);
-    let body: Record<string, unknown> | undefined;
+    let body: Record<string, unknown>;
     try {
       body = (await request.json()) as Record<string, unknown>;
     } catch {
-      body = undefined;
+      return HttpResponse.json(
+        { success: false, error: 'Invalid request body: expected JSON object' },
+        { status: 400 }
+      );
     }
-    const updated = chatsMemory.update({ ...(body || {}), id });
+    const updated = chatsMemory.update({ ...body, id });
     if (!updated)
-      return HttpResponse.json({ error: 'Not Found' }, { status: 404 });
-    return HttpResponse.json(updated, { status: 200 });
+      return HttpResponse.json(
+        { success: false, error: 'Chat not found' },
+        { status: 404 }
+      );
+    return HttpResponse.json({ success: true, data: updated }, { status: 200 });
   }),
 
   // Delete chat
   http.delete('/api/chats/:id', ({ params }) => {
     const id = String(params.id);
     const removed = chatsMemory.delete(id);
-    return new HttpResponse(null, { status: removed ? 204 : 404 });
+    if (!removed) {
+      return HttpResponse.json(
+        { success: false, error: 'Chat not found' },
+        { status: 404 }
+      );
+    }
+    return new HttpResponse(null, { status: 204 });
+  }),
+
+  // Get settings
+  http.get('/api/settings', () => {
+    const settings = settingsMemory.get();
+    return HttpResponse.json(
+      { success: true, data: settings },
+      { status: 200 }
+    );
+  }),
+
+  // Update settings
+  http.patch('/api/settings', async ({ request }) => {
+    try {
+      const body = await request.json();
+
+      // Basic shape check
+      if (!body || typeof body !== 'object' || Array.isArray(body)) {
+        return HttpResponse.json(
+          {
+            success: false,
+            error: 'Invalid request body: expected JSON object',
+          },
+          { status: 400 }
+        );
+      }
+
+      const updates: Partial<Settings> = {};
+      const bodyRecord = body as Record<string, unknown>;
+
+      // Collect valid updates
+      if ('shareChats' in bodyRecord) {
+        if (typeof bodyRecord.shareChats !== 'boolean') {
+          return HttpResponse.json(
+            { success: false, error: 'shareChats must be a boolean' },
+            { status: 400 }
+          );
+        }
+        updates.shareChats = bodyRecord.shareChats;
+      }
+      if ('hideIndexTable' in bodyRecord) {
+        if (typeof bodyRecord.hideIndexTable !== 'boolean') {
+          return HttpResponse.json(
+            { success: false, error: 'hideIndexTable must be a boolean' },
+            { status: 400 }
+          );
+        }
+        updates.hideIndexTable = bodyRecord.hideIndexTable;
+      }
+
+      if (Object.keys(updates).length === 0) {
+        return HttpResponse.json(
+          { success: false, error: 'No valid settings fields provided' },
+          { status: 400 }
+        );
+      }
+
+      const updatedSettings = settingsMemory.update(updates);
+
+      return HttpResponse.json(
+        { success: true, data: updatedSettings },
+        { status: 200 }
+      );
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : 'Invalid request body';
+      return HttpResponse.json(
+        { success: false, error: message },
+        { status: 400 }
+      );
+    }
   }),
 ];
