@@ -22,10 +22,14 @@ export function loadFeatureFlagsEdge(): FeatureFlags {
         process.env.FEATURE_FLAG_FF_CHAT_ANALYSIS_SCREEN !== 'false',
       FF_Full_Page_Navigation: process.env.FF_FULL_PAGE_NAVIGATION !== 'false',
       FF_Side_NavBar: process.env.FF_SIDE_NAVBAR !== 'false',
-      FF_Modals: process.env.FF_MODALS !== 'false',
+      FF_Modals:
+        process.env.FF_MODALS !== undefined
+          ? process.env.FF_MODALS.toLowerCase() === 'true'
+          : DEFAULT_FLAGS.FF_Modals,
       FF_Raw_Data_Navigation:
-        process.env.FEATURE_FLAG_RAW_DATA_NAVIGATION != null
-          ? process.env.FEATURE_FLAG_RAW_DATA_NAVIGATION === 'true'
+        process.env.FEATURE_FLAG_RAW_DATA_NAVIGATION !== undefined
+          ? process.env.FEATURE_FLAG_RAW_DATA_NAVIGATION.toLowerCase() ===
+            'true'
           : DEFAULT_FLAGS.FF_Raw_Data_Navigation,
     };
   } catch (error) {
