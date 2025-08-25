@@ -33,7 +33,7 @@ const AnalysisHeader: React.FC<AnalysisHeaderProps> = ({
 
   const { mutate: createAnalysis, isLoading: isCreating } = useCreateChat({
     onSuccess: (data) => {
-      router.push(`/${data.id}`);
+      router.push(`/${data.data.id}`);
     },
   });
 
