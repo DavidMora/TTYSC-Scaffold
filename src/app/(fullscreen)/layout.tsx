@@ -14,7 +14,7 @@ export default function FullscreenLayout({
 }>) {
   const router = useRouter();
   const { flag: isNavigationEnabled, loading } = useFeatureFlag(
-    'FF_Full_Page_Navigation'
+    'FF_FULL_PAGE_NAVIGATION'
   );
 
   const handleBack = () => {

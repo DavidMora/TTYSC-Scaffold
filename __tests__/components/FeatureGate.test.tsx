@@ -62,15 +62,15 @@ describe('FeatureGate', () => {
       expect(mockUseFeatureFlag).toHaveBeenCalledTimes(1);
     });
 
-    it('works with FF_Chat_Analysis_Screen feature flag', () => {
+    it('works with FF_CHAT_ANALYSIS_SCREEN feature flag', () => {
       render(
-        <FeatureGate flag="FF_Chat_Analysis_Screen">
+        <FeatureGate flag="FF_CHAT_ANALYSIS_SCREEN">
           <div data-testid="chat-analysis">Chat Analysis Content</div>
         </FeatureGate>
       );
 
       expect(mockUseFeatureFlag).toHaveBeenCalledWith(
-        'FF_Chat_Analysis_Screen'
+        'FF_CHAT_ANALYSIS_SCREEN'
       );
       expect(screen.getByTestId('chat-analysis')).toBeInTheDocument();
     });

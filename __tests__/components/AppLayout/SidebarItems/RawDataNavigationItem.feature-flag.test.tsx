@@ -16,7 +16,7 @@ describe('RawDataNavigationItem Feature Flag Tests', () => {
     return render(<RawDataModalProvider>{component}</RawDataModalProvider>);
   };
 
-  describe('FF_Raw_Data_Navigation feature flag', () => {
+  describe('FF_RAW_DATA_NAVIGATION feature flag', () => {
     const setFlag = (
       overrides: Partial<ReturnType<typeof useFeatureFlag>> = {}
     ) => {
@@ -69,7 +69,7 @@ describe('RawDataNavigationItem Feature Flag Tests', () => {
 
       renderWithProvider(<RawDataNavigationItem />);
       expect(jest.mocked(useFeatureFlag)).toHaveBeenCalledWith(
-        'FF_Raw_Data_Navigation'
+        'FF_RAW_DATA_NAVIGATION'
       );
     });
   });
