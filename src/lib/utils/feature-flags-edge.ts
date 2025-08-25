@@ -1,27 +1,47 @@
 import { FeatureFlags, FeatureFlagKey } from '@/lib/types/feature-flags';
-import { DEFAULT_FLAGS } from './feature-flags';
+import { DEFAULT_FLAGS, parseBool } from './feature-flags';
 
 // Default values if no configuration exists
 /**
  * Edge-compatible version that reads feature flags from environment variables
  * Used in middleware and other edge contexts
  *
- * Environment variables:
- * - ENABLE_AUTHENTICATION (true/false)
- * - FEATURE_FLAG_FF_CHAT_ANALYSIS_SCREEN (true/false)
- * - FF_FULL_PAGE_NAVIGATION (true/false)
- * - FF_SIDE_NAVBAR (true/false)
- * - FF_Modals (true/false)
+ * Environment variables (preferred names, with legacy fallbacks):
+ * - FEATURE_FLAG_ENABLE_AUTHENTICATION (preferred) → ENABLE_AUTHENTICATION (legacy)
+ * - FF_CHAT_ANALYSIS_SCREEN (preferred) → FF_CHAT_ANALYSIS_SCREEN (legacy)
+ * - FF_FULL_PAGE_NAVIGATION (preferred) → FF_FULL_PAGE_NAVIGATION (legacy)
+ * - FF_SIDE_NAVBAR (preferred) → FF_SIDE_NAVBAR (legacy)
+ * - FF_MODALS (preferred) → FF_MODALS (legacy)
+ * - FF_RAW_DATA_NAVIGATION (single naming convention)
  */
 export function loadFeatureFlagsEdge(): FeatureFlags {
   try {
     return {
-      enableAuthentication: process.env.ENABLE_AUTHENTICATION !== 'false',
-      FF_Chat_Analysis_Screen:
-        process.env.FEATURE_FLAG_FF_CHAT_ANALYSIS_SCREEN !== 'false',
-      FF_Full_Page_Navigation: process.env.FF_FULL_PAGE_NAVIGATION !== 'false',
-      FF_Side_NavBar: process.env.FF_SIDE_NAVBAR !== 'false',
-      FF_Modals: process.env.FF_Modals !== 'false',
+      enableAuthentication: parseBool(
+        process.env.FEATURE_FLAG_ENABLE_AUTHENTICATION ??
+          process.env.ENABLE_AUTHENTICATION,
+        DEFAULT_FLAGS.enableAuthentication
+      ),
+      FF_CHAT_ANALYSIS_SCREEN: parseBool(
+        process.env.FF_CHAT_ANALYSIS_SCREEN,
+        DEFAULT_FLAGS.FF_CHAT_ANALYSIS_SCREEN
+      ),
+      FF_FULL_PAGE_NAVIGATION: parseBool(
+        process.env.FF_FULL_PAGE_NAVIGATION,
+        DEFAULT_FLAGS.FF_FULL_PAGE_NAVIGATION
+      ),
+      FF_SIDE_NAVBAR: parseBool(
+        process.env.FF_SIDE_NAVBAR,
+        DEFAULT_FLAGS.FF_SIDE_NAVBAR
+      ),
+      FF_MODALS: parseBool(
+        process.env.FF_MODALS,
+        DEFAULT_FLAGS.FF_MODALS
+      ),
+      FF_RAW_DATA_NAVIGATION: parseBool(
+        process.env.FF_RAW_DATA_NAVIGATION,
+        DEFAULT_FLAGS.FF_RAW_DATA_NAVIGATION
+      ),
     };
   } catch (error) {
     console.warn(

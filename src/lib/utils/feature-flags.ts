@@ -3,10 +3,11 @@ import { FeatureFlags, FeatureFlagKey } from '@/lib/types/feature-flags';
 // Default values if no file exists or parsing fails
 export const DEFAULT_FLAGS: FeatureFlags = {
   enableAuthentication: true,
-  FF_Chat_Analysis_Screen: true,
-  FF_Full_Page_Navigation: true,
-  FF_Side_NavBar: true,
-  FF_Modals: true,
+  FF_CHAT_ANALYSIS_SCREEN: true,
+  FF_FULL_PAGE_NAVIGATION: true,
+  FF_SIDE_NAVBAR: true,
+  FF_MODALS: true,
+  FF_RAW_DATA_NAVIGATION: false,
 };
 
 /**
@@ -44,7 +45,7 @@ const loadFromGeneratedFile = async (
  * Parses a string-like boolean to a boolean with sensible defaults.
  * Accepts: "true/1/yes/y/on" and "false/0/no/n/off" (case-insensitive).
  */
-const parseBool = (
+export const parseBool = (
   value: string | undefined,
   defaultValue: boolean
 ): boolean => {
@@ -58,38 +59,45 @@ const parseBool = (
 
 /**
  * Load feature flags from environment variables
- * Uses FEATURE_FLAG_ENABLE_AUTHENTICATION as the primary variable
+ * Uses FEATURE_FLAG_* as the preferred naming convention with legacy fallbacks
  */
 const loadFromEnvironment = (): FeatureFlags => {
   // Use environment variables with graceful fallbacks to defaults
   const enableAuth = parseBool(
-    process.env.FEATURE_FLAG_ENABLE_AUTHENTICATION,
+    process.env.FEATURE_FLAG_ENABLE_AUTHENTICATION ??
+      process.env.ENABLE_AUTHENTICATION,
     DEFAULT_FLAGS.enableAuthentication
   );
 
-  const FF_Chat_Analysis_Screen = parseBool(
-    process.env.FEATURE_FLAG_FF_CHAT_ANALYSIS_SCREEN,
-    DEFAULT_FLAGS.FF_Chat_Analysis_Screen
+  const FF_CHAT_ANALYSIS_SCREEN = parseBool(
+    process.env.FF_CHAT_ANALYSIS_SCREEN,
+    DEFAULT_FLAGS.FF_CHAT_ANALYSIS_SCREEN
   );
 
-  const FF_Full_Page_Navigation = parseBool(
+  const FF_FULL_PAGE_NAVIGATION = parseBool(
     process.env.FF_FULL_PAGE_NAVIGATION,
-    DEFAULT_FLAGS.FF_Full_Page_Navigation
+    DEFAULT_FLAGS.FF_FULL_PAGE_NAVIGATION
   );
 
-  const FF_Side_NavBar = parseBool(
+  const FF_SIDE_NAVBAR = parseBool(
     process.env.FF_SIDE_NAVBAR,
-    DEFAULT_FLAGS.FF_Side_NavBar
+    DEFAULT_FLAGS.FF_SIDE_NAVBAR
   );
 
-  const FF_Modals = parseBool(process.env.FF_MODALS, DEFAULT_FLAGS.FF_Modals);
+  const FF_MODALS = parseBool(process.env.FF_MODALS, DEFAULT_FLAGS.FF_MODALS);
+
+  const FF_RAW_DATA_NAVIGATION = parseBool(
+    process.env.FF_RAW_DATA_NAVIGATION,
+    DEFAULT_FLAGS.FF_RAW_DATA_NAVIGATION
+  );
 
   const flags: FeatureFlags = {
     enableAuthentication: enableAuth,
-    FF_Chat_Analysis_Screen: FF_Chat_Analysis_Screen,
-    FF_Full_Page_Navigation: FF_Full_Page_Navigation,
-    FF_Side_NavBar: FF_Side_NavBar,
-    FF_Modals: FF_Modals,
+    FF_CHAT_ANALYSIS_SCREEN: FF_CHAT_ANALYSIS_SCREEN,
+    FF_FULL_PAGE_NAVIGATION: FF_FULL_PAGE_NAVIGATION,
+    FF_SIDE_NAVBAR: FF_SIDE_NAVBAR,
+    FF_MODALS: FF_MODALS,
+    FF_RAW_DATA_NAVIGATION: FF_RAW_DATA_NAVIGATION,
   };
 
   return flags;

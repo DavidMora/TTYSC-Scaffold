@@ -16,19 +16,31 @@ require('dotenv').config({ path: '.env.local' });
 // Define default flags (must match DEFAULT_FLAGS in feature-flags.ts)
 const DEFAULT_FLAGS = {
   enableAuthentication: true,
-  FF_Chat_Analysis_Screen: true,
-  FF_Full_Page_Navigation: true,
-  FF_Side_NavBar: true,
-  FF_Modals: true,
+  FF_CHAT_ANALYSIS_SCREEN: true,
+  FF_FULL_PAGE_NAVIGATION: true,
+  FF_SIDE_NAVBAR: true,
+  FF_MODALS: true,
+  FF_RAW_DATA_NAVIGATION: false,
 };
 
-// Helper function for handling environment variables
-const handleEnvFlag = (key, envKey, defaultValue) => {
-  const envValue = process.env[envKey];
+// Helper function for handling environment variables with legacy fallbacks
+const handleEnvFlag = (key, preferredKey, legacyKey, defaultValue) => {
+  // Check preferred key first
+  let envValue = process.env[preferredKey];
+
+  // Fall back to legacy key if preferred is not set
+  if (envValue === undefined && legacyKey) {
+    envValue = process.env[legacyKey];
+  }
+
   if (envValue !== undefined) {
     return envValue.toLowerCase() === 'true';
   } else {
-    process.env[envKey] = String(defaultValue);
+    // Set both preferred and legacy keys for consistency
+    process.env[preferredKey] = String(defaultValue);
+    if (legacyKey) {
+      process.env[legacyKey] = String(defaultValue);
+    }
     return defaultValue;
   }
 };
@@ -37,17 +49,27 @@ const handleEnvFlag = (key, envKey, defaultValue) => {
 const flags = {};
 
 const ENV_KEYS = {
-  enableAuthentication: 'FEATURE_FLAG_ENABLE_AUTHENTICATION',
-  FF_Chat_Analysis_Screen: 'FEATURE_FLAG_FF_CHAT_ANALYSIS_SCREEN',
-  FF_Full_Page_Navigation: 'FF_FULL_PAGE_NAVIGATION',
-  FF_Side_NavBar: 'FF_SIDE_NAVBAR',
-  FF_Modals: 'FF_MODALS',
+  enableAuthentication: [
+    'FEATURE_FLAG_ENABLE_AUTHENTICATION',
+    'ENABLE_AUTHENTICATION',
+  ],
+  FF_CHAT_ANALYSIS_SCREEN: ['FF_CHAT_ANALYSIS_SCREEN'],
+  FF_FULL_PAGE_NAVIGATION: ['FF_FULL_PAGE_NAVIGATION'],
+  FF_SIDE_NAVBAR: ['FF_SIDE_NAVBAR'],
+  FF_MODALS: ['FF_MODALS'],
+  FF_RAW_DATA_NAVIGATION: ['FF_RAW_DATA_NAVIGATION'],
 };
 
 Object.keys(DEFAULT_FLAGS).forEach((key) => {
-  const envKey = ENV_KEYS[key];
-  if (envKey) {
-    flags[key] = handleEnvFlag(key, envKey, DEFAULT_FLAGS[key]);
+  const envKeys = ENV_KEYS[key];
+  if (envKeys) {
+    const [preferredKey, legacyKey] = envKeys;
+    flags[key] = handleEnvFlag(
+      key,
+      preferredKey,
+      legacyKey,
+      DEFAULT_FLAGS[key]
+    );
   } else {
     flags[key] = DEFAULT_FLAGS[key];
   }

@@ -12,6 +12,7 @@ import {
   Button,
 } from '@ui5/webcomponents-react';
 import { useState } from 'react';
+import { useFeatureFlag } from '@/hooks/useFeatureFlags';
 
 export interface FilterValue {
   id: number;
@@ -119,6 +120,12 @@ export default function RawDataNavigationItem(
     Record<number, string>
   >({});
 
+  const {
+    flag: isEnabled,
+    loading,
+    error,
+  } = useFeatureFlag('FF_RAW_DATA_NAVIGATION');
+
   const handleRawDataChange = (id: number) => {
     const selected = rawDataItems.find((item) => item.id === id);
     if (selected) {
@@ -134,6 +141,18 @@ export default function RawDataNavigationItem(
     setFilterSelections(newFilterSelections);
     onDataSelection?.(selectedRawData!, newFilterSelections);
   };
+
+  if (loading) {
+    return null; // Don't render anything while loading feature flags
+  }
+
+  if (error) {
+    return null; // Don't render when there's an error loading feature flags
+  }
+
+  if (!isEnabled) {
+    return null; // Don't render when feature flag is disabled
+  }
 
   if (!selectedRawData) {
     return (
