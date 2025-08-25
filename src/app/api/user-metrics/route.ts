@@ -43,6 +43,18 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Ensure fields are strings
+    if (
+      typeof ConversationId !== 'string' ||
+      typeof Query !== 'string' ||
+      typeof Response !== 'string'
+    ) {
+      return apiResponse.error(
+        'Invalid field types: ConversationId, Query, and Response must be strings',
+        400
+      );
+    }
+
     // Transform the payload to match NVIDIA AI Factory schema
     const userMetricsPayload: UserMetricsPayload = {
       ConversationId,

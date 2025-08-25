@@ -60,43 +60,55 @@ function getMap(): BackendMapFile {
   return cache.data;
 }
 
+function applyEnvironmentOverrides(map: BackendMapFile): void {
+  // Define environment variable mappings for backend URLs
+  const envMappings = [
+    { backendKey: 'mock', envVar: 'MOCK_BACKEND_BASE_URL' },
+    { backendKey: 'real', envVar: 'BACKEND_BASE_URL' },
+    { backendKey: 'feedback', envVar: 'FEEDBACK_BACKEND_BASE_URL' },
+    { backendKey: 'userMetrics', envVar: 'USER_METRICS_BACKEND_BASE_URL' },
+  ];
+
+  // Apply environment overrides for base URLs
+  for (const { backendKey, envVar } of envMappings) {
+    const backend = map.backends[backendKey];
+    const envValue = process.env[envVar];
+
+    if (backend && envValue) {
+      backend.baseURL = envValue;
+    }
+  }
+}
+
 export function resolveBackend(pathname: string): ResolvedBackend {
   const map = getMap();
 
-  // Inject environment overrides for base URLs (runtime-configurable without editing JSON file)
-  if (map.backends.mock && process.env.MOCK_BACKEND_BASE_URL) {
-    map.backends.mock.baseURL = process.env.MOCK_BACKEND_BASE_URL;
-  }
+  // Apply environment configuration overrides
+  applyEnvironmentOverrides(map);
 
-  if (map.backends.real && process.env.BACKEND_BASE_URL) {
-    map.backends.real.baseURL = process.env.BACKEND_BASE_URL;
-  }
-
-  if (map.backends.feedback && process.env.FEEDBACK_BACKEND_BASE_URL) {
-    map.backends.feedback.baseURL = process.env.FEEDBACK_BACKEND_BASE_URL;
-  }
-
-  if (map.backends.userMetrics && process.env.USER_METRICS_BACKEND_BASE_URL) {
-    map.backends.userMetrics.baseURL =
-      process.env.USER_METRICS_BACKEND_BASE_URL;
-  }
-
-  for (const rule of map.routes) {
+  // Find matching backend route
+  const matchingRule = map.routes.find((rule) => {
     try {
       const regex = new RegExp(rule.pattern);
-      if (regex.test(pathname)) {
-        const def = map.backends[rule.backend];
-        if (def) return { key: rule.backend, ...def };
-      }
+      return regex.test(pathname);
     } catch {
-      // ignore bad regex
+      return false; // ignore bad regex
+    }
+  });
+
+  // Return matching backend if found
+  if (matchingRule) {
+    const def = map.backends[matchingRule.backend];
+    if (def) {
+      return { key: matchingRule.backend, ...def };
     }
   }
 
+  // Fallback to default backend
   const def = map.backends[map.default];
-
   if (!def) {
     throw new Error('Default backend not defined in backend-map.json');
   }
+
   return { key: map.default, ...def };
 }
