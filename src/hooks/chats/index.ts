@@ -10,6 +10,7 @@ import { submitFeedback } from '@/lib/services/feedback.service';
 import {
   BotResponse,
   Chat,
+  ChatResponse,
   CreateChatMessageRequest,
   CreateChatRequest,
   UpdateChatRequest,
@@ -36,7 +37,7 @@ export const useCreateChat = ({
   onSuccess,
   onError,
 }: {
-  onSuccess?: (data: Chat) => void;
+  onSuccess?: (data: ChatResponse) => void;
   onError?: (error: Error) => void;
 }) => {
   return dataFetcher.mutateData(
