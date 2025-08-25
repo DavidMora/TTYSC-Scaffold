@@ -104,7 +104,7 @@ export default function AnalysisContainer() {
 
   const createChatMutation = useCreateChat({
     onSuccess: (newChat) => {
-      router.replace(`/${newChat.id}`);
+      router.replace(`/${newChat.data.id}`);
     },
   });
 

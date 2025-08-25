@@ -110,7 +110,7 @@ const AnalysisCreation = () => {
 
   const createAnalysisMutation = useCreateChat({
     onSuccess: (newChat) => {
-      router.push(`/${newChat.id}`);
+      router.push(`/${newChat.data.id}`);
     },
     onError: (error) => {
       console.error('Failed to create analysis:', error);

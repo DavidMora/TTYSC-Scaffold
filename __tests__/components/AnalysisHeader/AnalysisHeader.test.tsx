@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import AnalysisHeader from '@/components/AnalysisHeader/AnalysisHeader';
-import { Chat } from '@/lib/types/chats';
+import { Chat, ChatResponse } from '@/lib/types/chats';
 
 const mockPush = jest.fn();
 
@@ -129,37 +129,41 @@ describe('Analysis Header', () => {
   });
 
   it('should navigate on successful analysis creation', async () => {
-    const mockAnalysisData: Chat = {
-      id: 'test-analysis-id',
-      title: 'Test Analysis',
-      date: '2021-01-01',
-      messages: [],
-      draft: '',
-      metadata: {
-        analysis: {
-          key: 'test-analysis-key',
-          name: 'Test Analysis',
-        },
-        organizations: {
-          key: 'test-organization-key',
-          name: 'Test Organization',
-        },
-        CM: {
-          key: 'test-cm-key',
-          name: 'Test CM',
-        },
-        SKU: {
-          key: 'test-sku-key',
-          name: 'Test SKU',
-        },
-        NVPN: {
-          key: 'test-nvpn-key',
-          name: 'Test NVPN',
+    const mockAnalysisData: ChatResponse = {
+      success: true,
+      message: 'Analysis created successfully',
+      data: {
+        id: 'test-analysis-id',
+        title: 'Test Analysis',
+        date: '2021-01-01',
+        messages: [],
+        draft: '',
+        metadata: {
+          analysis: {
+            key: 'test-analysis-key',
+            name: 'Test Analysis',
+          },
+          organizations: {
+            key: 'test-organization-key',
+            name: 'Test Organization',
+          },
+          CM: {
+            key: 'test-cm-key',
+            name: 'Test CM',
+          },
+          SKU: {
+            key: 'test-sku-key',
+            name: 'Test SKU',
+          },
+          NVPN: {
+            key: 'test-nvpn-key',
+            name: 'Test NVPN',
+          },
         },
       },
     };
 
-    let capturedOnSuccess: ((data: Chat) => void) | undefined;
+    let capturedOnSuccess: ((data: ChatResponse) => void) | undefined;
     mockUseCreateAnalysis.mockImplementation((options) => {
       capturedOnSuccess = options.onSuccess;
       return {

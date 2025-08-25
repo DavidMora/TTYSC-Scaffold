@@ -1,16 +1,11 @@
 import { v4 as uuidv4 } from 'uuid';
 import { Chat, CreateChatRequest, UpdateChatRequest } from '@/lib/types/chats';
-import { BaseResponse } from '@/lib/types/http/responses';
 
 class ChatsMemoryStore {
   private readonly chats = new Map<string, Chat>();
 
-  list(): BaseResponse<Chat[]> {
-    return {
-      success: true,
-      data: Array.from(this.chats.values()),
-      message: 'OK',
-    };
+  list(): Chat[] {
+    return Array.from(this.chats.values());
   }
 
   get(id: string): Chat | null {
