@@ -113,6 +113,7 @@ export default function AnalysisChat({
     aggregatedContent,
     finishReason,
     metadata,
+    error: streamError,
   } = useChatStream({ stopOnFinish: true });
 
   const handleSend = useCallback(
@@ -156,37 +157,62 @@ export default function AnalysisChat({
     [model, reset, sendMessage]
   );
 
-  // When stream finishes, append the final assistant message to persist in chat
+  // When stream finishes, append the final assistant message to persist in chat and submit metrics
   useEffect(() => {
-    if (!isStreaming) {
+    if (!isStreaming && runId && appendedRunId !== runId) {
       const inlineTable = metadataToTableData(metadata);
       const inlineChart = metadataToAIChartData(metadata);
       const chartGenError = metadata?.chartgen_error;
       const finalContent = aggregatedContent;
 
+      // Find the last user message for metrics
+      const lastUserMessage = messages
+        .slice()
+        .reverse()
+        .find((msg) => msg.role === 'user');
+
+      // Always submit user metrics when stream ends, regardless of success/failure
+      if (lastUserMessage) {
+        const errorMessage = streamError
+          ? `Stream Error: ${String(streamError)}`
+          : finishReason === 'error'
+            ? 'Stream finished with error'
+            : null;
+
+        const responseContent =
+          finalContent ||
+          (chartGenError ? `Chart Generation Error: ${chartGenError}` : '') ||
+          (errorMessage ? '' : 'No response generated');
+
+        submitUserMetrics({
+          conversationId: runId.toString(),
+          query: lastUserMessage.content,
+          response: responseContent,
+          error: errorMessage || undefined,
+          additionalInfo: `finish_reason: ${finishReason || 'unknown'}`,
+        }).catch((error) => {
+          // Log error but don't break the UI
+          console.error('Failed to submit user metrics:', error);
+        });
+      }
+
+      // Only add the assistant message to chat if there's content or it's a meaningful response
       if (
-        runId &&
-        appendedRunId !== runId &&
-        (finalContent || inlineTable || inlineChart || chartGenError)
+        finalContent ||
+        inlineTable ||
+        inlineChart ||
+        chartGenError ||
+        streamError
       ) {
         const assistantMessageId = `${Date.now()}-assistant`;
 
-        // Find the last user message for metrics
-        const lastUserMessage = messages
-          .slice()
-          .reverse()
-          .find((msg) => msg.role === 'user');
-
-        // Submit user metrics for this interaction
-        if (lastUserMessage && finalContent) {
-          submitUserMetrics({
-            conversationId: runId.toString(),
-            query: lastUserMessage.content,
-            response: finalContent,
-          }).catch((error) => {
-            // Log error but don't break the UI
-            console.error('Failed to submit user metrics:', error);
-          });
+        let displayContent = finalContent;
+        if (streamError) {
+          displayContent = `Error: ${String(streamError)}`;
+        } else if (!finalContent && chartGenError) {
+          displayContent = `Chart Generation Error: ${chartGenError}`;
+        } else if (!finalContent && !chartGenError) {
+          displayContent = 'No response was generated for your request.';
         }
 
         setMessages((prev) => [
@@ -196,14 +222,15 @@ export default function AnalysisChat({
             role: 'assistant',
             created: new Date().toLocaleString(),
             title: 'TTYSC Agent',
-            content: finalContent,
+            content: displayContent,
             chart: inlineChart ?? undefined,
             table: inlineTable ?? undefined,
             chartGenError: chartGenError ?? undefined,
           },
         ]);
-        setAppendedRunId(runId);
       }
+
+      setAppendedRunId(runId);
       setShowLoader(false);
     }
   }, [
@@ -211,6 +238,7 @@ export default function AnalysisChat({
     finishReason,
     aggregatedContent,
     metadata,
+    streamError,
     runId,
     appendedRunId,
     messages,

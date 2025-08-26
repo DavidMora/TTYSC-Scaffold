@@ -17,9 +17,9 @@ export interface UserMetricsPayload {
   RephrasedQueries?: string; // optional, DON'T USE per requirements
   Category?: string; // optional, DON'T USE per requirements
   Subcategory?: string; // optional, DON'T USE per requirements
-  Error?: string; // optional, DON'T USE per requirements
+  Error?: string; // Used for tracking error information during failed requests
   TimeTaken?: string; // optional, DON'T USE per requirements
-  AdditionalInfo?: string; // optional, DON'T USE per requirements
+  AdditionalInfo?: string; // Used for additional context like response time, status codes
   Environment: 'dev' | 'stg' | 'prd';
   Username: string;
 }

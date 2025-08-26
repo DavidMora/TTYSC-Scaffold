@@ -17,6 +17,7 @@ export const runtime = 'nodejs';
 export async function POST(req: NextRequest) {
   try {
     const authResult = await requireAuthentication();
+
     if ('errorResponse' in authResult) {
       return authResult.errorResponse;
     }
@@ -25,11 +26,18 @@ export async function POST(req: NextRequest) {
 
     // Parse and validate JSON body
     const body = await parseJsonBody(req);
+
     if (body instanceof globalThis.Response) {
       return body; // Return error response
     }
 
-    const { ConversationId, Query, Response: ResponseText } = body;
+    const {
+      ConversationId,
+      Query,
+      Response: ResponseText,
+      Error: StreamError,
+      AdditionalInfo,
+    } = body;
 
     // Validate required fields
     const fieldsError = validateRequiredFieldsError(body, [
@@ -37,6 +45,7 @@ export async function POST(req: NextRequest) {
       'Query',
       'Response',
     ]);
+
     if (fieldsError) {
       return fieldsError;
     }
@@ -47,8 +56,18 @@ export async function POST(req: NextRequest) {
       'Query',
       'Response',
     ]);
+
     if (typeError) {
       return typeError;
+    }
+
+    // Validate optional string fields if they exist
+    if (StreamError !== undefined && typeof StreamError !== 'string') {
+      return apiResponse.error('Error must be a string if provided');
+    }
+
+    if (AdditionalInfo !== undefined && typeof AdditionalInfo !== 'string') {
+      return apiResponse.error('AdditionalInfo must be a string if provided');
     }
 
     // Transform the payload to match NVIDIA AI Factory schema
@@ -59,11 +78,19 @@ export async function POST(req: NextRequest) {
       IsRecordableConversation: false,
       Query: Query as string,
       Response: ResponseText as string,
+      Error: typeof body.Error === 'string' ? body.Error : undefined,
+      AdditionalInfo:
+        typeof body.AdditionalInfo === 'string'
+          ? body.AdditionalInfo
+          : undefined,
       Source: 'TTYSC',
       UserBrowser: req.headers.get('user-agent') || 'Unknown',
       Environment: getEnvironment(),
       Username: userEmail,
     };
+
+    console.log('User metrics upstream payload:', userMetricsPayload);
+    console.log(JSON.stringify(userMetricsPayload, null, 2));
 
     const upstream = await backendRequest<
       { success: boolean; message?: string },

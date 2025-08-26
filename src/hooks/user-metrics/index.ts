@@ -41,9 +41,11 @@ export const useSubmitUserMetrics = ({
 export const buildUserMetricsPayload = (params: {
   conversationId: string;
   query: string;
-  response: string;
+  response?: string;
   sessionId?: string;
   username?: string;
+  error?: string;
+  additionalInfo?: string;
 }): UserMetricsPayload => {
   const workflowName = process.env.USER_METRICS_WORKFLOW_NAME || 'ttysc';
   const environment = getEnvironment();
@@ -54,7 +56,9 @@ export const buildUserMetricsPayload = (params: {
     SessionId: params.sessionId || 'unknown-session',
     IsRecordableConversation: false,
     Query: params.query,
-    Response: params.response,
+    Response: params.response || '',
+    Error: params.error,
+    AdditionalInfo: params.additionalInfo,
     Source: 'TTYSC',
     UserBrowser: getUserBrowser(),
     Environment: environment,
@@ -72,7 +76,9 @@ export const useUserMetricsWithSession = () => {
   const submitWithSession = async (params: {
     conversationId: string;
     query: string;
-    response: string;
+    response?: string;
+    error?: string;
+    additionalInfo?: string;
   }) => {
     const payload = buildUserMetricsPayload({
       ...params,
