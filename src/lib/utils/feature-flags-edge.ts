@@ -34,10 +34,7 @@ export function loadFeatureFlagsEdge(): FeatureFlags {
         process.env.FF_SIDE_NAVBAR,
         DEFAULT_FLAGS.FF_SIDE_NAVBAR
       ),
-      FF_MODALS: parseBool(
-        process.env.FF_MODALS,
-        DEFAULT_FLAGS.FF_MODALS
-      ),
+      FF_MODALS: parseBool(process.env.FF_MODALS, DEFAULT_FLAGS.FF_MODALS),
       FF_RAW_DATA_NAVIGATION: parseBool(
         process.env.FF_RAW_DATA_NAVIGATION,
         DEFAULT_FLAGS.FF_RAW_DATA_NAVIGATION
