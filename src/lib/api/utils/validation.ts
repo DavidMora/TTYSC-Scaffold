@@ -83,3 +83,27 @@ export function validateRequiredFieldsError(
   }
   return null;
 }
+
+/**
+ * Validates that specified fields are all strings
+ * @param body The object containing the fields
+ * @param fields Array of field names that should be strings
+ * @returns Error response if any field is not a string, null if all are strings
+ */
+export function validateStringFields(
+  body: Record<string, unknown>,
+  fields: string[]
+): Response | null {
+  const invalidFields = fields.filter(
+    (field) => typeof body[field] !== 'string'
+  );
+
+  if (invalidFields.length > 0) {
+    return apiResponse.error(
+      `Invalid field types: ${invalidFields.join(', ')} must be strings`,
+      400
+    );
+  }
+
+  return null;
+}

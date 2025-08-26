@@ -4,6 +4,11 @@ import { UserMetricsPayload } from '@/lib/services/user-metrics.service';
 import { getEnvironment } from '@/lib/api/utils/environment';
 import { apiResponse } from '@/lib/api/utils/response';
 import { requireAuthentication } from '@/lib/api/utils/auth';
+import {
+  parseJsonBody,
+  validateRequiredFieldsError,
+  validateStringFields,
+} from '@/lib/api/utils/validation';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -18,51 +23,42 @@ export async function POST(req: NextRequest) {
 
     const { userEmail } = authResult;
 
-    let body;
-    try {
-      body = await req.json();
-    } catch {
-      return apiResponse.error('Invalid JSON in request body', 400);
+    // Parse and validate JSON body
+    const body = await parseJsonBody(req);
+    if (body instanceof globalThis.Response) {
+      return body; // Return error response
     }
 
-    // Validate request body structure
-    if (!body || typeof body !== 'object' || Array.isArray(body)) {
-      return apiResponse.error(
-        'Invalid request body: expected JSON object',
-        400
-      );
-    }
-
-    const { ConversationId, Query, Response } = body;
+    const { ConversationId, Query, Response: ResponseText } = body;
 
     // Validate required fields
-    if (!ConversationId || !Query || !Response) {
-      return apiResponse.error(
-        'Missing required fields: ConversationId, Query, Response',
-        400
-      );
+    const fieldsError = validateRequiredFieldsError(body, [
+      'ConversationId',
+      'Query',
+      'Response',
+    ]);
+    if (fieldsError) {
+      return fieldsError;
     }
 
     // Ensure fields are strings
-    if (
-      typeof ConversationId !== 'string' ||
-      typeof Query !== 'string' ||
-      typeof Response !== 'string'
-    ) {
-      return apiResponse.error(
-        'Invalid field types: ConversationId, Query, and Response must be strings',
-        400
-      );
+    const typeError = validateStringFields(body, [
+      'ConversationId',
+      'Query',
+      'Response',
+    ]);
+    if (typeError) {
+      return typeError;
     }
 
     // Transform the payload to match NVIDIA AI Factory schema
     const userMetricsPayload: UserMetricsPayload = {
-      ConversationId,
+      ConversationId: ConversationId as string,
       WorkflowName: process.env.USER_METRICS_WORKFLOW_NAME || 'ttysc',
       SessionId: userEmail, // Using email as session identifier
       IsRecordableConversation: false,
-      Query,
-      Response,
+      Query: Query as string,
+      Response: ResponseText as string,
       Source: 'TTYSC',
       UserBrowser: req.headers.get('user-agent') || 'Unknown',
       Environment: getEnvironment(),
